@@ -6,3 +6,9 @@ out_stl_kmix/
 *.3mf.tmp
 benchy_cutup_grouped*/
 __pycache__/
+*.3mf
+*.stl
+*.zip
+__pycache__/
+*.egg-info/
+*.DS_Store
