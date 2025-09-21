@@ -1,1 +1,8 @@
 <paste above>
+# dev outputs
+out_stl/
+out_stl_kmix/
+*.zip
+*.3mf.tmp
+benchy_cutup_grouped*/
+__pycache__/
