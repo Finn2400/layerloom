@@ -9,24 +9,19 @@ Key patches in this version:
  - Proper <model> root with namespaces and xml:lang.
  - Each <object> now includes name="..." so slicers display the part names.
  - Still writes vendor-friendly metadata as a fallback.
- - Removed parent-side post-bake verification (avoid duplicate/noisy logs).
-
-CLI (installed as `layerloom`):
-  layerloom -i INPUT.3mf -o OUTPUT.3mf -H 0.20 --z0-mode auto-global --groups 2 --include-scene -v
+ - Supports --k-map N=K,... to override group count for specific part indices.
 """
 
 from __future__ import annotations
 
 import argparse
-import io
-import json
 import math
 import os
 import sys
 import tempfile
 import zipfile
 import subprocess
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Optional, Dict
 
 import numpy as np
 import trimesh
@@ -39,20 +34,16 @@ except Exception:
     import xml.etree.ElementTree as ET
     HAVE_LXML = False
 
-# ------------------------- Namespaces & helpers -------------------------
-
 CORE_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 BAMBU_NS = "http://schemas.bambulab.com/package/2021"
 XML_NS = "http://www.w3.org/XML/1998/namespace"
 
 if not HAVE_LXML:
-    # stdlib ET needs explicit registration to write xmlns prefixes
     ET.register_namespace("", CORE_NS)
     ET.register_namespace("BambuStudio", BAMBU_NS)
     ET.register_namespace("slic3r_pe", "http://slic3r.org/ns/pe")
 
 def q(tag: str) -> str:
-    """Qualified tag in default 3MF core namespace."""
     return f"{{{CORE_NS}}}{tag}"
 
 # ------------------------- Geometry utils -------------------------
@@ -98,13 +89,9 @@ def concat_meshes(meshes: List[trimesh.Trimesh]) -> Optional[trimesh.Trimesh]:
                                process=False)
     return trimesh.util.concatenate(meshes)
 
-# ------------------------- 3MF pack/unpack helpers -------------------------
+# ------------------------- 3MF helpers -------------------------
 
 def new_model_root(title: str) -> ET.Element:
-    """
-    Create <model> with default namespace, vendor prefixes, and xml:lang.
-    (Patched) Uses QName for xml:lang when lxml is available.
-    """
     if HAVE_LXML:
         nsmap = {
             None: CORE_NS,
@@ -113,19 +100,13 @@ def new_model_root(title: str) -> ET.Element:
         }
         root = ET.Element(q("model"), nsmap=nsmap)
         root.set("unit", "millimeter")
-        # xml:lang attribute
         root.set(ET.QName(XML_NS, "lang"), "en-US")
     else:
-        # stdlib: namespaces registered above; xml:lang ok as a literal attribute
         root = ET.Element(q("model"), {"unit": "millimeter", "xml:lang": "en-US"})
     ET.SubElement(root, q("metadata"), {"name": "Title"}).text = title
     return root
 
 def stamp_object_labels(obj_el: ET.Element, label: str) -> None:
-    """
-    (Patched) Primary display name via object attribute 'name'.
-    Also add metadata fallbacks some slicers might read.
-    """
     obj_el.set("name", label)
     ET.SubElement(obj_el, q("metadata"), {"name": "Title"}).text = label
     ET.SubElement(obj_el, q("metadata"), {"name": "Name"}).text = label
@@ -137,17 +118,13 @@ def mesh_to_object(obj_id: int, mesh: trimesh.Trimesh, label: str) -> ET.Element
     stamp_object_labels(obj, label)
     mesh_el = ET.SubElement(obj, q("mesh"))
     verts_el = ET.SubElement(mesh_el, q("vertices"))
-    # write vertices
-    V = mesh.vertices.view(np.ndarray)
-    for v in V:
+    for v in mesh.vertices.view(np.ndarray):
         e = ET.SubElement(verts_el, q("vertex"))
         e.set("x", f"{v[0]:.9f}")
         e.set("y", f"{v[1]:.9f}")
         e.set("z", f"{v[2]:.9f}")
-    # write triangles
     tris_el = ET.SubElement(mesh_el, q("triangles"))
-    F = mesh.faces.view(np.ndarray)
-    for f in F:
+    for f in mesh.faces.view(np.ndarray):
         t = ET.SubElement(tris_el, q("triangle"))
         t.set("v1", str(int(f[0])))
         t.set("v2", str(int(f[1])))
@@ -158,37 +135,22 @@ def pack_3mf(objects: List[Tuple[str,trimesh.Trimesh]],
              scene_objects: Optional[List[Tuple[str,trimesh.Trimesh]]],
              out_path: str,
              title: str) -> None:
-    """
-    Create a valid 3MF where each (label, mesh) becomes an object and build item.
-    scene_objects, if provided, are appended after per-part objects.
-    """
     root = new_model_root(title)
     resources = ET.SubElement(root, q("resources"))
     build = ET.SubElement(root, q("build"))
-
     next_id = 1
-    # per-part objects
     for label, mesh in objects:
         obj_el = mesh_to_object(next_id, mesh, label)
         resources.append(obj_el)
         ET.SubElement(build, q("item"), {"objectid": str(next_id), "printable":"1", "partnumber": label})
         next_id += 1
-
-    # optional scene-level objects
     if scene_objects:
         for label, mesh in scene_objects:
             obj_el = mesh_to_object(next_id, mesh, label)
             resources.append(obj_el)
             ET.SubElement(build, q("item"), {"objectid": str(next_id), "printable":"1", "partnumber": label})
             next_id += 1
-
-    # Serialize XML
-    if HAVE_LXML:
-        xml_bytes = ET.tostring(root, pretty_print=False, xml_declaration=True, encoding="utf-8")
-    else:
-        xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
-
-    # Write 3MF (zip)
+    xml_bytes = ET.tostring(root, pretty_print=False, xml_declaration=True, encoding="utf-8") if HAVE_LXML else ET.tostring(root, encoding="utf-8", xml_declaration=True)
     with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
         z.writestr("[Content_Types].xml", _content_types_xml())
         z.writestr("_rels/.rels", _rels_root_xml())
@@ -196,7 +158,6 @@ def pack_3mf(objects: List[Tuple[str,trimesh.Trimesh]],
         z.writestr("3D/_rels/3dmodel.model.rels", _rels_empty_xml())
 
 def _content_types_xml() -> bytes:
-    # minimal content types for 3MF
     return ("""
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -214,11 +175,11 @@ def _rels_root_xml() -> bytes:
 def _rels_empty_xml() -> bytes:
     return ("""<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"/>""").encode("utf-8")
 
-# ------------------------- Baking orchestration -------------------------
+# ------------------------- Baking -------------------------
 
 def should_bake_with_module() -> bool:
     try:
-        import layerloom.needs_bake as nb  # noqa: F401
+        import layerloom.needs_bake as nb  # noqa
         return True
     except Exception:
         return False
@@ -229,250 +190,185 @@ def needs_bake(path: str) -> bool:
         ok, _ = detect(path)
         return ok
     except Exception:
-        # if detector missing, assume needs bake for safety
         return True
 
 def orchestrate_bake(input_3mf: str, verbose: bool) -> str:
-    """
-    Bake via installed module: python -m layerloom.bake_in_memory
-    Returns path to baked 3MF (temp file).
-    """
     tmpdir = tempfile.mkdtemp(prefix="layerloom_")
     baked_path = os.path.join(tmpdir, "baked.3mf")
     if verbose:
-        print("[orchestrate] baking via module layerloom.bake_in_memory")
+        print("[orchestrate] baking via layerloom.bake_in_memory")
     cmd = [sys.executable, "-m", "layerloom.bake_in_memory", "-i", input_3mf, "-o", baked_path]
     subprocess.run(cmd, check=True)
     return baked_path
 
-# ------------------------- Load baked parts as meshes -------------------------
+# ------------------------- Load baked parts -------------------------
 
 def load_baked_parts(path: str, verbose: bool=False) -> List[Tuple[str, trimesh.Trimesh]]:
-    """
-    Load a baked 3MF (no transforms/components) into per-object meshes and names.
-    """
     parts: List[Tuple[str, trimesh.Trimesh]] = []
-
-    # Parse the model XML to get object names and then load geometry via trimesh
     with zipfile.ZipFile(path, "r") as z:
         with z.open("3D/3dmodel.model") as f:
             data = f.read()
-    # parse xml
-    if HAVE_LXML:
-        root = ET.fromstring(data)
-    else:
-        root = ET.fromstring(data)
-
-    # map: object id -> name
+    root = ET.fromstring(data)
     obj_names: Dict[str,str] = {}
     for obj in root.findall(f".//{q('object')}"):
         oid = obj.get("id")
         name = obj.get("name") or ""
         if not name:
-            # fallback to Title metadata if needed
             for md in obj.findall(f"{q('metadata')}"):
-                if md.get("name") in ("Title", "Name", "BambuStudio:ModelName", "slic3r_pe:Name"):
-                    if md.text:
-                        name = md.text
-                        break
+                if md.get("name") in ("Title","Name","BambuStudio:ModelName","slic3r_pe:Name") and md.text:
+                    name = md.text; break
         if not name:
             name = f"part_{int(oid):03d}"
         obj_names[oid] = name
-
-    # Load geometry via trimesh scene then extract per-object meshes
     scene = trimesh.load(path, force='scene')
     if not isinstance(scene, trimesh.Scene):
-        mesh = scene if isinstance(scene, trimesh.Trimesh) else None
+        mesh = scene if isinstance(scene,trimesh.Trimesh) else None
         if mesh is None:
             raise RuntimeError("Failed to load baked 3MF geometry.")
         parts.append((obj_names.get("1","part_001"), mesh))
         return parts
-
     idx = 1
     for g in scene.geometry.values():
-        if not isinstance(g, trimesh.Trimesh) or g.faces.size == 0:
+        if not isinstance(g, trimesh.Trimesh) or g.faces.size==0:
             continue
         name = obj_names.get(str(idx), f"part_{idx:03d}")
         parts.append((name, g.copy()))
         idx += 1
-
     if verbose:
-        print(f"[info] parts={len(parts)}  (baked)")
+        print(f"[info] parts={len(parts)} (baked)")
         for i,(n,m) in enumerate(parts, start=1):
             (xmin,ymin,zmin),(xmax,ymax,zmax) = m.bounds
-            print(f"[part] {i:02d} {n:24s} tris={m.faces.size:7d}  "
-                  f"X[{xmin:.3f},{xmax:.3f}] Y[{ymin:.3f},{ymax:.3f}] Z[{zmin:.3f},{zmax:.3f}]")
-
+            print(f"[part] {i:02d} {n:20s} tris={m.faces.size:7d} Z[{zmin:.3f}..{zmax:.3f}]")
     return parts
 
-# ------------------------- Banding & grouping -------------------------
+# ------------------------- Banding -------------------------
 
-def choose_z0(parts: List[Tuple[str,trimesh.Trimesh]], mode: str, z0_fixed: Optional[float]) -> Tuple[float, List[float]]:
+def choose_z0(parts, mode, z0_fixed):
     zmins = [float(m.bounds[0,2]) for _, m in parts]
-    if mode == "auto-global":
-        z0g = float(np.min(zmins)); return z0g, [z0g]*len(parts)
-    if mode == "auto-local":
-        z0g = float(np.min(zmins)); return z0g, [float(z) for z in zmins]
-    if mode == "fixed":
-        if z0_fixed is None:
-            raise ValueError("z0-mode=fixed requires --z0-mm.")
-        return float(z0_fixed), [float(z0_fixed)]*len(parts)
+    if mode=="auto-global":
+        z0g=float(np.min(zmins)); return z0g,[z0g]*len(parts)
+    if mode=="auto-local":
+        z0g=float(np.min(zmins)); return z0g,[float(z) for z in zmins]
+    if mode=="fixed":
+        if z0_fixed is None: raise ValueError("z0-mode=fixed requires --z0-mm")
+        return float(z0_fixed),[float(z0_fixed)]*len(parts)
     raise ValueError(f"Unknown z0-mode: {mode}")
 
-def route_bands(parts: List[Tuple[str,trimesh.Trimesh]], H: float, z0_mode: str, z0_fixed: Optional[float],
-                groups: int, z_gap: float, xy_pad: float, verbose: bool=False) -> Tuple[List[Tuple[str, List[List[trimesh.Trimesh]]]], Dict[int, List[trimesh.Trimesh]]]:
-    """
-    For each part, boolean-slice into Z bands and assign band k -> group (k mod K).
-    Returns:
-      per_part_groups: [ (name, [group0_meshes, group1_meshes, ...]) ]
-      scene_groups: {g: [meshes...] }
-    """
-    z0_global, per_part_z0 = choose_z0(parts, z0_mode, z0_fixed)
+def route_bands(parts,H,z0_mode,z0_fixed,groups_default,k_map,z_gap,xy_pad,verbose=False):
+    z0_global, per_part_z0 = choose_z0(parts,z0_mode,z0_fixed)
     if verbose:
-        print(f"[info] parts={len(parts)}  z0-mode={z0_mode}  z0-global={z0_global:.6f}  default-K={groups}")
-
-    per_part_groups: List[Tuple[str, List[List[trimesh.Trimesh]]]] = []
-    scene_groups: Dict[int, List[trimesh.Trimesh]] = {g: [] for g in range(groups)}
-
-    for pidx, (name, mesh) in enumerate(parts, start=1):
-        z0_eff = per_part_z0[pidx-1]
-        (xmin, ymin, zmin), (xmax, ymax, zmax) = mesh.bounds
-        k_min = math.floor((zmin - z0_eff) / H)
-        k_max = math.ceil((zmax - z0_eff) / H) - 1
-
+        print(f"[info] parts={len(parts)} z0-mode={z0_mode} z0-global={z0_global:.6f}")
+    per_part_groups, scene_groups=[],{}
+    for pidx,(name,mesh) in enumerate(parts,start=1):
+        groups=k_map.get(pidx,groups_default)
+        if verbose and pidx in k_map:
+            print(f"[override] part {pidx} → K={groups}")
+        (xmin,ymin,zmin),(xmax,ymax,zmax)=mesh.bounds
+        z0_eff=per_part_z0[pidx-1]
+        k_min=math.floor((zmin-z0_eff)/H)
+        k_max=math.ceil((zmax-z0_eff)/H)-1
         if verbose:
-            print(f"[bands] {name:20s} K={groups}  k[{k_min}..{k_max}]  Z[{zmin:.3f}..{zmax:.3f}]")
-
-        group_mesh_lists: List[List[trimesh.Trimesh]] = [[] for _ in range(groups)]
-
-        for k in range(k_min, k_max+1):
-            slab = slab_bounds_for_band(mesh, k, z0_eff, H, z_gap, xy_pad)
-            slab_box = build_slab_box(slab)
-            try:
-                inter = trimesh.boolean.intersection([mesh, slab_box], engine=None)
-            except Exception:
-                inter = None
-            if inter is None or (isinstance(inter, trimesh.Trimesh) and inter.faces.size == 0) or (isinstance(inter, list) and not inter):
-                continue
-            if isinstance(inter, list):
-                band = concat_meshes(inter)
-            else:
-                band = inter
-            band = clean_and_filter(band)
-            if band is None or band.faces.size == 0:
-                continue
-            g = (k % groups + groups) % groups
-            group_mesh_lists[g].append(band)
-
-        # Concatenate per-group for scene aggregation
+            print(f"[bands] {name:20s} K={groups} k[{k_min}..{k_max}]")
+        gm_lists=[[] for _ in range(groups)]
+        for k in range(k_min,k_max+1):
+            slab=slab_bounds_for_band(mesh,k,z0_eff,H,z_gap,xy_pad)
+            slab_box=build_slab_box(slab)
+            try: inter=trimesh.boolean.intersection([mesh,slab_box],engine=None)
+            except Exception: inter=None
+            if inter is None: continue
+            if isinstance(inter,list): band=concat_meshes(inter)
+            else: band=inter
+            band=clean_and_filter(band)
+            if band is None: continue
+            g=(k%groups+groups)%groups
+            gm_lists[g].append(band)
+        per_part_groups.append((name,gm_lists))
+        if groups not in scene_groups: scene_groups[groups]={g:[] for g in range(groups)}
         for g in range(groups):
-            gm = concat_meshes(group_mesh_lists[g])
-            if gm is not None:
-                scene_groups[g].append(gm)
-
-        per_part_groups.append((name, group_mesh_lists))
-
+            gm=concat_meshes(gm_lists[g])
+            if gm is not None: scene_groups[groups][g].append(gm)
     return per_part_groups, scene_groups
 
-# ------------------------- Writer (grouped 3MF) -------------------------
+# ------------------------- Writer -------------------------
 
-def write_grouped(parts: List[Tuple[str,trimesh.Trimesh]], output_3mf: str,
-                  H: float, z0_mode: str, z0_fixed: Optional[float], groups: int,
-                  include_scene: bool, title: str, verbose: bool=False) -> None:
-    per_part_groups, scene_groups = route_bands(parts, H, z0_mode, z0_fixed, groups,
-                                                z_gap=0.01, xy_pad=1.0, verbose=verbose)
-
-    out_objects: List[Tuple[str, trimesh.Trimesh]] = []
-    for name, gm_lists in per_part_groups:
-        if groups == 2:
-            # EVEN = group 0, ODD = group 1
-            labels = ["EVEN", "ODD"]
+def write_grouped(parts,output_3mf,H,z0_mode,z0_fixed,groups_default,k_map,include_scene,title,verbose=False):
+    per_part_groups,scene_groups=route_bands(parts,H,z0_mode,z0_fixed,groups_default,k_map,0.01,1.0,verbose)
+    out_objs,scene_objs=[],[]
+    for idx,(name,gm_lists) in enumerate(per_part_groups,start=1):
+        groups=k_map.get(idx,groups_default)
+        if groups==2:
+            labels=["EVEN","ODD"]
             for g in (0,1):
-                m = concat_meshes(gm_lists[g])
-                if m is not None and m.faces.size > 0:
-                    out_objects.append((f"{name}_"+labels[g], m))
+                m=concat_meshes(gm_lists[g])
+                if m is not None: out_objs.append((f"{name}_{labels[g]}",m))
         else:
             for g in range(groups):
-                m = concat_meshes(gm_lists[g])
-                if m is not None and m.faces.size > 0:
-                    out_objects.append((f"{name}_{g+1}", m))
-
-    scene_objects: Optional[List[Tuple[str,trimesh.Trimesh]]] = None
+                m=concat_meshes(gm_lists[g])
+                if m is not None: out_objs.append((f"{name}_{g+1}",m))
     if include_scene:
-        scene_objects = []
-        if groups == 2:
-            labels = ["SCENE_K2_EVEN", "SCENE_K2_ODD"]
-            for g in (0,1):
-                m = concat_meshes(scene_groups[g])
-                if m is not None and m.faces.size > 0:
-                    scene_objects.append((labels[g], m))
-        else:
-            for g in range(groups):
-                m = concat_meshes(scene_groups[g])
-                if m is not None and m.faces.size > 0:
-                    scene_objects.append((f"SCENE_K{groups}_{g+1}", m))
-
-    pack_3mf(out_objects, scene_objects if include_scene else None, output_3mf, title)
-
+        for groups,gdict in scene_groups.items():
+            if groups==2:
+                labels=["SCENE_K2_EVEN","SCENE_K2_ODD"]
+                for g in (0,1):
+                    m=concat_meshes(gdict[g]); 
+                    if m is not None: scene_objs.append((labels[g],m))
+            else:
+                for g in range(groups):
+                    m=concat_meshes(gdict[g])
+                    if m is not None: scene_objs.append((f"SCENE_K{groups}_{g+1}",m))
+    pack_3mf(out_objs,scene_objs if include_scene else None,output_3mf,title)
     if verbose:
-        total_tris = sum(m.faces.size for _,m in out_objects) + (sum(m.faces.size for _,m in (scene_objects or [])))
-        print(f"[done] wrote {os.path.basename(output_3mf)} with {len(out_objects)+(len(scene_objects or []))} object(s), total tris={total_tris}")
+        print(f"[done] wrote {os.path.basename(output_3mf)} with {len(out_objs)+(len(scene_objs) if include_scene else 0)} objects")
 
-# ------------------------- Main flow -------------------------
+# ------------------------- Main -------------------------
 
-def run_layerloom(input_3mf: str, output_3mf: str, layer_height_mm: float,
-                  z0_mode: str, z0_mm: Optional[float], groups: int,
-                  include_scene: bool, verbose: bool=False) -> int:
-    if layer_height_mm <= 0:
-        raise ValueError("Layer height must be > 0.")
-
-    # 1) Ensure baked placement (no transforms/components)
-    baked_path = input_3mf
+def run_layerloom(input_3mf,output_3mf,layer_height_mm,z0_mode,z0_mm,groups_default,k_map,include_scene,verbose=False):
+    if layer_height_mm<=0: raise ValueError("Layer height must be >0")
+    baked_path=input_3mf
     if should_bake_with_module() and needs_bake(input_3mf):
-        if verbose:
-            print("[detect] needs_bake=YES; reasons=build_transform,components")
-        baked_path = orchestrate_bake(input_3mf, verbose)
-        # intentionally no parent post-bake verification to avoid duplicate logs
-        if verbose:
-            print(f"[done] baked → {baked_path}")
+        if verbose: print("[detect] needs_bake=YES")
+        baked_path=orchestrate_bake(input_3mf,verbose)
+        if verbose: print(f"[done] baked → {baked_path}")
     else:
-        if verbose:
-            print("[detect] needs_bake=NO")
-
-    # 2) Load baked parts
-    parts = load_baked_parts(baked_path, verbose=verbose)
-
-    # 3) Group & write 3MF
-    title = os.path.splitext(os.path.basename(output_3mf))[0]
-    write_grouped(parts, output_3mf, layer_height_mm, z0_mode, z0_mm, groups, include_scene, title, verbose=verbose)
+        if verbose: print("[detect] needs_bake=NO")
+    parts=load_baked_parts(baked_path,verbose)
+    title=os.path.splitext(os.path.basename(output_3mf))[0]
+    write_grouped(parts,output_3mf,layer_height_mm,z0_mode,z0_mm,groups_default,k_map,include_scene,title,verbose)
     return 0
 
-def build_argparser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(description="layerloom: split 3MF parts into Z-band groups and write a grouped 3MF")
-    ap.add_argument("-i","--input", required=True, help="input 3MF")
-    ap.add_argument("-o","--output", required=True, help="output 3MF")
-    ap.add_argument("-H","--layer-height-mm", required=True, type=float)
-    ap.add_argument("--z0-mode", choices=["auto-global","auto-local","fixed"], default="auto-global")
-    ap.add_argument("--z0-mm", type=float, default=None)
-    ap.add_argument("--groups", type=int, default=2, help="number of repeating groups K (default 2=EVEN/ODD)")
-    ap.add_argument("--include-scene", action="store_true", help="also include scene-level grouped objects")
-    ap.add_argument("-v","--verbose", action="store_true")
+def parse_kmap(arg: str) -> Dict[int,int]:
+    out={}
+    if not arg: return out
+    for tok in arg.split(","):
+        if "=" not in tok: continue
+        try:
+            p,k=tok.split("=")
+            out[int(p)]=int(k)
+        except ValueError:
+            continue
+    return out
+
+def build_argparser():
+    ap=argparse.ArgumentParser(description="layerloom: split 3MF parts into Z-band groups")
+    ap.add_argument("-i","--input",required=True)
+    ap.add_argument("-o","--output",required=True)
+    ap.add_argument("-H","--layer-height-mm",required=True,type=float)
+    ap.add_argument("--z0-mode",choices=["auto-global","auto-local","fixed"],default="auto-global")
+    ap.add_argument("--z0-mm",type=float,default=None)
+    ap.add_argument("--groups",type=int,default=2)
+    ap.add_argument("--k-map",type=str,default="",help="per-part overrides, e.g. 7=3,8=3")
+    ap.add_argument("--include-scene",action="store_true")
+    ap.add_argument("-v","--verbose",action="store_true")
     return ap
 
-def main(argv: Optional[List[str]] = None) -> int:
-    ap = build_argparser()
-    args = ap.parse_args(argv)
-    return run_layerloom(
-        input_3mf=args.input,
-        output_3mf=args.output,
-        layer_height_mm=args.layer_height_mm,
-        z0_mode=args.z0_mode,
-        z0_mm=args.z0_mm,
-        groups=args.groups,
-        include_scene=args.include_scene,
-        verbose=args.verbose
-    )
+def main(argv: Optional[List[str]]=None) -> int:
+    ap=build_argparser()
+    args=ap.parse_args(argv)
+    k_map=parse_kmap(args.k_map)
+    return run_layerloom(args.input,args.output,args.layer_height_mm,
+                         args.z0_mode,args.z0_mm,args.groups,
+                         k_map,args.include_scene,args.verbose)
 
-if __name__ == "__main__":
+if __name__=="__main__":
     sys.exit(main())
 

@@ -1,1 +1,4 @@
-def main():\n    from .app import main as _m\n    return _m()
+def main():
+    from .app import main as _m
+    return _m()
+

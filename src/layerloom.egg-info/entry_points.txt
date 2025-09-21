@@ -1,0 +1,3 @@
+[console_scripts]
+cut2color = layerloom.__main__:main
+layerloom = layerloom.__main__:main
