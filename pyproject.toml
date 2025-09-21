@@ -1,11 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "layerloom"
 version = "0.1.0"
-description = "Weave your 3D prints into color—group 3MF layers into repeating bands."
+description = "Weave your 3D prints into color — group 3MF layers into repeating bands."
 readme = "README.md"
 requires-python = ">=3.9"
-license = { text = "MIT" }
-authors = [{ name = "Finn Beruldsen" }]
+license = { file = "LICENSE" }
+authors = [
+  { name = "Finn Beruldsen" }
+]
+keywords = ["3d-printing", "3mf", "slicer", "color", "layers", "multimaterial"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
 dependencies = [
   "numpy>=1.24",
   "trimesh>=4.3.0",
@@ -15,10 +31,6 @@ dependencies = [
 [project.scripts]
 layerloom = "layerloom.__main__:main"
 cut2color = "layerloom.__main__:main"  # temporary alias
-
-[build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
