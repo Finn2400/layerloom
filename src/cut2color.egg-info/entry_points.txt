@@ -1,0 +1,2 @@
+[console_scripts]
+cut2color = cut2color.__main__:main

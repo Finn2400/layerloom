@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cut2color"
+version = "0.1.0"
+description = "Slice multi-part 3MFs into repeating layer groups while preserving placement"
+readme = "README.md"
+authors = [{ name="Finn", email="fpberuld@cougarnet.uh.edu" }]
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.24",
+  "trimesh>=4.3.0",
+  "lxml>=5.2.0",
+]
+optional-dependencies = { manifold = ["manifold3d>=3.0.0"] }
+
+[project.urls]
+Homepage = "https://github.com/finn2400/cut2color"
+
+[project.scripts]
+cut2color = "cut2color.__main__:main"
+

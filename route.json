@@ -1,0 +1,115 @@
+{
+  "input": "benchy_cutup_baked_inmem.3mf",
+  "H": 0.2,
+  "z0_mode": "auto-global",
+  "z0_mm": null,
+  "z0_global": -3e-08,
+  "default_K": 2,
+  "k_overrides": {},
+  "parts": [
+    {
+      "idx": 1,
+      "object_id": "1",
+      "name": "part_001",
+      "K": 2,
+      "nonempty": 77,
+      "k_first": 91,
+      "k_last": 167,
+      "group_tris": [
+        287586,
+        294492
+      ]
+    },
+    {
+      "idx": 2,
+      "object_id": "2",
+      "name": "part_002",
+      "K": 2,
+      "nonempty": 92,
+      "k_first": 91,
+      "k_last": 182,
+      "group_tris": [
+        480072,
+        479946
+      ]
+    },
+    {
+      "idx": 3,
+      "object_id": "3",
+      "name": "part_003",
+      "K": 2,
+      "nonempty": 86,
+      "k_first": 91,
+      "k_last": 176,
+      "group_tris": [
+        188436,
+        184704
+      ]
+    },
+    {
+      "idx": 4,
+      "object_id": "4",
+      "name": "part_004",
+      "K": 2,
+      "nonempty": 91,
+      "k_first": 91,
+      "k_last": 181,
+      "group_tris": [
+        208962,
+        213450
+      ]
+    },
+    {
+      "idx": 5,
+      "object_id": "5",
+      "name": "part_005",
+      "K": 2,
+      "nonempty": 71,
+      "k_first": 21,
+      "k_last": 91,
+      "group_tris": [
+        360552,
+        370110
+      ]
+    },
+    {
+      "idx": 6,
+      "object_id": "6",
+      "name": "part_006",
+      "K": 2,
+      "nonempty": 64,
+      "k_first": 28,
+      "k_last": 91,
+      "group_tris": [
+        355908,
+        359568
+      ]
+    },
+    {
+      "idx": 7,
+      "object_id": "7",
+      "name": "part_007",
+      "K": 2,
+      "nonempty": 92,
+      "k_first": 0,
+      "k_last": 91,
+      "group_tris": [
+        396198,
+        402084
+      ]
+    },
+    {
+      "idx": 8,
+      "object_id": "8",
+      "name": "part_008",
+      "K": 2,
+      "nonempty": 84,
+      "k_first": 8,
+      "k_last": 91,
+      "group_tris": [
+        293220,
+        296916
+      ]
+    }
+  ]
+}

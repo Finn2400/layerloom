@@ -1,0 +1,14 @@
+Metadata-Version: 2.4
+Name: cut2color
+Version: 0.1.0
+Summary: Slice multi-part 3MFs into repeating layer groups while preserving placement
+Author-email: Finn <fpberuld@cougarnet.uh.edu>
+License: MIT
+Project-URL: Homepage, https://github.com/finn2400/cut2color
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.24
+Requires-Dist: trimesh>=4.3.0
+Requires-Dist: lxml>=5.2.0
+Provides-Extra: manifold
+Requires-Dist: manifold3d>=3.0.0; extra == "manifold"
