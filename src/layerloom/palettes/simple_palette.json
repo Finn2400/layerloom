@@ -1,0 +1,3294 @@
+{
+  "name": "Simple",
+  "description": "Up to 6 layers, <=2 repeats per color",
+  "entries": [
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "kkw",
+      "hex": "#5f5f5f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "myy",
+      "hex": "#eb9d32",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "yyk",
+      "hex": "#b09b06",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yyw",
+      "hex": "#fbe651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ykk",
+      "hex": "#62570d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yww",
+      "hex": "#f8eda3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "cyy",
+      "hex": "#bdd749",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccy",
+      "hex": "#7bcf92",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cck",
+      "hex": "#2d8c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccw",
+      "hex": "#78d7e4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ckk",
+      "hex": "#205056",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cww",
+      "hex": "#b6e6ec",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "ccm",
+      "hex": "#678dc4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmm",
+      "hex": "#9553ad",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "mmk",
+      "hex": "#88176a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmw",
+      "hex": "#d362b5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mkk",
+      "hex": "#4e153f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mww",
+      "hex": "#e4abd5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "mmy",
+      "hex": "#d75b64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "kkw",
+      "hex": "#5f5f5f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "myy",
+      "hex": "#eb9d32",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "yyk",
+      "hex": "#b09b06",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yyw",
+      "hex": "#fbe651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ykk",
+      "hex": "#62570d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yww",
+      "hex": "#f8eda3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "cyy",
+      "hex": "#bdd749",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccy",
+      "hex": "#7bcf92",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cck",
+      "hex": "#2d8c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccw",
+      "hex": "#78d7e4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ckk",
+      "hex": "#205056",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cww",
+      "hex": "#b6e6ec",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "ccm",
+      "hex": "#678dc4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmm",
+      "hex": "#9553ad",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "mmk",
+      "hex": "#88176a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmw",
+      "hex": "#d362b5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mkk",
+      "hex": "#4e153f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mww",
+      "hex": "#e4abd5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "mmy",
+      "hex": "#d75b64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "kkw",
+      "hex": "#5f5f5f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mymyy",
+      "hex": "#e78f3c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "myy",
+      "hex": "#eb9d32",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "yyk",
+      "hex": "#b09b06",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yyw",
+      "hex": "#fbe651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ykk",
+      "hex": "#62570d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yww",
+      "hex": "#f8eda3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "yykyk",
+      "hex": "#a18d08",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yywyw",
+      "hex": "#fbe762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "ykykk",
+      "hex": "#72650c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ywyww",
+      "hex": "#f9ec93",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "cyy",
+      "hex": "#bdd749",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cycyy",
+      "hex": "#b0d558",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccycy",
+      "hex": "#88d184",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccy",
+      "hex": "#7bcf92",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cck",
+      "hex": "#2d8c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccw",
+      "hex": "#78d7e4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ckk",
+      "hex": "#205056",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cww",
+      "hex": "#b6e6ec",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "cckck",
+      "hex": "#2a808c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccwcw",
+      "hex": "#84dae6",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "ckckk",
+      "hex": "#235c64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cwcww",
+      "hex": "#aae3eb",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "ccm",
+      "hex": "#678dc4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccmcm",
+      "hex": "#7082c0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmcmm",
+      "hex": "#8c5fb2",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmm",
+      "hex": "#9553ad",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "mmk",
+      "hex": "#88176a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmw",
+      "hex": "#d362b5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mkk",
+      "hex": "#4e153f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mww",
+      "hex": "#e4abd5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "mmkmk",
+      "hex": "#7d1762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmwmw",
+      "hex": "#d771bc",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "mkmkk",
+      "hex": "#5a1648",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mwmww",
+      "hex": "#e19dcf",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "mmy",
+      "hex": "#d75b64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmymy",
+      "hex": "#db685a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      }
+    },
+    {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "kkw",
+      "hex": "#5f5f5f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mymyy",
+      "hex": "#e78f3c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "myy",
+      "hex": "#eb9d32",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "y",
+      "hex": "#ffdf00",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yk",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yw",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "yyk",
+      "hex": "#b09b06",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yyw",
+      "hex": "#fbe651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ykk",
+      "hex": "#62570d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yww",
+      "hex": "#f8eda3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "yykyk",
+      "hex": "#a18d08",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yywyw",
+      "hex": "#fbe762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "ykykk",
+      "hex": "#72650c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ywyww",
+      "hex": "#f9ec93",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "cyy",
+      "hex": "#bdd749",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cycyy",
+      "hex": "#b0d558",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccycy",
+      "hex": "#88d184",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccy",
+      "hex": "#7bcf92",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "cck",
+      "hex": "#2d8c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccw",
+      "hex": "#78d7e4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "ckk",
+      "hex": "#205056",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cww",
+      "hex": "#b6e6ec",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "cckck",
+      "hex": "#2a808c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccwcw",
+      "hex": "#84dae6",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "ckckk",
+      "hex": "#235c64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cwcww",
+      "hex": "#aae3eb",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "ccm",
+      "hex": "#678dc4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccmcm",
+      "hex": "#7082c0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmcmm",
+      "hex": "#8c5fb2",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "cmm",
+      "hex": "#9553ad",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "m",
+      "hex": "#c31996",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mk",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      }
+    },
+    {
+      "token": "mmk",
+      "hex": "#88176a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmw",
+      "hex": "#d362b5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      }
+    },
+    {
+      "token": "mkk",
+      "hex": "#4e153f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mww",
+      "hex": "#e4abd5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      }
+    },
+    {
+      "token": "mmkmk",
+      "hex": "#7d1762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmwmw",
+      "hex": "#d771bc",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      }
+    },
+    {
+      "token": "mkmkk",
+      "hex": "#5a1648",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mwmww",
+      "hex": "#e19dcf",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      }
+    },
+    {
+      "token": "mmy",
+      "hex": "#d75b64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmymy",
+      "hex": "#db685a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ymyy",
+      "hex": "#f0ad25",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.75,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yymyy",
+      "hex": "#f3b71e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.8,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "yycyy",
+      "hex": "#d7da2c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.8,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ycyy",
+      "hex": "#cdd937",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.75,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccyc",
+      "hex": "#6bcda5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccycc",
+      "hex": "#61ccb0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccmcc",
+      "hex": "#55a5ce",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "ccmc",
+      "hex": "#5c9cca",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mcmm",
+      "hex": "#a044a7",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.75,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmcmm",
+      "hex": "#a73ca4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.8,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmymm",
+      "hex": "#cf4078",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      }
+    },
+    {
+      "token": "mmym",
+      "hex": "#d24a70",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.75,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      }
+    }
+  ]
+}
