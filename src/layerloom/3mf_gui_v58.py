@@ -3748,6 +3748,68 @@ class EmbeddedPVViewer(PVWindow):
         self._rebuild_static_plate_overlay()
         return None
 
+    def _visible_scene_bounds(self) -> Optional[Tuple[float, float, float, float, float, float]]:
+        bounds = []
+        try:
+            for actor in self.actors_by_name.values():
+                if actor is None:
+                    continue
+                b = actor.GetBounds()
+                if not b:
+                    continue
+                vals = tuple(float(v) for v in b)
+                if all(math.isfinite(v) for v in vals):
+                    bounds.append(vals)
+        except Exception:
+            pass
+        if not bounds:
+            return (0.0, PLATE_WIDTH_MM, 0.0, PLATE_DEPTH_MM, 0.0, 1.0)
+        return (
+            min(b[0] for b in bounds),
+            max(b[1] for b in bounds),
+            min(b[2] for b in bounds),
+            max(b[3] for b in bounds),
+            min(b[4] for b in bounds),
+            max(b[5] for b in bounds),
+        )
+
+    def _set_default_loaded_camera(self):
+        if not self.plotter:
+            return
+        try:
+            b = self._visible_scene_bounds()
+            if not b:
+                return
+            center = np.array(
+                [
+                    (b[0] + b[1]) * 0.5,
+                    (b[2] + b[3]) * 0.5,
+                    (b[4] + b[5]) * 0.5,
+                ],
+                dtype=np.float64,
+            )
+            span_x = max(float(b[1] - b[0]), PLATE_WIDTH_MM * 0.65, 1.0)
+            span_y = max(float(b[3] - b[2]), PLATE_DEPTH_MM * 0.65, 1.0)
+            span_z = max(float(b[5] - b[4]), 20.0)
+            distance = max(span_x, span_y) * 1.42 + span_z * 0.55
+            # Front-facing with a shallow top-down tilt: easier to read than
+            # raw reset_camera(), but still shows model height and plate depth.
+            camera = (
+                float(center[0]),
+                float(center[1] - distance),
+                float(center[2] + distance * 0.42),
+            )
+            focal = (float(center[0]), float(center[1]), float(center[2]))
+            self.plotter.camera_position = [camera, focal, (0.0, 0.0, 1.0)]
+            try:
+                self.plotter.camera.SetViewAngle(32.0)
+            except Exception:
+                pass
+            self.plotter.reset_camera_clipping_range()
+            self.plotter.render()
+        except Exception as e:
+            _log("WARN", f"[viewer] default camera setup failed: {e}")
+
     def build_scene(self, file_path: str, names_in_order: List[str], on_pick=None, *, manifest=None, mesh_cache=None):
         super().build_scene(file_path, names_in_order, on_pick=on_pick, manifest=manifest, mesh_cache=mesh_cache)
         if self.point_label_actor is not None:
@@ -3761,6 +3823,7 @@ class EmbeddedPVViewer(PVWindow):
             except Exception:
                 pass
         self._rebuild_layer_preview()
+        self._set_default_loaded_camera()
 
     def close(self):
         self._teardown_scene()
