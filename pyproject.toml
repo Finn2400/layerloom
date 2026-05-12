@@ -1,37 +1,76 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerloom"
 version = "0.1.0"
-description = "Weave your 3D prints into color — group 3MF layers into repeating bands."
+description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 authors = [
-  { name = "Finn Beruldsen" }
+  { name = "LayerLoom contributors" }
 ]
-keywords = ["3d-printing", "3mf", "slicer", "color", "layers", "multimaterial"]
+keywords = ["3mf", "3d-printing", "multi-material", "slicer", "color"]
 classifiers = [
   "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Manufacturing",
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics :: 3D Modeling",
+  "Topic :: Scientific/Engineering :: Visualization",
 ]
 dependencies = [
-  "numpy>=1.24",
-  "trimesh>=4.3.0",
-  "lxml>=5.2.0",
+  "numpy>=1.23",
+  "scipy>=1.10",
+  "trimesh>=4.0",
+]
+
+[project.optional-dependencies]
+gui = [
+  "pyvista>=0.43",
+  "pyvistaqt>=0.11",
+  "qtpy>=2.4",
+  "PyQt5>=5.15",
+]
+bench = [
+  "matplotlib>=3.7",
+  "pandas>=2.0",
+  "lxml>=4.9",
+]
+analysis = [
+  "matplotlib>=3.7",
+  "pandas>=2.0",
+  "Pillow>=9.0",
+]
+dev = [
+  "build>=1.0",
+  "pytest>=8.0",
+  "twine>=5.0",
 ]
 
 [project.scripts]
-layerloom = "layerloom.__main__:main"
-cut2color = "layerloom.__main__:main"  # temporary alias
+layerloom-doctor = "layerloom.doctor:main"
+layerloom-gui = "layerloom.gui_app:main"
+layerloom-weave = "layerloom.weave:main"
+layerloom-normalize = "layerloom.cli:normalize_main"
+layerloom-benchmark-suite = "layerloom.benchmark_suite:main"
+layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+include = ["layerloom*"]
 
+[tool.setuptools.package-data]
+layerloom = [
+  "palettes/*.json",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
