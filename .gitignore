@@ -1,14 +1,66 @@
-<paste above>
-# dev outputs
-out_stl/
-out_stl_kmix/
-*.zip
-*.3mf.tmp
-benchy_cutup_grouped*/
+# macOS / editor state
+.DS_Store
+.AppleDouble
+.LSOverride
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python
 __pycache__/
-*.3mf
-*.stl
-*.zip
-__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 *.egg-info/
-*.DS_Store
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.env
+
+# LayerLoom generated outputs and large local assets
+stl_out/
+src/layerloom/stl_out/
+src/layerloom/benchmark_outputs/
+src/layerloom/legacy/generated_cache/
+src/layerloom/legacy/generated_outputs/
+src/layerloom/legacy/scratch_geometry/
+src/layerloom/gamut_photo_analysis/*__corner_guide/
+src/layerloom/gamut_photo_analysis/*__region_analysis*/
+src/layerloom/gamut_photo_analysis/*_core065/
+src/layerloom/gamut_photo_analysis/*__mosaic_analysis*/
+src/layerloom/gamut_photo_analysis/*.png
+src/layerloom/gamut_photo_analysis/*_manual_corners.csv
+src/layerloom/gamut_photo_analysis/_archive/
+benchmark_outputs/
+src/layerloom/sphere_inputs/
+src/layerloom/triangle_inputs/
+src/layerloom/layer_perm_registry.json
+src/layerloom/color_permutations.pdf
+src/layerloom/palettes/*.pdf
+*.ply
+*.gcode
+*.bgcode
+*_woven.3mf
+*_baked.3mf
+*_normalized*.3mf
+layerloom_transform_preview_*.3mf
+preview_id_*.3mf
+
+# Large local examples should be published as release assets or tiny fixtures,
+# not committed directly to the repo.
+*.stl
+*.glb
+*.3mf
+
+# Keep intentional tiny tutorial fixtures/examples in git.
+!examples/
+!examples/*.3mf
