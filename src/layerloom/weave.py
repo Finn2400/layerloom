@@ -70,24 +70,36 @@ WEAVE_QUOTES = [
 ]
 
 
+def _configure_safe_stdout() -> None:
+    """Avoid UnicodeEncodeError on Windows consoles with legacy encodings."""
+    try:
+        sys.stdout.reconfigure(errors="replace")
+    except Exception:
+        pass
+
+
 def print_intro() -> None:
     """Display a random weaving quote and section header."""
     quote = random.choice(WEAVE_QUOTES)
     width = 82
-    print("\n" + "=" * width)
+
+    def safe_print(text: str = "") -> None:
+        print(text.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(sys.stdout.encoding or "utf-8"))
+
+    safe_print("\n" + "=" * width)
     for line in quote.splitlines():
         if line.strip():
-            print("   " + line)
+            safe_print("   " + line)
         else:
-            print()
-    print("-" * width)
-    print("Weaving Layers...".center(width))
-    print("=" * width + "\n")
+            safe_print()
+    safe_print("-" * width)
+    safe_print("Weaving Layers...".center(width))
+    safe_print("=" * width + "\n")
 
 
 def _section(title: str) -> None:
     """Visually separate major stages."""
-    print(f"\n—— {title} ——\n")
+    print(f"\n-- {title} --\n")
 
 
 # ---------------------------------------------------------------------
@@ -284,6 +296,8 @@ def weave_pipeline(
     output_path: str | None = None,
 ) -> None:
     """Execute the full LayerLoom color grouping workflow."""
+    _configure_safe_stdout()
+
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
 
