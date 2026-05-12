@@ -4,14 +4,15 @@
 layerloom.group_by_color
 ------------------------
 
-Group (and optionally merge) parts by their CMYKW color token.
+Group (and optionally merge) parts by their LayerLoom color token.
 
 Key behavior:
   • Uses the *last* '__PAT_...__' tag in each part label.
-  • Single-letter tags ('c', 'm', 'y', 'k', 'w') identify actual sliced colors.
+  • Single-letter tags identify actual sliced colors.
   • Multi-letter tags (e.g. '__PAT_cmy__') fall back to their first char.
-  • Outputs merged meshes:
-        'all_cyan', 'all_magenta', 'all_yellow', 'all_black', 'all_white'
+  • Outputs merged meshes such as:
+        'all_cyan', 'all_magenta', 'all_yellow', 'all_black', 'all_white',
+        'all_gray', 'all_orange', 'all_violet', and 'all_green'
 
 Also includes a write_color_stls() utility for exporting grouped STL files.
 
@@ -25,24 +26,22 @@ import re
 import numpy as np
 import trimesh
 
+try:
+    from layerloom.tokens import ALL_TOKENS, COLOR_OBJECT_LABELS, PAT_TAG_RE
+except Exception:
+    from tokens import ALL_TOKENS, COLOR_OBJECT_LABELS, PAT_TAG_RE
+
 Part = Tuple[str, trimesh.Trimesh]
 
-# Accept CMY + K (black) + W (white)
-PAT_ANY = re.compile(r"__PAT_([cmykw]+)__", re.IGNORECASE)
-COLOR_LABELS = {
-    "c": "all_cyan",
-    "m": "all_magenta",
-    "y": "all_yellow",
-    "k": "all_black",
-    "w": "all_white",
-}
+PAT_ANY = PAT_TAG_RE
+COLOR_LABELS = dict(COLOR_OBJECT_LABELS)
 
 # ---------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------
 
 def _last_pat_token(label: str) -> str:
-    """Return the effective CMYKW token by using the last '__PAT_...__' tag."""
+    """Return the effective LayerLoom token by using the last '__PAT_...__' tag."""
     if not label:
         return "unknown"
 
@@ -75,7 +74,7 @@ def _concat(meshes: List[trimesh.Trimesh]) -> trimesh.Trimesh:
 
 def bucket_by_color(parts: List[Part], verbose: bool = True) -> Dict[str, List[Part]]:
     """
-    Group parts by their effective final CMYKW token without merging geometry.
+    Group parts by their effective final LayerLoom token without merging geometry.
     """
     buckets: Dict[str, List[Part]] = {token: [] for token in COLOR_LABELS}
     counts = {token: 0 for token in COLOR_LABELS}
@@ -107,7 +106,7 @@ def bucket_by_color(parts: List[Part], verbose: bool = True) -> Dict[str, List[P
 
 def group_by_color(parts: List[Part], merge: bool = True, verbose: bool = True) -> List[Part]:
     """
-    Group parts by CMYKW token based on their final '__PAT_...__' tag.
+    Group parts by LayerLoom token based on their final '__PAT_...__' tag.
 
     Parameters
     ----------
@@ -121,8 +120,7 @@ def group_by_color(parts: List[Part], merge: bool = True, verbose: bool = True) 
     Returns
     -------
     list[(label, mesh)]
-        [('all_cyan', M_c), ('all_magenta', M_m), ('all_yellow', M_y),
-         ('all_black', M_k), ('all_white', M_w)]  # where present
+        Grouped color meshes, e.g. ('all_cyan', M_c), ('all_orange', M_o).
     """
     if not parts:
         return []
@@ -136,7 +134,7 @@ def group_by_color(parts: List[Part], merge: bool = True, verbose: bool = True) 
     raw_buckets = bucket_by_color(parts, verbose=False)
 
     merged: List[Part] = []
-    for token in ("c", "m", "y", "k", "w"):
+    for token in ALL_TOKENS:
         bucket = raw_buckets[token]
         if not bucket:
             continue

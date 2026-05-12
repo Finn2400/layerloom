@@ -10,14 +10,14 @@ This script performs the following steps:
   1. Detects whether the input 3MF file is baked.
   2. If unbaked, runs the internal baking routine automatically.
   3. Displays a weaving quote and begins the slicing process.
-  4. Slices each baked part into Z-bands according to its CMYKW pattern.
-  5. Groups and merges all slices by color (cyan, magenta, yellow, black, white).
+  4. Slices each baked part into Z-bands according to its LayerLoom pattern.
+  5. Groups and merges all slices by color.
   6. Writes a grouped temporary 3MF, bakes it, and exports a final woven 3MF.
 
 Robust mapping:
   • Captures PAT tokens from the *original* input XML (before baking) and
     uses that as a fallback if the bake step drops labels/partnumbers.
-  • Accepts CMYKW tokens; sanitizes to the {c,m,y,k,w} alphabet.
+  • Accepts LayerLoom tokens; sanitizes to the supported token alphabet.
 
 Defaults
 --------
@@ -50,6 +50,7 @@ from layerloom.normalize_3mf_import import normalize_3mf_import
 from layerloom.strata import slice_repeating
 from layerloom.group_by_color import group_by_color, write_color_stls
 from layerloom.export import write_basic_3mf
+from layerloom.tokens import PAT_TAG_RE, TOKEN_ALPHABET, sanitize_token_run
 
 # ---------------------------------------------------------------------
 # Literary intro
@@ -97,8 +98,8 @@ CORE_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 NS = {"m": CORE_NS}
 M = lambda t: f"{{{CORE_NS}}}{t}"
 
-PAT_RE = re.compile(r"__PAT_([cmykw]+)__", re.IGNORECASE)
-ALPHABET = set("cmykw")
+PAT_RE = PAT_TAG_RE
+ALPHABET = set(TOKEN_ALPHABET)
 
 def _find_model_xml_name(zf: zipfile.ZipFile) -> str | None:
     for n in zf.namelist():
@@ -245,8 +246,7 @@ def resolve_run_from_map(mesh_label: str, name_token_map: Dict[str, Tuple[str, s
     return None
 
 def sanitize(run: str) -> str:
-    r = "".join(ch for ch in (run or "").lower() if ch in ALPHABET)
-    return r or "cmy"
+    return sanitize_token_run(run, alphabet=ALPHABET, default="cmy")
 
 
 # ---------------------------------------------------------------------
@@ -320,7 +320,7 @@ def weave_pipeline(
     z0 = float(min(m.bounds[0, 2] for _, m in parts))
     print(f"[info] using z0 = {z0:.3f} mm")
 
-    # 6. Slice by CMYKW token sequence
+    # 6. Slice by LayerLoom token sequence
     _section("Slicing and layering")
     print(f"[slice] Cutting parts into color-patterned Z-bands (step={step} mm)...")
     sliced = []

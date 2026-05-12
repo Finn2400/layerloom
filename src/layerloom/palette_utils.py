@@ -16,11 +16,27 @@ This module now acts as the canonical home for:
 
 import json
 from pathlib import Path
+from collections import Counter
+from functools import lru_cache
+from itertools import product
 
 try:
     import numpy as np
 except ImportError:
     np = None  # NumPy optional
+
+try:
+    from layerloom.tokens import (
+        ALL_TOKENS,
+        TOKEN_HEX,
+        token_is_valid,
+    )
+except Exception:
+    from tokens import (
+        ALL_TOKENS,
+        TOKEN_HEX,
+        token_is_valid,
+    )
 
 
 DEFAULT_MAX_HEIGHT = 6
@@ -50,13 +66,7 @@ PALETTE_PRESETS = {
 }
 
 # Custom filament base colors used across palette generation and gamut export.
-CUSTOM_BASE_RGB = {
-    "c": "#3ac8dc",
-    "m": "#c31996",
-    "y": "#ffdf00",
-    "k": "#141414",
-    "w": "#f5f5f5",
-}
+CUSTOM_BASE_RGB = dict(TOKEN_HEX)
 
 # ──────────────────────────────
 # Load and registry access
@@ -126,9 +136,8 @@ def get_by_token(palette, token):
     return token_map.get(token)
 
 
-def token_is_supported(token: str, alphabet: str = "cmykw") -> bool:
-    letters = set((token or "").lower())
-    return bool(letters) and letters.issubset(set(alphabet.lower()))
+def token_is_supported(token: str, alphabet: str | None = None) -> bool:
+    return token_is_valid(token, alphabet or "".join(ALL_TOKENS))
 
 
 def corrected_hex(token: str) -> str:
@@ -144,6 +153,94 @@ def corrected_hex(token: str) -> str:
         rgb[2] += b
     n = len(token)
     return "#{:02x}{:02x}{:02x}".format(*(int(c / n) for c in rgb))
+
+
+def _reduced_fraction_signature(token: str) -> tuple[tuple[str, int], ...]:
+    counts = Counter(token)
+    total = sum(counts.values())
+    if total <= 0:
+        return tuple()
+    # Collapse orderings and reducible repeats, e.g. cmy, ccmm yy, and ymccmy.
+    import math
+    divisor = total
+    for value in counts.values():
+        divisor = math.gcd(divisor, value)
+    return tuple(sorted((letter, value // divisor) for letter, value in counts.items()))
+
+
+def _run_preference_key(token: str) -> tuple[int, int, int, int, str]:
+    if not token:
+        return (999, 999, 0, 0, "")
+    runs = []
+    cur = token[0]
+    n = 1
+    for ch in token[1:]:
+        if ch == cur:
+            n += 1
+        else:
+            runs.append(n)
+            cur = ch
+            n = 1
+    runs.append(n)
+    max_run = max(runs)
+    over2 = sum(max(0, run - 2) for run in runs)
+    pairs = sum(1 for run in runs if run == 2)
+    return (max_run, over2, -pairs, -len(runs), token)
+
+
+def _token_fractions(token: str, alphabet: tuple[str, ...]) -> dict[str, float]:
+    counts = Counter(token)
+    n = max(len(token), 1)
+    return {letter.upper(): counts.get(letter, 0) / n for letter in alphabet}
+
+
+@lru_cache(maxsize=128)
+def build_layer_fraction_palette(
+    alphabet: tuple[str, ...] | str = ("c", "m", "y"),
+    max_height: int = DEFAULT_MAX_HEIGHT,
+    max_run: int = 3,
+    distinct_lte: int = 3,
+) -> tuple[dict, ...]:
+    """
+    Enumerate unique layer-fraction recipes for an arbitrary token alphabet.
+
+    Different orderings and reducible repeats with the same layer fractions are
+    collapsed to one representative token, preferring balanced runs. This is the
+    same recipe-counting convention used for the manuscript design-space table.
+    """
+    if isinstance(alphabet, str):
+        letters = tuple(ch.lower() for ch in alphabet)
+    else:
+        letters = tuple(str(ch).lower() for ch in alphabet)
+    letters = tuple(dict.fromkeys(ch for ch in letters if token_is_supported(ch)))
+    if not letters:
+        return tuple()
+    max_height = int(max(1, max_height))
+    max_run = int(max(1, max_run))
+    distinct_lte = int(max(1, distinct_lte))
+
+    best_by_fraction: dict[tuple[tuple[str, int], ...], str] = {}
+    for height in range(1, max_height + 1):
+        for seq in product(letters, repeat=height):
+            token = "".join(seq)
+            if len(set(token)) > distinct_lte:
+                continue
+            if _run_preference_key(token)[0] > max_run:
+                continue
+            sig = _reduced_fraction_signature(token)
+            prev = best_by_fraction.get(sig)
+            if prev is None or _run_preference_key(token) < _run_preference_key(prev):
+                best_by_fraction[sig] = token
+
+    entries = []
+    for token in best_by_fraction.values():
+        entries.append({
+            "token": token,
+            "hex": corrected_hex(token),
+            "distinct_colors": len(set(token)),
+            "fractions": _token_fractions(token, letters),
+        })
+    return tuple(sorted(entries, key=lambda entry: entry["hex"]))
 
 # ──────────────────────────────
 # Conversion utilities

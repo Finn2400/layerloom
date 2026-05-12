@@ -30,6 +30,16 @@ env/
 stl_out/
 src/layerloom/stl_out/
 src/layerloom/benchmark_outputs/
+src/layerloom/legacy/generated_cache/
+src/layerloom/legacy/generated_outputs/
+src/layerloom/legacy/scratch_geometry/
+src/layerloom/gamut_photo_analysis/*__corner_guide/
+src/layerloom/gamut_photo_analysis/*__region_analysis*/
+src/layerloom/gamut_photo_analysis/*_core065/
+src/layerloom/gamut_photo_analysis/*__mosaic_analysis*/
+src/layerloom/gamut_photo_analysis/*.png
+src/layerloom/gamut_photo_analysis/*_manual_corners.csv
+src/layerloom/gamut_photo_analysis/_archive/
 benchmark_outputs/
 src/layerloom/sphere_inputs/
 src/layerloom/triangle_inputs/
@@ -51,5 +61,6 @@ preview_id_*.3mf
 *.glb
 *.3mf
 
-# Keep intentional tiny fixtures/examples by force-adding them or adding a
-# narrower allow rule later, e.g. !tests/fixtures/tiny.3mf
+# Keep intentional tiny tutorial fixtures/examples in git.
+!examples/
+!examples/*.3mf

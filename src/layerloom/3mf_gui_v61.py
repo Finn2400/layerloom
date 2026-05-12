@@ -24,8 +24,10 @@ import xml.etree.ElementTree as ET
 
 try:
     from layerloom.normalize_3mf_import import normalize_3mf_import, _is_layerloom_normalized
+    from layerloom.transform_3mf import _parse_tf_3mf
 except Exception:
     from normalize_3mf_import import normalize_3mf_import, _is_layerloom_normalized
+    from transform_3mf import _parse_tf_3mf
 
 
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -488,7 +490,7 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
         try:
             st = os.stat(self.current_file)
             return (
-                "v61-stream",
+                "v61-stream-build-transform",
                 os.path.abspath(self.current_file),
                 int(st.st_size),
                 int(getattr(st, "st_mtime_ns", int(st.st_mtime * 1_000_000_000))),
@@ -692,6 +694,26 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
                     elem.clear()
         return out
 
+    def _stream_normalized_build_transforms(self, path: str) -> Dict[str, _V58.np.ndarray]:
+        out: Dict[str, _V58.np.ndarray] = {}
+        with zipfile.ZipFile(path, "r") as zf:
+            model_name = _V58._find_model_xml_name(zf)
+            if not model_name:
+                return out
+            with zf.open(model_name, "r") as fp:
+                seen = 0
+                for event, elem in ET.iterparse(fp, events=("end",)):
+                    tag = _V58._strip_ns(elem.tag)
+                    if tag == "item":
+                        oid = elem.get("objectid") or ""
+                        if oid and oid not in out:
+                            out[oid] = _parse_tf_3mf(elem.get("transform"))
+                    seen += 1
+                    if seen % 200000 == 0:
+                        self._process_qt_events()
+                    elem.clear()
+        return out
+
     def _stream_normalized_objects_to_ply(
         self,
         path: str,
@@ -703,6 +725,8 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
         current_name = ""
         current_file = None
         current_info: Optional[_StreamingObjectInfo] = None
+        current_transform = _V58.np.eye(4, dtype=_V58.np.float64)
+        build_transforms = self._stream_normalized_build_transforms(path)
         event_count = 0
 
         def close_current() -> None:
@@ -723,6 +747,10 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
                             current_oid = elem.get("id") or ""
                             current_info = counts.get(current_oid)
                             current_name = current_info.name if current_info else (elem.get("name") or f"object_{current_oid}")
+                            current_transform = build_transforms.get(
+                                current_oid,
+                                _V58.np.eye(4, dtype=_V58.np.float64),
+                            )
                             if current_info and current_oid in target_oids:
                                 ply_path = os.path.join(self.temp_ply_dir, f"{current_name}.ply")
                                 current_file = open(ply_path, "wb", buffering=1024 * 1024)
@@ -745,7 +773,11 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
                             x = float(elem.get("x") or 0.0)
                             y = float(elem.get("y") or 0.0)
                             z = float(elem.get("z") or 0.0)
-                            current_file.write(struct.pack("<3f", x, y, z))
+                            tx, ty, tz, _tw = current_transform @ _V58.np.array(
+                                [x, y, z, 1.0],
+                                dtype=_V58.np.float64,
+                            )
+                            current_file.write(struct.pack("<3f", float(tx), float(ty), float(tz)))
                         elif tag == "triangle":
                             a = int(elem.get("v1") or 0)
                             b = int(elem.get("v2") or 0)
@@ -759,10 +791,12 @@ class QtAssignColorsApp(_V60.QtAssignColorsApp):
                             current_oid = ""
                             current_name = ""
                             current_info = None
+                            current_transform = _V58.np.eye(4, dtype=_V58.np.float64)
                     elif tag == "object":
                         current_oid = ""
                         current_name = ""
                         current_info = None
+                        current_transform = _V58.np.eye(4, dtype=_V58.np.float64)
 
                     event_count += 1
                     if event_count % 200000 == 0:

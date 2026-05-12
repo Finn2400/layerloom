@@ -25,6 +25,11 @@ import numpy as np
 import xml.etree.ElementTree as ET
 import trimesh
 
+try:
+    from layerloom.tokens import COLOR_OBJECT_LABELS, TOKEN_HEX
+except Exception:
+    from tokens import COLOR_OBJECT_LABELS, TOKEN_HEX
+
 CORE_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 PROD_NS = "http://schemas.microsoft.com/3dmanufacturing/production/2015/06"
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
@@ -37,11 +42,8 @@ ET.register_namespace("", CORE_NS)
 ET.register_namespace("p", PROD_NS)
 
 GROUPED_COLOR_INFO = {
-    "all_cyan": {"token": "c", "hex": "#00ffff"},
-    "all_magenta": {"token": "m", "hex": "#ff00ff"},
-    "all_yellow": {"token": "y", "hex": "#ffff00"},
-    "all_black": {"token": "k", "hex": "#000000"},
-    "all_white": {"token": "w", "hex": "#ffffff"},
+    label: {"token": token, "hex": TOKEN_HEX.get(token, "")}
+    for token, label in COLOR_OBJECT_LABELS.items()
 }
 
 

@@ -18,7 +18,7 @@ import xml.etree.ElementTree as ET
 import zipfile
 from typing import Dict, List, Tuple
 
-from benchmark_common import (
+from .benchmark_common import (
     CASE_COLUMNS,
     CELL_COUNT,
     CELL_SIZE_MM,
@@ -44,7 +44,6 @@ from benchmark_common import (
 
 PACKAGE_DIR = Path(__file__).resolve().parent
 PACKAGE_PARENT = PACKAGE_DIR.parent
-DEFAULT_BENCH_PYTHON = Path("/Users/finn/Library/r-miniconda-arm64/bin/python")
 
 TRIANGLES = [
     (0, 2, 1), (0, 3, 2),
@@ -69,8 +68,6 @@ def benchmark_python() -> str:
     override = os.environ.get("LAYERLOOM_BENCH_PYTHON", "").strip()
     if override:
         return override
-    if DEFAULT_BENCH_PYTHON.exists():
-        return str(DEFAULT_BENCH_PYTHON)
     return sys.executable
 
 

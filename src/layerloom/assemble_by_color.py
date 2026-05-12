@@ -40,10 +40,11 @@ from layerloom.ingest import read_parts, _3mf_needs_bake
 from layerloom.strata import slice_repeating
 from layerloom.group_by_color import group_by_color
 from layerloom.export import write_basic_3mf, write_color_stls
+from layerloom.tokens import PAT_TAG_RE, TOKEN_ALPHABET, sanitize_token_run
 
 # Allowed token alphabet (lowercase)
-ALPHABET = set("cmykw")
-PAT_RE = re.compile(r"__PAT_([cmykw]+)__", re.IGNORECASE)
+ALPHABET = set(TOKEN_ALPHABET)
+PAT_RE = PAT_TAG_RE
 
 
 # ----------------------------------------------------------------------
@@ -58,7 +59,7 @@ def assemble_by_color(
     verbose: bool = False
 ) -> None:
     """
-    Read a baked 3MF, slice into CMYKW bands, merge per color, and export.
+    Read a baked 3MF, slice into LayerLoom bands, merge per color, and export.
     """
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
@@ -91,8 +92,8 @@ def assemble_by_color(
         m = PAT_RE.search(label)
         # default to CMY cycle if no PAT present
         run = (m.group(1).lower() if m else "cmy")
-        # sanitize to CMYKW alphabet (drop any unknown chars)
-        run = "".join(ch for ch in run if ch in ALPHABET) or "cmy"
+        # sanitize to the supported token alphabet (drop any unknown chars)
+        run = sanitize_token_run(run, alphabet=ALPHABET, default="cmy")
 
         bands = slice_repeating(mesh, z0=z0_global, step=step, groups=len(run))
         for g, group in enumerate(bands):
@@ -171,4 +172,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

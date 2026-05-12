@@ -49,7 +49,7 @@ def extract_palette_subset(registry: Dict[str, Any], max_run: int, filter_lte: i
             colors: Iterable[Dict[str, Any]] = meta.get("colors", [])
             for entry in colors:
                 tok = (entry.get("token") or "").lower()
-                if not token_is_supported(tok):
+                if not token_is_supported(tok, "cmykw"):
                     continue
                 if int(entry.get("distinct_colors", 0)) <= filter_lte:
                     out.append({

@@ -57,6 +57,12 @@ except Exception:
     )
 
 
+try:
+    from layerloom.tokens import PAT_TAG_RE, token_is_valid
+except Exception:
+    from tokens import PAT_TAG_RE, token_is_valid
+
+
 REL_NS = "http://schemas.openxmlformats.org/package/2006/relationships"
 CORE_REL_TYPE = "http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"
 NS = {"m": CORE_NS}
@@ -68,7 +74,7 @@ ET.register_namespace("", CORE_NS)
 IDENTITY_12 = [1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
 HEX_RE = re.compile(r"#?[0-9a-fA-F]{6}$")
 CONTROL_RE = re.compile(r"[\x00-\x1f\x7f]+")
-PAT_RE = re.compile(r"__PAT_([cmykwCMYKW]+)__")
+PAT_RE = PAT_TAG_RE
 NORMALIZED_FORMAT_VERSION = "2"
 
 
@@ -111,7 +117,7 @@ def _extract_pat_token(value: Optional[str]) -> Optional[str]:
     if not m:
         return None
     token = m.group(1).lower()
-    return token if token and set(token).issubset(set("cmykw")) else None
+    return token if token_is_valid(token) else None
 
 
 def _sanitize_label(label: str) -> str:

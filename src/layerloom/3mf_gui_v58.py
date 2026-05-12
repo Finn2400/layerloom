@@ -48,6 +48,23 @@ except Exception:
         embed_rotation_matrix,
     )
 
+try:
+    from layerloom.tokens import (
+        COLOR_OBJECT_LABELS,
+        PAT_TAG_RE,
+        TOKEN_ALPHABET,
+        TOKEN_HEX,
+        token_is_valid,
+    )
+except Exception:
+    from tokens import (
+        COLOR_OBJECT_LABELS,
+        PAT_TAG_RE,
+        TOKEN_ALPHABET,
+        TOKEN_HEX,
+        token_is_valid,
+    )
+
 # ─────────────────────────────────────────────────────────────────────
 # Logging
 # ─────────────────────────────────────────────────────────────────────
@@ -247,7 +264,7 @@ def _mesh_oid_set(root: ET.Element) -> set:
 # Tag helpers (ID + PAT + end-suffix preservation)
 # ─────────────────────────────────────────────────────────────────────
 ID_RE  = re.compile(r"__ID_([A-Za-z0-9\-]+)__")
-PAT_RE = re.compile(r"__PAT_([cmykwCMYKW]+)__")
+PAT_RE = PAT_TAG_RE
 END_RE = re.compile(r"(__E\d+)$")
 
 def _strip_id_and_pat(s: str) -> str:
@@ -283,16 +300,13 @@ def _normalize_for_match(s: str) -> str:
     return s
 
 GROUPED_COLOR_ASSIGNMENTS = {
-    "all_cyan": {"token": "c", "hex": "#00ffff"},
-    "all_magenta": {"token": "m", "hex": "#ff00ff"},
-    "all_yellow": {"token": "y", "hex": "#ffff00"},
-    "all_black": {"token": "k", "hex": "#000000"},
-    "all_white": {"token": "w", "hex": "#ffffff"},
+    label: {"token": token, "hex": TOKEN_HEX.get(token, "")}
+    for token, label in COLOR_OBJECT_LABELS.items()
 }
 
 SYNTHETIC_PART_PREFIX_RE = re.compile(r"^(part|object)_\d+$", re.IGNORECASE)
 INSTANCE_SUFFIX_RE = re.compile(r"__inst_(\d+)$", re.IGNORECASE)
-TOKEN_PREFIX_RE = re.compile(r"^([cmykw]+)(?:__|$)", re.IGNORECASE)
+TOKEN_PREFIX_RE = re.compile(rf"^([{TOKEN_ALPHABET}]+)(?:__|$)", re.IGNORECASE)
 
 
 def _grouped_color_assignment_for_name(name: Optional[str]) -> Optional[Dict[str, str]]:
@@ -371,7 +385,7 @@ def _extract_pattern_token_from_name(name: Optional[str]) -> Optional[str]:
     if not m:
         return None
     token = m.group(1).lower()
-    if token and set(token).issubset(set("cmykw")):
+    if token and token_is_valid(token):
         return token
     return None
 
@@ -1843,7 +1857,7 @@ def _hex_to_rgb01(hx: str):
 
 def _filter_by_bw_visibility(entries, add_k: bool, add_w: bool):
     """Show/hide entries based on tokens containing black ('k') and/or white ('w')."""
-    allowed_letters = set("cmykw")
+    allowed_letters = set(TOKEN_ALPHABET)
     show_k = add_k
     show_w = add_w
     def keep(tok: str) -> bool:
@@ -3500,7 +3514,10 @@ class EmbeddedPVViewer(PVWindow):
         self._layer_preview_actors = []
 
     def _read_plate_ascii_lines(self) -> List[str]:
-        path = "/Users/finn/Downloads/benchy_ascii_with_text.txt"
+        path = os.environ.get(
+            "LAYERLOOM_PLATE_ASCII",
+            os.path.expanduser("~/Downloads/benchy_ascii_with_text.txt"),
+        )
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as f:
                 raw_lines = f.read().splitlines()

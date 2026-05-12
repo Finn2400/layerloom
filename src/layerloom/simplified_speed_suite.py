@@ -21,8 +21,8 @@ import zipfile
 import numpy as np
 import trimesh
 
-from benchmark_common import TOKEN_HEX, ensure_dir, format_float, write_csv
-from benchmark_suite import run_weave, wrap_build_items_as_single_assembly
+from .benchmark_common import TOKEN_HEX, ensure_dir, format_float, write_csv
+from .benchmark_suite import run_weave, wrap_build_items_as_single_assembly
 
 
 PACKAGE_DIR = Path(__file__).resolve().parent
