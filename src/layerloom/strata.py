@@ -25,6 +25,7 @@ Notes
 from __future__ import annotations
 from typing import List, Optional, Sequence, Tuple
 import math
+import numpy as np
 import trimesh
 
 # ---------------------------------------------------------------------
@@ -87,6 +88,66 @@ def _clean(m: Optional[trimesh.Trimesh]) -> Optional[trimesh.Trimesh]:
     except Exception:
         pass
     return m
+
+
+def _unique_mesh_edges(mesh: trimesh.Trimesh) -> np.ndarray:
+    faces = np.asarray(mesh.faces, dtype=np.int64)
+    if faces.size == 0:
+        return np.zeros((0, 2), dtype=np.int64)
+    edges = np.vstack((faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]))
+    edges = np.sort(edges, axis=1)
+    return np.unique(edges, axis=0)
+
+
+def _slice_convex_between(mesh: trimesh.Trimesh,
+                          zL_eff: float,
+                          zU_eff: float,
+                          *,
+                          eps: float = 1e-9) -> Optional[trimesh.Trimesh]:
+    """
+    Deterministic fallback for convex meshes when trimesh's capped plane
+    clipping fails. For a convex source mesh, the intersection with a horizontal
+    slab is the convex hull of source vertices inside the slab plus mesh-edge
+    intersections with the two slab planes.
+    """
+    if not bool(getattr(mesh, "is_convex", False)):
+        return None
+
+    vertices = np.asarray(mesh.vertices, dtype=np.float64)
+    if vertices.size == 0:
+        return None
+
+    points: List[np.ndarray] = []
+    z = vertices[:, 2]
+    inside = (z >= zL_eff - eps) & (z <= zU_eff + eps)
+    if np.any(inside):
+        points.extend(vertices[inside])
+
+    for a_idx, b_idx in _unique_mesh_edges(mesh):
+        a = vertices[int(a_idx)]
+        b = vertices[int(b_idx)]
+        za = float(a[2])
+        zb = float(b[2])
+        dz = zb - za
+        if abs(dz) < eps:
+            continue
+        for plane_z in (zL_eff, zU_eff):
+            t = (plane_z - za) / dz
+            if -eps <= t <= 1.0 + eps:
+                points.append(a + np.clip(t, 0.0, 1.0) * (b - a))
+
+    if len(points) < 4:
+        return None
+
+    pts = np.unique(np.round(np.asarray(points, dtype=np.float64), decimals=12), axis=0)
+    if len(pts) < 4:
+        return None
+
+    try:
+        band = trimesh.Trimesh(vertices=pts, faces=[], process=False).convex_hull
+    except Exception:
+        return None
+    return _clean(band)
 
 
 def _repair_band_volume(source_mesh: trimesh.Trimesh,
@@ -153,6 +214,9 @@ def _slice_between(mesh: trimesh.Trimesh,
                 band = part
     except Exception:
         band = None
+
+    if band is None:
+        band = _slice_convex_between(mesh, zL_eff, zU_eff)
 
     if band is None:
         try:
