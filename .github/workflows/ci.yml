@@ -37,7 +37,7 @@ jobs:
 
       - name: CLI smoke test
         run: |
-          layerloom-weave --input examples/tutorial_cmy_cubes.3mf --step 0.20 --output tutorial_cmy_cubes_woven.3mf
+          layerloom-weave --input examples/tutorial_cmy_cubes.3mf --step 0.20 --output tutorial_cmy_cubes_woven.3mf --verbose
           python -c "from pathlib import Path; p=Path('tutorial_cmy_cubes_woven.3mf'); assert p.is_file() and p.stat().st_size > 0"
 
       - name: Build source and wheel distributions

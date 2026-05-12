@@ -28,7 +28,7 @@ classifiers = [
 dependencies = [
   "numpy>=1.23",
   "scipy>=1.10",
-  "trimesh>=4.0",
+  "trimesh>=4.6,<4.12",
 ]
 
 [project.optional-dependencies]
