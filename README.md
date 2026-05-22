@@ -30,7 +30,7 @@ so LayerLoom does not accidentally use a Python from another app or tool.
 macOS and Linux:
 
 ```bash
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 python3 -m venv .venv
 source .venv/bin/activate
@@ -40,10 +40,31 @@ layerloom-doctor
 layerloom-gui
 ```
 
+On macOS, a source checkout also includes a double-click launcher:
+
+```text
+Launch LayerLoom.command
+```
+
+Double-clicking it creates or reuses `.venv`, installs the GUI dependencies if
+needed, runs `layerloom-doctor`, and opens the GUI. The terminal commands above
+remain the most explicit/reproducible install path. If a ZIP download loses the
+launcher permission, run `chmod +x "Launch LayerLoom.command"` once.
+
+On Windows, double-click:
+
+```text
+Launch LayerLoom.bat
+```
+
+The Windows launcher follows the same path: create or reuse `.venv`, install
+the GUI dependencies if needed, run `layerloom-doctor`, and open the GUI. It
+uses the Windows `py` launcher when available, then falls back to `python`.
+
 Windows PowerShell:
 
 ```powershell
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -63,6 +84,20 @@ python -m pip install -e ".[gui,bench,analysis,dev]"
 ```
 
 ## Run The GUI
+
+On macOS, double-click:
+
+```text
+Launch LayerLoom.command
+```
+
+On Windows, double-click:
+
+```text
+Launch LayerLoom.bat
+```
+
+Or run the installed command:
 
 ```bash
 layerloom-gui
@@ -86,16 +121,18 @@ dependencies, and tutorial example files.
 ## Beginner Tutorial And Examples
 
 Start with the walkthrough in [docs/tutorial.md](docs/tutorial.md). It includes
-a first-run checklist and uses two tiny sample inputs in [examples/](examples/):
+a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
 
 - [examples/tutorial_cmy_cubes.3mf](examples/tutorial_cmy_cubes.3mf): a basic
   cyan/magenta/yellow cube example with pre-tagged weave patterns.
-- [examples/tutorial_expanded_tiles_v62.3mf](examples/tutorial_expanded_tiles_v62.3mf):
-  a small v62 expanded-palette example using gray, orange, violet, and green
+- [examples/tutorial_cmy_benchy_cutup.3mf](examples/tutorial_cmy_benchy_cutup.3mf):
+  a pre-labeled cut-up 3DBenchy example using only cyan, magenta, and yellow
   tokens.
 
 These files are intentionally simple so new users can learn the open, weave,
 slice, and filament-assignment workflow before trying larger models.
+The GUI also includes a **Load Example** button that opens the packaged CMY
+Benchy example directly.
 
 ## Command Line Tools
 
@@ -173,6 +210,7 @@ Examples:
 | --- | --- | --- |
 | `0.08 mm` | `0.08 mm`, `0.16 mm`, `0.24 mm` | `0.20 mm` |
 | `0.12 mm` | `0.12 mm`, `0.24 mm` | `0.20 mm` |
+| `0.16 mm` | `0.16 mm`, `0.32 mm` | `0.20 mm`, `0.24 mm` |
 | `0.20 mm` | `0.20 mm`, `0.40 mm` | `0.24 mm` |
 
 For example, if the weave height is `0.08 mm`, a `0.16 mm` first layer is fine,
@@ -200,10 +238,11 @@ src/layerloom/
   normalize_3mf_import.py     # canonical 3MF import normalizer
   weave.py                    # woven 3MF generation pipeline
   palettes/                   # packaged palette JSON files
+  examples/                   # packaged tutorial 3MF files used by Load Example
   legacy/                     # older/experimental code
 examples/
   tutorial_cmy_cubes.3mf      # beginner CMY sample input
-  tutorial_expanded_tiles_v62.3mf
+  tutorial_cmy_benchy_cutup.3mf
 tests/
   test_smoke.py               # lightweight import/package checks
 ```
@@ -213,7 +252,19 @@ tests/
 Generated 3MF/STL/GLB files are intentionally ignored by git. The tiny tutorial
 fixtures in [examples/](examples/) are the exception. Keep large test models,
 slicer exports, and generated benchmark outputs outside the tracked repo or
-publish them separately as release assets.
+publish them separately as release assets or Zenodo datasets.
+
+Raw photographs, calibrated TIFF exports, manuscript figure workspaces, and
+one-off analysis outputs are also intentionally kept out of the public software
+repo. See [docs/release_and_zenodo.md](docs/release_and_zenodo.md) for the
+release checklist and archival DOI workflow.
+
+## Citation And DOI
+
+Citation metadata is provided in [CITATION.cff](CITATION.cff). A persistent DOI
+should be minted from a tagged GitHub release through Zenodo before manuscript
+submission. After Zenodo creates the DOI, add the DOI badge and citation record
+here.
 
 ## License
 

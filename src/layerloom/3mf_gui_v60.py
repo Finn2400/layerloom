@@ -89,7 +89,7 @@ class EmbeddedPVViewerV60(_V58.EmbeddedPVViewer):
         _V58.PVWindow.__init__(self)
         self.plotter = InteractiveQtInteractor(self, parent)
         self._configured = False
-        self._layer_height = 0.2
+        self._layer_height = 0.16
         self._layer_scale = 1.0
         self._layer_preview_actors = []
         self._rotation_feedback_label = None

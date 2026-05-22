@@ -9,6 +9,16 @@ LayerLoom is currently distributed as source code. The recommended path is:
 5. Run `layerloom-doctor`.
 6. Launch `layerloom-gui`.
 
+Source checkouts also include double-click launchers:
+
+- macOS: `Launch LayerLoom.command`
+- Windows: `Launch LayerLoom.bat`
+
+Both launchers create or reuse `.venv`, install the GUI extras if needed, run
+`layerloom-doctor`, and open the GUI. The terminal commands below are still the
+clearest path for debugging or reproducible installs. If a ZIP download loses
+the macOS launcher permission, run `chmod +x "Launch LayerLoom.command"` once.
+
 Using a virtual environment matters. It prevents LayerLoom from accidentally
 using an unrelated Python from another app, Conda environment, slicer, or system
 tool.
@@ -16,7 +26,7 @@ tool.
 ## macOS And Linux
 
 ```bash
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 python3 -m venv .venv
 source .venv/bin/activate
@@ -32,7 +42,7 @@ If `python3` is not found, install Python from
 ## Windows PowerShell
 
 ```powershell
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1

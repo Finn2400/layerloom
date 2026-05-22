@@ -1,8 +1,7 @@
 # LayerLoom Example Inputs
 
-This folder contains tiny 3MF files for the beginner tutorial. They are small
-enough to keep in git and are meant for learning the workflow, not for judging
-final print quality.
+This folder contains small 3MF files for the beginner tutorial. They are
+intended for learning the workflow, not for judging final print quality.
 
 ## `tutorial_cmy_cubes.3mf`
 
@@ -18,21 +17,22 @@ It contains four simple cube parts:
 The `__PAT_...__` text in each object name tells LayerLoom which weave pattern
 to use. For example, `__PAT_cy__` means alternating cyan and yellow layers.
 
-## `tutorial_expanded_tiles_v62.3mf`
+## `tutorial_cmy_benchy_cutup.3mf`
 
-A small v62 expanded-palette example using the additional token buttons:
+A cut-up 3DBenchy example using only cyan, magenta, and yellow tokens.
 
-- `N` for gray
-- `O` for orange
-- `V` for violet
-- `G` for green
-
-It contains a few solid-color and mixed-token tiles so you can practice adding
-expanded colors in the GUI and assigning the resulting objects in a slicer.
+This is the better second example after the cubes because it behaves like a
+real multi-part model but still only requires CMY filaments. The parts are
+already labeled with `__PAT_...__` tokens, so you can open it, inspect the
+assignments, and click **Weave** without manual color setup. The starter
+patterns intentionally use short tokens so the first print prioritizes surface
+quality over maximum palette complexity.
 
 ## Recommended First Run
 
 Start with `tutorial_cmy_cubes.3mf`, then move to
-`tutorial_expanded_tiles_v62.3mf` after the basic workflow makes sense.
+`tutorial_cmy_benchy_cutup.3mf` after the basic workflow makes sense.
+The GUI **Load Example** button opens the Benchy example directly from the
+packaged install.
 
 See [../docs/tutorial.md](../docs/tutorial.md) for the full walkthrough.

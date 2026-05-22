@@ -1,0 +1,28 @@
+{
+  "title": "LayerLoom: Geometry-Encoded Layer Weaving for Color Expansion in Multi-Material FFF Printing",
+  "upload_type": "software",
+  "description": "LayerLoom is a geometry-level workflow for expanding color palettes in multi-material fused filament fabrication by encoding repeated layer schedules directly in portable 3MF geometry.",
+  "creators": [
+    {
+      "name": "Beruldsen, Finn",
+      "orcid": "0000-0002-1277-210X",
+      "affiliation": "University of Houston"
+    }
+  ],
+  "license": "MIT",
+  "access_right": "open",
+  "keywords": [
+    "fused filament fabrication",
+    "multi-material 3D printing",
+    "color 3D printing",
+    "3MF",
+    "computational fabrication"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/Finn2400/layerloom",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

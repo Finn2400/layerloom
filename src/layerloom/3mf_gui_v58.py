@@ -3453,7 +3453,7 @@ class EmbeddedPVViewer(PVWindow):
         super().__init__()
         self.plotter = QtInteractor(parent)
         self._configured = False
-        self._layer_height = 0.2
+        self._layer_height = 0.16
         self._layer_scale = 1.0
         self._layer_preview_actors: List[object] = []
         self._static_plate_overlay_built = False
@@ -4115,7 +4115,6 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         toolbar.addAction(save_action)
         toolbar.addSeparator()
         toolbar.addAction(preview_action)
-        toolbar.addAction(weave_action)
         toolbar.addSeparator()
 
         self.glb_colors_spin = QtWidgets.QSpinBox()
@@ -4128,7 +4127,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setDecimals(3)
         self.layer_height_spin.setRange(0.01, 10.0)
         self.layer_height_spin.setSingleStep(0.01)
-        self.layer_height_spin.setValue(0.2)
+        self.layer_height_spin.setValue(0.16)
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
@@ -4137,6 +4136,8 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         toolbar.addSeparator()
         toolbar.addWidget(self._toolbar_label("Layer height"))
         toolbar.addWidget(self.layer_height_spin)
+        toolbar.addSeparator()
+        toolbar.addAction(weave_action)
         toolbar.addSeparator()
 
         self.toolbar_status_label = QtWidgets.QLabel("No model loaded")

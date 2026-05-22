@@ -30,6 +30,7 @@ should be an integer multiple of that value.
 | `0.08 mm` | `0.08 mm`, `0.16 mm`, `0.24 mm` | `0.20 mm` |
 | `0.10 mm` | `0.10 mm`, `0.20 mm`, `0.30 mm` | `0.24 mm` |
 | `0.12 mm` | `0.12 mm`, `0.24 mm`, `0.36 mm` | `0.20 mm` |
+| `0.16 mm` | `0.16 mm`, `0.32 mm` | `0.20 mm`, `0.24 mm` |
 | `0.20 mm` | `0.20 mm`, `0.40 mm` | `0.24 mm` |
 
 The rule is:
