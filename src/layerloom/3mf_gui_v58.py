@@ -496,6 +496,70 @@ def _target_colors_to_levels(target_colors: int) -> int:
     target_colors = max(2, int(target_colors))
     return max(2, int(math.ceil(target_colors ** (1.0 / 3.0))))
 
+def _count_3mf_mesh_geometry(path: str) -> Dict[str, int]:
+    counts = {"objects": 0, "vertices": 0, "triangles": 0}
+    with zipfile.ZipFile(path, "r") as zf:
+        model_name = _find_model_xml_name(zf)
+        if not model_name:
+            return counts
+        current = None
+        with zf.open(model_name, "r") as model_fp:
+            for event, elem in ET.iterparse(model_fp, events=("start", "end")):
+                tag = _strip_ns(elem.tag)
+                if event == "start" and tag == "object":
+                    current = {
+                        "type": (elem.get("type") or "").strip().lower(),
+                        "has_mesh": False,
+                        "vertices": 0,
+                        "triangles": 0,
+                    }
+                elif event == "start" and tag == "mesh" and current is not None:
+                    current["has_mesh"] = True
+                elif event == "end" and current is not None:
+                    if tag == "vertex" and current["has_mesh"]:
+                        current["vertices"] += 1
+                    elif tag == "triangle" and current["has_mesh"]:
+                        current["triangles"] += 1
+                    elif tag == "object":
+                        obj_type = current["type"]
+                        if current["has_mesh"] and (not obj_type or obj_type == "model"):
+                            counts["objects"] += 1
+                            counts["vertices"] += int(current["vertices"])
+                            counts["triangles"] += int(current["triangles"])
+                        current = None
+                if event == "end":
+                    elem.clear()
+    return counts
+
+def _glb_repair_rejection_reason(split_3mf: str, repaired_3mf: str) -> Optional[str]:
+    try:
+        before = _count_3mf_mesh_geometry(split_3mf)
+        after = _count_3mf_mesh_geometry(repaired_3mf)
+    except Exception as e:
+        _log("WARN", f"[glb-import] Could not inspect repaired 3MF geometry: {e}")
+        return None
+
+    before_tris = int(before.get("triangles") or 0)
+    after_tris = int(after.get("triangles") or 0)
+    before_verts = int(before.get("vertices") or 0)
+    after_verts = int(after.get("vertices") or 0)
+    if before_tris <= 0 or after_tris <= 0:
+        return None
+
+    tri_ratio = after_tris / float(before_tris)
+    vert_ratio = after_verts / float(before_verts) if before_verts > 0 else 1.0
+    if before_tris >= 1000 and tri_ratio < 0.25:
+        return (
+            "Repair discarded; continuing with unrepaired GLB split because repair removed "
+            f"too much geometry (triangles {before_tris}->{after_tris}, {tri_ratio:.1%})."
+        )
+    if before_verts >= 1000 and vert_ratio < 0.20:
+        return (
+            "Repair discarded; continuing with unrepaired GLB split because repair removed "
+            f"too many vertices (vertices {before_verts}->{after_verts}, {vert_ratio:.1%})."
+        )
+    return None
+
 def _metadata_key(name: Optional[str]) -> str:
     s = str(name or "").strip()
     return s.split(":")[-1] if s else ""
@@ -2553,6 +2617,7 @@ class AssignColorsApp(tk.Tk):
             orientation_matrix=self.pending_rotation_matrix,
             plate_width=PLATE_WIDTH_MM,
             plate_depth=PLATE_DEPTH_MM,
+            center_xy=False,
         )
         _perf_log("transform plan", t_plan, extra=f"include_assignments={include_assignments}")
         t_write = time.perf_counter()
@@ -2787,7 +2852,12 @@ class AssignColorsApp(tk.Tk):
             ]
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
-                import_3mf = repaired_3mf
+                reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
+                if reject_reason:
+                    repair_warning = reject_reason
+                    _log("WARN", repair_warning)
+                else:
+                    import_3mf = repaired_3mf
             except Exception as e:
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
@@ -4678,6 +4748,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             orientation_matrix=self.pending_rotation_matrix,
             plate_width=PLATE_WIDTH_MM,
             plate_depth=PLATE_DEPTH_MM,
+            center_xy=False,
         )
         _perf_log("transform plan", t_plan, extra=f"include_assignments={include_assignments}")
         t_write = time.perf_counter()
@@ -4885,7 +4956,12 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             repair_cmd = [sys.executable, GLB_REPAIR_SCRIPT, split_3mf, "--out", repaired_3mf, "--quiet"]
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
-                import_3mf = repaired_3mf
+                reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
+                if reject_reason:
+                    repair_warning = reject_reason
+                    _log("WARN", repair_warning)
+                else:
+                    import_3mf = repaired_3mf
             except Exception as e:
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
