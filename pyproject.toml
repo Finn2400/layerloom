@@ -70,7 +70,12 @@ layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["layerloom", "layerloom.palettes", "layerloom.examples"]
+include = [
+  "layerloom",
+  "layerloom.experimental_viewer",
+  "layerloom.palettes",
+  "layerloom.examples",
+]
 namespaces = false
 
 [tool.setuptools.package-data]

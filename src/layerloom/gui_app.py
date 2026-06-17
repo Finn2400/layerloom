@@ -8,8 +8,8 @@ import sys
 
 
 def _load_current_gui_module():
-    module_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "3mf_gui_v62.py")
-    spec = importlib.util.spec_from_file_location("layerloom_gui_v62_entrypoint", module_path)
+    module_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "3mf_gui_v65.py")
+    spec = importlib.util.spec_from_file_location("layerloom_gui_v65_entrypoint", module_path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Could not load LayerLoom GUI module from {module_path}")
     module = importlib.util.module_from_spec(spec)

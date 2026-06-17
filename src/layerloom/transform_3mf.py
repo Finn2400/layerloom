@@ -328,6 +328,7 @@ def compute_transform_plan(
     plate_width: float = 256.0,
     plate_depth: float = 256.0,
     center_xy: bool = True,
+    target_center_xy: Optional[Tuple[float, float]] = None,
 ) -> TransformPlan:
     if scale <= 0:
         raise ValueError("Scale must be > 0.")
@@ -355,7 +356,11 @@ def compute_transform_plan(
     )
     pre_bounds = _compute_bounds_from_infos(object_infos, build_items, extra_matrix=pre_matrix)
 
-    if center_xy:
+    if target_center_xy is not None:
+        target_xy = np.asarray(target_center_xy, dtype=np.float64).reshape(2)
+        target_x = float(target_xy[0])
+        target_y = float(target_xy[1])
+    elif center_xy:
         target_x = plate_width * 0.5
         target_y = plate_depth * 0.5
     else:
