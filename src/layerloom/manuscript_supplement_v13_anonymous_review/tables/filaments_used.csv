@@ -1,0 +1,11 @@
+token,endpoint,filament_source,notes
+C,Cyan,Bambu Lab PLA Basic cyan endpoint,Exact catalog color name not recorded.
+M,Magenta,Bambu Lab PLA Basic magenta/pink endpoint,Exact catalog color name not recorded.
+Y,Yellow,Bambu Lab PLA Basic yellow endpoint,Exact catalog color name not recorded.
+W,White,Bambu Lab PLA Basic white endpoint,Exact catalog color name not recorded.
+L,Light gray,Bambu Lab PLA Basic light gray,Used as the light-gray endpoint in expanded-gamut photo analysis.
+N,Dark neutral gray,"Bambu Lab PLA Basic Gray (10103), refill, 1 kg",Used as the darker neutral-gray endpoint in expanded-gamut photo analysis.
+K,Black,Bambu Lab PLA Basic black,Used as the black/value endpoint.
+O,Orange,Printed Solid Jessie PLA orange,Used as the orange expanded-gamut endpoint.
+V,Violet/purple,"OVERTURE PLA purple, 1.75 mm, 1 kg spool, +/-0.02 mm dimensional accuracy",Used as the violet/purple expanded-gamut endpoint.
+G,Green,Bambu Lab PLA Basic green endpoint,Exact catalog color name not recorded.
