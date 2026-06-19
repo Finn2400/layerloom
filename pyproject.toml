@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerloom"
-version = "0.6.2"
+version = "0.6.3"
 description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
 readme = "README.md"
 requires-python = ">=3.10"

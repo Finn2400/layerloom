@@ -65,6 +65,21 @@ except Exception:
         token_is_valid,
     )
 
+try:
+    from layerloom.calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_NAME,
+        nearest_calibrated_palette_entry,
+        palette_uses_calibrated_lab,
+    )
+except Exception:
+    from calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_NAME,
+        nearest_calibrated_palette_entry,
+        palette_uses_calibrated_lab,
+    )
+
 # ─────────────────────────────────────────────────────────────────────
 # Logging
 # ─────────────────────────────────────────────────────────────────────
@@ -1751,6 +1766,7 @@ PALETTE_FILES = {
     "Simple": os.path.join(PALETTES_DIR, "simple_palette.json"),
     "Normal": os.path.join(PALETTES_DIR, "normal_palette.json"),
     "Full":   os.path.join(PALETTES_DIR, "full_palette.json"),
+    CALIBRATED_CMY_NORMAL_NAME: os.path.join(PALETTES_DIR, CALIBRATED_CMY_NORMAL_FILENAME),
 }
 
 # def _sort_by_hue(entries):
@@ -1904,7 +1920,15 @@ def _load_palette_file(path, limit_two=False):
                 hx = "#" + hx
             if (tok, hx) not in seen:
                 seen.add((tok, hx))
-                out.append({"token": tok, "hex": hx})
+                item = dict(e)
+                item["token"] = tok
+                item["hex"] = hx
+                nominal_hex = str(item.get("nominal_hex", "")).strip()
+                if nominal_hex:
+                    if not nominal_hex.startswith("#"):
+                        nominal_hex = "#" + nominal_hex
+                    item["nominal_hex"] = nominal_hex
+                out.append(item)
 
     # De-dupe equivalent tokens (same letter counts), prefer balanced runs (no 'yyy' if 'yy'+'yy' exists).
     out = _dedupe_equivalent_tokens_prefer_balanced_runs(out)
@@ -1918,6 +1942,29 @@ def _hex_to_rgb01(hx: str):
     hx = hx.lstrip("#")
     r,g,b = (int(hx[i:i+2],16) for i in (0,2,4))
     return (r/255,g/255,b/255)
+
+
+def _nearest_palette_entry_for_source(entries, source_hex: str) -> Optional[Dict[str, str]]:
+    if palette_uses_calibrated_lab(entries):
+        entry = nearest_calibrated_palette_entry(entries, source_hex)
+        if entry:
+            return entry
+    try:
+        sr, sg, sb = _hex_to_rgb01(source_hex)
+    except Exception:
+        return None
+    best = None
+    best_dist = None
+    for entry in entries:
+        try:
+            pr, pg, pb = _hex_to_rgb01(entry["hex"])
+        except Exception:
+            continue
+        dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
+        if best_dist is None or dist < best_dist:
+            best_dist = dist
+            best = entry
+    return best
 
 def _filter_by_bw_visibility(entries, add_k: bool, add_w: bool):
     """Show/hide entries based on tokens containing black ('k') and/or white ('w')."""
@@ -2207,6 +2254,7 @@ class AssignColorsApp(tk.Tk):
 
         self.current_palette_name=name; self.current_palette=entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
 
     def _render_palette_grid(self):
         for w in self.palette_inner.winfo_children(): w.destroy()
@@ -2261,23 +2309,7 @@ class AssignColorsApp(tk.Tk):
         return proc
 
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
-        try:
-            sr, sg, sb = _hex_to_rgb01(source_hex)
-        except Exception:
-            return None
-
-        best = None
-        best_dist = None
-        for entry in self.current_palette:
-            try:
-                pr, pg, pb = _hex_to_rgb01(entry["hex"])
-            except Exception:
-                continue
-            dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
-            if best_dist is None or dist < best_dist:
-                best_dist = dist
-                best = entry
-        return best
+        return _nearest_palette_entry_for_source(self.current_palette, source_hex)
 
     def _exact_palette_entry_for_token(self, token: str) -> Optional[Dict[str, str]]:
         tok = str(token or "").strip().lower()
@@ -2296,15 +2328,35 @@ class AssignColorsApp(tk.Tk):
         return None
 
     def _set_assignment_for_oid(self, oid: str, entry: Dict[str, str], source_hex: Optional[str] = None):
-        data = {"token": entry["token"], "hex": entry["hex"]}
+        data = dict(entry)
+        data["token"] = entry["token"]
+        data["hex"] = entry["hex"]
         if source_hex:
             data["source_hex"] = source_hex
+            data["matched_source_hex"] = source_hex
         self.assignments[oid] = data
 
         if self.tree.exists(oid):
             vals = list(self.tree.item(oid, "values"))
             vals[1], vals[2] = entry["hex"], entry["token"]
             self.tree.item(oid, values=tuple(vals))
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if not getattr(self, "assignments", None):
+            return
+        for oid, info in list(self.assignments.items()):
+            token = str(info.get("token") or "").strip().lower()
+            if not token:
+                continue
+            entry = self._exact_palette_entry_for_token(token)
+            if not entry:
+                continue
+            source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            self._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+            if self.viewer:
+                name = self.oid_to_name.get(oid)
+                if name:
+                    self.viewer.set_color_by_name(name, entry["hex"])
 
     def _apply_source_metadata_assignments(
         self,
@@ -2551,9 +2603,17 @@ class AssignColorsApp(tk.Tk):
             if not token:
                 continue
             metadata = {"stack_token": token}
-            source_hex = info.get("source_hex") or info.get("hex")
-            if source_hex:
-                metadata["source_hex"] = source_hex
+            assigned_hex = info.get("hex")
+            if assigned_hex:
+                metadata["source_hex"] = assigned_hex
+            matched_source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            if matched_source_hex and matched_source_hex != assigned_hex:
+                metadata["matched_source_hex"] = matched_source_hex
+            if info.get("calibrated") and assigned_hex:
+                metadata["calibrated_hex"] = assigned_hex
+            nominal_hex = info.get("nominal_hex")
+            if nominal_hex:
+                metadata["nominal_hex"] = nominal_hex
             out[oid] = metadata
         return out
 
@@ -4381,6 +4441,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.current_palette_name = name
         self.current_palette = entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
         self._refresh_status_summary()
 
     def _render_palette_grid(self):
@@ -4413,22 +4474,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
     # ---------- backend logic ----------
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
-        try:
-            sr, sg, sb = _hex_to_rgb01(source_hex)
-        except Exception:
-            return None
-        best = None
-        best_dist = None
-        for entry in self.current_palette:
-            try:
-                pr, pg, pb = _hex_to_rgb01(entry["hex"])
-            except Exception:
-                continue
-            dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
-            if best_dist is None or dist < best_dist:
-                best_dist = dist
-                best = entry
-        return best
+        return _nearest_palette_entry_for_source(self.current_palette, source_hex)
 
     def _exact_palette_entry_for_token(self, token: str) -> Optional[Dict[str, str]]:
         tok = str(token or "").strip().lower()
@@ -4455,9 +4501,12 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return None
 
     def _set_assignment_for_oid(self, oid: str, entry: Dict[str, str], source_hex: Optional[str] = None):
-        data = {"token": entry["token"], "hex": entry["hex"]}
+        data = dict(entry)
+        data["token"] = entry["token"]
+        data["hex"] = entry["hex"]
         if source_hex:
             data["source_hex"] = source_hex
+            data["matched_source_hex"] = source_hex
         self.assignments[oid] = data
         item = self._item_for_oid(oid)
         if item is not None:
@@ -4465,6 +4514,23 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             item.setText(2, entry["token"])
         if self._current_selected_oid() == oid:
             self._update_selected_part_summary(oid)
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if not getattr(self, "assignments", None):
+            return
+        for oid, info in list(self.assignments.items()):
+            token = str(info.get("token") or "").strip().lower()
+            if not token:
+                continue
+            entry = self._exact_palette_entry_for_token(token)
+            if not entry:
+                continue
+            source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            self._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+            if self.viewer:
+                name = self.oid_to_name.get(oid)
+                if name:
+                    self.viewer.set_color_by_name(name, entry["hex"])
 
     def _apply_source_metadata_assignments(
         self,
@@ -4692,9 +4758,17 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             if not token:
                 continue
             metadata = {"stack_token": token}
-            source_hex = info.get("source_hex") or info.get("hex")
-            if source_hex:
-                metadata["source_hex"] = source_hex
+            assigned_hex = info.get("hex")
+            if assigned_hex:
+                metadata["source_hex"] = assigned_hex
+            matched_source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            if matched_source_hex and matched_source_hex != assigned_hex:
+                metadata["matched_source_hex"] = matched_source_hex
+            if info.get("calibrated") and assigned_hex:
+                metadata["calibrated_hex"] = assigned_hex
+            nominal_hex = info.get("nominal_hex")
+            if nominal_hex:
+                metadata["nominal_hex"] = nominal_hex
             out[oid] = metadata
         return out
 
@@ -5501,6 +5575,7 @@ def main():
         "Simple": os.path.join(PALETTES_DIR, "simple_palette.json"),
         "Normal": os.path.join(PALETTES_DIR, "normal_palette.json"),
         "Full": os.path.join(PALETTES_DIR, "full_palette.json"),
+        CALIBRATED_CMY_NORMAL_NAME: os.path.join(PALETTES_DIR, CALIBRATED_CMY_NORMAL_FILENAME),
     }
 
     try:

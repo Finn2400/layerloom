@@ -70,7 +70,7 @@ layerloom-gui
 From a source checkout, you can also run the current GUI directly:
 
 ```bash
-python src/layerloom/3mf_gui_v62.py
+python src/layerloom/3mf_gui_v65.py
 ```
 
 If the GUI opens to an empty build plate, that is normal. Load a sample file to
@@ -148,6 +148,14 @@ but it is a more realistic multi-part model than the beginner cubes.
 
 The example only uses `C`, `M`, and `Y`, so it is suitable for a three-filament
 first print.
+
+## Optional: Use The Calibrated CMY Palette
+
+The default `Normal` palette is the nominal LayerLoom color model. To preview
+and auto-match against measured printed CMY colors, choose
+`Calibrated CMY Normal (core065)` from the palette menu before importing a GLB
+or before assigning colors. Measured entries use the observed printed hex/Lab
+values; unmeasured recipes fall back to the nominal colors.
 
 ## Optional: Weave From The Command Line
 

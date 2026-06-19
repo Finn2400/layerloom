@@ -34,14 +34,26 @@ they are needed for manuscript reproducibility.
    python -m build
    ```
 
-6. Update `CITATION.cff`, `.zenodo.json`, and `pyproject.toml` if the release
+6. Validate package metadata:
+
+   ```bash
+   python -m twine check dist/*
+   ```
+
+7. Inspect the built distributions and confirm that packaged examples and
+   palette files are present, especially:
+   - `src/layerloom/examples/*.3mf`
+   - `src/layerloom/palettes/*.json`
+   - `src/layerloom/palettes/calibrated_cmy_normal_core065_palette.json`
+
+8. Update `CITATION.cff`, `.zenodo.json`, and `pyproject.toml` if the release
    version or author metadata changes.
 
 ## Creating A Persistent DOI
 
 1. Log into Zenodo with GitHub enabled.
 2. In Zenodo, enable archiving for `Finn2400/layerloom`.
-3. Create a GitHub release from the desired tag, for example `v0.6.2`.
+3. Create a GitHub release from the desired tag, for example `v0.6.3`.
 4. Zenodo will archive that GitHub release and mint a version-specific DOI.
 5. Add the minted DOI to the README and manuscript once it exists.
 

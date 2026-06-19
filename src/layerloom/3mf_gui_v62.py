@@ -263,8 +263,28 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         return tuple(dict.fromkeys(letters))
 
     def _load_palette(self, name: str):
+        requested_name = str(name or "Normal")
+        palette_path = _V58.PALETTE_FILES.get(requested_name)
+        if palette_path and requested_name not in {"Simple", "Normal", "Full"}:
+            entries = _V58._load_palette_file(
+                palette_path,
+                limit_two=_checked(getattr(self, "limit_two_checkbox", None)),
+            )
+            entries = _V58._filter_by_bw_visibility(
+                entries,
+                add_k=_checked(getattr(self, "add_black_checkbox", None)),
+                add_w=_checked(getattr(self, "add_white_checkbox", None)),
+            )
+            entries = self._filter_by_required_letters(entries, self._required_letters())
+            self.current_palette_name = requested_name
+            self.current_palette = entries
+            self._render_palette_grid()
+            self._refresh_assignment_hexes_from_current_palette()
+            self._refresh_status_summary()
+            return
+
         try:
-            spec = get_preset_spec(str(name or "Normal").lower())
+            spec = get_preset_spec(requested_name.lower())
         except Exception:
             spec = get_preset_spec("normal")
             name = "Normal"
@@ -285,12 +305,21 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         self.current_palette_name = str(name or spec["name"])
         self.current_palette = entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
         self._refresh_status_summary()
 
     def _exact_palette_entry_for_token(self, token: str):
         tok = str(token or "").strip().lower()
         if not tok:
             return None
+        palette_path = _V58.PALETTE_FILES.get(str(getattr(self, "current_palette_name", "") or ""))
+        if palette_path and str(getattr(self, "current_palette_name", "") or "") not in {"Simple", "Normal", "Full"}:
+            try:
+                for entry in _V58._load_palette_file(palette_path, limit_two=False):
+                    if str(entry.get("token", "")).strip().lower() == tok:
+                        return entry
+            except Exception:
+                pass
         for entry in getattr(self, "current_palette", []) or []:
             if str(entry.get("token", "")).strip().lower() == tok:
                 return entry
@@ -327,6 +356,10 @@ def main():
         "Simple": os.path.join(_V58.PALETTES_DIR, "simple_palette.json"),
         "Normal": os.path.join(_V58.PALETTES_DIR, "normal_palette.json"),
         "Full": os.path.join(_V58.PALETTES_DIR, "full_palette.json"),
+        _V58.CALIBRATED_CMY_NORMAL_NAME: os.path.join(
+            _V58.PALETTES_DIR,
+            _V58.CALIBRATED_CMY_NORMAL_FILENAME,
+        ),
     }
 
     try:

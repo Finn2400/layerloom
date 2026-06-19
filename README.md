@@ -10,9 +10,15 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-The current public entrypoint is the Qt GUI from the v62 line, which includes
-vendor 3MF normalization, streaming preview support for large models, and
-expanded `N`/`O`/`V`/`G` palette controls for gray, orange, violet, and green.
+The current public entrypoint is the Qt GUI from the v65 line, which includes
+vendor 3MF normalization, streaming preview support for large models,
+whole-model build-plate move/rotate controls, and expanded `N`/`O`/`V`/`G`
+palette controls for gray, orange, violet, and green.
+
+![LayerLoom application examples](docs/images/layerloom_applications_overview.jpg)
+
+*LayerLoom application examples: GUI assignment, printed multi-material color,
+and scientific visualization workflows.*
 
 ## Status
 
@@ -26,6 +32,16 @@ but they are not full project round-trips for vendor-specific slicer files.
 
 Use Python 3.10, 3.11, or 3.12. A virtual environment is strongly recommended
 so LayerLoom does not accidentally use a Python from another app or tool.
+
+For a packaged release, install the GUI extras:
+
+```bash
+python -m pip install "layerloom[gui]"
+layerloom-doctor
+layerloom-gui
+```
+
+For development or the newest source checkout, clone from GitHub:
 
 macOS and Linux:
 
@@ -106,7 +122,7 @@ layerloom-gui
 From a source checkout you can also run:
 
 ```bash
-python src/layerloom/3mf_gui_v62.py
+python src/layerloom/3mf_gui_v65.py
 ```
 
 If the GUI does not open, run:
@@ -133,6 +149,16 @@ These files are intentionally simple so new users can learn the open, weave,
 slice, and filament-assignment workflow before trying larger models.
 The GUI also includes a **Load Example** button that opens the packaged CMY
 Benchy example directly.
+
+## Palette Options
+
+The default `Normal` palette uses LayerLoom's nominal model-generated colors.
+The optional `Calibrated CMY Normal (core065)` palette uses measured printed
+CMY colors from the core065 gamut analysis where available, falling back to
+nominal colors for unmeasured recipes. When this palette is active, GLB/3MF
+source colors are matched against the measured printed colors, so imported
+colors choose the recipe expected to print closest rather than the recipe whose
+nominal screen color is closest.
 
 ## Command Line Tools
 
@@ -218,7 +244,10 @@ but `0.20 mm` is not because it cuts through the weave schedule at a half-step.
 
 ## Practical Caveats
 
-- LayerLoom produces apparent woven colors, not calibrated full-color printing.
+- LayerLoom produces apparent woven colors, not full-color material mixing.
+- The calibrated CMY palette improves display and matching for measured CMY
+  recipes, but it is still specific to the measured printer/material/lighting
+  workflow behind the core065 analysis.
 - Broad flat top and bottom surfaces reveal layer striation more strongly than
   steep or vertical surfaces.
 - High-contrast filament combinations show woven layers more readily than
@@ -232,7 +261,7 @@ but `0.20 mm` is not because it cuts through the weave schedule at a half-step.
 
 ```text
 src/layerloom/
-  3mf_gui_v62.py              # current GUI implementation
+  3mf_gui_v65.py              # current GUI implementation
   gui_app.py                  # stable GUI command wrapper
   cli.py                      # stable CLI wrappers
   normalize_3mf_import.py     # canonical 3MF import normalizer

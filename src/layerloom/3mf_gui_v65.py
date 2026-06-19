@@ -1870,6 +1870,10 @@ def main():
         "Simple": os.path.join(_V58.PALETTES_DIR, "simple_palette.json"),
         "Normal": os.path.join(_V58.PALETTES_DIR, "normal_palette.json"),
         "Full": os.path.join(_V58.PALETTES_DIR, "full_palette.json"),
+        _V58.CALIBRATED_CMY_NORMAL_NAME: os.path.join(
+            _V58.PALETTES_DIR,
+            _V58.CALIBRATED_CMY_NORMAL_FILENAME,
+        ),
     }
 
     try:
