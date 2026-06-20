@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.metadata
+import importlib.util
+from pathlib import Path
 
 
 def test_package_metadata_available():
@@ -17,6 +19,20 @@ def test_core_modules_import():
     assert layerloom.doctor.main
     assert layerloom.normalize_3mf_import.normalize_3mf_import
     assert layerloom.weave.main
+
+
+def test_current_gui_entrypoint_imports_v65():
+    import layerloom.gui_app
+
+    gui_path = Path(layerloom.gui_app.__file__).resolve().with_name("3mf_gui_v65.py")
+    spec = importlib.util.spec_from_file_location("layerloom_gui_v65_smoke", gui_path)
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert layerloom.gui_app._load_current_gui_module().__name__ == "layerloom_gui_v65_entrypoint"
+    assert module.QtAssignColorsApp
 
 
 def test_tutorial_cubes_slice_into_bands():

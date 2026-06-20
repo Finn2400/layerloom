@@ -10,9 +10,15 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-The current public entrypoint is the Qt GUI from the v62 line, which includes
-vendor 3MF normalization, streaming preview support for large models, and
-expanded `N`/`O`/`V`/`G` palette controls for gray, orange, violet, and green.
+The current public entrypoint is the Qt GUI from the v65 line, which includes
+vendor 3MF normalization, streaming preview support for large models,
+whole-model build-plate move/rotate controls, and expanded `N`/`O`/`V`/`G`
+palette controls for gray, orange, violet, and green.
+
+![LayerLoom application examples](docs/images/layerloom_applications_overview.jpg)
+
+*LayerLoom application examples: GUI assignment, printed multi-material color,
+and scientific visualization workflows.*
 
 ## Status
 
@@ -27,10 +33,20 @@ but they are not full project round-trips for vendor-specific slicer files.
 Use Python 3.10, 3.11, or 3.12. A virtual environment is strongly recommended
 so LayerLoom does not accidentally use a Python from another app or tool.
 
+For a packaged release, install the GUI extras:
+
+```bash
+python -m pip install "layerloom[gui]"
+layerloom-doctor
+layerloom-gui
+```
+
+For development or the newest source checkout, clone from GitHub:
+
 macOS and Linux:
 
 ```bash
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 python3 -m venv .venv
 source .venv/bin/activate
@@ -40,10 +56,31 @@ layerloom-doctor
 layerloom-gui
 ```
 
+On macOS, a source checkout also includes a double-click launcher:
+
+```text
+Launch LayerLoom.command
+```
+
+Double-clicking it creates or reuses `.venv`, installs the GUI dependencies if
+needed, runs `layerloom-doctor`, and opens the GUI. The terminal commands above
+remain the most explicit/reproducible install path. If a ZIP download loses the
+launcher permission, run `chmod +x "Launch LayerLoom.command"` once.
+
+On Windows, double-click:
+
+```text
+Launch LayerLoom.bat
+```
+
+The Windows launcher follows the same path: create or reuse `.venv`, install
+the GUI dependencies if needed, run `layerloom-doctor`, and open the GUI. It
+uses the Windows `py` launcher when available, then falls back to `python`.
+
 Windows PowerShell:
 
 ```powershell
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -64,6 +101,20 @@ python -m pip install -e ".[gui,bench,analysis,dev]"
 
 ## Run The GUI
 
+On macOS, double-click:
+
+```text
+Launch LayerLoom.command
+```
+
+On Windows, double-click:
+
+```text
+Launch LayerLoom.bat
+```
+
+Or run the installed command:
+
 ```bash
 layerloom-gui
 ```
@@ -71,7 +122,7 @@ layerloom-gui
 From a source checkout you can also run:
 
 ```bash
-python src/layerloom/3mf_gui_v62.py
+python src/layerloom/3mf_gui_v65.py
 ```
 
 If the GUI does not open, run:
@@ -86,16 +137,28 @@ dependencies, and tutorial example files.
 ## Beginner Tutorial And Examples
 
 Start with the walkthrough in [docs/tutorial.md](docs/tutorial.md). It includes
-a first-run checklist and uses two tiny sample inputs in [examples/](examples/):
+a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
 
 - [examples/tutorial_cmy_cubes.3mf](examples/tutorial_cmy_cubes.3mf): a basic
   cyan/magenta/yellow cube example with pre-tagged weave patterns.
-- [examples/tutorial_expanded_tiles_v62.3mf](examples/tutorial_expanded_tiles_v62.3mf):
-  a small v62 expanded-palette example using gray, orange, violet, and green
+- [examples/tutorial_cmy_benchy_cutup.3mf](examples/tutorial_cmy_benchy_cutup.3mf):
+  a pre-labeled cut-up 3DBenchy example using only cyan, magenta, and yellow
   tokens.
 
 These files are intentionally simple so new users can learn the open, weave,
 slice, and filament-assignment workflow before trying larger models.
+The GUI also includes a **Load Example** button that opens the packaged CMY
+Benchy example directly.
+
+## Palette Options
+
+The default `Normal` palette uses LayerLoom's nominal model-generated colors.
+The optional `Calibrated CMY Normal (core065)` palette uses measured printed
+CMY colors from the core065 gamut analysis where available, falling back to
+nominal colors for unmeasured recipes. When this palette is active, GLB/3MF
+source colors are matched against the measured printed colors, so imported
+colors choose the recipe expected to print closest rather than the recipe whose
+nominal screen color is closest.
 
 ## Command Line Tools
 
@@ -173,6 +236,7 @@ Examples:
 | --- | --- | --- |
 | `0.08 mm` | `0.08 mm`, `0.16 mm`, `0.24 mm` | `0.20 mm` |
 | `0.12 mm` | `0.12 mm`, `0.24 mm` | `0.20 mm` |
+| `0.16 mm` | `0.16 mm`, `0.32 mm` | `0.20 mm`, `0.24 mm` |
 | `0.20 mm` | `0.20 mm`, `0.40 mm` | `0.24 mm` |
 
 For example, if the weave height is `0.08 mm`, a `0.16 mm` first layer is fine,
@@ -180,7 +244,10 @@ but `0.20 mm` is not because it cuts through the weave schedule at a half-step.
 
 ## Practical Caveats
 
-- LayerLoom produces apparent woven colors, not calibrated full-color printing.
+- LayerLoom produces apparent woven colors, not full-color material mixing.
+- The calibrated CMY palette improves display and matching for measured CMY
+  recipes, but it is still specific to the measured printer/material/lighting
+  workflow behind the core065 analysis.
 - Broad flat top and bottom surfaces reveal layer striation more strongly than
   steep or vertical surfaces.
 - High-contrast filament combinations show woven layers more readily than
@@ -194,16 +261,17 @@ but `0.20 mm` is not because it cuts through the weave schedule at a half-step.
 
 ```text
 src/layerloom/
-  3mf_gui_v62.py              # current GUI implementation
+  3mf_gui_v65.py              # current GUI implementation
   gui_app.py                  # stable GUI command wrapper
   cli.py                      # stable CLI wrappers
   normalize_3mf_import.py     # canonical 3MF import normalizer
   weave.py                    # woven 3MF generation pipeline
   palettes/                   # packaged palette JSON files
+  examples/                   # packaged tutorial 3MF files used by Load Example
   legacy/                     # older/experimental code
 examples/
   tutorial_cmy_cubes.3mf      # beginner CMY sample input
-  tutorial_expanded_tiles_v62.3mf
+  tutorial_cmy_benchy_cutup.3mf
 tests/
   test_smoke.py               # lightweight import/package checks
 ```
@@ -213,7 +281,19 @@ tests/
 Generated 3MF/STL/GLB files are intentionally ignored by git. The tiny tutorial
 fixtures in [examples/](examples/) are the exception. Keep large test models,
 slicer exports, and generated benchmark outputs outside the tracked repo or
-publish them separately as release assets.
+publish them separately as release assets or Zenodo datasets.
+
+Raw photographs, calibrated TIFF exports, manuscript figure workspaces, and
+one-off analysis outputs are also intentionally kept out of the public software
+repo. See [docs/release_and_zenodo.md](docs/release_and_zenodo.md) for the
+release checklist and archival DOI workflow.
+
+## Citation And DOI
+
+Citation metadata is provided in [CITATION.cff](CITATION.cff). A persistent DOI
+should be minted from a tagged GitHub release through Zenodo before manuscript
+submission. After Zenodo creates the DOI, add the DOI badge and citation record
+here.
 
 ## License
 

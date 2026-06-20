@@ -65,6 +65,21 @@ except Exception:
         token_is_valid,
     )
 
+try:
+    from layerloom.calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_NAME,
+        nearest_calibrated_palette_entry,
+        palette_uses_calibrated_lab,
+    )
+except Exception:
+    from calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_NAME,
+        nearest_calibrated_palette_entry,
+        palette_uses_calibrated_lab,
+    )
+
 # ─────────────────────────────────────────────────────────────────────
 # Logging
 # ─────────────────────────────────────────────────────────────────────
@@ -495,6 +510,70 @@ def _normalize_hex(hx: Optional[str]) -> Optional[str]:
 def _target_colors_to_levels(target_colors: int) -> int:
     target_colors = max(2, int(target_colors))
     return max(2, int(math.ceil(target_colors ** (1.0 / 3.0))))
+
+def _count_3mf_mesh_geometry(path: str) -> Dict[str, int]:
+    counts = {"objects": 0, "vertices": 0, "triangles": 0}
+    with zipfile.ZipFile(path, "r") as zf:
+        model_name = _find_model_xml_name(zf)
+        if not model_name:
+            return counts
+        current = None
+        with zf.open(model_name, "r") as model_fp:
+            for event, elem in ET.iterparse(model_fp, events=("start", "end")):
+                tag = _strip_ns(elem.tag)
+                if event == "start" and tag == "object":
+                    current = {
+                        "type": (elem.get("type") or "").strip().lower(),
+                        "has_mesh": False,
+                        "vertices": 0,
+                        "triangles": 0,
+                    }
+                elif event == "start" and tag == "mesh" and current is not None:
+                    current["has_mesh"] = True
+                elif event == "end" and current is not None:
+                    if tag == "vertex" and current["has_mesh"]:
+                        current["vertices"] += 1
+                    elif tag == "triangle" and current["has_mesh"]:
+                        current["triangles"] += 1
+                    elif tag == "object":
+                        obj_type = current["type"]
+                        if current["has_mesh"] and (not obj_type or obj_type == "model"):
+                            counts["objects"] += 1
+                            counts["vertices"] += int(current["vertices"])
+                            counts["triangles"] += int(current["triangles"])
+                        current = None
+                if event == "end":
+                    elem.clear()
+    return counts
+
+def _glb_repair_rejection_reason(split_3mf: str, repaired_3mf: str) -> Optional[str]:
+    try:
+        before = _count_3mf_mesh_geometry(split_3mf)
+        after = _count_3mf_mesh_geometry(repaired_3mf)
+    except Exception as e:
+        _log("WARN", f"[glb-import] Could not inspect repaired 3MF geometry: {e}")
+        return None
+
+    before_tris = int(before.get("triangles") or 0)
+    after_tris = int(after.get("triangles") or 0)
+    before_verts = int(before.get("vertices") or 0)
+    after_verts = int(after.get("vertices") or 0)
+    if before_tris <= 0 or after_tris <= 0:
+        return None
+
+    tri_ratio = after_tris / float(before_tris)
+    vert_ratio = after_verts / float(before_verts) if before_verts > 0 else 1.0
+    if before_tris >= 1000 and tri_ratio < 0.25:
+        return (
+            "Repair discarded; continuing with unrepaired GLB split because repair removed "
+            f"too much geometry (triangles {before_tris}->{after_tris}, {tri_ratio:.1%})."
+        )
+    if before_verts >= 1000 and vert_ratio < 0.20:
+        return (
+            "Repair discarded; continuing with unrepaired GLB split because repair removed "
+            f"too many vertices (vertices {before_verts}->{after_verts}, {vert_ratio:.1%})."
+        )
+    return None
 
 def _metadata_key(name: Optional[str]) -> str:
     s = str(name or "").strip()
@@ -1687,6 +1766,7 @@ PALETTE_FILES = {
     "Simple": os.path.join(PALETTES_DIR, "simple_palette.json"),
     "Normal": os.path.join(PALETTES_DIR, "normal_palette.json"),
     "Full":   os.path.join(PALETTES_DIR, "full_palette.json"),
+    CALIBRATED_CMY_NORMAL_NAME: os.path.join(PALETTES_DIR, CALIBRATED_CMY_NORMAL_FILENAME),
 }
 
 # def _sort_by_hue(entries):
@@ -1840,7 +1920,15 @@ def _load_palette_file(path, limit_two=False):
                 hx = "#" + hx
             if (tok, hx) not in seen:
                 seen.add((tok, hx))
-                out.append({"token": tok, "hex": hx})
+                item = dict(e)
+                item["token"] = tok
+                item["hex"] = hx
+                nominal_hex = str(item.get("nominal_hex", "")).strip()
+                if nominal_hex:
+                    if not nominal_hex.startswith("#"):
+                        nominal_hex = "#" + nominal_hex
+                    item["nominal_hex"] = nominal_hex
+                out.append(item)
 
     # De-dupe equivalent tokens (same letter counts), prefer balanced runs (no 'yyy' if 'yy'+'yy' exists).
     out = _dedupe_equivalent_tokens_prefer_balanced_runs(out)
@@ -1854,6 +1942,29 @@ def _hex_to_rgb01(hx: str):
     hx = hx.lstrip("#")
     r,g,b = (int(hx[i:i+2],16) for i in (0,2,4))
     return (r/255,g/255,b/255)
+
+
+def _nearest_palette_entry_for_source(entries, source_hex: str) -> Optional[Dict[str, str]]:
+    if palette_uses_calibrated_lab(entries):
+        entry = nearest_calibrated_palette_entry(entries, source_hex)
+        if entry:
+            return entry
+    try:
+        sr, sg, sb = _hex_to_rgb01(source_hex)
+    except Exception:
+        return None
+    best = None
+    best_dist = None
+    for entry in entries:
+        try:
+            pr, pg, pb = _hex_to_rgb01(entry["hex"])
+        except Exception:
+            continue
+        dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
+        if best_dist is None or dist < best_dist:
+            best_dist = dist
+            best = entry
+    return best
 
 def _filter_by_bw_visibility(entries, add_k: bool, add_w: bool):
     """Show/hide entries based on tokens containing black ('k') and/or white ('w')."""
@@ -2143,6 +2254,7 @@ class AssignColorsApp(tk.Tk):
 
         self.current_palette_name=name; self.current_palette=entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
 
     def _render_palette_grid(self):
         for w in self.palette_inner.winfo_children(): w.destroy()
@@ -2197,23 +2309,7 @@ class AssignColorsApp(tk.Tk):
         return proc
 
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
-        try:
-            sr, sg, sb = _hex_to_rgb01(source_hex)
-        except Exception:
-            return None
-
-        best = None
-        best_dist = None
-        for entry in self.current_palette:
-            try:
-                pr, pg, pb = _hex_to_rgb01(entry["hex"])
-            except Exception:
-                continue
-            dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
-            if best_dist is None or dist < best_dist:
-                best_dist = dist
-                best = entry
-        return best
+        return _nearest_palette_entry_for_source(self.current_palette, source_hex)
 
     def _exact_palette_entry_for_token(self, token: str) -> Optional[Dict[str, str]]:
         tok = str(token or "").strip().lower()
@@ -2232,15 +2328,35 @@ class AssignColorsApp(tk.Tk):
         return None
 
     def _set_assignment_for_oid(self, oid: str, entry: Dict[str, str], source_hex: Optional[str] = None):
-        data = {"token": entry["token"], "hex": entry["hex"]}
+        data = dict(entry)
+        data["token"] = entry["token"]
+        data["hex"] = entry["hex"]
         if source_hex:
             data["source_hex"] = source_hex
+            data["matched_source_hex"] = source_hex
         self.assignments[oid] = data
 
         if self.tree.exists(oid):
             vals = list(self.tree.item(oid, "values"))
             vals[1], vals[2] = entry["hex"], entry["token"]
             self.tree.item(oid, values=tuple(vals))
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if not getattr(self, "assignments", None):
+            return
+        for oid, info in list(self.assignments.items()):
+            token = str(info.get("token") or "").strip().lower()
+            if not token:
+                continue
+            entry = self._exact_palette_entry_for_token(token)
+            if not entry:
+                continue
+            source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            self._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+            if self.viewer:
+                name = self.oid_to_name.get(oid)
+                if name:
+                    self.viewer.set_color_by_name(name, entry["hex"])
 
     def _apply_source_metadata_assignments(
         self,
@@ -2487,9 +2603,17 @@ class AssignColorsApp(tk.Tk):
             if not token:
                 continue
             metadata = {"stack_token": token}
-            source_hex = info.get("source_hex") or info.get("hex")
-            if source_hex:
-                metadata["source_hex"] = source_hex
+            assigned_hex = info.get("hex")
+            if assigned_hex:
+                metadata["source_hex"] = assigned_hex
+            matched_source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            if matched_source_hex and matched_source_hex != assigned_hex:
+                metadata["matched_source_hex"] = matched_source_hex
+            if info.get("calibrated") and assigned_hex:
+                metadata["calibrated_hex"] = assigned_hex
+            nominal_hex = info.get("nominal_hex")
+            if nominal_hex:
+                metadata["nominal_hex"] = nominal_hex
             out[oid] = metadata
         return out
 
@@ -2553,6 +2677,7 @@ class AssignColorsApp(tk.Tk):
             orientation_matrix=self.pending_rotation_matrix,
             plate_width=PLATE_WIDTH_MM,
             plate_depth=PLATE_DEPTH_MM,
+            center_xy=False,
         )
         _perf_log("transform plan", t_plan, extra=f"include_assignments={include_assignments}")
         t_write = time.perf_counter()
@@ -2787,7 +2912,12 @@ class AssignColorsApp(tk.Tk):
             ]
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
-                import_3mf = repaired_3mf
+                reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
+                if reject_reason:
+                    repair_warning = reject_reason
+                    _log("WARN", repair_warning)
+                else:
+                    import_3mf = repaired_3mf
             except Exception as e:
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
@@ -3453,7 +3583,7 @@ class EmbeddedPVViewer(PVWindow):
         super().__init__()
         self.plotter = QtInteractor(parent)
         self._configured = False
-        self._layer_height = 0.2
+        self._layer_height = 0.16
         self._layer_scale = 1.0
         self._layer_preview_actors: List[object] = []
         self._static_plate_overlay_built = False
@@ -4115,7 +4245,6 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         toolbar.addAction(save_action)
         toolbar.addSeparator()
         toolbar.addAction(preview_action)
-        toolbar.addAction(weave_action)
         toolbar.addSeparator()
 
         self.glb_colors_spin = QtWidgets.QSpinBox()
@@ -4128,7 +4257,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setDecimals(3)
         self.layer_height_spin.setRange(0.01, 10.0)
         self.layer_height_spin.setSingleStep(0.01)
-        self.layer_height_spin.setValue(0.2)
+        self.layer_height_spin.setValue(0.16)
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
@@ -4137,6 +4266,8 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         toolbar.addSeparator()
         toolbar.addWidget(self._toolbar_label("Layer height"))
         toolbar.addWidget(self.layer_height_spin)
+        toolbar.addSeparator()
+        toolbar.addAction(weave_action)
         toolbar.addSeparator()
 
         self.toolbar_status_label = QtWidgets.QLabel("No model loaded")
@@ -4310,6 +4441,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.current_palette_name = name
         self.current_palette = entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
         self._refresh_status_summary()
 
     def _render_palette_grid(self):
@@ -4342,22 +4474,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
     # ---------- backend logic ----------
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
-        try:
-            sr, sg, sb = _hex_to_rgb01(source_hex)
-        except Exception:
-            return None
-        best = None
-        best_dist = None
-        for entry in self.current_palette:
-            try:
-                pr, pg, pb = _hex_to_rgb01(entry["hex"])
-            except Exception:
-                continue
-            dist = (sr - pr) ** 2 + (sg - pg) ** 2 + (sb - pb) ** 2
-            if best_dist is None or dist < best_dist:
-                best_dist = dist
-                best = entry
-        return best
+        return _nearest_palette_entry_for_source(self.current_palette, source_hex)
 
     def _exact_palette_entry_for_token(self, token: str) -> Optional[Dict[str, str]]:
         tok = str(token or "").strip().lower()
@@ -4384,9 +4501,12 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return None
 
     def _set_assignment_for_oid(self, oid: str, entry: Dict[str, str], source_hex: Optional[str] = None):
-        data = {"token": entry["token"], "hex": entry["hex"]}
+        data = dict(entry)
+        data["token"] = entry["token"]
+        data["hex"] = entry["hex"]
         if source_hex:
             data["source_hex"] = source_hex
+            data["matched_source_hex"] = source_hex
         self.assignments[oid] = data
         item = self._item_for_oid(oid)
         if item is not None:
@@ -4394,6 +4514,23 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             item.setText(2, entry["token"])
         if self._current_selected_oid() == oid:
             self._update_selected_part_summary(oid)
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if not getattr(self, "assignments", None):
+            return
+        for oid, info in list(self.assignments.items()):
+            token = str(info.get("token") or "").strip().lower()
+            if not token:
+                continue
+            entry = self._exact_palette_entry_for_token(token)
+            if not entry:
+                continue
+            source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            self._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+            if self.viewer:
+                name = self.oid_to_name.get(oid)
+                if name:
+                    self.viewer.set_color_by_name(name, entry["hex"])
 
     def _apply_source_metadata_assignments(
         self,
@@ -4621,9 +4758,17 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             if not token:
                 continue
             metadata = {"stack_token": token}
-            source_hex = info.get("source_hex") or info.get("hex")
-            if source_hex:
-                metadata["source_hex"] = source_hex
+            assigned_hex = info.get("hex")
+            if assigned_hex:
+                metadata["source_hex"] = assigned_hex
+            matched_source_hex = info.get("matched_source_hex") or info.get("source_hex")
+            if matched_source_hex and matched_source_hex != assigned_hex:
+                metadata["matched_source_hex"] = matched_source_hex
+            if info.get("calibrated") and assigned_hex:
+                metadata["calibrated_hex"] = assigned_hex
+            nominal_hex = info.get("nominal_hex")
+            if nominal_hex:
+                metadata["nominal_hex"] = nominal_hex
             out[oid] = metadata
         return out
 
@@ -4677,6 +4822,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             orientation_matrix=self.pending_rotation_matrix,
             plate_width=PLATE_WIDTH_MM,
             plate_depth=PLATE_DEPTH_MM,
+            center_xy=False,
         )
         _perf_log("transform plan", t_plan, extra=f"include_assignments={include_assignments}")
         t_write = time.perf_counter()
@@ -4884,7 +5030,12 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             repair_cmd = [sys.executable, GLB_REPAIR_SCRIPT, split_3mf, "--out", repaired_3mf, "--quiet"]
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
-                import_3mf = repaired_3mf
+                reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
+                if reject_reason:
+                    repair_warning = reject_reason
+                    _log("WARN", repair_warning)
+                else:
+                    import_3mf = repaired_3mf
             except Exception as e:
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
@@ -5424,6 +5575,7 @@ def main():
         "Simple": os.path.join(PALETTES_DIR, "simple_palette.json"),
         "Normal": os.path.join(PALETTES_DIR, "normal_palette.json"),
         "Full": os.path.join(PALETTES_DIR, "full_palette.json"),
+        CALIBRATED_CMY_NORMAL_NAME: os.path.join(PALETTES_DIR, CALIBRATED_CMY_NORMAL_FILENAME),
     }
 
     try:

@@ -168,9 +168,9 @@ def _reduced_fraction_signature(token: str) -> tuple[tuple[str, int], ...]:
     return tuple(sorted((letter, value // divisor) for letter, value in counts.items()))
 
 
-def _run_preference_key(token: str) -> tuple[int, int, int, int, str]:
+def _run_preference_key(token: str) -> tuple[int, int, int, int, int, str]:
     if not token:
-        return (999, 999, 0, 0, "")
+        return (999, 999, 999, 0, 0, "")
     runs = []
     cur = token[0]
     n = 1
@@ -185,7 +185,7 @@ def _run_preference_key(token: str) -> tuple[int, int, int, int, str]:
     max_run = max(runs)
     over2 = sum(max(0, run - 2) for run in runs)
     pairs = sum(1 for run in runs if run == 2)
-    return (max_run, over2, -pairs, -len(runs), token)
+    return (max_run, len(token), over2, -pairs, -len(runs), token)
 
 
 def _token_fractions(token: str, alphabet: tuple[str, ...]) -> dict[str, float]:
@@ -205,8 +205,9 @@ def build_layer_fraction_palette(
     Enumerate unique layer-fraction recipes for an arbitrary token alphabet.
 
     Different orderings and reducible repeats with the same layer fractions are
-    collapsed to one representative token, preferring balanced runs. This is the
-    same recipe-counting convention used for the manuscript design-space table.
+    collapsed to one representative token, preferring balanced runs and then
+    the shortest reduced token. This is the same recipe-counting convention
+    used for the manuscript design-space table.
     """
     if isinstance(alphabet, str):
         letters = tuple(ch.lower() for ch in alphabet)

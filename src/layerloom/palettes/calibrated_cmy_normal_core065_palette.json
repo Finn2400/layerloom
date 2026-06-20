@@ -1,0 +1,5247 @@
+{
+  "name": "Calibrated CMY Normal (core065)",
+  "description": "Normal LayerLoom palette with measured CMY core065 colors from example_gamut_manual_core065; unmeasured recipes use nominal hex values.",
+  "calibration": {
+    "source_dataset": "example_gamut_manual_core065",
+    "source_csv": "gamut_photo_analysis/example_gamut_manual_core065/tables/measured_regions.csv",
+    "measured_token_count": 55,
+    "fallback": "nominal_hex"
+  },
+  "entries": [
+    {
+      "token": "k",
+      "hex": "#141414",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 1.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#141414",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkckkk",
+      "hex": "#1a3235",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.8333333333333334,
+        "W": 0.0
+      },
+      "nominal_hex": "#1a3235",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkckk",
+      "hex": "#1b383c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.8,
+        "W": 0.0
+      },
+      "nominal_hex": "#1b383c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kckk",
+      "hex": "#1d4146",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.75,
+        "W": 0.0
+      },
+      "nominal_hex": "#1d4146",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kck",
+      "hex": "#205056",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#205056",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kckck",
+      "hex": "#235c64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#235c64",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ck",
+      "hex": "#276e78",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#276e78",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckc",
+      "hex": "#2a808c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#2a808c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckc",
+      "hex": "#2d8c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#2d8c99",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cckc",
+      "hex": "#309baa",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#309baa",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkkmkk",
+      "hex": "#311429",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.8333333333333334,
+        "W": 0.0
+      },
+      "nominal_hex": "#311429",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cckcc",
+      "hex": "#32a4b4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#32a4b4",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccckcc",
+      "hex": "#33aaba",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8333333333333334,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#33aaba",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkmkk",
+      "hex": "#37152e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.8,
+        "W": 0.0
+      },
+      "nominal_hex": "#37152e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckkmkk",
+      "hex": "#37324b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#37324b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkkwkk",
+      "hex": "#393939",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.8333333333333334,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#393939",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "c",
+      "hex": "#4472c9",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#3ac8dc",
+      "measured_token": "c",
+      "measured_R": 0.26666668,
+      "measured_G": 0.44705883,
+      "measured_B": 0.7882353,
+      "measured_L": 48.85771570664909,
+      "measured_a": 12.385156668997643,
+      "measured_b": -49.86971526819286,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "28",
+      "source_label": "gamut_028_c",
+      "deltaE00_to_expected": 33.06379521550467,
+      "within_region_deltaE00_median": 0.4458557462589591,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kkkykk",
+      "hex": "#3b3510",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.8333333333333334,
+        "W": 0.0
+      },
+      "nominal_hex": "#3b3510",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckmk",
+      "hex": "#3d506c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#3d506c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kckmk",
+      "hex": "#3e3956",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#3e3956",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkmk",
+      "hex": "#3f1534",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.75,
+        "W": 0.0
+      },
+      "nominal_hex": "#3f1534",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckkwkk",
+      "hex": "#3f575a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#3f575a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkwkk",
+      "hex": "#414141",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.8,
+        "W": 0.2
+      },
+      "nominal_hex": "#414141",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckkykk",
+      "hex": "#415332",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#415332",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkykk",
+      "hex": "#433c10",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.8,
+        "W": 0.0
+      },
+      "nominal_hex": "#433c10",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckcm",
+      "hex": "#446e8d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#446e8d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckm",
+      "hex": "#465d7e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#465d7e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckwk",
+      "hex": "#46757c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#46757c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckyk",
+      "hex": "#477153",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#477153",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kckwk",
+      "hex": "#486569",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.2
+      },
+      "nominal_hex": "#486569",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckmk",
+      "hex": "#494266",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#494266",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kckyk",
+      "hex": "#4a6038",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#4a6038",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cckccm",
+      "hex": "#4a8caf",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#4a8caf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkwk",
+      "hex": "#4c4c4c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.75,
+        "W": 0.25
+      },
+      "nominal_hex": "#4c4c4c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckcw",
+      "hex": "#4c939d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#4c939d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcmc",
+      "hex": "#4d81a6",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#4d81a6",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmk",
+      "hex": "#4e153f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#4e153f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkyk",
+      "hex": "#4e460f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.75,
+        "W": 0.0
+      },
+      "nominal_hex": "#4e460f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckcy",
+      "hex": "#4e8f74",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#4e8f74",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckckw",
+      "hex": "#508991",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.2
+      },
+      "nominal_hex": "#508991",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cccmcc",
+      "hex": "#495fb3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8333333333333334,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#50aad0",
+      "measured_token": "cccmcc",
+      "measured_R": 0.28627452,
+      "measured_G": 0.37254903,
+      "measured_B": 0.7019608,
+      "measured_L": 42.466505009524326,
+      "measured_a": 17.95237719867171,
+      "measured_b": -47.53827162857491,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "32",
+      "source_label": "gamut_032_cccmcc",
+      "deltaE00_to_expected": 28.411224628469004,
+      "within_region_deltaE00_median": 1.5106493163342558,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "ckcm",
+      "hex": "#526f98",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#526f98",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcky",
+      "hex": "#528460",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#528460",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cckccw",
+      "hex": "#52b1be",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#52b1be",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckmkmk",
+      "hex": "#543360",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#543360",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cckccy",
+      "hex": "#54ad96",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#54ad96",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckwk",
+      "hex": "#55797e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.25
+      },
+      "nominal_hex": "#55797e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccmcc",
+      "hex": "#4d5eb2",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#55a5ce",
+      "measured_token": "cccmc",
+      "measured_R": 0.3019608,
+      "measured_G": 0.36862746,
+      "measured_B": 0.69803923,
+      "measured_L": 42.44173243895131,
+      "measured_a": 18.909047864745453,
+      "measured_b": -46.81586777069651,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "33",
+      "source_label": "gamut_033_cccmc",
+      "deltaE00_to_expected": 26.69028934268171,
+      "within_region_deltaE00_median": 0.8950971652509466,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kkmkkw",
+      "hex": "#563a4f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#563a4f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcwc",
+      "hex": "#57adb9",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.2
+      },
+      "nominal_hex": "#57adb9",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkmkky",
+      "hex": "#583626",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#583626",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckyk",
+      "hex": "#587341",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#587341",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcyc",
+      "hex": "#59a888",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#59a888",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cccwcc",
+      "hex": "#59cfe0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8333333333333334,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#59cfe0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmk",
+      "hex": "#5a1648",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#5a1648",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cccycc",
+      "hex": "#508488",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8333333333333334,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#5acbb7",
+      "measured_token": "cccycc",
+      "measured_R": 0.3137255,
+      "measured_G": 0.5176471,
+      "measured_B": 0.53333336,
+      "measured_L": 51.6931498567438,
+      "measured_a": -16.23855541147179,
+      "measured_b": -7.698718411285488,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "27",
+      "source_label": "gamut_027_cccycc",
+      "deltaE00_to_expected": 23.034097562386897,
+      "within_region_deltaE00_median": 2.0003247650095712,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "ckm",
+      "hex": "#5b5182",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#5b5182",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccmc",
+      "hex": "#505ab0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#5c9cca",
+      "measured_token": "cccm",
+      "measured_R": 0.3137255,
+      "measured_G": 0.3529412,
+      "measured_B": 0.6901961,
+      "measured_L": 41.455745136901584,
+      "measured_a": 21.306331071091478,
+      "measured_b": -46.84606945627494,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "34",
+      "source_label": "gamut_034_cccm",
+      "deltaE00_to_expected": 24.549795457344548,
+      "within_region_deltaE00_median": 0.78577572906975,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kwk",
+      "hex": "#5f5f5f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6666666666666666,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#5f5f5f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcw",
+      "hex": "#5fa6b0",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.25
+      },
+      "nominal_hex": "#5fa6b0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccwcc",
+      "hex": "#5fd1e1",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#5fd1e1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kkwkky",
+      "hex": "#605b36",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.6666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#605b36",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckmkm",
+      "hex": "#613a70",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#613a70",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcmcm",
+      "hex": "#616fa3",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#616fa3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcy",
+      "hex": "#61a073",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#61a073",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccycc",
+      "hex": "#518682",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.8,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#61ccb0",
+      "measured_token": "cccyc",
+      "measured_R": 0.31764707,
+      "measured_G": 0.5254902,
+      "measured_B": 0.50980395,
+      "measured_L": 52.27893590735921,
+      "measured_a": -18.61233409714208,
+      "measured_b": -3.3278351326626376,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "26",
+      "source_label": "gamut_026_cccyc",
+      "deltaE00_to_expected": 21.830211616965197,
+      "within_region_deltaE00_median": 1.0985020399728407,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kyk",
+      "hex": "#62570d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.6666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#62570d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkwk",
+      "hex": "#64425b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.2
+      },
+      "nominal_hex": "#64425b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckwkwk",
+      "hex": "#657d80",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#657d80",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkyk",
+      "hex": "#663d2a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.2,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#663d2a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmc",
+      "hex": "#5753a3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#678dc4",
+      "measured_token": "ccm",
+      "measured_R": 0.34117648,
+      "measured_G": 0.3254902,
+      "measured_B": 0.6392157,
+      "measured_L": 39.25628436217245,
+      "measured_a": 23.518598847894395,
+      "measured_b": -43.07666001956451,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "35",
+      "source_label": "gamut_035_ccm",
+      "deltaE00_to_expected": 21.458269600586863,
+      "within_region_deltaE00_median": 0.8014627287108168,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "ckykyk",
+      "hex": "#68752e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#68752e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccwc",
+      "hex": "#68d3e2",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#68d3e2",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckmcm",
+      "hex": "#695e98",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#695e98",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "km",
+      "hex": "#6b1655",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#6b1655",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckw",
+      "hex": "#6b9ba1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#6b9ba1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccyc",
+      "hex": "#548c73",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.75,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#6bcda5",
+      "measured_token": "cccy",
+      "measured_R": 0.32941177,
+      "measured_G": 0.54901963,
+      "measured_B": 0.4509804,
+      "measured_L": 53.87422442075034,
+      "measured_a": -24.265052534730824,
+      "measured_b": 7.5079351396937,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "25",
+      "source_label": "gamut_025_cccy",
+      "deltaE00_to_expected": 18.99732639935201,
+      "within_region_deltaE00_median": 1.1894822735133121,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kwkwk",
+      "hex": "#6e6e6e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.6,
+        "W": 0.4
+      },
+      "nominal_hex": "#6e6e6e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cky",
+      "hex": "#6f9350",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#6f9350",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkyk",
+      "hex": "#70693d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.6,
+        "W": 0.2
+      },
+      "nominal_hex": "#70693d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmc",
+      "hex": "#5e51a0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#7082c0",
+      "measured_token": "ccmcm",
+      "measured_R": 0.36862746,
+      "measured_G": 0.31764707,
+      "measured_B": 0.627451,
+      "measured_L": 39.245226447215515,
+      "measured_a": 25.31430335229351,
+      "measured_b": -41.23402786307962,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "37",
+      "source_label": "gamut_037_ccmcm",
+      "deltaE00_to_expected": 17.59831692996592,
+      "within_region_deltaE00_median": 0.7222957765720601,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "ccmccw",
+      "hex": "#70b2d4",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#70b2d4",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmkmkm",
+      "hex": "#713476",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#713476",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccmccy",
+      "hex": "#55707c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#71aeab",
+      "measured_token": "cccmcy",
+      "measured_R": 0.33333334,
+      "measured_G": 0.4392157,
+      "measured_B": 0.4862745,
+      "measured_L": 45.633758129220304,
+      "measured_a": -6.206195760244282,
+      "measured_b": -10.112470437354837,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "31",
+      "source_label": "gamut_031_cccmcy",
+      "deltaE00_to_expected": 23.48503174659577,
+      "within_region_deltaE00_median": 3.530664616753832,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kykyk",
+      "hex": "#72650c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.6,
+        "W": 0.0
+      },
+      "nominal_hex": "#72650c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcwcw",
+      "hex": "#72b9c3",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#72b9c3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmkw",
+      "hex": "#733b64",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#733b64",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmky",
+      "hex": "#75373c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.16666666666666666,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#75373c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmkm",
+      "hex": "#754387",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#754387",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckwkw",
+      "hex": "#759296",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.4
+      },
+      "nominal_hex": "#759296",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckcycy",
+      "hex": "#75b171",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#75b171",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkw",
+      "hex": "#784d6c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.25
+      },
+      "nominal_hex": "#784d6c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmkm",
+      "hex": "#785297",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#785297",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwc",
+      "hex": "#78d7e4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#78d7e4",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckyky",
+      "hex": "#798934",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#798934",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmky",
+      "hex": "#7a482f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.25,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#7a482f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcwc",
+      "hex": "#7aaed3",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#7aaed3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ccwccy",
+      "hex": "#7ad3bb",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#7ad3bb",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cyc",
+      "hex": "#599163",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#7bcf92",
+      "measured_token": "ccy",
+      "measured_R": 0.34901962,
+      "measured_G": 0.5686275,
+      "measured_B": 0.3882353,
+      "measured_L": 55.35402850208666,
+      "measured_a": -28.610523322662896,
+      "measured_b": 18.763656250304052,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "23",
+      "source_label": "gamut_023_ccy",
+      "deltaE00_to_expected": 17.725561823003638,
+      "within_region_deltaE00_median": 1.47739229624806,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kmkwkw",
+      "hex": "#7c5f74",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#7c5f74",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcyc",
+      "hex": "#5d7177",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.2,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#7ca9a2",
+      "measured_token": "ccmcy",
+      "measured_R": 0.3647059,
+      "measured_G": 0.44313726,
+      "measured_B": 0.46666667,
+      "measured_L": 46.334881572674206,
+      "measured_a": -6.034604418894363,
+      "measured_b": -5.300709683489102,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "30",
+      "source_label": "gamut_030_ccmcy",
+      "deltaE00_to_expected": 20.785101107008746,
+      "within_region_deltaE00_median": 3.1684096601037153,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mkmkm",
+      "hex": "#7d1762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#7d1762",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckwcw",
+      "hex": "#7db6be",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.4
+      },
+      "nominal_hex": "#7db6be",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cm",
+      "hex": "#674e9e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#7e70b9",
+      "measured_token": "cm",
+      "measured_R": 0.40392157,
+      "measured_G": 0.30588236,
+      "measured_B": 0.61960787,
+      "measured_L": 39.34408766378942,
+      "measured_a": 28.879746913557796,
+      "measured_b": -39.85007306775816,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "38",
+      "source_label": "gamut_038_cm",
+      "deltaE00_to_expected": 11.76011273495896,
+      "within_region_deltaE00_median": 0.5738317282133779,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kmkyky",
+      "hex": "#7f5823",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#7f5823",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ckycy",
+      "hex": "#81ad5c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#81ad5c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mcmkm",
+      "hex": "#843b8a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#843b8a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kw",
+      "hex": "#848484",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.5,
+        "W": 0.5
+      },
+      "nominal_hex": "#848484",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwc",
+      "hex": "#84dae6",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#84dae6",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkwky",
+      "hex": "#86805b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.5,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#86805b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmcw",
+      "hex": "#8695c8",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#8695c8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcyc",
+      "hex": "#86d5b5",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#86d5b5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmw",
+      "hex": "#874375",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.2
+      },
+      "nominal_hex": "#874375",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkyky",
+      "hex": "#877d32",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.5,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#877d32",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwky",
+      "hex": "#877f47",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.5,
+        "W": 0.25
+      },
+      "nominal_hex": "#877f47",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mkm",
+      "hex": "#88176a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#88176a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmcy",
+      "hex": "#626376",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.3333333333333333,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#8891a0",
+      "measured_token": "cmcmcy",
+      "measured_R": 0.38431373,
+      "measured_G": 0.3882353,
+      "measured_B": 0.4627451,
+      "measured_L": 42.581484561038394,
+      "measured_a": 3.4169453071457023,
+      "measured_b": -10.28230089286053,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "36",
+      "source_label": "gamut_036_cmcmcy",
+      "deltaE00_to_expected": 17.859752036562618,
+      "within_region_deltaE00_median": 4.00196287256064,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cycyc",
+      "hex": "#5c945b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.6,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#88d184",
+      "measured_token": "ccycy",
+      "measured_R": 0.36078432,
+      "measured_G": 0.5803922,
+      "measured_B": 0.35686275,
+      "measured_L": 56.34858744174629,
+      "measured_a": -30.455904210603734,
+      "measured_b": 24.634483378161153,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "22",
+      "source_label": "gamut_022_ccycy",
+      "deltaE00_to_expected": 17.35950222949121,
+      "within_region_deltaE00_median": 0.8836501886882794,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kmkmy",
+      "hex": "#893e44",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.2,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#893e44",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ky",
+      "hex": "#89790a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.5,
+        "W": 0.0
+      },
+      "nominal_hex": "#89790a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwkwkw",
+      "hex": "#8aa2a5",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.5
+      },
+      "nominal_hex": "#8aa2a5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcw",
+      "hex": "#8ba7d0",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#8ba7d0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mcmcm",
+      "hex": "#704c99",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#8c5fb2",
+      "measured_token": "cmcmm",
+      "measured_R": 0.4392157,
+      "measured_G": 0.29803923,
+      "measured_B": 0.6,
+      "measured_L": 39.37876910797664,
+      "measured_a": 31.307923426713625,
+      "measured_b": -36.54365381737739,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "40",
+      "source_label": "gamut_040_cmcmm",
+      "deltaE00_to_expected": 8.341571204877377,
+      "within_region_deltaE00_median": 0.8282027653814918,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "cmcy",
+      "hex": "#606d63",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.25,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#8da293",
+      "measured_token": "cmcy",
+      "measured_R": 0.3764706,
+      "measured_G": 0.42745098,
+      "measured_B": 0.3882353,
+      "measured_L": 44.64607077269714,
+      "measured_a": -6.709816445004041,
+      "measured_b": 4.012356884596735,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "29",
+      "source_label": "gamut_029_cmcy",
+      "deltaE00_to_expected": 19.364890195285362,
+      "within_region_deltaE00_median": 2.8850646415459145,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cwkw",
+      "hex": "#8eb1b6",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.5
+      },
+      "nominal_hex": "#8eb1b6",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmmkmm",
+      "hex": "#8f358c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#8f358c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cykyky",
+      "hex": "#8f972b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#8f972b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcwcw",
+      "hex": "#8fb9d8",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#8fb9d8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmwm",
+      "hex": "#913c7a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#913c7a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmwkw",
+      "hex": "#916f88",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.4
+      },
+      "nominal_hex": "#916f88",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwkw",
+      "hex": "#91c0c7",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.5
+      },
+      "nominal_hex": "#91c0c7",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmkmym",
+      "hex": "#923851",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.16666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#923851",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcycy",
+      "hex": "#5f785a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.16666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#92b287",
+      "measured_token": "cmcycy",
+      "measured_R": 0.37254903,
+      "measured_G": 0.47058824,
+      "measured_B": 0.3529412,
+      "measured_L": 47.93862520136858,
+      "measured_a": -15.439497100554366,
+      "measured_b": 13.625464114775099,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "24",
+      "source_label": "gamut_024_cmcycy",
+      "deltaE00_to_expected": 19.37013605936373,
+      "within_region_deltaE00_median": 3.6146803088996537,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cyky",
+      "hex": "#93a63c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#93a63c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mcm",
+      "hex": "#734891",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#9553ad",
+      "measured_token": "cmm",
+      "measured_R": 0.4509804,
+      "measured_G": 0.28235295,
+      "measured_B": 0.5686275,
+      "measured_L": 38.59167585574356,
+      "measured_a": 32.78177429327076,
+      "measured_b": -33.606731816556035,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "41",
+      "source_label": "gamut_041_cmm",
+      "deltaE00_to_expected": 8.033760719435096,
+      "within_region_deltaE00_median": 0.6265848072332872,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kmyky",
+      "hex": "#956626",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.4,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#956626",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmw",
+      "hex": "#968bc5",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#968bc5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cycyky",
+      "hex": "#96b54c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#96b54c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mkmm",
+      "hex": "#971775",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.75,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#971775",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cw",
+      "hex": "#97dee8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#97dee8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmy",
+      "hex": "#6d606e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.4,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#988694",
+      "measured_token": "cmcmy",
+      "measured_R": 0.42745098,
+      "measured_G": 0.3764706,
+      "measured_B": 0.43137255,
+      "measured_L": 42.503870361176844,
+      "measured_a": 7.619263649441502,
+      "measured_b": -5.510386321487825,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "39",
+      "source_label": "gamut_039_cmcmy",
+      "deltaE00_to_expected": 15.505585277869775,
+      "within_region_deltaE00_median": 2.3767233152806386,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kmw",
+      "hex": "#99608a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#99608a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwcy",
+      "hex": "#99dabf",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#99dabf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcycy",
+      "hex": "#9ad796",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#9ad796",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcy",
+      "hex": "#9ad9ab",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#9ad9ab",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wkwkw",
+      "hex": "#9b9b9b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.4,
+        "W": 0.6
+      },
+      "nominal_hex": "#9b9b9b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmy",
+      "hex": "#9c5938",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.3333333333333333,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#9c5938",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cy",
+      "hex": "#5f9448",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#9cd36e",
+      "measured_token": "cy",
+      "measured_R": 0.37254903,
+      "measured_G": 0.5803922,
+      "measured_B": 0.28235295,
+      "measured_L": 56.16764660333675,
+      "measured_a": -32.11921545572238,
+      "measured_b": 34.23604809030777,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "20",
+      "source_label": "gamut_020_cy",
+      "deltaE00_to_expected": 18.470001311147985,
+      "within_region_deltaE00_median": 0.7211870285587746,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cmcmwm",
+      "hex": "#9d78bd",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#9d78bd",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkwy",
+      "hex": "#9d966a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.4,
+        "W": 0.4
+      },
+      "nominal_hex": "#9d966a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmcmym",
+      "hex": "#745974",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.5,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#9f7494",
+      "measured_token": "cmcmym",
+      "measured_R": 0.45490196,
+      "measured_G": 0.34901962,
+      "measured_B": 0.45490196,
+      "measured_L": 41.37274782886071,
+      "measured_a": 16.007491841072337,
+      "measured_b": -10.446558926298387,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "42",
+      "source_label": "gamut_042_cmcmym",
+      "deltaE00_to_expected": 13.029837360976364,
+      "within_region_deltaE00_median": 3.0316418370503166,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kwyky",
+      "hex": "#9f9239",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.4,
+        "W": 0.2
+      },
+      "nominal_hex": "#9f9239",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmkmm",
+      "hex": "#a0187c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#a0187c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mcmm",
+      "hex": "#79458b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.75,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#a044a7",
+      "measured_token": "cmmm",
+      "measured_R": 0.4745098,
+      "measured_G": 0.27058825,
+      "measured_B": 0.54509807,
+      "measured_L": 38.045962577269115,
+      "measured_a": 34.8392997818395,
+      "measured_b": -30.257002698096723,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "43",
+      "source_label": "gamut_043_cmmm",
+      "deltaE00_to_expected": 8.359964839921679,
+      "within_region_deltaE00_median": 0.7439618253439894,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "cmwcw",
+      "hex": "#a0b7d8",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#a0b7d8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkwmw",
+      "hex": "#a1859a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.5
+      },
+      "nominal_hex": "#a1859a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ykyky",
+      "hex": "#a18d08",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.4,
+        "W": 0.0
+      },
+      "nominal_hex": "#a18d08",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcwkw",
+      "hex": "#a2bfc3",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.6
+      },
+      "nominal_hex": "#a2bfc3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmwm",
+      "hex": "#a34e8d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.25
+      },
+      "nominal_hex": "#a34e8d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmycy",
+      "hex": "#65724a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.2,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#a4ae76",
+      "measured_token": "cmycy",
+      "measured_R": 0.39607844,
+      "measured_G": 0.44705883,
+      "measured_B": 0.2901961,
+      "measured_L": 46.24686008992331,
+      "measured_a": -12.532458174875972,
+      "measured_b": 20.849603263591987,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "21",
+      "source_label": "gamut_021_cmycy",
+      "deltaE00_to_expected": 21.059745104797212,
+      "within_region_deltaE00_median": 1.7743926589680823,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "mmkmmm",
+      "hex": "#a51880",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8333333333333334,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#a51880",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmym",
+      "hex": "#a64950",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.25,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#a64950",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kykymy",
+      "hex": "#a67a1f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.5,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#a67a1f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmw",
+      "hex": "#a69ccd",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#a69ccd",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmcmm",
+      "hex": "#7b4084",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.8,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#a73ca4",
+      "measured_token": "mcmmm",
+      "measured_R": 0.48235294,
+      "measured_G": 0.2509804,
+      "measured_B": 0.5176471,
+      "measured_L": 36.87558506001016,
+      "measured_a": 36.66174380849899,
+      "measured_b": -27.84157566663612,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "44",
+      "source_label": "gamut_044_mcmmm",
+      "deltaE00_to_expected": 9.253275834818483,
+      "within_region_deltaE00_median": 0.5639631317626238,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "ycyky",
+      "hex": "#a8b130",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#a8b130",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmy",
+      "hex": "#6e6551",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.3333333333333333,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#a9957b",
+      "measured_token": "cmy",
+      "measured_R": 0.43137255,
+      "measured_G": 0.39607844,
+      "measured_B": 0.31764707,
+      "measured_L": 43.0382657096152,
+      "measured_a": -0.06353042445272905,
+      "measured_b": 12.593745719658333,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "2",
+      "source_label": "gamut_002_cmy",
+      "deltaE00_to_expected": 19.845909941816217,
+      "within_region_deltaE00_median": 2.7500884550566003,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "mkmwm",
+      "hex": "#aa448f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.2
+      },
+      "nominal_hex": "#aa448f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wkw",
+      "hex": "#aaaaaa",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.3333333333333333,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#aaaaaa",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcwcw",
+      "hex": "#aae3eb",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#aae3eb",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwkwyw",
+      "hex": "#aba681",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.5
+      },
+      "nominal_hex": "#aba681",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmcmmm",
+      "hex": "#813f84",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.8333333333333334,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#ac36a1",
+      "measured_token": "mmcmmm",
+      "measured_R": 0.5058824,
+      "measured_G": 0.24705882,
+      "measured_B": 0.5176471,
+      "measured_L": 37.642237544524185,
+      "measured_a": 38.69647149088673,
+      "measured_b": -26.366232393971835,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "45",
+      "source_label": "gamut_045_mmcmmm",
+      "deltaE00_to_expected": 8.737213409136036,
+      "within_region_deltaE00_median": 0.7123752286390795,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "mkmym",
+      "hex": "#ac3f5e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.2,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#ac3f5e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwy",
+      "hex": "#acdeba",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#acdeba",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmwm",
+      "hex": "#ad7bbf",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#ad7bbf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwy",
+      "hex": "#ada258",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.3333333333333333,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#ada258",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmmwmm",
+      "hex": "#ae3c90",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#ae3c90",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwmw",
+      "hex": "#aec1dc",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#aec1dc",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwycy",
+      "hex": "#aeda89",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#aeda89",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmmymm",
+      "hex": "#af3967",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#af3967",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmym",
+      "hex": "#7b5b5d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.5,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#af7682",
+      "measured_token": "cmym",
+      "measured_R": 0.48235294,
+      "measured_G": 0.35686275,
+      "measured_B": 0.3647059,
+      "measured_L": 42.08780054904379,
+      "measured_a": 13.43204131746295,
+      "measured_b": 4.600216099171828,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "47",
+      "source_label": "gamut_047_cmym",
+      "deltaE00_to_expected": 15.32129107959954,
+      "within_region_deltaE00_median": 3.1364840030792003,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kykywy",
+      "hex": "#af9f2f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.3333333333333333,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#af9f2f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwmw",
+      "hex": "#b085a5",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.5
+      },
+      "nominal_hex": "#b085a5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yky",
+      "hex": "#b09b06",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.3333333333333333,
+        "W": 0.0
+      },
+      "nominal_hex": "#b09b06",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwwkww",
+      "hex": "#b0c8cb",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#b0c8cb",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ycycy",
+      "hex": "#63933e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.4,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#b0d558",
+      "measured_token": "cycyy",
+      "measured_R": 0.3882353,
+      "measured_G": 0.5764706,
+      "measured_B": 0.24313726,
+      "measured_L": 55.989972328346624,
+      "measured_a": -31.746737428652917,
+      "measured_b": 39.85127153721972,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "19",
+      "source_label": "gamut_019_cycyy",
+      "deltaE00_to_expected": 20.325354154784172,
+      "within_region_deltaE00_median": 1.0873350771290637,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mcmwm",
+      "hex": "#b168b7",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#b168b7",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mcmym",
+      "hex": "#7f5365",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.6,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#b36386",
+      "measured_token": "cmmym",
+      "measured_R": 0.49803922,
+      "measured_G": 0.3254902,
+      "measured_B": 0.39607844,
+      "measured_L": 40.76134759180189,
+      "measured_a": 20.76927256031652,
+      "measured_b": -2.802959738545352,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "48",
+      "source_label": "gamut_048_cmmym",
+      "deltaE00_to_expected": 13.091807029096875,
+      "within_region_deltaE00_median": 1.9686216157447853,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "cycymy",
+      "hex": "#677239",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.16666666666666666,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#b3b662",
+      "measured_token": "cycymy",
+      "measured_R": 0.40392157,
+      "measured_G": 0.44705883,
+      "measured_B": 0.22352941,
+      "measured_L": 46.01976227333646,
+      "measured_a": -14.214101302654324,
+      "measured_b": 30.193030415056477,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "18",
+      "source_label": "gamut_018_cycymy",
+      "deltaE00_to_expected": 23.875929526634607,
+      "within_region_deltaE00_median": 1.4110428573460945,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cmmwmm",
+      "hex": "#b45ab1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#b45ab1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmwmw",
+      "hex": "#b470a2",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.4
+      },
+      "nominal_hex": "#b470a2",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kymy",
+      "hex": "#b57a2a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.5,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#b57a2a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmmymm",
+      "hex": "#824e69",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.6666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#b65788",
+      "measured_token": "cmmmym",
+      "measured_R": 0.50980395,
+      "measured_G": 0.30588236,
+      "measured_B": 0.4117647,
+      "measured_L": 40.013026126148745,
+      "measured_a": 26.04249495671246,
+      "measured_b": -6.147935387450909,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "49",
+      "source_label": "gamut_049_cmmmym",
+      "deltaE00_to_expected": 11.933150529232401,
+      "within_region_deltaE00_median": 2.27929670022796,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kmwmwm",
+      "hex": "#b661a0",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#b661a0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcw",
+      "hex": "#b6e6ec",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#b6e6ec",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cyykyy",
+      "hex": "#b7b928",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#b7b928",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmymy",
+      "hex": "#b86740",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.4,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#b86740",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwcwyw",
+      "hex": "#b8e2c3",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#b8e2c3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kmymym",
+      "hex": "#b95a4e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.3333333333333333,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#b95a4e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwmw",
+      "hex": "#b9b2d7",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#b9b2d7",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwy",
+      "hex": "#bade9b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#bade9b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmwmw",
+      "hex": "#bb94ca",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#bb94ca",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cycywy",
+      "hex": "#bbdb72",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#bbdb72",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmwmwm",
+      "hex": "#bc7fc1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#bc7fc1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wkww",
+      "hex": "#bcbcbc",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.25,
+        "W": 0.75
+      },
+      "nominal_hex": "#bcbcbc",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ycy",
+      "hex": "#659135",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#bdd749",
+      "measured_token": "cyy",
+      "measured_R": 0.39607844,
+      "measured_G": 0.5686275,
+      "measured_B": 0.20784314,
+      "measured_L": 55.304316282897716,
+      "measured_a": -30.583364194991137,
+      "measured_b": 42.82517799154499,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "17",
+      "source_label": "gamut_017_cyy",
+      "deltaE00_to_expected": 22.33911940210019,
+      "within_region_deltaE00_median": 0.9850060531901683,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kwmwmw",
+      "hex": "#be86af",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.5
+      },
+      "nominal_hex": "#be86af",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wkwmw",
+      "hex": "#be9cb5",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.6
+      },
+      "nominal_hex": "#be9cb5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cymy",
+      "hex": "#6b6539",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.25,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#bea75c",
+      "measured_token": "cymy",
+      "measured_R": 0.41960785,
+      "measured_G": 0.39607844,
+      "measured_B": 0.22352941,
+      "measured_L": 42.36731183721392,
+      "measured_a": -4.522154571862863,
+      "measured_b": 26.146942843185204,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "11",
+      "source_label": "gamut_011_cymy",
+      "deltaE00_to_expected": 25.898525591230836,
+      "within_region_deltaE00_median": 1.1796878483070967,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "cmymy",
+      "hex": "#7b6046",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.4,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#bf8b68",
+      "measured_token": "cmymy",
+      "measured_R": 0.48235294,
+      "measured_G": 0.3764706,
+      "measured_B": 0.27450982,
+      "measured_L": 42.92329835917931,
+      "measured_a": 6.7656424988626895,
+      "measured_b": 19.082705344470007,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "3",
+      "source_label": "gamut_003_cmymy",
+      "deltaE00_to_expected": 19.97967438591263,
+      "within_region_deltaE00_median": 1.7697639484879828,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kwyw",
+      "hex": "#bfb77f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.25,
+        "W": 0.5
+      },
+      "nominal_hex": "#bfb77f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cmymym",
+      "hex": "#815a51",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.5,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#c0786f",
+      "measured_token": "cmymym",
+      "measured_R": 0.5058824,
+      "measured_G": 0.3529412,
+      "measured_B": 0.31764707,
+      "measured_L": 42.139622313634476,
+      "measured_a": 14.793611316119588,
+      "measured_b": 11.662763666046638,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "54",
+      "source_label": "gamut_054_cmymym",
+      "deltaE00_to_expected": 17.129430421081295,
+      "within_region_deltaE00_median": 2.8200847817079557,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kywy",
+      "hex": "#c1b142",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.25,
+        "W": 0.25
+      },
+      "nominal_hex": "#c1b142",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "m",
+      "hex": "#a83d83",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 1.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#c31996",
+      "measured_token": "m",
+      "measured_R": 0.65882355,
+      "measured_G": 0.23921569,
+      "measured_B": 0.5137255,
+      "measured_L": 43.17634508362531,
+      "measured_a": 51.64493073950721,
+      "measured_b": -16.545944312404302,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "46",
+      "source_label": "gamut_046_m",
+      "deltaE00_to_expected": 5.786470117735076,
+      "within_region_deltaE00_median": 0.4074121906976901,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "kymymy",
+      "hex": "#c37b35",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.5,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#c37b35",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ykymy",
+      "hex": "#c48e22",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.6,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#c48e22",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ykyy",
+      "hex": "#c4ac05",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.75,
+        "K": 0.25,
+        "W": 0.0
+      },
+      "nominal_hex": "#c4ac05",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwmwmw",
+      "hex": "#c5a4d1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#c5a4d1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcwmw",
+      "hex": "#c5c0dd",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#c5c0dd",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcww",
+      "hex": "#c6e9ee",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.75
+      },
+      "nominal_hex": "#c6e9ee",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwwmww",
+      "hex": "#c7aabf",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#c7aabf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwkww",
+      "hex": "#c8c8c8",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.2,
+        "W": 0.8
+      },
+      "nominal_hex": "#c8c8c8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwyw",
+      "hex": "#c8e4b1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#c8e4b1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cymymy",
+      "hex": "#796038",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.3333333333333333,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#ca9956",
+      "measured_token": "cymymy",
+      "measured_R": 0.4745098,
+      "measured_G": 0.3764706,
+      "measured_B": 0.21960784,
+      "measured_L": 42.33362657568404,
+      "measured_a": 4.465473920628779,
+      "measured_b": 26.688923095189708,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "6",
+      "source_label": "gamut_006_cymymy",
+      "deltaE00_to_expected": 24.06148067973185,
+      "within_region_deltaE00_median": 1.3259837692120495,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "wkwyw",
+      "hex": "#cac397",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.2,
+        "W": 0.6
+      },
+      "nominal_hex": "#cac397",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmmwmm",
+      "hex": "#cb3da5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8333333333333334,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#cb3da5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ycymy",
+      "hex": "#716c33",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.2,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#cbb24a",
+      "measured_token": "cymyy",
+      "measured_R": 0.44313726,
+      "measured_G": 0.42352942,
+      "measured_B": 0.2,
+      "measured_L": 45.000368457853554,
+      "measured_a": -6.306914410096787,
+      "measured_b": 31.968098726255057,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "12",
+      "source_label": "gamut_012_cymyy",
+      "deltaE00_to_expected": 26.351367271721507,
+      "within_region_deltaE00_median": 1.5395971636048649,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "cywy",
+      "hex": "#cbde74",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#cbde74",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwywy",
+      "hex": "#ccbf66",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.2,
+        "W": 0.4
+      },
+      "nominal_hex": "#ccbf66",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmmymm",
+      "hex": "#a94a69",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8333333333333334,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#cd3a7d",
+      "measured_token": "mmmymm",
+      "measured_R": 0.6627451,
+      "measured_G": 0.2901961,
+      "measured_B": 0.4117647,
+      "measured_L": 44.765877117754634,
+      "measured_a": 42.09363973621777,
+      "measured_b": 1.9696481021149292,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "50",
+      "source_label": "gamut_050_mmmymm",
+      "deltaE00_to_expected": 7.771632765721259,
+      "within_region_deltaE00_median": 1.5958221532277639,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "mmwmm",
+      "hex": "#cd45a9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#cd45a9",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kyymyy",
+      "hex": "#cd9c1c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.6666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#cd9c1c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwwmww",
+      "hex": "#cdc8e1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#cdc8e1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ycyy",
+      "hex": "#6c922f",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.25,
+        "M": 0.0,
+        "Y": 0.75,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#cdd937",
+      "measured_token": "cyyy",
+      "measured_R": 0.42352942,
+      "measured_G": 0.57254905,
+      "measured_B": 0.18431373,
+      "measured_L": 56.02268732217668,
+      "measured_a": -28.92879301217105,
+      "measured_b": 46.452023102395,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "16",
+      "source_label": "gamut_016_cyyy",
+      "deltaE00_to_expected": 23.423803298635498,
+      "within_region_deltaE00_median": 0.8123851949726583,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "ykywy",
+      "hex": "#ceba35",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.2,
+        "W": 0.2
+      },
+      "nominal_hex": "#ceba35",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmymm",
+      "hex": "#ab4d64",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.8,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#cf4078",
+      "measured_token": "mmmym",
+      "measured_R": 0.67058825,
+      "measured_G": 0.3019608,
+      "measured_B": 0.39215687,
+      "measured_L": 45.28877803824536,
+      "measured_a": 41.032163659149134,
+      "measured_b": 5.326350516601552,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "51",
+      "source_label": "gamut_051_mmmym",
+      "deltaE00_to_expected": 7.902509834318154,
+      "within_region_deltaE00_median": 1.0280551537883353,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mmwm",
+      "hex": "#cf50ad",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.75,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#cf50ad",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwkwww",
+      "hex": "#cfcfcf",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.16666666666666666,
+        "W": 0.8333333333333334
+      },
+      "nominal_hex": "#cfcfcf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwcww",
+      "hex": "#cfecf0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.8
+      },
+      "nominal_hex": "#cfecf0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yykyy",
+      "hex": "#d0b604",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.8,
+        "K": 0.2,
+        "W": 0.0
+      },
+      "nominal_hex": "#d0b604",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kwwyww",
+      "hex": "#d1cba6",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#d1cba6",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wcwyw",
+      "hex": "#d1e7bf",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#d1e7bf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmym",
+      "hex": "#ab505b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.75,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#d24a70",
+      "measured_token": "mmmy",
+      "measured_R": 0.67058825,
+      "measured_G": 0.3137255,
+      "measured_B": 0.35686275,
+      "measured_L": 45.822215743759635,
+      "measured_a": 38.22857488243853,
+      "measured_b": 11.971933633244959,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "52",
+      "source_label": "gamut_052_mmmy",
+      "deltaE00_to_expected": 8.95390067755743,
+      "within_region_deltaE00_median": 0.916232368901557,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kwywyw",
+      "hex": "#d2c87d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.16666666666666666,
+        "W": 0.5
+      },
+      "nominal_hex": "#d2c87d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwm",
+      "hex": "#d362b5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#d362b5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwywy",
+      "hex": "#d3e38e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#d3e38e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cyymyy",
+      "hex": "#746f30",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.16666666666666666,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#d4ba3d",
+      "measured_token": "cymyyy",
+      "measured_R": 0.45490196,
+      "measured_G": 0.43529412,
+      "measured_B": 0.1882353,
+      "measured_L": 45.94427529506686,
+      "measured_a": -6.966702443724381,
+      "measured_b": 35.014825405726214,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "13",
+      "source_label": "gamut_013_cymyyy",
+      "deltaE00_to_expected": 27.60914627630748,
+      "within_region_deltaE00_median": 1.4235527964175256,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "kywywy",
+      "hex": "#d4c455",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.16666666666666666,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#d4c455",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mmwmmy",
+      "hex": "#d55e8c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#d55e8c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ycywy",
+      "hex": "#d5de5d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#d5de5d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwcwww",
+      "hex": "#d5edf0",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.8333333333333334
+      },
+      "nominal_hex": "#d5edf0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "kyywyy",
+      "hex": "#d6c02c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.16666666666666666,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#d6c02c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mym",
+      "hex": "#a95651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#d75b64",
+      "measured_token": "mmy",
+      "measured_R": 0.6627451,
+      "measured_G": 0.3372549,
+      "measured_B": 0.31764707,
+      "measured_L": 46.58110535743812,
+      "measured_a": 33.500017832493846,
+      "measured_b": 18.204573168211326,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "53",
+      "source_label": "gamut_053_mmy",
+      "deltaE00_to_expected": 10.247005399629813,
+      "within_region_deltaE00_median": 0.9818193487445346,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mwmwm",
+      "hex": "#d771bc",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#d771bc",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yykyyy",
+      "hex": "#d7bd03",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.8333333333333334,
+        "K": 0.16666666666666666,
+        "W": 0.0
+      },
+      "nominal_hex": "#d7bd03",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yycyy",
+      "hex": "#76972c",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.2,
+        "M": 0.0,
+        "Y": 0.8,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#d7da2c",
+      "measured_token": "ycyyy",
+      "measured_R": 0.4627451,
+      "measured_G": 0.5921569,
+      "measured_B": 0.17254902,
+      "measured_L": 58.201850573835316,
+      "measured_a": -27.571487953150676,
+      "measured_b": 50.11717168417829,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "15",
+      "source_label": "gamut_015_ycyyy",
+      "deltaE00_to_expected": 22.45298227673682,
+      "within_region_deltaE00_median": 1.3371326503025098,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "cwwyww",
+      "hex": "#d7e9c8",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#d7e9c8",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwmym",
+      "hex": "#d96c8b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#d96c8b",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cwywyw",
+      "hex": "#d9e69f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#d9e69f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cywywy",
+      "hex": "#dae276",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#dae276",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mymym",
+      "hex": "#a95a4a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.6,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#db685a",
+      "measured_token": "mmymy",
+      "measured_R": 0.6627451,
+      "measured_G": 0.3529412,
+      "measured_B": 0.2901961,
+      "measured_L": 47.27561567927484,
+      "measured_a": 30.82827352287859,
+      "measured_b": 23.457401058407722,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "55",
+      "source_label": "gamut_055_mmymy",
+      "deltaE00_to_expected": 11.418556808157135,
+      "within_region_deltaE00_median": 1.0606795087675034,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mw",
+      "hex": "#dc87c5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#dc87c5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "cyywyy",
+      "hex": "#dcde4d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#dcde4d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwmwmy",
+      "hex": "#dd839c",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#dd839c",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwmy",
+      "hex": "#de8188",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#de8188",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yycyyy",
+      "hex": "#7d9b2a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.16666666666666666,
+        "M": 0.0,
+        "Y": 0.8333333333333334,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#dedb24",
+      "measured_token": "yycyyy",
+      "measured_R": 0.49019608,
+      "measured_G": 0.60784316,
+      "measured_B": 0.16470589,
+      "measured_L": 59.84873294888985,
+      "measured_a": -26.390216163087565,
+      "measured_b": 52.57658890315171,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "14",
+      "source_label": "gamut_014_yycyyy",
+      "deltaE00_to_expected": 21.73564329108023,
+      "within_region_deltaE00_median": 1.8313693935356632,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "mwmymy",
+      "hex": "#df7f73",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#df7f73",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "my",
+      "hex": "#ab5d43",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#e17c4b",
+      "measured_token": "my",
+      "measured_R": 0.67058825,
+      "measured_G": 0.3647059,
+      "measured_B": 0.2627451,
+      "measured_L": 48.12642787306507,
+      "measured_a": 29.297657866481806,
+      "measured_b": 28.919667432516505,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "1",
+      "source_label": "gamut_001_my",
+      "deltaE00_to_expected": 14.72656691188156,
+      "within_region_deltaE00_median": 0.7499575293459998,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "wmwmw",
+      "hex": "#e19dcf",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#e19dcf",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwmwy",
+      "hex": "#e3989e",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#e3989e",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wmw",
+      "hex": "#e4abd5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#e4abd5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwymy",
+      "hex": "#e5946d",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#e5946d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwmwyw",
+      "hex": "#e6a8ac",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#e6a8ac",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ymymy",
+      "hex": "#ad663e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.4,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#e78f3c",
+      "measured_token": "mymyy",
+      "measured_R": 0.6784314,
+      "measured_G": 0.4,
+      "measured_B": 0.24313726,
+      "measured_L": 50.500273909943246,
+      "measured_a": 25.17891064009764,
+      "measured_b": 34.258898525767265,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "4",
+      "source_label": "gamut_004_mymyy",
+      "deltaE00_to_expected": 17.3392860370856,
+      "within_region_deltaE00_median": 1.4215446732915766,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mwy",
+      "hex": "#e7a483",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#e7a483",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wmww",
+      "hex": "#e8bedd",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.75
+      },
+      "nominal_hex": "#e8bedd",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mymywy",
+      "hex": "#e9a05a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#e9a05a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ymy",
+      "hex": "#af6d3b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.3333333333333333,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#eb9d32",
+      "measured_token": "myy",
+      "measured_R": 0.6862745,
+      "measured_G": 0.42745098,
+      "measured_B": 0.23137255,
+      "measured_L": 52.146840764970634,
+      "measured_a": 22.06684445042878,
+      "measured_b": 38.02393358277021,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "5",
+      "source_label": "gamut_005_myy",
+      "deltaE00_to_expected": 19.065541393041524,
+      "within_region_deltaE00_median": 1.031085487122486,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mwyw",
+      "hex": "#ebb8a0",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#ebb8a0",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwmww",
+      "hex": "#ebc9e2",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.8
+      },
+      "nominal_hex": "#ebc9e2",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwmwww",
+      "hex": "#ecd0e5",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.8333333333333334
+      },
+      "nominal_hex": "#ecd0e5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mywy",
+      "hex": "#edb362",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#edb362",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wmwyw",
+      "hex": "#edc4b1",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#edc4b1",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwwyww",
+      "hex": "#eeccbc",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#eeccbc",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mwywy",
+      "hex": "#efc080",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#efc080",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ymyy",
+      "hex": "#b07437",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.25,
+        "Y": 0.75,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#f0ad25",
+      "measured_token": "myyy",
+      "measured_R": 0.6901961,
+      "measured_G": 0.45490196,
+      "measured_B": 0.21568628,
+      "measured_L": 54.02618357384249,
+      "measured_a": 18.026959128918442,
+      "measured_b": 42.69287337882116,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "7",
+      "source_label": "gamut_007_myyy",
+      "deltaE00_to_expected": 20.56103210778515,
+      "within_region_deltaE00_median": 1.5432324786503668,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "mwywyw",
+      "hex": "#f0c993",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#f0c993",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ymywy",
+      "hex": "#f1bb4f",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#f1bb4f",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "mywywy",
+      "hex": "#f1c56a",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#f1c56a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yymyy",
+      "hex": "#b27b34",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.2,
+        "Y": 0.8,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#f3b71e",
+      "measured_token": "ymyyy",
+      "measured_R": 0.69803923,
+      "measured_G": 0.48235294,
+      "measured_B": 0.20392157,
+      "measured_L": 55.73828887557667,
+      "measured_a": 14.822323439847018,
+      "measured_b": 45.872327669723255,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "8",
+      "source_label": "gamut_008_ymyyy",
+      "deltaE00_to_expected": 20.634626923529336,
+      "within_region_deltaE00_median": 2.2476235803317306,
+      "calibrated": true,
+      "calibration_match": "fraction_signature"
+    },
+    {
+      "token": "myywyy",
+      "hex": "#f3c141",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#f3c141",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yymyyy",
+      "hex": "#b38231",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.16666666666666666,
+        "Y": 0.8333333333333334,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#f5be19",
+      "measured_token": "yymyyy",
+      "measured_R": 0.7019608,
+      "measured_G": 0.50980395,
+      "measured_B": 0.19215687,
+      "measured_L": 57.87605887507863,
+      "measured_a": 11.04348540920469,
+      "measured_b": 49.19099999308719,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "9",
+      "source_label": "gamut_009_yymyyy",
+      "deltaE00_to_expected": 19.42993837464896,
+      "within_region_deltaE00_median": 2.814891938679531,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    },
+    {
+      "token": "w",
+      "hex": "#f5f5f5",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 1.0
+      },
+      "nominal_hex": "#f5f5f5",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwwyww",
+      "hex": "#f6f1cc",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.16666666666666666,
+        "K": 0.0,
+        "W": 0.8333333333333334
+      },
+      "nominal_hex": "#f6f1cc",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwyw",
+      "hex": "#f7efb7",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.25,
+        "K": 0.0,
+        "W": 0.75
+      },
+      "nominal_hex": "#f7efb7",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wwyww",
+      "hex": "#f7f0c4",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.2,
+        "K": 0.0,
+        "W": 0.8
+      },
+      "nominal_hex": "#f7f0c4",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wyw",
+      "hex": "#f8eda3",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.6666666666666666
+      },
+      "nominal_hex": "#f8eda3",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wywyw",
+      "hex": "#f9ec93",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.4,
+        "K": 0.0,
+        "W": 0.6
+      },
+      "nominal_hex": "#f9ec93",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "wy",
+      "hex": "#faea7a",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.5
+      },
+      "nominal_hex": "#faea7a",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ywy",
+      "hex": "#fbe651",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6666666666666666,
+        "K": 0.0,
+        "W": 0.3333333333333333
+      },
+      "nominal_hex": "#fbe651",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ywywy",
+      "hex": "#fbe762",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.6,
+        "K": 0.0,
+        "W": 0.4
+      },
+      "nominal_hex": "#fbe762",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "ywyy",
+      "hex": "#fce43d",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.75,
+        "K": 0.0,
+        "W": 0.25
+      },
+      "nominal_hex": "#fce43d",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yywyyy",
+      "hex": "#fde228",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.8333333333333334,
+        "K": 0.0,
+        "W": 0.16666666666666666
+      },
+      "nominal_hex": "#fde228",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "yywyy",
+      "hex": "#fde331",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 0.8,
+        "K": 0.0,
+        "W": 0.2
+      },
+      "nominal_hex": "#fde331",
+      "calibrated": false,
+      "source_dataset": "nominal_fallback"
+    },
+    {
+      "token": "y",
+      "hex": "#d3c531",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.0,
+        "Y": 1.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "nominal_hex": "#ffdf00",
+      "measured_token": "y",
+      "measured_R": 0.827451,
+      "measured_G": 0.77254903,
+      "measured_B": 0.19215687,
+      "measured_L": 78.46473278888153,
+      "measured_a": -10.786454646386169,
+      "measured_b": 70.19558349246734,
+      "source_dataset": "example_gamut_manual_core065",
+      "source_region_index": "10",
+      "source_label": "gamut_010_y",
+      "deltaE00_to_expected": 8.812583449017628,
+      "within_region_deltaE00_median": 0.5037139269574303,
+      "calibrated": true,
+      "calibration_match": "exact_token"
+    }
+  ]
+}

@@ -327,6 +327,8 @@ def compute_transform_plan(
     orientation_matrix: Optional[np.ndarray] = None,
     plate_width: float = 256.0,
     plate_depth: float = 256.0,
+    center_xy: bool = True,
+    target_center_xy: Optional[Tuple[float, float]] = None,
 ) -> TransformPlan:
     if scale <= 0:
         raise ValueError("Scale must be > 0.")
@@ -354,8 +356,18 @@ def compute_transform_plan(
     )
     pre_bounds = _compute_bounds_from_infos(object_infos, build_items, extra_matrix=pre_matrix)
 
-    tx = (plate_width * 0.5) - (pre_bounds.center[0])
-    ty = (plate_depth * 0.5) - (pre_bounds.center[1])
+    if target_center_xy is not None:
+        target_xy = np.asarray(target_center_xy, dtype=np.float64).reshape(2)
+        target_x = float(target_xy[0])
+        target_y = float(target_xy[1])
+    elif center_xy:
+        target_x = plate_width * 0.5
+        target_y = plate_depth * 0.5
+    else:
+        target_x = original_bounds.center[0]
+        target_y = original_bounds.center[1]
+    tx = target_x - pre_bounds.center[0]
+    ty = target_y - pre_bounds.center[1]
     tz = -pre_bounds.min_corner[2]
     placement = _translation(tx, ty, tz)
     global_matrix = placement @ pre_matrix

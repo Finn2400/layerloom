@@ -1,8 +1,9 @@
 # LayerLoom Beginner Tutorial
 
-This tutorial walks through a complete first LayerLoom workflow using the sample
-files in [`examples/`](../examples/). It assumes you are comfortable opening a
-terminal and a slicer, but it does not assume much 3D-printing background.
+This tutorial walks through a complete first LayerLoom workflow using the CMY
+sample files in [`examples/`](../examples/). It assumes you are comfortable
+opening a terminal and a slicer, but it does not assume much 3D-printing
+background.
 
 ## What LayerLoom Does
 
@@ -21,7 +22,8 @@ filament.
 1. Install LayerLoom in a virtual environment.
 2. Run `layerloom-doctor` and confirm the checks pass.
 3. Launch `layerloom-gui`.
-4. Open one of the sample inputs.
+4. Open one of the sample inputs, or click **Load Example** to open the packaged
+   CMY Benchy example.
 5. Weave the model and save the output.
 6. Open the woven output in a slicer.
 7. Assign generated `all_...` objects to matching physical filaments.
@@ -29,10 +31,20 @@ filament.
 
 ## Install And Open The GUI
 
+The simplest first attempt is to use the double-click launcher from the
+repository folder:
+
+- macOS: `Launch LayerLoom.command`
+- Windows: `Launch LayerLoom.bat`
+
+The launcher creates or reuses `.venv`, installs GUI dependencies if needed,
+runs `layerloom-doctor`, and opens the GUI. If anything fails, use the terminal
+install below so the error messages are easier to inspect.
+
 From a fresh clone on macOS or Linux:
 
 ```bash
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 python3 -m venv .venv
 source .venv/bin/activate
@@ -45,7 +57,7 @@ layerloom-gui
 From a fresh clone on Windows PowerShell:
 
 ```powershell
-git clone https://github.com/your-org/layerloom.git
+git clone https://github.com/Finn2400/layerloom.git
 cd layerloom
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -58,7 +70,7 @@ layerloom-gui
 From a source checkout, you can also run the current GUI directly:
 
 ```bash
-python src/layerloom/3mf_gui_v62.py
+python src/layerloom/3mf_gui_v65.py
 ```
 
 If the GUI opens to an empty build plate, that is normal. Load a sample file to
@@ -85,7 +97,7 @@ LayerLoom to use the `cy` pattern automatically.
 3. Open [`examples/tutorial_cmy_cubes.3mf`](../examples/tutorial_cmy_cubes.3mf).
 4. Confirm that the parts appear in the parts list. These sample objects already
    include `__PAT_...__` tags, so you do not need to manually color them.
-5. Set **Layer height** to `0.200` for this beginner example.
+5. Set **Layer height** to `0.160` for this beginner example.
 6. Click **Weave**.
 7. Save the woven output as something like `tutorial_cmy_cubes_woven.3mf`.
 
@@ -106,8 +118,8 @@ Assign the generated objects to matching loaded filaments:
 Set the slicer layer height to match the LayerLoom weave height:
 
 ```text
-Layer height: 0.20 mm
-First layer height: 0.20 mm or 0.40 mm
+Layer height: 0.16 mm
+First layer height: 0.16 mm or 0.32 mm
 ```
 
 The important rule is:
@@ -119,37 +131,31 @@ first_layer_height / weave_height = integer
 For example, if you weave at `0.08 mm`, a `0.16 mm` first layer is fine, but
 `0.20 mm` is not aligned to the weave schedule.
 
-## Tutorial 2: Try The Expanded v62 Colors
+## Tutorial 2: Try The CMY Benchy Example
 
-After the CMY cubes work, try the expanded-color sample:
+After the CMY cubes work, try the cut-up Benchy sample. It is still CMY-only,
+but it is a more realistic multi-part model than the beginner cubes.
 
-1. Click **Open 3MF**.
-2. Open
-   [`examples/tutorial_expanded_tiles_v62.3mf`](../examples/tutorial_expanded_tiles_v62.3mf).
-3. In the **Palette** area, use the **Add** buttons to include the colors you
-   want to work with, such as `N`, `O`, `V`, and `G`.
-4. Use the **Require** buttons only when you want to filter the palette to
-   patterns containing a specific token.
-5. Click **Weave** and save the output.
-6. In your slicer, assign each generated `all_...` object to the matching
+1. Click **Load Example** in the toolbar, or click **Open 3MF** and open
+   [`examples/tutorial_cmy_benchy_cutup.3mf`](../examples/tutorial_cmy_benchy_cutup.3mf).
+2. Confirm that the Benchy parts appear in the parts list. The parts are already
+   labeled with CMY `__PAT_...__` tokens.
+3. Set **Layer height** to the layer height you plan to use in the slicer, such
+   as `0.120` for a finer tutorial print.
+4. Click **Weave** and save the output.
+5. In your slicer, assign each generated `all_...` object to the matching
    physical filament.
 
-The expanded tokens behave like the original CMYKW tokens:
+The example only uses `C`, `M`, and `Y`, so it is suitable for a three-filament
+first print.
 
-| Token | Meaning |
-| --- | --- |
-| `C` | Cyan |
-| `M` | Magenta |
-| `Y` | Yellow |
-| `K` | Black |
-| `W` | White |
-| `N` | Gray |
-| `O` | Orange |
-| `V` | Violet |
-| `G` | Green |
+## Optional: Use The Calibrated CMY Palette
 
-You do not need to load every possible filament. Only load and assign the
-filaments used by the model you are printing.
+The default `Normal` palette is the nominal LayerLoom color model. To preview
+and auto-match against measured printed CMY colors, choose
+`Calibrated CMY Normal (core065)` from the palette menu before importing a GLB
+or before assigning colors. Measured entries use the observed printed hex/Lab
+values; unmeasured recipes fall back to the nominal colors.
 
 ## Optional: Weave From The Command Line
 
@@ -158,15 +164,15 @@ You can also weave the examples without opening the GUI:
 ```bash
 layerloom-weave \
   --input examples/tutorial_cmy_cubes.3mf \
-  --step 0.20 \
+  --step 0.16 \
   --output tutorial_cmy_cubes_woven.3mf
 ```
 
 ```bash
 layerloom-weave \
-  --input examples/tutorial_expanded_tiles_v62.3mf \
-  --step 0.20 \
-  --output tutorial_expanded_tiles_v62_woven.3mf
+  --input examples/tutorial_cmy_benchy_cutup.3mf \
+  --step 0.12 \
+  --output tutorial_cmy_benchy_cutup_woven.3mf
 ```
 
 The GUI is usually easier for first-time use because you can inspect assignments

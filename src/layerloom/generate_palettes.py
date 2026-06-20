@@ -23,10 +23,24 @@ from typing import Dict, Any, Iterable
 import layer_perm_cmy_visualizer as cmy_vis
 from palette_utils import (
     PALETTE_PRESETS,
+    build_layer_fraction_palette,
     corrected_hex,
+    get_preset_spec,
     load_registry,
     token_is_supported,
 )
+try:
+    from layerloom.calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_SOURCE,
+        build_calibrated_palette_document,
+    )
+except Exception:
+    from calibrated_palette import (
+        CALIBRATED_CMY_NORMAL_FILENAME,
+        CALIBRATED_CMY_NORMAL_SOURCE,
+        build_calibrated_palette_document,
+    )
 
 def extract_palette_subset(registry: Dict[str, Any], max_run: int, filter_lte: int):
     out = []
@@ -139,6 +153,32 @@ def main():
             _try_run_visualizer(cmd, pdf_out)
         else:
             print(f"[preview] No visualizer found; skipped PDF: {pdf_out.name}")
+
+    measured_csv = here / CALIBRATED_CMY_NORMAL_SOURCE
+    if measured_csv.exists():
+        normal_spec = get_preset_spec("normal")
+        base_palette = {
+            "entries": list(
+                build_layer_fraction_palette(
+                    ("c", "m", "y", "k", "w"),
+                    max_height=normal_spec["max_height"],
+                    max_run=normal_spec["max_run"],
+                    distinct_lte=normal_spec["distinct_lte"],
+                )
+            )
+        }
+        out_json = out_dir / CALIBRATED_CMY_NORMAL_FILENAME
+        data = build_calibrated_palette_document(
+            base_palette,
+            measured_csv,
+        )
+        with open(out_json, "w") as f:
+            json.dump(data, f, indent=2)
+            f.write("\n")
+        measured_count = data.get("calibration", {}).get("measured_token_count", 0)
+        print(f"[✓] Wrote {out_json} ({len(data['entries'])} entries; {measured_count} calibrated)")
+    else:
+        print(f"[calibration] Skipped calibrated palette; missing {measured_csv}", file=sys.stderr)
 
 if __name__ == "__main__":
     main()

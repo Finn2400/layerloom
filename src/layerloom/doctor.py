@@ -21,13 +21,14 @@ import importlib.metadata
 import platform
 from pathlib import Path
 
+try:
+    from layerloom.example_assets import EXAMPLE_FILES, example_search_dirs, repo_root_guess
+except Exception:  # pragma: no cover - supports direct script execution.
+    from example_assets import EXAMPLE_FILES, example_search_dirs, repo_root_guess
 
-CORE_IMPORTS = ("numpy", "scipy", "trimesh")
+
+CORE_IMPORTS = ("lxml", "networkx", "numpy", "scipy", "trimesh")
 GUI_IMPORTS = ("PyQt5", "pyvista", "pyvistaqt", "vtk")
-EXAMPLE_FILES = (
-    "tutorial_cmy_cubes.3mf",
-    "tutorial_expanded_tiles_v62.3mf",
-)
 
 
 def _ok(message: str) -> None:
@@ -55,7 +56,7 @@ def _module_root() -> Path:
 
 def _repo_root_guess() -> Path:
     # src/layerloom/doctor.py -> repo root in editable/source checkouts.
-    return _module_root().parents[1]
+    return repo_root_guess()
 
 
 def _check_imports(names: tuple[str, ...], *, label: str) -> int:
@@ -82,16 +83,18 @@ def _check_imports(names: tuple[str, ...], *, label: str) -> int:
 def _check_examples() -> int:
     failures = 0
     print("\nTutorial examples")
-    examples_dir = _repo_root_guess() / "examples"
-    if not examples_dir.is_dir():
-        _fail(
-            f"examples directory not found at {examples_dir}. "
-            "For the tutorial, run from a full GitHub checkout."
-        )
-        return 1
-
     for filename in EXAMPLE_FILES:
-        path = examples_dir / filename
+        path = None
+        for examples_dir in example_search_dirs():
+            candidate = examples_dir / filename
+            if candidate.is_file():
+                path = candidate
+                break
+        if path is None:
+            failures += 1
+            searched = ", ".join(str(p) for p in example_search_dirs())
+            _fail(f"missing {filename}; searched {searched}")
+            continue
         if not path.is_file():
             failures += 1
             _fail(f"missing {path}")
@@ -100,7 +103,11 @@ def _check_examples() -> int:
             failures += 1
             _fail(f"{path} is empty")
             continue
-        _ok(f"{path.relative_to(_repo_root_guess())} present ({path.stat().st_size} bytes)")
+        try:
+            display = path.relative_to(_repo_root_guess())
+        except ValueError:
+            display = path
+        _ok(f"{display} present ({path.stat().st_size} bytes)")
     return failures
 
 

@@ -1,5 +1,6 @@
 # macOS / editor state
 .DS_Store
+**/.DS_Store
 .AppleDouble
 .LSOverride
 .idea/
@@ -39,13 +40,26 @@ src/layerloom/gamut_photo_analysis/*_core065/
 src/layerloom/gamut_photo_analysis/*__mosaic_analysis*/
 src/layerloom/gamut_photo_analysis/*.png
 src/layerloom/gamut_photo_analysis/*_manual_corners.csv
+src/layerloom/gamut_photo_analysis/analyze_expanded_gamut_photos.py
+src/layerloom/gamut_photo_analysis/manual_register_expanded_gamuts.py
 src/layerloom/gamut_photo_analysis/_archive/
 benchmark_outputs/
 src/layerloom/sphere_inputs/
 src/layerloom/triangle_inputs/
+src/layerloom/LayerLoomPhotos*/
+src/layerloom/layerLoom*_shoot*/
+src/layerloom/color_calibrated_TIF/
+src/layerloom/manuscript_figures*/
+src/layerloom/oneoff_tools/
+src/layerloom/build_manuscript_figures_v*.py
+src/layerloom/make_benchy_gallery.py
+src/layerloom/make_figure8_parts.py
+src/layerloom/make_interlaced_composite_mosaic.py
+src/layerloom/photo_center_crop.py
 src/layerloom/layer_perm_registry.json
 src/layerloom/color_permutations.pdf
 src/layerloom/palettes/*.pdf
+updated_waste_time_woven.csv
 *.ply
 *.gcode
 *.bgcode

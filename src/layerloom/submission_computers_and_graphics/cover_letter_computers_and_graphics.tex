@@ -1,0 +1,40 @@
+\documentclass[11pt]{letter}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{newtxtext}
+\usepackage{parskip}
+
+\signature{Finn Beruldsen}
+\address{Finn Beruldsen\\
+Center for Nuclear Receptors and Cell Signaling\\
+Department of Biology and Biochemistry\\
+University of Houston, Texas, USA}
+\date{June 1, 2026}
+
+\begin{document}
+
+\begin{letter}{Dear Editor-in-Chief,}
+
+\opening{}
+
+Please consider the manuscript, ``Existing Multi-Material FFF Printers Are Sufficient For (Near) Arbitrary Coloration,'' as a Research Paper for publication in \textit{Computers \& Graphics}.
+
+LayerLoom is a computational fabrication workflow that uses ordinary 3MF geometry to encode layer-wise material schedules for multi-material fused filament fabrication. Instead of assigning each displayed color to a separate filament, LayerLoom converts colored regions into interleaved Z-bands assigned to the physical filaments already loaded in the printer. The resulting color-generating schedule travels with the model itself and can be processed by standard multi-material slicers as ordinary filament-assigned geometry.
+
+The manuscript contributes a geometry-level representation for color scheduling, an algorithmic workflow for converting colored 3MF or GLB models into slicer-ready woven 3MF assemblies, and an experimental evaluation of the resulting printed color states. The validation includes printed gamut samples, calibrated CIE L*a*b*/CIEDE2000 image-based measurements, application-oriented models, slicer compatibility tests, and print-time/material-use benchmarks.
+
+We believe the manuscript is well suited to \textit{Computers \& Graphics} because it frames color expansion in FFF as a graphics and computational-fabrication problem: how to encode appearance and material scheduling into a portable model representation rather than into custom hardware, custom G-code, or slicer-specific color-mixing tools. This is closely aligned with prior work in 3D printing, appearance reproduction, geometry processing, and fabrication-aware graphics workflows.
+
+Reproducibility is supported through the manuscript, Supplementary Information, and an anonymized review archive. The software release, example 3MF files, analysis scripts, benchmark data, and figure-generation workflows will be archived with a persistent DOI before publication.
+
+This manuscript has not been published and is not under consideration elsewhere.
+
+Thank you for your consideration.
+
+\closing{Sincerely,}
+
+\end{letter}
+
+\end{document}

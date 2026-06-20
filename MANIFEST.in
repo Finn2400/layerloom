@@ -1,7 +1,31 @@
 include README.md
+include CHANGELOG.md
 include LICENSE
 include pyproject.toml
+include Launch*LayerLoom.command
+include Launch*LayerLoom.bat
 include docs/*.md
+include docs/images/layerloom_applications_overview.jpg
 include examples/*.md
 include examples/*.3mf
+recursive-include src/layerloom/examples *.3mf
 recursive-include src/layerloom/palettes *.json
+prune src/layerloom/gamut_photo_analysis
+prune src/layerloom/legacy
+prune src/layerloom/LayerLoomPhotos100NCZ_5
+prune src/layerloom/color_calibrated_TIF
+prune src/layerloom/layerLoom2_shoot_100NCZ_5
+prune src/layerloom/manuscript_figures_v11
+prune src/layerloom/manuscript_supplement_v13
+prune src/layerloom/manuscript_supplement_v13_anonymous_review
+prune src/layerloom/manuscript_supplement_v13_anonymous_review_upload
+prune src/layerloom/manuscript_supplement_v13_overleaf
+prune src/layerloom/oneoff_tools
+prune src/layerloom/stl_out
+prune src/layerloom/submission_computers_and_graphics
+prune src/layerloom/triangle_inputs
+exclude src/layerloom/build_manuscript_figures_v*.py
+exclude src/layerloom/make_benchy_gallery.py
+exclude src/layerloom/make_figure8_parts.py
+exclude src/layerloom/make_interlaced_composite_mosaic.py
+exclude src/layerloom/photo_center_crop.py

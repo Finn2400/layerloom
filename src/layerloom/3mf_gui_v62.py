@@ -18,9 +18,11 @@ import sys
 from typing import Dict, List, Tuple
 
 try:
+    from layerloom.example_assets import DEFAULT_GUI_EXAMPLE, find_example_file
     from layerloom.palette_utils import build_layer_fraction_palette, corrected_hex, get_preset_spec
     from layerloom.tokens import ALL_TOKENS, BASE_TOKENS, token_is_valid
 except Exception:
+    from example_assets import DEFAULT_GUI_EXAMPLE, find_example_file
     from palette_utils import build_layer_fraction_palette, corrected_hex, get_preset_spec
     from tokens import ALL_TOKENS, BASE_TOKENS, token_is_valid
 
@@ -34,6 +36,30 @@ _V61 = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _V61
 _SPEC.loader.exec_module(_V61)
 _V58 = _V61._V58
+
+WEAVE_BUTTON_STYLE = """
+QToolButton#primaryWeaveButton {
+    background: #e89b2f;
+    color: #101010;
+    border: 1px solid #f3c16f;
+    border-radius: 5px;
+    padding: 5px 14px;
+    font-weight: 700;
+}
+QToolButton#primaryWeaveButton:hover {
+    background: #f2ad44;
+    border-color: #ffd28a;
+}
+QToolButton#primaryWeaveButton:pressed {
+    background: #c9791e;
+    border-color: #e7a14f;
+}
+QToolButton#primaryWeaveButton:disabled {
+    background: #5b4630;
+    color: #a9a9a9;
+    border-color: #6b5843;
+}
+"""
 
 
 def _checked(widget) -> bool:
@@ -71,6 +97,66 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         self._install_v62_palette_controls()
         self._load_palette(self.current_palette_name)
         self.setWindowTitle("LayerLoom — Color Assigner v62")
+
+    def _build_toolbar(self):
+        super()._build_toolbar()
+        self._install_load_example_button()
+        self._promote_weave_button()
+
+    def _install_load_example_button(self) -> None:
+        """Add a one-click CMY Benchy example beside the regular file opener."""
+        if getattr(self, "_load_example_action", None) is not None:
+            return
+        toolbars = self.findChildren(_V58.QtWidgets.QToolBar)
+        toolbar = toolbars[0] if toolbars else None
+        if toolbar is None:
+            return
+
+        action = _V58.QtWidgets.QAction("Load Example", self)
+        action.setToolTip("Open the packaged CMY cut-up Benchy tutorial model.")
+        action.triggered.connect(self._on_load_example)
+        self._load_example_action = action
+
+        actions = toolbar.actions()
+        open_action = next((act for act in actions if act.text().strip() == "Open 3MF"), None)
+        if open_action is None:
+            toolbar.addAction(action)
+            return
+        open_idx = actions.index(open_action)
+        before = actions[open_idx + 1] if open_idx + 1 < len(actions) else None
+        toolbar.insertAction(before, action)
+
+    def _on_load_example(self) -> None:
+        path = find_example_file(DEFAULT_GUI_EXAMPLE)
+        if path is None:
+            self._error(
+                "Load Example",
+                f"Could not find packaged example {DEFAULT_GUI_EXAMPLE}.\n"
+                "Try reinstalling LayerLoom or open examples/tutorial_cmy_benchy_cutup.3mf manually.",
+            )
+            return
+        try:
+            self._pending_source_hex_by_name = {}
+            stamped = _V58._stamp_ids_only(str(path))
+            self._load_canonical_model(stamped)
+            _V58._log("INFO", f"Loaded example: {path}")
+            self.status_bar.showMessage(f"Loaded example: {path.name}", 5000)
+        except Exception as exc:
+            self._error("Load Example", f"Failed to load {path.name}:\n{exc}")
+
+    def _promote_weave_button(self) -> None:
+        """Make the final weaving action visually distinct from setup tools."""
+        for btn in self.findChildren(_V58.QtWidgets.QToolButton):
+            action = btn.defaultAction()
+            if action is None or action.text().strip().lower() != "weave":
+                continue
+            btn.setObjectName("primaryWeaveButton")
+            btn.setToolTip(
+                "Generate the woven 3MF using the current placement, layer height, and assignments."
+            )
+            btn.setMinimumHeight(max(btn.minimumHeight(), 30))
+            btn.setStyleSheet(WEAVE_BUTTON_STYLE)
+            return
 
     def _install_v62_palette_controls(self) -> None:
         """Replace mixed legacy filters with consistent v62 add/require rows."""
@@ -177,8 +263,28 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         return tuple(dict.fromkeys(letters))
 
     def _load_palette(self, name: str):
+        requested_name = str(name or "Normal")
+        palette_path = _V58.PALETTE_FILES.get(requested_name)
+        if palette_path and requested_name not in {"Simple", "Normal", "Full"}:
+            entries = _V58._load_palette_file(
+                palette_path,
+                limit_two=_checked(getattr(self, "limit_two_checkbox", None)),
+            )
+            entries = _V58._filter_by_bw_visibility(
+                entries,
+                add_k=_checked(getattr(self, "add_black_checkbox", None)),
+                add_w=_checked(getattr(self, "add_white_checkbox", None)),
+            )
+            entries = self._filter_by_required_letters(entries, self._required_letters())
+            self.current_palette_name = requested_name
+            self.current_palette = entries
+            self._render_palette_grid()
+            self._refresh_assignment_hexes_from_current_palette()
+            self._refresh_status_summary()
+            return
+
         try:
-            spec = get_preset_spec(str(name or "Normal").lower())
+            spec = get_preset_spec(requested_name.lower())
         except Exception:
             spec = get_preset_spec("normal")
             name = "Normal"
@@ -199,12 +305,21 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         self.current_palette_name = str(name or spec["name"])
         self.current_palette = entries
         self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
         self._refresh_status_summary()
 
     def _exact_palette_entry_for_token(self, token: str):
         tok = str(token or "").strip().lower()
         if not tok:
             return None
+        palette_path = _V58.PALETTE_FILES.get(str(getattr(self, "current_palette_name", "") or ""))
+        if palette_path and str(getattr(self, "current_palette_name", "") or "") not in {"Simple", "Normal", "Full"}:
+            try:
+                for entry in _V58._load_palette_file(palette_path, limit_two=False):
+                    if str(entry.get("token", "")).strip().lower() == tok:
+                        return entry
+            except Exception:
+                pass
         for entry in getattr(self, "current_palette", []) or []:
             if str(entry.get("token", "")).strip().lower() == tok:
                 return entry
@@ -241,6 +356,10 @@ def main():
         "Simple": os.path.join(_V58.PALETTES_DIR, "simple_palette.json"),
         "Normal": os.path.join(_V58.PALETTES_DIR, "normal_palette.json"),
         "Full": os.path.join(_V58.PALETTES_DIR, "full_palette.json"),
+        _V58.CALIBRATED_CMY_NORMAL_NAME: os.path.join(
+            _V58.PALETTES_DIR,
+            _V58.CALIBRATED_CMY_NORMAL_FILENAME,
+        ),
     }
 
     try:

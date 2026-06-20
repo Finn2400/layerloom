@@ -11,10 +11,13 @@ embedded-viewer interaction controller.
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
 import importlib.util
 import os
 import re
 import sys
+import tempfile
+import time
 from typing import Optional
 
 try:
@@ -89,7 +92,7 @@ class EmbeddedPVViewerV60(_V58.EmbeddedPVViewer):
         _V58.PVWindow.__init__(self)
         self.plotter = InteractiveQtInteractor(self, parent)
         self._configured = False
-        self._layer_height = 0.2
+        self._layer_height = 0.16
         self._layer_scale = 1.0
         self._layer_preview_actors = []
         self._rotation_feedback_label = None
@@ -499,6 +502,35 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             _V58._log("WARN", f"[3mf-normalize] … {len(result.warnings) - 8} additional warning(s)")
         return result.normalized_path
 
+    def _auto_place_glb_import(self, path: str) -> str:
+        t0 = time.perf_counter()
+        base = re.sub(r"[^A-Za-z0-9._-]+", "_", os.path.splitext(os.path.basename(path))[0]) or "glb_import"
+        token = hashlib.md5(os.path.abspath(path).encode("utf-8")).hexdigest()[:10]
+        placed = os.path.join(tempfile.gettempdir(), f"layerloom_glb_placed_{base}_{token}.3mf")
+        try:
+            plan = _V58.compute_transform_plan(
+                path,
+                scale=1.0,
+                orientation_matrix=_V58.np.eye(3, dtype=_V58.np.float64),
+                plate_width=_V58.PLATE_WIDTH_MM,
+                plate_depth=_V58.PLATE_DEPTH_MM,
+                center_xy=True,
+            )
+            _V58.write_transformed_3mf(path, placed, plan.global_matrix)
+            dims = plan.transformed_bounds.size
+            _V58._perf_log(
+                "glb auto-place",
+                t0,
+                extra=(
+                    f"{os.path.basename(placed)} "
+                    f"bounds={dims[0]:.2f}x{dims[1]:.2f}x{dims[2]:.2f}mm"
+                ),
+            )
+            return placed
+        except Exception as e:
+            _V58._log("WARN", f"[glb-import] Auto-place failed; using normalized placement: {e}")
+            return path
+
     def _on_open(self):
         path, _ = _V58.QtWidgets.QFileDialog.getOpenFileName(self, "Open 3MF", "", "3MF Files (*.3mf)")
         if not path:
@@ -529,7 +561,9 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             return
         self._pending_source_hex_by_name = manifest_map
         stamped = _V58._stamp_ids_only(normalized)
-        self._load_canonical_model(stamped)
+        placed = self._auto_place_glb_import(stamped)
+        placed_on_plate = placed != stamped
+        self._load_canonical_model(placed)
         _V58._log("INFO", f"Opened GLB: {path}")
         _V58._log(
             "INFO",
@@ -537,13 +571,20 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         )
         if normalized != import_3mf:
             _V58._log("INFO", f"[3mf-normalize] canonical temp → {normalized}")
+        if placed_on_plate:
+            _V58._log("INFO", f"[glb-import] auto-placed on build plate → {placed}")
         if repair_warning:
             _V58._log("WARN", f"[glb-import] {repair_warning}")
             if not self.large_model_mode:
                 self.status_bar.showMessage("GLB imported; repair warning logged.", 5000)
         elif not self.large_model_mode:
+            status = (
+                "GLB imported, placed on plate, and auto-matched"
+                if placed_on_plate
+                else "GLB imported and auto-matched"
+            )
             self.status_bar.showMessage(
-                f"GLB imported and auto-matched using palette '{self.current_palette_name}'.",
+                f"{status} using palette '{self.current_palette_name}'.",
                 5000,
             )
 

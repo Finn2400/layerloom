@@ -194,6 +194,12 @@ def repair_geometry(v: np.ndarray, f: np.ndarray, cfg: RepairConfig) -> Tuple[np
 
     t_before = topo(ms)
 
+    # Remove exact duplicate topology before any close-vertex merge. GLB imports
+    # from viewers can contain coincident duplicate surfaces; merging vertices
+    # first turns those duplicates into non-manifold edges that later filters
+    # remove aggressively.
+    apply_safe(ms, "meshing_remove_duplicate_vertices", cfg.quiet)
+    apply_safe(ms, "meshing_remove_duplicate_faces", cfg.quiet)
     apply_safe(ms, "meshing_merge_close_vertices", cfg.quiet, threshold=percentage_value(cfg.merge_threshold_pct))
     apply_safe(ms, "meshing_repair_non_manifold_edges", cfg.quiet, method="Remove Faces")
     apply_safe(ms, "meshing_repair_non_manifold_vertices", cfg.quiet, vertdispratio=cfg.vertdisp_ratio)

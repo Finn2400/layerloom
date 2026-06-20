@@ -1,23 +1,22 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerloom"
-version = "0.1.0"
+version = "0.6.3"
 description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
 readme = "README.md"
 requires-python = ">=3.10"
-license = { file = "LICENSE" }
+license = "MIT"
 authors = [
-  { name = "LayerLoom contributors" }
+  { name = "Finn Beruldsen", email = "fpberuld@uh.edu" }
 ]
 keywords = ["3mf", "3d-printing", "multi-material", "slicer", "color"]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Science/Research",
   "Intended Audience :: Manufacturing",
-  "License :: OSI Approved :: MIT License",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -25,11 +24,19 @@ classifiers = [
   "Topic :: Multimedia :: Graphics :: 3D Modeling",
   "Topic :: Scientific/Engineering :: Visualization",
 ]
+
 dependencies = [
+  "lxml>=4.9",
+  "networkx>=2.8",
   "numpy>=1.23",
   "scipy>=1.10",
   "trimesh>=4.6,<4.12",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Finn2400/layerloom"
+Repository = "https://github.com/Finn2400/layerloom"
+Issues = "https://github.com/Finn2400/layerloom/issues"
 
 [project.optional-dependencies]
 gui = [
@@ -41,7 +48,6 @@ gui = [
 bench = [
   "matplotlib>=3.7",
   "pandas>=2.0",
-  "lxml>=4.9",
 ]
 analysis = [
   "matplotlib>=3.7",
@@ -64,11 +70,20 @@ layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["layerloom*"]
+include = [
+  "layerloom",
+  "layerloom.experimental_viewer",
+  "layerloom.palettes",
+  "layerloom.examples",
+]
+namespaces = false
 
 [tool.setuptools.package-data]
 layerloom = [
   "palettes/*.json",
+]
+"layerloom.examples" = [
+  "*.3mf",
 ]
 
 [tool.pytest.ini_options]
