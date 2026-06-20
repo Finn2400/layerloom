@@ -289,11 +289,8 @@ repo. See [docs/release_and_zenodo.md](docs/release_and_zenodo.md) for the
 release checklist and archival DOI workflow.
 
 ## Citation And DOI
-
-Citation metadata is provided in [CITATION.cff](CITATION.cff). A persistent DOI
-should be minted from a tagged GitHub release through Zenodo before manuscript
-submission. After Zenodo creates the DOI, add the DOI badge and citation record
-here.
+(preprint)
+Beruldsen, Finn, Existing Multi-Material FFF Printers Are Sufficient For (Near) Arbitrary Coloration. Available at SSRN: https://ssrn.com/abstract=6876564 or http://dx.doi.org/10.2139/ssrn.6876564
 
 ## License
 
