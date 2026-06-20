@@ -6,7 +6,6 @@ from pathlib import Path
 import numpy as np
 
 from layerloom.calibrated_palette import (
-    CALIBRATED_CMY_NORMAL_SOURCE,
     build_calibrated_palette_document,
     lab_for_hex,
     nearest_calibrated_palette_entry,
@@ -18,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PACKAGE = ROOT / "src" / "layerloom"
 
 
-def test_calibrated_palette_uses_measured_hex_and_nominal_fallback():
+def test_calibrated_palette_uses_measured_hex_and_nominal_fallback(tmp_path):
     spec = get_preset_spec("normal")
     base = {
         "entries": list(
@@ -30,15 +29,27 @@ def test_calibrated_palette_uses_measured_hex_and_nominal_fallback():
             )
         )
     }
+    measured_csv = tmp_path / "measured_regions.csv"
+    measured_csv.write_text(
+        "\n".join(
+            [
+                "stack_token,measured_hex,measured_R,measured_G,measured_B,measured_L,measured_a,measured_b,region_index,label,deltaE00_to_expected,within_region_deltaE00_median",
+                "c,#102030,16,32,48,42.0,-3.0,-24.0,1,cyan,1.1,0.2",
+                "myy,#af6d3b,175,109,59,55.0,24.0,37.0,2,warm-yellow,2.2,0.3",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
-    doc = build_calibrated_palette_document(base, PACKAGE / CALIBRATED_CMY_NORMAL_SOURCE)
+    doc = build_calibrated_palette_document(base, measured_csv)
     entries = {entry["token"]: entry for entry in doc["entries"]}
 
-    assert doc["calibration"]["measured_token_count"] == 55
+    assert doc["calibration"]["measured_token_count"] == 2
     assert entries["c"]["calibrated"] is True
-    assert entries["c"]["hex"] == "#4472c9"
+    assert entries["c"]["hex"] == "#102030"
     assert entries["c"]["nominal_hex"] == "#3ac8dc"
-    assert entries["c"]["measured_L"] is not None
+    assert entries["c"]["measured_L"] == 42.0
 
     assert entries["kw"]["calibrated"] is False
     assert entries["kw"]["hex"] == entries["kw"]["nominal_hex"] == "#848484"
