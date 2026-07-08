@@ -219,6 +219,18 @@ def test_palette_assignment_writes_pat_and_stack_metadata(tmp_path):
     assert stack is not None and stack.text == "c"
 
 
+def test_cmy_palette_excludes_black_and_white():
+    from layerloom.palette_assignment import load_palette_entries
+
+    entries = load_palette_entries("CMY")
+    tokens = {entry["token"] for entry in entries}
+
+    assert tokens
+    assert all(set(token) <= {"c", "m", "y"} for token in tokens)
+    assert "k" not in tokens
+    assert "w" not in tokens
+
+
 def test_headless_fit_box_scales_centers_and_grounds(tmp_path):
     trimesh = pytest.importorskip("trimesh")
     from layerloom.export import write_basic_3mf
@@ -291,6 +303,7 @@ def test_headless_cli_defaults_and_validation(tmp_path, monkeypatch):
     cfg = headless.config_from_args(parser.parse_args(["protein.glb", "--max-dim", "200"]))
     assert cfg.fit_box is None
     assert cfg.max_dim == 200.0
+    assert cfg.palette == "CMY"
 
 
 @pytest.mark.skipif(

@@ -31,6 +31,7 @@ M = lambda tag: f"{{{CORE_NS}}}{tag}"
 
 PALETTES_DIR = Path(__file__).resolve().with_name("palettes")
 PALETTE_FILES = {
+    "CMY": PALETTES_DIR / "normal_palette.json",
     "Simple": PALETTES_DIR / "simple_palette.json",
     "Normal": PALETTES_DIR / "normal_palette.json",
     "Full": PALETTES_DIR / "full_palette.json",
@@ -104,6 +105,14 @@ def _flatten_palette(data: Any) -> list[dict[str, Any]]:
     return []
 
 
+def _filter_cmy_only(entries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        entry
+        for entry in entries
+        if set(str(entry.get("token") or "").lower()) <= {"c", "m", "y"}
+    ]
+
+
 def load_palette_entries(name_or_path: str = "Normal") -> list[dict[str, Any]]:
     path = PALETTE_FILES.get(name_or_path, Path(name_or_path))
     if not Path(path).exists():
@@ -128,6 +137,8 @@ def load_palette_entries(name_or_path: str = "Normal") -> list[dict[str, Any]]:
         if key not in seen:
             seen.add(key)
             out.append(item)
+    if name_or_path == "CMY":
+        out = _filter_cmy_only(out)
     return _sort_by_hue(_dedupe_equivalent_tokens(out))
 
 

@@ -21,6 +21,7 @@ from layerloom.transform_3mf import compute_transform_plan, write_transformed_3m
 DEFAULT_FIT_BOX = (180.0, 180.0)
 DEFAULT_FIT_DIAGONAL_CAP = 200.0
 DEFAULT_LAYER_HEIGHT = 0.08
+DEFAULT_GLB_PALETTE = "CMY"
 
 
 @dataclass(frozen=True)
@@ -29,7 +30,7 @@ class HeadlessConfig:
     output: Optional[str] = None
     output_dir: Optional[str] = None
     overwrite: bool = False
-    palette: str = "Normal"
+    palette: str = DEFAULT_GLB_PALETTE
     glb_target_colors: int = 20
     source_scale: float = 0.1
     fit_box: Optional[tuple[float, float]] = DEFAULT_FIT_BOX
@@ -343,7 +344,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-o", "--output", help="Output .3mf path")
     parser.add_argument("--output-dir", default=default_downloads_dir(), help="Output folder when --output is not supplied")
     parser.add_argument("--overwrite", action="store_true", help="Overwrite an existing output path")
-    parser.add_argument("--palette", default="Normal", help="Palette name or palette JSON path")
+    parser.add_argument("--palette", default=DEFAULT_GLB_PALETTE, help="Palette name or palette JSON path")
     parser.add_argument("--glb-target-colors", type=int, default=20, help="Approximate GLB color target before palette matching")
     parser.add_argument("--source-scale", type=float, default=0.1, help="Uniform scale passed to the GUI GLB splitter")
     sizing = parser.add_mutually_exclusive_group()
