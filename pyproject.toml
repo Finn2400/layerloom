@@ -27,8 +27,12 @@ classifiers = [
 
 dependencies = [
   "lxml>=4.9",
+  "mapbox-earcut>=1.0",
+  "manifold3d>=3.0",
   "networkx>=2.8",
   "numpy>=1.23",
+  "rtree>=1.0",
+  "shapely>=2.0",
   "scipy>=1.10",
   "trimesh>=4.6,<4.12",
 ]
@@ -54,6 +58,11 @@ analysis = [
   "pandas>=2.0",
   "Pillow>=9.0",
 ]
+headless = [
+  "lib3mf>=2.3",
+  "pygltflib>=1.16",
+  "pymeshlab>=2022.2",
+]
 dev = [
   "build>=1.0",
   "pytest>=8.0",
@@ -64,6 +73,7 @@ dev = [
 layerloom-doctor = "layerloom.doctor:main"
 layerloom-gui = "layerloom.gui_app:main"
 layerloom-weave = "layerloom.weave:main"
+layerloom-headless = "layerloom.headless:main"
 layerloom-normalize = "layerloom.cli:normalize_main"
 layerloom-benchmark-suite = "layerloom.benchmark_suite:main"
 layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"

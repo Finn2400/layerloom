@@ -21,7 +21,7 @@ Robust mapping:
 
 Defaults
 --------
-• step = 0.2 mm
+• step = 0.08 mm
 • output = <input_basename>_woven.3mf
 • stl_out = ./stl_out/
 
@@ -290,10 +290,11 @@ def _auto_bake_if_needed(in_path: str, verbose: bool = True) -> str:
 
 def weave_pipeline(
     input_path: str,
-    step: float = 0.2,
+    step: float = 0.08,
     stl_out: str | None = None,
     verbose: bool = True,
     output_path: str | None = None,
+    export_stls: bool = True,
 ) -> None:
     """Execute the full LayerLoom color grouping workflow."""
     _configure_safe_stdout()
@@ -361,11 +362,19 @@ def weave_pipeline(
         if verbose:
             print(f"   {lbl}  →  {run}   [{src}]")
 
+        part_slice_count = 0
         bands = slice_repeating(mesh, z0=z0, step=step, groups=len(run))
         for g, group in enumerate(bands):
             color = run[g]  # single character
             for bi, b in enumerate(group):
                 sliced.append((f"{lbl}__slice{bi:03d}__PAT_{color}__", b))
+                part_slice_count += 1
+        if part_slice_count == 0:
+            raise RuntimeError(
+                f"Slicing produced no woven bands for part {lbl!r}. "
+                "The mesh may be an open surface rather than a solid volume; "
+                "repair or solidify the source before weaving."
+            )
         if verbose and (i % 5 == 0 or i == total_parts):
             print(f"[slice] processed {i}/{total_parts} parts ({len(sliced)} bands so far)")
 
@@ -404,11 +413,12 @@ def weave_pipeline(
     subprocess.run(cmd, check=True)
     print(f"[bake] final woven file → {woven_path}")
 
-    # 10. Write per-color STL files
-    _section("Exporting color STLs")
-    os.makedirs(stl_out, exist_ok=True)
-    write_color_stls(grouped, stl_out)
-    print(f"[export] wrote STL group → {stl_out}")
+    # 10. Optionally write per-color STL files
+    if export_stls:
+        _section("Exporting color STLs")
+        os.makedirs(stl_out, exist_ok=True)
+        write_color_stls(grouped, stl_out)
+        print(f"[export] wrote STL group → {stl_out}")
 
     print(f"\n[done] Weave complete — threads bound, model ready → {woven_path} "
           f"({time.time() - t_start:.1f}s)\n")
@@ -424,8 +434,8 @@ def main(argv: list[str] | None = None) -> int:
         description="Run the full LayerLoom color-layer workflow (auto-bakes if needed)."
     )
     parser.add_argument("-i", "--input", required=True, help="Input .3mf file")
-    parser.add_argument("--step", type=float, default=0.2,
-                        help="Z-step (layer thickness in mm, default=0.2)")
+    parser.add_argument("--step", type=float, default=0.08,
+                        help="Z-step (layer thickness in mm, default=0.08)")
     parser.add_argument("--stl-out", type=str,
                         help="Optional output folder for per-color STL export (default: ./stl_out/)")
     parser.add_argument("-v", "--verbose", action="store_true",

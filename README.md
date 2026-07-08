@@ -177,8 +177,22 @@ layerloom-normalize input.3mf --output normalized.3mf
 Generate a woven 3MF:
 
 ```bash
-layerloom-weave --input input.3mf --step 0.12 --output output_woven.3mf
+layerloom-weave --input input.3mf --step 0.08 --output output_woven.3mf
 ```
+
+Run the headless GLB-to-woven workflow, intended for colored GLB/GLTF exports
+from tools such as ChimeraX:
+
+```bash
+pip install "layerloom[headless]"
+layerloom-headless protein.glb
+layerloom-headless protein.glb --output ~/Downloads/protein_woven.3mf --orientation-quality thorough
+```
+
+By default, `layerloom-headless` imports up to about 20 GLB color groups, matches
+them to the `Normal` palette, safely attempts mesh repair, searches for a
+support-saving orientation, fits the footprint into a 180 x 180 mm box, weaves at
+0.08 mm, and writes the final woven 3MF to `~/Downloads`.
 
 Generate benchmark geometry:
 
