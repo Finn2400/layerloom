@@ -1,0 +1,13 @@
+condition,palette_family,threshold_deltaE00,distinguishable_count,n_colors,merged_region_count
+full,CMY,0.72,54,55,1
+full,CMY,1.12,54,55,1
+full,CMY,2.0,51,55,4
+full,CMY+OVG,0.72,376,495,119
+full,CMY+OVG,1.12,301,495,194
+full,CMY+OVG,2.0,152,495,343
+full,CMY+neutral,0.72,540,660,120
+full,CMY+neutral,1.12,453,660,207
+full,CMY+neutral,2.0,298,660,362
+full,CMY+neutral+OVG,0.72,907,1210,303
+full,CMY+neutral+OVG,1.12,713,1210,497
+full,CMY+neutral+OVG,2.0,393,1210,817

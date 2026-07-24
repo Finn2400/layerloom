@@ -20,6 +20,10 @@ from analyze_expanded_gamut_photos import (  # noqa: E402
     _repeatability,
     _summary_tables,
 )
+from analyze_printed_gamut import (  # noqa: E402
+    _component_count_under_threshold,
+    _pairwise_delta_e00,
+)
 
 
 def _assert_matches(rebuilt: pd.DataFrame, reference_path: Path) -> None:
@@ -50,6 +54,34 @@ def _one_row(
             f"Expected one row for {condition}/{palette_family}/{threshold}, found {len(selected)}"
         )
     return selected.iloc[0]
+
+
+def _threshold_sensitivity(collapsed: pd.DataFrame) -> pd.DataFrame:
+    full = collapsed.loc[collapsed["condition"] == "full"]
+    rows = []
+    for family in ("CMY", "CMY+OVG", "CMY+neutral", "CMY+neutral+OVG"):
+        group = full if family == "CMY+neutral+OVG" else full.loc[full["palette_family"] == family]
+        labels = [
+            f"full:{family}:{row.corner_label}:{row.region_index}:{row.stack_token}"
+            for row in group.itertuples(index=False)
+        ]
+        pairwise = _pairwise_delta_e00(
+            group[["measured_L", "measured_a", "measured_b"]].to_numpy(dtype=float),
+            labels,
+        )
+        for threshold in (0.72, 1.12, 2.0):
+            count = _component_count_under_threshold(pairwise, labels, threshold)
+            rows.append(
+                {
+                    "condition": "full",
+                    "palette_family": family,
+                    "threshold_deltaE00": threshold,
+                    "distinguishable_count": count,
+                    "n_colors": len(group),
+                    "merged_region_count": len(group) - count,
+                }
+            )
+    return pd.DataFrame(rows)
 
 
 def main() -> int:
@@ -84,6 +116,7 @@ def main() -> int:
     collapsed = _collapse_replicates(all_measured)
     repeatability = _repeatability(all_measured)
     summary, counts = _summary_tables(collapsed)
+    sensitivity = _threshold_sensitivity(collapsed)
 
     args.out_dir.mkdir(parents=True, exist_ok=True)
     outputs = {
@@ -91,6 +124,7 @@ def main() -> int:
         "duplicate_repeatability.csv": repeatability,
         "condition_family_summary.csv": summary,
         "distinguishable_counts.csv": counts,
+        "threshold_sensitivity_counts.csv": sensitivity,
     }
     for name, frame in outputs.items():
         frame.to_csv(args.out_dir / name, index=False)
@@ -110,6 +144,18 @@ def main() -> int:
         palette_family="CMY+neutral+OVG",
         threshold=2.0,
     )
+    full_all_de112 = _one_row(
+        sensitivity,
+        condition="full",
+        palette_family="CMY+neutral+OVG",
+        threshold=1.12,
+    )
+    full_all_de072 = _one_row(
+        sensitivity,
+        condition="full",
+        palette_family="CMY+neutral+OVG",
+        threshold=0.72,
+    )
 
     expected = {
         "full CMY hull area": (float(full_cmy["measured_ab_hull_area"]), 6646.109139082127),
@@ -122,6 +168,14 @@ def main() -> int:
             int(full_all_de2["distinguishable_count"]),
             393,
         ),
+        "full expanded distinguishable at DeltaE00 < 1.12": (
+            int(full_all_de112["distinguishable_count"]),
+            713,
+        ),
+        "full expanded distinguishable at DeltaE00 < 0.72": (
+            int(full_all_de072["distinguishable_count"]),
+            907,
+        ),
     }
     for label, (actual, target) in expected.items():
         if not np.isclose(actual, target, rtol=2e-7, atol=2e-7):
@@ -130,6 +184,7 @@ def main() -> int:
     print("[verified] 1,955 archived region measurements")
     print("[verified] full CMY: 51/55 distinguishable at DeltaE00 < 2")
     print("[verified] full expanded set: 393/1,210 distinguishable at DeltaE00 < 2")
+    print("[verified] threshold sensitivity: 713 at DeltaE00 < 1.12; 907 at DeltaE00 < 0.72")
     print("[verified] hull areas: CMY 6,646.11; expanded 8,751.98")
     print(f"[verified] rebuilt tables match {args.reference_dir}")
     return 0
