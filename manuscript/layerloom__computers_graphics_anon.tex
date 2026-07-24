@@ -106,7 +106,7 @@ Term & Operational definition \\
 \midrule
 Endpoint filament & One physical filament loaded in the printer and available to the recipe. \\
 Stack token & A written sequence of endpoint labels, such as \texttt{cmy} or \texttt{cmymy}, repeated through the Z direction. \\
-Layer-fraction recipe & The normalized endpoint counts implied by a token; \texttt{cmy}, \texttt{myc}, and \texttt{ccmmyy} all encode the same 1:1:1 C:M:Y fraction. \\
+Layer-fraction recipe & The normalized endpoint counts implied by a token; \texttt{cmy}, \texttt{myc}, and \texttt{ymc} all encode the same 1:1:1 C:M:Y fraction. \\
 Maximum weave length \(H\) & The maximum number of physical layers in one repeating stack token. \\
 Physical layer height \(h\) & The slicer layer thickness and Z-band height in millimeters. \\
 Same-color run length & The longest adjacent run of one endpoint in the repeated token, including its wraparound boundary. \\
@@ -120,15 +120,15 @@ LayerLoom operates on geometry prior to slicing, using the object, component, an
 
 The workflow can be read as a single transformation. First, a colored input region retains its source color. LayerLoom matches that color to an available palette entry and assigns a stack token, for example \texttt{cmymy}. The model is cut into equal-height Z-bands; successive bands receive the successive letters of the token, repeating from the start after the final letter. Finally, all cyan, magenta, and yellow bands are regrouped into their respective output objects. The resulting 3MF contains ordinary meshes plus the geometry-level color schedule shown in Fig.~\ref{fig:basic-principle}.
 
-The set of available woven colors is defined by a constrained palette built from a chosen endpoint-filament set and a small number of pattern parameters: maximum token length \(H\), maximum same-color run length, optional restrictions on how many distinct filaments may appear in a token, and the selected endpoint set. LayerLoom supports CMY workflows and optional black, white, neutral gray, light gray, orange, violet, and green endpoints. The photographic analysis includes both light-gray and darker neutral-gray endpoints.
+The available woven colors are defined by the loaded endpoint filaments and a small set of pattern constraints: maximum token length \(H\), maximum same-color run length, and the number of distinct filaments permitted in a token. This study uses CMY as the baseline and also tests black, white, light gray, dark neutral gray, orange, violet, and green endpoints.
 
-A reported color recipe is defined by the reduced layer-fraction vector of a valid stack token, not by every possible ordering of that token. Thus, tokens such as \texttt{cmy}, \texttt{myc}, and \texttt{ccmmyy} are treated as the same expected recipe because they reduce to the same C:M:Y layer fraction of 1:1:1. Recipe counts reported here therefore describe unique layer-fraction recipes after collapsing redundant orderings and reducible repeats, not all possible stack-string permutations and not experimentally resolved printed colors.
+A reported color recipe is defined by the reduced layer-fraction vector of a valid stack token rather than by every ordering of that token. Thus, \texttt{cmy}, \texttt{myc}, and \texttt{ymc} represent the same 1:1:1 C:M:Y recipe. Recipe counts therefore collapse orderings with identical layer fractions.
 
 For each layer-fraction recipe, LayerLoom selects one canonical written stack token from among valid permutations with the same reduced material fractions. Candidate tokens are ranked by run quality before lexical order: the preferred token minimizes the longest same-color run, minimizes the amount of run length beyond two, favors a larger number of two-layer pairs, favors more alternating runs, and finally uses lexicographic order as a deterministic tie-break. This favors balanced written tokens such as \texttt{cmc} over less evenly distributed alternatives such as \texttt{ccm} when both encode the same material fractions. Run-length constraints are evaluated on the repeated token, including the boundary between the end and beginning of the written token, so a sequence cannot satisfy the rule only by placing repeated colors across the wraparound boundary.
 
 LayerLoom supports several routes for assigning recipes to imported parts. The graphical interface allows manual assignment, which was the default workflow for the examples in this study. Recipes can also be assigned by matching preserved source-color metadata to the nearest available LayerLoom palette entry or by reading stack-token labels embedded in part names or metadata, such as \texttt{\_\_PAT\_cmymy\_\_}. After assignment, LayerLoom performs the color-scheduling step before slicing and writes the result as ordinary filament-assigned 3MF geometry.
 
-Geometrically, LayerLoom constructs woven output by slicing selected parts or colored regions into successive Z-bands and reassigning those bands according to the chosen weave signature. Bands assigned to the same filament are accumulated into new output geometry, so the final woven model consists of per-filament objects containing noncontiguous but coordinated component layers. The color schedule therefore becomes part of the object itself: geometry describes both shape and the layer-level ordering by which differently colored filaments appear throughout the print. Compared with voxel-based or highly fragmented composition methods, this preserves longer continuous structures and remains compatible with ordinary mesh-based workflows \citep{vidimce2013openfab,willmott2023three}.
+LayerLoom cuts each assigned part or colored region into horizontal Z-bands and applies its stack token in order through the model. Bands assigned to the same filament are then merged into one output object, even though they occur at different heights. The resulting 3MF stores both the model shape and the layer-level filament schedule as ordinary mesh geometry, remaining compatible with conventional mesh-based workflows \citep{vidimce2013openfab,willmott2023three}.
 
 
 \section{LayerLoom Algorithmic Workflow}
@@ -147,7 +147,7 @@ The implementation details below specify the importer, palette enumeration, and 
 
 First, the input 3MF is normalized into an internal generic 3MF. LayerLoom reads the 3MF package relationships to identify the root model file, then traverses build items, local component assemblies, and production-extension child model references using \texttt{p:path}. For each build-reachable printable mesh, object and component transforms are composed, unit scales are converted to millimeters, and the transformed vertices are written into a flattened mesh object. Thus, assemblies and repeated instances are converted into editable concrete parts. Part names, source object identifiers, \texttt{source\_hex}, and \texttt{stack\_token} metadata are preserved when available.
 
-GLB inputs are imported into the same representation using their component geometry and color information. Component colors can then be mapped automatically to the nearest available LayerLoom weave recipe or assigned manually through the graphical interface. Each editable part is assigned a weave signature, or stack token. If a part name or metadata contains a stack-token tag, such as \texttt{\_\_PAT\_cmymy\_\_}, that token is used directly; otherwise, the GUI may assign a token manually or by matching preserved source color metadata to the LayerLoom palette.
+GLB inputs are imported into the same representation using their component geometry and color information. Each editable part receives a weave signature, or stack token, either by automatic source-color matching or manual assignment in the graphical interface. If a part name or metadata contains a stack-token tag, such as \texttt{\_\_PAT\_cmymy\_\_}, LayerLoom uses it directly. Token-tagged inputs can therefore be processed headlessly, allowing LayerLoom color assignment and weaving to operate as an automated step in larger modeling workflows.
 
 Palette entries are generated by enumerating valid CMY or expanded CMYKWN/OVG stack sequences under constraints on maximum pattern height, maximum repeated runs, and number of distinct colors. Throughout this manuscript, the two-color rule set denotes \(H \leq 6\), run \(\leq 2\), and at most two distinct endpoints; the normal GUI preset denotes \(H \leq 6\), run \(\leq 3\), and at most three endpoints; and the full rule set denotes \(H \leq 6\), run \(\leq 5\), and at most five endpoints. The 4,647 CMYKWN+OVG theoretical count corresponds to the full rule set using CMY, black, white, one neutral gray, orange, violet, and green. The printed expanded-endpoint measurements are separate from this full theoretical combined palette: the 1,210 measured regions are pooled full-condition printed regions from three-endpoint substitution gamuts.
 
@@ -270,8 +270,6 @@ Eleven displayed colors distinguish major hindfoot, midfoot, and forefoot struct
     \label{fig:applications}
 \end{figure*}
 
-\FloatBarrier
-
 \subsection{Benchmark Measurements Show Low Overhead When Woven Colors Reuse Existing Filaments}
 
 This benchmark tests whether adding displayed woven colors has lower overhead when the new colors reuse filaments already required by the print.
@@ -281,13 +279,12 @@ Arrangement A1 is the baseline plate with direct filament assignments.
 Arrangements A2 and A3 add woven-color cubes made from the same physical filaments already active in A1.
 Arrangements A4 and A5 add a new physical filament color, so they test the cost of increasing filament-channel count rather than only displayed-color count.
 
-For each model arrangement (Fig.~\ref{fig:performance}; Table~S3), models were sliced using a 0.12~mm layer height and a 0.24~mm initial layer height.
+For each model arrangement (Fig.~\ref{fig:performance}; Table~S3), models were sliced using a 0.12~mm layer height.
 Unless otherwise noted, slicer-default process settings were used, including 15\% infill; the Bambu Studio project metadata records two wall loops.
 We compared the multi-nozzle Snapmaker U1, the multi-tool Prusa XL, and the filament-swapping Bambu Lab X1C.
 Snapmaker U1 and Bambu Lab X1C values were measured from completed prints, including actual elapsed print time and total filament use recorded for each build.
 Prusa XL values were included as PrusaSlicer 2.9.4 estimates to compare the same benchmark arrangements on a second multi-tool workflow.
-Since PrusaSlicer did not include a default 0.12~mm profile for the Prusa XL, we modified the 0.10~mm DETAIL profile to use a 0.12~mm layer height and 0.24~mm first-layer height.
-The reported metrics are total print time in hours and total filament used in grams.
+Since PrusaSlicer did not include a default 0.12~mm profile for the Prusa XL, we modified the 0.10~mm DETAIL profile to use a 0.12~mm layer height.
 These measurements and estimates test a specific practical consequence of geometry-encoded layer scheduling: slicers plan toolpaths by physical filament assignment on each layer, not by the nominal number of displayed colors in the model.
 Across the tested workflows, the smallest overhead was observed when woven components reused physical filaments that were already required on the same layers of the build (Fig.~\ref{fig:performance}A--B).
 This comparison is represented by A1 versus A2 and A1 versus A3, where additional woven colors are introduced without requiring an additional physical filament channel.
@@ -310,11 +307,9 @@ Snapmaker U1 and Bambu Lab X1C values are measured from completed prints; Prusa 
     \label{fig:performance}
 \end{figure*}
 
-\FloatBarrier
-
 \subsection{Expanded Secondary and Neutral Endpoints}
 
-The CMY tests demonstrate the basic layer-weaving principle, but the practical palette also depends on the available endpoints. LayerLoom's token representation is not limited to CMY: any loaded filament can be used as an endpoint in the same layer-fraction grammar. We therefore tested secondary and neutral/value filaments by replacing one CMY endpoint at a time with white, light gray, dark neutral gray, black, orange, violet, or green (Fig.~\ref{fig:ovg-neutral-mosaic}; Figs.~S1--S3; Table~S5). These prints sample three-filament slices of a larger endpoint space rather than the full theoretical combined palette. In the broader theoretical full-palette rule set \((H \leq 6,\ \mathrm{run} \leq 5,\ \leq 5\ \mathrm{colors})\), CMYKW yields 386 unique expected recipes, CMYKWN yields 812, and the one-neutral CMYKWN+OVG palette yields 4,647 theoretical recipes (Table~\ref{tab:palette-family-counts}). These counts describe expected layer-fraction recipes, not experimentally resolved printed colors.
+The CMY tests demonstrate the basic layer-weaving principle, but any loaded filament can serve as an endpoint in the same token grammar. We tested this broader palette by replacing one CMY endpoint at a time with white, light gray, dark neutral gray, black, orange, violet, or green (Fig.~\ref{fig:ovg-neutral-mosaic}; Figs.~S1--S3; Table~S5). These secondary and neutral/value endpoints extend the available color space and provide the printed source data for the calibrated color-coverage analysis. Table~\ref{tab:palette-family-counts} summarizes how the theoretical recipe space grows as additional endpoints are made available.
 
 \begin{figure*}[!t]
     \centering
@@ -326,8 +321,6 @@ The CMY tests demonstrate the basic layer-weaving principle, but the practical p
     \label{fig:ovg-neutral-mosaic}
 \end{figure*}
 
-Secondary and neutral/value endpoints allow some saturated, dark, light, or low-saturation colors to be represented with nearby physical filaments rather than long, high-contrast CMY-only sequences.
-This can reduce striation and viewing-angle sensitivity. The expanded endpoint samples therefore show that the token representation scales beyond CMY and provide the printed source data for the calibrated color-coverage analysis.
 \subsection{Calibrated Image-Based Color Quantification of Printed Gamuts}
 
 Printed gamut samples were quantified from calibrated photographs using a region-aware Python workflow (Figs.~\ref{fig:gamut-photo-analysis} and~\ref{fig:gamut-error-uniformity}; Supplementary Methods). Each photograph was color-corrected using a ColorChecker-based camera profile, registered to the expected LayerLoom region layout, and sampled from eroded interior masks to avoid seams, borders, shadows, layer-edge artifacts, and registration-sensitive boundaries. Median region colors were converted to CIE \(L^*a^*b^*\) and compared using CIEDE2000 distances \citep{iec_61966_2_1_1999,cie_11664_4_2019,cie_11664_6_2022,luo2001ciede2000,sharma2005ciede2000}. For each measured gamut set, chromatic coverage was summarized by the convex-hull area of the measured \(a^*b^*\) points, and color density was summarized by the median nearest-neighbor distance among measured points. Distinguishable color counts were computed by connecting regions with pairwise \(\Delta E_{00}\) below a threshold and counting the resulting graph components. For expanded endpoint analyses, the region counts represent printed observations pooled across three-endpoint substitution gamuts, not unique theoretical recipes from the full combined palette. Detailed camera settings, RAW processing, mask generation, pixel trimming, and repeatability checks are provided in the Supplementary Methods.
@@ -397,7 +390,7 @@ The benchmark results reinforce the same point. Additional woven regions added t
 
 Because LayerLoom changes the deposited color sequence rather than the underlying polymer, woven and single-color coupons printed from the same PLA would be expected to have similar mechanical properties unless the alternating color interfaces weakened the part. Consistent with this expectation, we found no meaningful difference in ultimate tensile strength between woven and single-color coupons in either tested orientation (Supplementary Figs.~S9--S11 and Tables~S6--S7).
 
-Overall, LayerLoom shows that expanded-color FFF does not require expanded hardware or direct G-code manipulation. By encoding layer-level material schedules directly into 3MF geometry, the model carries the color program needed to generate woven printed colors, and tested compatible slicer-printer workflows execute that program as ordinary multi-material geometry. The results support geometry-level color scheduling as a portable workflow where Z registration and filament mapping are preserved; they do not establish universal compatibility or target-color accuracy for every printer, filament, or slicer profile.
+Overall, LayerLoom demonstrates that existing multi-material FFF printers can produce substantially larger displayed color palettes without new hardware, custom feedstocks, or G-code modification. Encoding the layer schedule directly in 3MF makes color a portable property of the model: compatible slicers execute the woven design as ordinary multi-material geometry. LayerLoom therefore turns existing multi-material hardware into a practical platform for expanded-color fabrication.
 
 
 
