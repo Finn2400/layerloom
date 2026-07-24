@@ -1,0 +1,7 @@
+symmetry_strategy,region_count_for_hull,raw_replicate_count,median_replicates_per_point,max_replicates_per_point,measured_ab_hull_area,median_replicate_deltaE00,p90_replicate_deltaE00,distinguishable_colors_deltaE00_lt_2,distinguishable_colors_deltaE00_lt_5,distinguishable_colors_deltaE00_lt_10
+raw,720,720,1.0,1,11626.079718587494,0.0,0.0,267,22,3
+center_replicates,570,720,1.0,6,11615.847786851835,0.0,0.0,273,25,3
+panel_local_symmetry,144,720,6.0,6,6643.479200241914,23.95564365623374,34.79584851991004,97,30,3
+panel_position_replicates,120,720,6.0,6,7435.436492155632,9.243727037510858,33.63866272994824,60,14,5
+global_local_symmetry,6,720,144.0,144,151.3383352612486,29.39548662622944,48.51148436482862,6,3,1
+manifest_classes,570,720,1.0,6,11615.847786851835,0.0,0.0,273,25,3

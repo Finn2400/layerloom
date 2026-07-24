@@ -1,0 +1,25 @@
+panel_name,sub_gamut_name,symmetry_class,axis_c,axis_m,axis_y,include_in_collapse,notes
+panel_01_up_left,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_01_up_left,corner_1,panel_01_up_left__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_01_up_left,corner_2,panel_01_up_left__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_01_up_left,corner_3,panel_01_up_left__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_02_down,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_02_down,corner_1,panel_02_down__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_02_down,corner_2,panel_02_down__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_02_down,corner_3,panel_02_down__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_03_up,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_03_up,corner_1,panel_03_up__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_03_up,corner_2,panel_03_up__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_03_up,corner_3,panel_03_up__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_04_down,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_04_down,corner_1,panel_04_down__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_04_down,corner_2,panel_04_down__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_04_down,corner_3,panel_04_down__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_05_up,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_05_up,corner_1,panel_05_up__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_05_up,corner_2,panel_05_up__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_05_up,corner_3,panel_05_up__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_06_down_right,center,center_cmy,C,M,Y,yes,Repeated center CMY; safe to collapse across panels.
+panel_06_down_right,corner_1,panel_06_down_right__corner_1,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_06_down_right,corner_2,panel_06_down_right__corner_2,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."
+panel_06_down_right,corner_3,panel_06_down_right__corner_3,C,M,Y,yes,"Outer sub-gamut kept unique by default. To average a true mirror/replicate, give matching rows the same symmetry_class and adjust axis_c/axis_m/axis_y."

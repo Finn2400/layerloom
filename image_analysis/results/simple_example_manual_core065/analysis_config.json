@@ -1,0 +1,43 @@
+{
+  "image": "image_analysis/inputs/simple_example.png",
+  "out_dir": "image_analysis/results/simple_example_manual_core065",
+  "target_name": "simple_example_manual",
+  "requested_crop": null,
+  "auto_crop": [
+    126,
+    150,
+    2768,
+    2444
+  ],
+  "applied_crop": [
+    126,
+    150,
+    2768,
+    2444
+  ],
+  "analysis_scale": 0.9084027252081757,
+  "analysis_image_shape_hw": [
+    2084,
+    2400
+  ],
+  "corner_coordinate_space": "analysis image (after crop and optional resize)",
+  "preset": "simple",
+  "max_height": 6,
+  "max_run": 2,
+  "distinct_lte": 2,
+  "mask": {
+    "min_saturation": 0.12,
+    "min_value": 0.05,
+    "max_value": 0.99,
+    "min_chroma": 7.0,
+    "cleanup_radius": 2
+  },
+  "sampling": {
+    "erosion_px": 8,
+    "min_region_pixels": 40,
+    "max_pixels_per_region": 12000,
+    "sample_core_fraction": 0.65,
+    "lab_trim_percentile": 98.0,
+    "random_seed": 1
+  }
+}

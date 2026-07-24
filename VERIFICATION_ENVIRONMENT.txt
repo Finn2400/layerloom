@@ -1,0 +1,35 @@
+Archive source package
+  layerloom 0.6.3
+
+Tensile-analysis verification environment
+  Python 3.12.13
+  matplotlib 3.11.0
+  numpy 2.3.5
+  openpyxl 3.1.5
+  pandas 2.2.3
+  Pillow 12.2.0
+  lxml 6.0.2
+
+LayerLoom and image-analysis development environment
+  Python 3.12.0rc3
+  layerloom installed development package 0.6.2
+  lxml 6.1.1
+  matplotlib 3.10.9
+  networkx 3.6.1
+  numpy 2.4.6
+  Pillow 12.2.0
+  pyvista 0.48.4
+  pyvistaqt 0.11.4
+  QtPy 2.4.3
+  scipy 1.17.1
+  trimesh 4.11.5
+  vtk 9.6.2
+
+Document build environment
+  latexmk 4.77
+  pdfTeX 1.40.24
+  TeX Live 2022
+
+The archive's pyproject.toml records the supported dependency bounds. The
+version lists above document the local environments used for verification;
+they are not intended as the only supported versions.

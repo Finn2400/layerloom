@@ -1,0 +1,9 @@
+condition,palette_family,alphabet,theoretical_recipe_count,max_height,max_run,distinct_lte
+two_color,CMY,cmy,30,6,2,2
+two_color,CMY+neutral,cmykwnl,196,6,2,2
+two_color,CMY+OVG,cmyovg,141,6,2,2
+two_color,CMY+neutral+OVG,cmykwnlovg,415,6,2,2
+full,CMY,cmy,55,6,5,5
+full,CMY+neutral,cmykwnl,1554,6,5,5
+full,CMY+OVG,cmyovg,812,6,5,5
+full,CMY+neutral+OVG,cmykwnlovg,7447,6,5,5

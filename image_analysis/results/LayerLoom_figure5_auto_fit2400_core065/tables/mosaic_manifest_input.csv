@@ -1,0 +1,7 @@
+group_name,triangle_name,preset,max_height,max_run,distinct_lte,corners,landmarks,coordinate_max_dim,notes
+panel_01_up_left,panel_01_up_left,simple,,,,,"V1:43.0,681.7;V2:659.4,686.3;V3:333.3,158.3;M12:337.9,681.7;M23:490.5,416.1;M31:193.0,420.7",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass
+panel_02_down,panel_02_down,simple,,,,,"V1:368.4,151.8;V2:1004.9,157.0;V3:684.1,685.6;M12:684.1,158.9;M23:836.7,433.6;M31:530.8,429.1",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass
+panel_03_up,panel_03_up,simple,,,,,"V1:697.2,689.3;V2:1348.5,675.3;V3:1023.7,155.0;M12:1030.2,686.9;M23:1178.3,414.2;M31:875.0,407.0",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass
+panel_04_down,panel_04_down,simple,,,,,"V1:1049.1,155.0;V2:1694.0,154.4;V3:1369.9,681.7;M12:1366.7,160.9;M23:1520.6,436.2;M31:1223.1,430.4",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass
+panel_05_up,panel_05_up,simple,,,,,"V1:1377.7,683.0;V2:2013.6,687.6;V3:1707.7,158.3;M12:1703.1,686.3;M23:1851.8,413.5;M31:1551.8,409.0",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass
+panel_06_down_right,panel_06_down_right,simple,,,,,"V1:1713.5,156.3;V2:2358.5,157.0;V3:2033.7,682.4;M12:2029.8,157.0;M23:2185.0,436.9;M31:1883.7,431.7",2400,first-pass panel landmarks; nudge V/M points from QC overlay for final publication pass

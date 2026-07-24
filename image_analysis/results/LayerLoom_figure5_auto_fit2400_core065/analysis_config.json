@@ -1,0 +1,16 @@
+{
+  "image": "image_analysis/inputs/LayerLoom_figure5.png",
+  "manifest": "image_analysis/registration/layerloom_figure5_panel_landmarks_auto_fit.csv",
+  "out_dir": "image_analysis/results/LayerLoom_figure5_auto_fit2400_core065",
+  "analysis_scale": 0.6083650190114068,
+  "analysis_image_shape_hw": [
+    828,
+    2400
+  ],
+  "analysis_coordinate_max_dim": 2400,
+  "corner_coordinate_space": "analysis image after optional resize; use qc/00_corner_coordinate_guide.png",
+  "manifest_input_rows": 6,
+  "expanded_sub_gamut_rows": 24,
+  "sample_core_fraction": 0.65,
+  "lab_trim_percentile": 98.0
+}

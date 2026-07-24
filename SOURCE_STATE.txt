@@ -1,0 +1,17 @@
+Archive assembled: 2026-07-23
+Repository: https://github.com/Finn2400/layerloom
+Release tag: cag-revision-2026-07-23
+Package version: 0.6.3
+Branch at assembly: headless
+Base Git commit: 6b000eef823e1d17dad52ed76a6ff37a9cabd08d
+
+The release asset is the authoritative snapshot for this manuscript revision.
+It includes the relevant working-tree source files and revision materials as
+assembled on 2026-07-23, including files not present in the base commit.
+
+Authoritative submitted-manuscript baseline:
+submission_computers_and_graphics/revision_from_zip_2026_07_06/
+annotated_redline_2026_07_06/original_layerloom__computers_graphics_anon.tex
+
+SHA-1 of the submitted baseline TeX:
+5f7dc64f0e5f9c01cdf22d4d3c24946e407520f5

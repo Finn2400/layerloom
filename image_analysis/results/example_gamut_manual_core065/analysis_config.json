@@ -1,0 +1,43 @@
+{
+  "image": "image_analysis/inputs/example_gamut.png",
+  "out_dir": "image_analysis/results/example_gamut_manual_core065",
+  "target_name": "full_example_manual",
+  "requested_crop": null,
+  "auto_crop": [
+    89,
+    95,
+    6210,
+    5373
+  ],
+  "applied_crop": [
+    89,
+    95,
+    6210,
+    5373
+  ],
+  "analysis_scale": 0.39209279529488644,
+  "analysis_image_shape_hw": [
+    2069,
+    2400
+  ],
+  "corner_coordinate_space": "analysis image (after crop and optional resize)",
+  "preset": "normal",
+  "max_height": 6,
+  "max_run": 3,
+  "distinct_lte": 3,
+  "mask": {
+    "min_saturation": 0.12,
+    "min_value": 0.05,
+    "max_value": 0.99,
+    "min_chroma": 7.0,
+    "cleanup_radius": 2
+  },
+  "sampling": {
+    "erosion_px": 8,
+    "min_region_pixels": 40,
+    "max_pixels_per_region": 12000,
+    "sample_core_fraction": 0.65,
+    "lab_trim_percentile": 98.0,
+    "random_seed": 1
+  }
+}

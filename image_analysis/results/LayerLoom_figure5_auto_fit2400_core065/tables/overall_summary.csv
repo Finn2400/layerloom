@@ -1,0 +1,2 @@
+image,manifest,panel_or_manifest_row_count,triangle_count,region_count,group_count,measured_ab_hull_area,expected_ab_hull_area,median_deltaE00_to_expected,median_within_region_deltaE00,min_pairwise_deltaE00
+image_analysis/inputs/LayerLoom_figure5.png,image_analysis/registration/layerloom_figure5_panel_landmarks_auto_fit.csv,6,24,720,6,11626.079718587494,8836.770648116128,45.61112229448543,0.48747642376924905,0.0

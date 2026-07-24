@@ -1,0 +1,5 @@
+orientation,orientation_label,condition,condition_label,n_primary,uts_mean_mpa,uts_sd_mpa,uts_ci95_half_width_mpa,crosshead_strain_at_peak_mean_percent,crosshead_strain_at_peak_sd_percent,crosshead_strain_at_peak_ci95_half_width_percent,crosshead_work_density_to_peak_mean_mj_m3,crosshead_work_density_to_peak_sd_mj_m3,crosshead_work_density_to_peak_ci95_half_width_mj_m3
+flat,"Flat, half-scale",magenta,Magenta single-color control,5,35.0510,0.9011,1.1188,6.0000,0.3782,0.4696,1.00270,0.06434,0.07989
+flat,"Flat, half-scale",cm_weave,CM LayerLoom weave,5,36.4466,0.5208,0.6467,5.8855,0.1913,0.2376,1.01763,0.03628,0.04504
+upright,"Upright, full-scale",magenta,Magenta single-color control,3,15.3995,0.8112,2.0151,3.4105,0.1969,0.4891,0.26055,0.03151,0.07828
+upright,"Upright, full-scale",cm_weave,CM LayerLoom weave,3,15.9161,2.1921,5.4454,3.9429,0.5311,1.3193,0.30185,0.07740,0.19227

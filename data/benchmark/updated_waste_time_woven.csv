@@ -1,0 +1,11 @@
+﻿Machine,Arrangement,duration,total filament used (mg),start,end,notes
+X1C,A1,5.5h,85451,,,old measurment 6.3 restart 9pm duplicate: 8489 old version 5.9
+X1C,A2,5.4h,86121,9:40,15:04,not including set up 15 min got 7.3 doe one and  88045 
+X1C,A3,6h,85456,,,first one was 85449
+X1C,A4,10h0min,157860,20:12,6:12,(15 minute set up time) 
+X1C,A5,10.15h,155249,8:17,0:17,not including 15 minutes of set u. UPDATE SUBTRACT PAUSE also - 1558106 for replicate DONE WITH HQ INSTEAD OF FINE - OVER ESTIMATE
+U1,A1,1h43,20102,,,33252 mg for the one with 0.08mm 
+U1,A2,1h43,20479,,10:54,
+U1,A3,1h44,20369,,,
+U1,A4,2h13,24813,,,
+U1,A5,2h13,24804,,16:05,oops did once with 0.08 mm was 36360 mg 

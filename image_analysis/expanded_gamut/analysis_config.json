@@ -1,0 +1,18 @@
+{
+  "input_dir": "LayerLoomPhotos100NCZ_5/centered_4x3_tif",
+  "out_dir": "LayerLoomPhotos100NCZ_5/expanded_gamut_analysis",
+  "max_analysis_dim": 1800,
+  "sample_core_fraction": 0.65,
+  "lab_trim_percentile": 98.0,
+  "erosion_px": 8,
+  "min_region_pixels": 40,
+  "max_pixels_per_region": 12000,
+  "random_seed": 1729,
+  "limit": 0,
+  "labels": "",
+  "conditions": "",
+  "corner_overrides": "LayerLoomPhotos100NCZ_5/expanded_gamut_analysis/manual_registration_overrides.csv",
+  "n_manual_registration_override_keys": 92,
+  "n_manifest_rows": 46,
+  "n_measured_rows": 1955
+}

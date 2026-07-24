@@ -1,0 +1,11 @@
+# Revision main-figure bitmap hashes
+# Figures match LayerLoom (1).zip except Figure 5, updated to add axis units.
+3962256a796a40715d327cb3a97ed86438879e61  figures/fig00_graphical_abstract.png
+b3b0872ccd72380356e77b9fb3819a12093c1de9  figures/fig01_layer_weaving_principle.png
+82a6e9ab54654e54483f6e2b230ade13970eddb8  figures/fig02_cmy_weave_composition_voronoi.png
+e4b928584276fb5dbcedc1d2288ea4a08271e890  figures/fig03_orientation_striation_effects.png
+1652565e9d138e1af32a2fa64c4c1d1e575b709f  figures/fig04_applications_scientific_visualization.png
+179bad64548298d758789c83d1eafa226d1d1549  figures/fig05_time_filament_benchmark.png
+383ed68d5797ed4906ed3efe3d6f672316f6703e  figures/fig06_cmykw_ovg_neutral_mosaic.png
+820e7b217f7111ca7856c25e7f0a3033d1b93ab0  figures/fig07_image_color_quantification_workflow.png
+f3129ee916151c425e7c227dcdbd98302c6e3073  figures/fig08_cmy_color_error_uniformity.png

@@ -1,0 +1,102 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "layerloom"
+version = "0.6.3"
+description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+authors = [
+  { name = "Finn Beruldsen", email = "fpberuld@uh.edu" }
+]
+keywords = ["3mf", "3d-printing", "multi-material", "slicer", "color"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Intended Audience :: Manufacturing",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Multimedia :: Graphics :: 3D Modeling",
+  "Topic :: Scientific/Engineering :: Visualization",
+]
+
+dependencies = [
+  "lxml>=4.9",
+  "mapbox-earcut>=1.0",
+  "manifold3d>=3.0",
+  "networkx>=2.8",
+  "numpy>=1.23",
+  "rtree>=1.0",
+  "shapely>=2.0",
+  "scipy>=1.10",
+  "trimesh>=4.6,<4.12",
+]
+
+[project.urls]
+Homepage = "https://github.com/Finn2400/layerloom"
+Repository = "https://github.com/Finn2400/layerloom"
+Issues = "https://github.com/Finn2400/layerloom/issues"
+
+[project.optional-dependencies]
+gui = [
+  "pyvista>=0.43",
+  "pyvistaqt>=0.11",
+  "qtpy>=2.4",
+  "PyQt5>=5.15",
+]
+bench = [
+  "matplotlib>=3.7",
+  "pandas>=2.0",
+]
+analysis = [
+  "matplotlib>=3.7",
+  "pandas>=2.0",
+  "Pillow>=9.0",
+]
+headless = [
+  "lib3mf>=2.3",
+  "pygltflib>=1.16",
+  "pymeshlab>=2022.2",
+]
+dev = [
+  "build>=1.0",
+  "pytest>=8.0",
+  "twine>=5.0",
+]
+
+[project.scripts]
+layerloom-doctor = "layerloom.doctor:main"
+layerloom-gui = "layerloom.gui_app:main"
+layerloom-weave = "layerloom.weave:main"
+layerloom-headless = "layerloom.headless:main"
+layerloom-glb-compat = "layerloom.glb_compat:main"
+layerloom-normalize = "layerloom.cli:normalize_main"
+layerloom-benchmark-suite = "layerloom.benchmark_suite:main"
+layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = [
+  "layerloom",
+  "layerloom.experimental_viewer",
+  "layerloom.palettes",
+  "layerloom.examples",
+]
+namespaces = false
+
+[tool.setuptools.package-data]
+layerloom = [
+  "palettes/*.json",
+]
+"layerloom.examples" = [
+  "*.3mf",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

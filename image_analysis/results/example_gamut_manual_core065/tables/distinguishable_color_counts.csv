@@ -1,0 +1,4 @@
+threshold_deltaE00,distinguishable_color_count,theoretical_region_count,merged_region_count
+2.0,47,55,8
+5.0,24,55,31
+10.0,3,55,52
