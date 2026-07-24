@@ -3,8 +3,8 @@
 This archive accompanies the revised manuscript, "Existing Multi-Material FFF
 Printers Are Sufficient For (Near) Arbitrary Coloration."
 
-Release page:
-https://github.com/Finn2400/layerloom/releases/tag/cag-revision-2026-07-23
+Versioned repository branch:
+https://github.com/Finn2400/layerloom/tree/cag-revision-2026-07-23
 
 ## Contents
 
