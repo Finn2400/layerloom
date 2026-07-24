@@ -248,8 +248,8 @@ Lower-contrast, lower-layer-height models showed the least striation.
 Scientific visualization is a natural use case because many models require more color-coded categories than available filament slots.
 We applied LayerLoom to protein-structure visualizations generated from RMSX and Flipbook molecular-dynamics snapshots \citep{beruldsen2026rmsx}.
 The snapshots were exported from ChimeraX as GLB files \citep{meng2023chimerax}, imported into LayerLoom, automatically mapped to woven recipes from their GLB color information, and sliced in OrcaSlicer at a 0.12~mm layer height.
-The final prints preserved the main regions of higher and lower molecular motion, with the strongest striation again appearing on regions perpendicular to the build plate (Fig.~\ref{fig:applications}A--B).
-LayerLoom also supports color-coded 3D graphics and anatomical models, where discrete regions may require more displayed colors than the number of loaded filaments, as shown in the foot skeleton example (Fig.~\ref{fig:applications}D--E).
+The final prints preserved the main regions of higher and lower molecular motion, with the strongest striation again appearing on regions perpendicular to the build plate (Fig.~\ref{fig:applications}C).
+LayerLoom also supports color-coded 3D graphics and anatomical models, where discrete regions may require more displayed colors than the number of loaded filaments, as shown in the foot skeleton example (Fig.~\ref{fig:applications}A--B).
 These examples show how woven color can encode semantic categories without assigning each category to a separate physical material.
 \begin{figure*}[!t]
     \centering
@@ -257,12 +257,12 @@ These examples show how woven color can encode semantic categories without assig
     \caption{
     \textbf{LayerLoom applied to scientific and anatomical visualization.}
     \textbf{A}.
-Printed protein-structure snapshots generated with RMSX/Flipbook from NAMD molecular-dynamics trajectories \protect\citep{beruldsen2026rmsx}.
-\textbf{B}. Corresponding molecular visualization frames exported from ChimeraX \protect\citep{meng2023chimerax}.
-\textbf{C}. 3DBenchy gallery illustrating woven recipes across many color combinations and surface orientations.
-\textbf{D}. LayerLoom graphical interface for assigning woven color recipes to imported model components, shown with a color-coded human foot skeleton model.
-\textbf{E}. Printed human foot skeleton model adapted from Printables \protect\citep{printables2024feet}.
+LayerLoom graphical interface for assigning woven color recipes to imported model components, shown with a color-coded human foot skeleton model.
+\textbf{B}. Printed human foot skeleton model adapted from Printables \protect\citep{printables2024feet}.
 Eleven displayed colors distinguish major hindfoot, midfoot, and forefoot structures despite using only three physical CMY filaments.
+    \textbf{C}.
+Printed protein-structure snapshots generated with RMSX/Flipbook from NAMD molecular-dynamics trajectories \protect\citep{beruldsen2026rmsx}.
+Woven colors preserve complex spatial color annotations across non-planar scientific geometries.
 }
     \label{fig:applications}
 \end{figure*}
