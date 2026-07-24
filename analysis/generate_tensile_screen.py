@@ -238,10 +238,16 @@ def primary_group(specimens: Iterable[Specimen], orientation: str, condition: st
     ]
 
 
-def add_panel_label(axis: plt.Axes, letter: str) -> None:
+def add_panel_label(
+    axis: plt.Axes,
+    letter: str,
+    *,
+    x: float = -0.08,
+    y: float = 1.04,
+) -> None:
     axis.text(
-        -0.08,
-        1.04,
+        x,
+        y,
         letter,
         transform=axis.transAxes,
         ha="left",
@@ -488,7 +494,7 @@ def plot_crosshead_endpoints(specimens: list[Specimen], output_path: Path) -> No
     )
     jitters = (-0.075, -0.035, 0.0, 0.035, 0.075)
     for axis, (letter, metric, ylabel, ylim) in zip(axes, metrics):
-        add_panel_label(axis, letter)
+        add_panel_label(axis, letter, x=-0.15, y=1.12)
         for (orientation, condition, _), x, color in zip(groups, positions, colors):
             group = primary_group(specimens, orientation, condition)
             values = [metric(specimen) for specimen in group]
