@@ -31,6 +31,7 @@ dependencies = [
   "manifold3d>=3.0",
   "networkx>=2.8",
   "numpy>=1.23",
+  "Pillow>=9.0",
   "rtree>=1.0",
   "shapely>=2.0",
   "scipy>=1.10",
@@ -44,6 +45,8 @@ Issues = "https://github.com/Finn2400/layerloom/issues"
 
 [project.optional-dependencies]
 gui = [
+  "lib3mf>=2.3",
+  "pygltflib>=1.16",
   "pyvista>=0.43",
   "pyvistaqt>=0.11",
   "qtpy>=2.4",
@@ -74,6 +77,10 @@ layerloom-doctor = "layerloom.doctor:main"
 layerloom-gui = "layerloom.gui_app:main"
 layerloom-weave = "layerloom.weave:main"
 layerloom-headless = "layerloom.headless:main"
+layerloom-glb-compat = "layerloom.glb_compat:main"
+layerloom-pattern-map = "layerloom.pattern_mapper:main"
+layerloom-image-weave = "layerloom.image_weave:main"
+layerloom-marbling-pattern = "layerloom.marbling_pattern:main"
 layerloom-normalize = "layerloom.cli:normalize_main"
 layerloom-benchmark-suite = "layerloom.benchmark_suite:main"
 layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
@@ -85,6 +92,7 @@ include = [
   "layerloom.experimental_viewer",
   "layerloom.palettes",
   "layerloom.examples",
+  "supporting_scripts",
 ]
 namespaces = false
 

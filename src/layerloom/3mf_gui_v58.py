@@ -53,6 +53,7 @@ try:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -61,6 +62,7 @@ except Exception:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -4017,6 +4019,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.base_file = None
         self.current_file = None
+        self.source_file_path = None
         self.transformed_preview_file = None
         self.model_objects: List[Tuple[str, str]] = []
         self.assignments: Dict[str, Dict[str, str]] = {}
@@ -4261,11 +4264,31 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
+        self.first_layer_color_combo = QtWidgets.QComboBox()
+        self.first_layer_color_combo.setFixedWidth(142)
+        self.first_layer_color_combo.setToolTip(
+            "Use one filament for the first weave layer. Auto chooses the color "
+            "with the largest footprint on the model base."
+        )
+        self.first_layer_color_combo.addItem("Auto", "auto")
+        self.first_layer_color_combo.addItem("Off", "off")
+        for token in TOKEN_ALPHABET:
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(QtGui.QColor(TOKEN_HEX[token]))
+            self.first_layer_color_combo.addItem(
+                QtGui.QIcon(swatch),
+                TOKEN_DISPLAY_NAMES[token].title(),
+                token,
+            )
+
         toolbar.addWidget(self._toolbar_label("GLB colors"))
         toolbar.addWidget(self.glb_colors_spin)
         toolbar.addSeparator()
         toolbar.addWidget(self._toolbar_label("Layer height"))
         toolbar.addWidget(self.layer_height_spin)
+        toolbar.addSeparator()
+        toolbar.addWidget(self._toolbar_label("First layer"))
+        toolbar.addWidget(self.first_layer_color_combo)
         toolbar.addSeparator()
         toolbar.addAction(weave_action)
         toolbar.addSeparator()
@@ -4978,6 +5001,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = {}
         stamped = _stamp_ids_only(path)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened: {path}")
         if stamped != path:
             _log("INFO", f"Previewing ID-stamped temp copy: {stamped}")
@@ -5057,6 +5081,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = manifest_map
         stamped = _stamp_ids_only(import_3mf)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened GLB: {path}")
         _log("INFO", f"GLB import produced 3MF: {import_3mf} (target_colors={self.glb_colors_spin.value()}, color_levels={color_levels})")
         if repair_warning:
@@ -5282,11 +5307,28 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         except Exception as e:
             self._error("Save", f"Failed to write 3MF:\n{e}")
 
-    def _run_weave_subprocess(self, input_3mf: str, *, step: float, output_path: str) -> Optional[str]:
+    def _run_weave_subprocess(
+        self,
+        input_3mf: str,
+        *,
+        step: float,
+        output_path: str,
+        first_layer_color: str = "auto",
+    ) -> Optional[str]:
         try:
-            cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", output_path]
+            cmd = [
+                sys.executable,
+                "-m",
+                "layerloom.weave",
+                "-i",
+                input_3mf,
+                "-o",
+                output_path,
+                "--no-export-stls",
+            ]
             if step is not None:
                 cmd += ["--step", str(step)]
+            cmd += ["--first-layer-color", first_layer_color]
             _log("INFO", "[weave] running:", " ".join(cmd))
             t0 = time.perf_counter()
             proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -5344,24 +5386,31 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
-        base = os.path.splitext(os.path.basename(self.base_file))[0]
+        output_source = self.source_file_path or self.base_file
+        base = os.path.splitext(os.path.basename(output_source))[0]
         base = re.sub(r"^(preview_id_|tmp_weave_)+", "", base)
         final_woven_path = os.path.join(out_dir, f"{base}_woven.3mf")
         if os.path.exists(final_woven_path):
             if not self._confirm("Overwrite?", f"File already exists:\n{final_woven_path}\n\nOverwrite it?"):
                 return
-        try:
-            tmp_out = os.path.join(tempfile.gettempdir(), f"tmp_weave_{base}.3mf")
-            plan = self._materialize_current_model(tmp_out, include_assignments=True)
-            self._last_transform_plan = plan
-            self.transform_dirty = False
-            self._refresh_transform_readout(plan)
-            _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
-        except Exception as e:
-            self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
-            return
-        self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
-        woven = self._run_weave_subprocess(tmp_out, step=self.layer_height_spin.value(), output_path=final_woven_path)
+        with tempfile.TemporaryDirectory(prefix="layerloom_gui_weave_") as weave_work_dir:
+            try:
+                tmp_out = os.path.join(weave_work_dir, "labeled_input.3mf")
+                plan = self._materialize_current_model(tmp_out, include_assignments=True)
+                self._last_transform_plan = plan
+                self.transform_dirty = False
+                self._refresh_transform_readout(plan)
+                _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
+            except Exception as e:
+                self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
+                return
+            self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
+            woven = self._run_weave_subprocess(
+                tmp_out,
+                step=self.layer_height_spin.value(),
+                output_path=final_woven_path,
+                first_layer_color=str(self.first_layer_color_combo.currentData()),
+            )
         if not (woven and os.path.exists(woven)):
             return
         is_large_woven, woven_reason, _woven_info = _large_3mf_reason(woven)

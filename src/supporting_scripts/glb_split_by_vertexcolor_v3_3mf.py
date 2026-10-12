@@ -129,6 +129,16 @@ def read_accessor(gltf: GLTF2, accessor_idx: int) -> np.ndarray:
     return arr
 
 
+def linear_rgb_to_srgb(rgb: np.ndarray) -> np.ndarray:
+    """Convert glTF's linear-light vertex colors to display sRGB values."""
+    values = np.clip(np.asarray(rgb, dtype=np.float32), 0.0, 1.0)
+    return np.where(
+        values <= 0.0031308,
+        values * 12.92,
+        1.055 * np.power(values, 1.0 / 2.4) - 0.055,
+    ).astype(np.float32)
+
+
 def compact(vertices: np.ndarray, faces: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     used = np.unique(faces.reshape(-1))
     remap = -np.ones(vertices.shape[0], dtype=np.int64)
@@ -426,7 +436,7 @@ def main() -> None:
                 local_groups[("no_color",)] = [f for f in idx]
             else:
                 col_raw = read_accessor(gltf, col_idx).astype(np.float32)
-                col = np.clip(col_raw[:, :3], 0.0, 1.0)
+                col = linear_rgb_to_srgb(col_raw[:, :3])
 
                 for f in idx:
                     key = face_color_key(col[f], args.color_levels)

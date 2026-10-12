@@ -1,7 +1,7 @@
 # Installing LayerLoom From GitHub
 
-LayerLoom can be installed from a packaged release or from a source checkout.
-The recommended path is:
+LayerLoom is currently distributed from its GitHub source repository rather
+than PyPI. The recommended path is:
 
 1. Install Python 3.10, 3.11, or 3.12.
 2. Create a virtual environment.
@@ -9,22 +9,19 @@ The recommended path is:
 4. Run `layerloom-doctor`.
 5. Launch `layerloom-gui`.
 
-## Packaged Release
+## Download ZIP
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install "layerloom[gui]"
-layerloom-doctor
-layerloom-gui
-```
+On the [LayerLoom GitHub page](https://github.com/Finn2400/layerloom), choose
+**Code → Download ZIP**, extract the download, and run the launcher in the
+extracted folder:
 
-On Windows PowerShell, activate the environment with:
+- macOS: `Launch LayerLoom.command`
+- Windows: `Launch LayerLoom.bat`
 
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
+The first launch requires an internet connection while Python dependencies are
+installed. Later launches reuse the isolated `.venv`. If macOS removes the
+launcher permission from the ZIP, run
+`chmod +x "Launch LayerLoom.command"` once in Terminal.
 
 ## Source Checkout
 

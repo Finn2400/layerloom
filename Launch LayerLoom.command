@@ -48,10 +48,22 @@ PY
 gui_stack_is_available() {
   "$1" - <<'PY'
 import importlib.util
-required = ("layerloom", "lxml", "networkx", "numpy", "scipy", "trimesh", "PyQt5", "pyvista", "pyvistaqt", "vtk")
+import importlib.metadata
+
+required = (
+    "layerloom", "lxml", "manifold3d", "mapbox_earcut", "networkx",
+    "numpy", "PIL", "rtree", "shapely", "scipy", "trimesh",
+    "lib3mf", "pygltflib",
+    "PyQt5", "pyvista", "pyvistaqt", "vtk",
+)
 missing = [name for name in required if importlib.util.find_spec(name) is None]
 if missing:
     print("Missing packages:", ", ".join(missing))
+    raise SystemExit(1)
+import layerloom
+installed = importlib.metadata.version("layerloom")
+if installed != layerloom.__version__:
+    print(f"LayerLoom install is stale: metadata {installed}, source {layerloom.__version__}")
     raise SystemExit(1)
 raise SystemExit(0)
 PY

@@ -33,13 +33,17 @@ but they are not full project round-trips for vendor-specific slicer files.
 Use Python 3.10, 3.11, or 3.12. A virtual environment is strongly recommended
 so LayerLoom does not accidentally use a Python from another app or tool.
 
-For a packaged release, install the GUI extras:
+LayerLoom is not currently published on PyPI. To try it without Git, use
+GitHub's **Code → Download ZIP**, extract the folder, and run the included
+launcher:
 
-```bash
-python -m pip install "layerloom[gui]"
-layerloom-doctor
-layerloom-gui
-```
+- macOS: `Launch LayerLoom.command`
+- Windows: `Launch LayerLoom.bat`
+
+The launcher creates an isolated `.venv`, installs LayerLoom and its GUI
+dependencies, runs `layerloom-doctor`, and then opens the app. An internet
+connection is required the first time. If macOS removes the launcher's
+executable permission, run `chmod +x "Launch LayerLoom.command"` once.
 
 For development or the newest source checkout, clone from GitHub:
 
@@ -180,11 +184,16 @@ Generate a woven 3MF:
 layerloom-weave --input input.3mf --step 0.08 --output output_woven.3mf
 ```
 
+By default, LayerLoom makes the first weave layer a single filament color and
+automatically chooses the color with the largest footprint on the model base.
+Use `--first-layer-color c` (or another filament token) to choose it explicitly,
+or `--first-layer-color off` to retain the repeating pattern on the first layer.
+
 Run the headless GLB-to-woven workflow, intended for colored GLB/GLTF exports
 from tools such as ChimeraX:
 
 ```bash
-pip install "layerloom[headless]"
+python -m pip install -e ".[headless]"
 layerloom-headless protein.glb
 layerloom-headless protein.glb --output ~/Downloads/protein_woven.3mf --orientation-quality thorough
 ```
@@ -213,6 +222,10 @@ LayerLoom shifts color planning into geometry:
    `all_magenta`, and `all_yellow`.
 6. Open the resulting 3MF in a standard slicer and assign those objects to the
    physical filaments loaded in the printer.
+
+Add `__NOWEAVE__` to a part name to exclude that part from slicing and color
+grouping. LayerLoom carries the mesh and its full name through as an independent
+output object, so it remains separately selectable and recolorable in the slicer.
 
 LayerLoom normalizes incoming 3MFs before editing:
 

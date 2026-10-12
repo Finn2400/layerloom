@@ -27,8 +27,26 @@ except Exception:  # pragma: no cover - supports direct script execution.
     from example_assets import EXAMPLE_FILES, example_search_dirs, repo_root_guess
 
 
-CORE_IMPORTS = ("lxml", "networkx", "numpy", "scipy", "trimesh")
-GUI_IMPORTS = ("PyQt5", "pyvista", "pyvistaqt", "vtk")
+CORE_IMPORTS = (
+    "lxml",
+    "manifold3d",
+    "mapbox_earcut",
+    "networkx",
+    "numpy",
+    "PIL",
+    "rtree",
+    "shapely",
+    "scipy",
+    "trimesh",
+)
+GUI_IMPORTS = (
+    "lib3mf",
+    "pygltflib",
+    "PyQt5",
+    "pyvista",
+    "pyvistaqt",
+    "vtk",
+)
 
 
 def _ok(message: str) -> None:
@@ -48,6 +66,27 @@ def _package_version() -> str:
         return importlib.metadata.version("layerloom")
     except importlib.metadata.PackageNotFoundError:
         return "not installed as package"
+
+
+def _source_version() -> str:
+    try:
+        from layerloom.version import __version__
+    except Exception:  # pragma: no cover - supports direct script execution.
+        from version import __version__
+    return str(__version__)
+
+
+def _check_package_version() -> int:
+    installed = _package_version()
+    source = _source_version()
+    if installed == source:
+        _ok(f"installed package metadata matches source ({source})")
+        return 0
+    _fail(
+        f"installed package metadata is {installed}, but this source tree is {source}; "
+        're-run: python -m pip install -e ".[gui]"'
+    )
+    return 1
 
 
 def _module_root() -> Path:
@@ -136,7 +175,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"LayerLoom version: {_package_version()}")
     print(f"LayerLoom module:  {_module_root()}")
 
-    failures = 0
+    failures = _check_package_version()
     failures += _check_imports(CORE_IMPORTS, label="Core imports")
     if args.skip_gui:
         _warn("GUI imports skipped by --skip-gui")

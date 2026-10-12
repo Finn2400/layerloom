@@ -390,3 +390,19 @@ def slice_repeating(mesh: trimesh.Trimesh,
         bands[g].append(band)
 
     return bands
+
+
+def slice_interval(
+    mesh: trimesh.Trimesh,
+    z_lower: float,
+    z_upper: float,
+    *,
+    z_gap: float = 1e-3,
+) -> Optional[trimesh.Trimesh]:
+    """Return the closed portion of ``mesh`` inside one absolute Z interval."""
+    if z_upper <= z_lower:
+        raise ValueError("z_upper must be greater than z_lower")
+    min_z, max_z = (float(value) for value in mesh.bounds[:, 2])
+    if max_z <= z_lower or min_z >= z_upper:
+        return None
+    return _slice_between(mesh, z_lower, z_upper, z_gap=z_gap)

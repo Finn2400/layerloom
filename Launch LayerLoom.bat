@@ -38,7 +38,7 @@ if exist "%VENV_PY%" (
   set "PYTHON_BIN="%VENV_PY%""
 )
 
-%PYTHON_BIN% -c "import layerloom, lxml, networkx, numpy, scipy, trimesh, PyQt5, pyvista, pyvistaqt, vtk" >nul 2>nul
+%PYTHON_BIN% -c "import importlib.metadata as m; import layerloom, lxml, manifold3d, mapbox_earcut, networkx, numpy, PIL, rtree, shapely, scipy, trimesh, lib3mf, pygltflib, PyQt5, pyvista, pyvistaqt, vtk; assert m.version('layerloom') == layerloom.__version__" >nul 2>nul
 if errorlevel 1 (
   echo.
   echo Installing LayerLoom GUI dependencies into .venv
