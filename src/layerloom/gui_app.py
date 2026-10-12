@@ -9,11 +9,9 @@ import sys
 
 _GUI_EXTRAS_HELP = """LayerLoom GUI dependencies are not available.
 
-Install the GUI extras, then try again:
-
-    python -m pip install "layerloom[gui]"
-
-You can also run `layerloom-doctor` to inspect the current environment.
+For a source download, run the included launcher again with --repair.
+For a standalone app, download and replace it with a fresh LayerLoom app.
+Your saved models are unaffected. See the installation guide for details.
 """
 
 
@@ -30,18 +28,16 @@ def _load_current_gui_module():
 
 def main() -> int:
     """Launch the current LayerLoom GUI."""
+    from .app_logging import initialize_logs, install_qt_message_logging, report_startup_failure
     try:
+        initialize_logs()
+        install_qt_message_logging()
         return int(_load_current_gui_module().main())
-    except ModuleNotFoundError as exc:
-        if exc.name in {"pyvista", "pyvistaqt", "qtpy", "PyQt5", "vtk"}:
+    except Exception as exc:
+        if isinstance(exc, ModuleNotFoundError):
             print(_GUI_EXTRAS_HELP, file=sys.stderr)
-            return 2
-        raise
-    except RuntimeError as exc:
-        if "Qt dependencies are unavailable" in str(exc):
-            print(_GUI_EXTRAS_HELP, file=sys.stderr)
-            return 2
-        raise
+        report_startup_failure(exc)
+        return 1
 
 
 if __name__ == "__main__":

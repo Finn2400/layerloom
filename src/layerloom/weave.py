@@ -51,6 +51,7 @@ from layerloom.strata import slice_interval, slice_repeating
 from layerloom.group_by_color import group_by_color, write_color_stls
 from layerloom.export import write_basic_3mf
 from layerloom.tokens import NO_WEAVE_TAG_RE, PAT_TAG_RE, TOKEN_ALPHABET, sanitize_token_run
+from layerloom.runtime import log_worker_result, worker_command, worker_process_options
 
 # ---------------------------------------------------------------------
 # Literary intro
@@ -521,15 +522,20 @@ def weave_pipeline(
             woven_name = os.path.splitext(os.path.basename(input_path))[0] + "_woven.3mf"
             woven_path = os.path.join(os.path.dirname(input_path), woven_name)
 
-        cmd = [
-            sys.executable,
-            "-m", "layerloom.bake_in_memory_stlroundtrip",
+        cmd = worker_command("bake", [
             "-i", grouped_tmp,
             "-o", woven_path,
             "--safe-volumes",
-        ]
+        ])
         print("[bake] running final bake for woven output...")
-        subprocess.run(cmd, check=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+        log_worker_result("final bake", result)
+        if result.stdout:
+            print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+        if result.stderr:
+            print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "Final bake failed")
         print(f"[bake] final woven file → {woven_path}")
 
     # 10. Optionally write per-color STL files

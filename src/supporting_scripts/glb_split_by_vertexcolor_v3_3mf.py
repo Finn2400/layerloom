@@ -327,7 +327,7 @@ def merge_chunks(chunks: list[tuple[np.ndarray, np.ndarray]]) -> tuple[np.ndarra
     return verts_merged, faces_merged
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
     t_total = time.perf_counter()
     ap = argparse.ArgumentParser()
     ap.add_argument("input", help="Input .glb or .gltf")
@@ -355,7 +355,7 @@ def main() -> None:
         action="store_true",
         help="Print per-node/per-primitive group counts and final global color counts",
     )
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
 
     if args.color_levels < 2:
         raise SystemExit("--color-levels must be at least 2")

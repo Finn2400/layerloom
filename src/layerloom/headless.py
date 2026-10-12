@@ -16,6 +16,7 @@ from typing import Optional
 import numpy as np
 
 from layerloom.transform_3mf import compute_transform_plan, write_transformed_3mf
+from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options
 
 
 DEFAULT_FIT_BOX = (180.0, 180.0)
@@ -96,15 +97,11 @@ def _target_colors_to_levels(target_colors: int) -> int:
     return max(2, int(math.ceil(target_colors ** (1.0 / 3.0))))
 
 
-def _support_script(name: str) -> str:
-    root = Path(__file__).resolve().parents[1]
-    return str(root / "supporting_scripts" / name)
-
-
 def _run_external_tool(label: str, cmd: list[str], *, verbose: bool = False) -> None:
     if verbose:
         print(f"[{label}] running: {' '.join(cmd)}")
-    proc = subprocess.run(cmd, capture_output=True, text=True)
+    proc = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+    log_worker_result(label, proc)
     if verbose and proc.stdout:
         print(proc.stdout, end="" if proc.stdout.endswith("\n") else "\n")
     if verbose and proc.stderr:
@@ -129,15 +126,8 @@ def import_glb_like_gui(
 ) -> tuple[str, Optional[str]]:
     from layerloom.repair import count_3mf_mesh_geometry, repair_rejection_reason
 
-    split_script = _support_script("glb_split_by_vertexcolor_v3_3mf.py")
-    repair_script = _support_script("3mf_meshlab_repair_3mf.py")
-    if not os.path.isfile(split_script):
-        raise RuntimeError(f"GLB split script not found: {split_script}")
-
     color_levels = _target_colors_to_levels(target_colors)
-    split_cmd = [
-        sys.executable,
-        split_script,
+    split_cmd = worker_command("glb-split", [
         glb_path,
         "--scale",
         str(float(source_scale)),
@@ -147,7 +137,7 @@ def import_glb_like_gui(
         manifest_out,
         "--color-levels",
         str(color_levels),
-    ]
+    ])
     if missing_color_mode == "error":
         raise ValueError("--missing-color-mode=error is not supported by the GUI GLB splitter; use group or skip.")
     split_cmd += ["--no-color-mode", missing_color_mode]
@@ -155,20 +145,18 @@ def import_glb_like_gui(
 
     if not repair:
         return split_3mf, None
-    if not os.path.isfile(repair_script):
-        msg = f"Repair script not found; continuing with unrepaired 3MF: {repair_script}"
+    if not repair_available():
+        msg = "Optional mesh repair is unavailable; continuing with the imported 3MF without repair."
         if strict_repair:
             raise RuntimeError(msg)
         return split_3mf, msg
 
-    repair_cmd = [
-        sys.executable,
-        repair_script,
+    repair_cmd = worker_command("repair", [
         split_3mf,
         "--out",
         repaired_3mf,
         "--quiet",
-    ]
+    ])
     try:
         _run_external_tool("3mf-repair", repair_cmd, verbose=verbose)
         before = count_3mf_mesh_geometry(split_3mf)

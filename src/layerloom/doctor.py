@@ -79,12 +79,15 @@ def _source_version() -> str:
 def _check_package_version() -> int:
     installed = _package_version()
     source = _source_version()
+    if getattr(sys, "frozen", False) and installed == "not installed as package":
+        _warn(f"standalone app version {source}; distribution metadata unavailable")
+        return 0
     if installed == source:
         _ok(f"installed package metadata matches source ({source})")
         return 0
     _fail(
         f"installed package metadata is {installed}, but this source tree is {source}; "
-        're-run: python -m pip install -e ".[gui]"'
+        "repair the source installation with its launcher, or replace the standalone app"
     )
     return 1
 
@@ -150,6 +153,64 @@ def _check_examples() -> int:
     return failures
 
 
+def _check_palettes() -> int:
+    import json
+    failures = 0
+    print("\nPackaged palettes")
+    for name in ("simple_palette.json", "normal_palette.json", "full_palette.json", "calibrated_cmy_normal_core065_palette.json"):
+        path = _module_root() / "palettes" / name
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+            if not data:
+                raise ValueError("palette is empty")
+        except (OSError, ValueError) as exc:
+            _fail(f"{name}: {exc}")
+            failures += 1
+        else:
+            _ok(name)
+    return failures
+
+
+def _check_native() -> int:
+    print("\nNative 3MF library")
+    try:
+        import lib3mf
+        model = lib3mf.get_wrapper().CreateModel()
+        if model is None:
+            raise RuntimeError("lib3mf returned no model")
+    except Exception as exc:
+        _fail(f"lib3mf initialization: {type(exc).__name__}: {exc}")
+        return 1
+    _ok("lib3mf native wrapper created a model")
+    return 0
+
+
+def _check_render() -> int:
+    print("\nQt / VTK render")
+    try:
+        from PyQt5 import QtWidgets
+        import pyvista as pv
+        from pyvistaqt import QtInteractor
+        app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+        widget = QtWidgets.QWidget()
+        plotter = QtInteractor(widget, off_screen=True)
+        try:
+            plotter.add_mesh(pv.Cube(), color="cyan")
+            plotter.reset_camera()
+            app.processEvents()
+            pixels = plotter.screenshot(return_img=True)
+            if pixels is None or pixels.size == 0 or pixels.max() == pixels.min():
+                raise RuntimeError("renderer produced no usable pixels")
+        finally:
+            plotter.close()
+            widget.close()
+    except Exception as exc:
+        _fail(f"Qt / VTK render: {type(exc).__name__}: {exc}")
+        return 1
+    _ok("Qt / VTK rendered geometry")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         prog="layerloom-doctor",
@@ -165,6 +226,7 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Do not require tutorial example files to be present.",
     )
+    parser.add_argument("--render", action="store_true", help="Also create a Qt/VTK renderer (requires a working desktop/graphics driver).")
     args = parser.parse_args(argv)
 
     print("LayerLoom install diagnostic")
@@ -174,6 +236,7 @@ def main(argv: list[str] | None = None) -> int:
     print(f"Platform:          {platform.platform()}")
     print(f"LayerLoom version: {_package_version()}")
     print(f"LayerLoom module:  {_module_root()}")
+    print(f"Installation:     {'standalone app' if getattr(sys, 'frozen', False) else 'Python/source'}")
 
     failures = _check_package_version()
     failures += _check_imports(CORE_IMPORTS, label="Core imports")
@@ -181,6 +244,10 @@ def main(argv: list[str] | None = None) -> int:
         _warn("GUI imports skipped by --skip-gui")
     else:
         failures += _check_imports(GUI_IMPORTS, label="GUI imports")
+        failures += _check_native()
+        failures += _check_palettes()
+        if args.render:
+            failures += _check_render()
 
     if args.skip_examples:
         _warn("Tutorial example checks skipped by --skip-examples")
@@ -190,12 +257,14 @@ def main(argv: list[str] | None = None) -> int:
     print("\nResult")
     if failures:
         _fail(
-            f"{failures} check(s) failed. Re-run the install command inside an "
-            "activated virtual environment, for example: python -m pip install -e \".[gui]\""
+            f"{failures} check(s) failed. For a source install, rerun its launcher with --repair. "
+            "For a standalone app, replace it with a fresh download. Your saved models are unaffected."
         )
         return 1
 
-    _ok("LayerLoom looks ready. Try: layerloom-gui")
+    _ok("Dependency and resource checks passed. Open LayerLoom and try the example.")
+    if not args.render and not args.skip_gui:
+        _warn("Interactive rendering was not tested; use --render to check the graphics stack.")
     return 0
 
 

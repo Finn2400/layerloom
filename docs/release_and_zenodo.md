@@ -14,12 +14,15 @@ they are needed for manuscript reproducibility.
 2. Confirm the source-checkout launchers are present:
    - `Launch LayerLoom.command`
    - `Launch LayerLoom.bat`
+   - `Launch LayerLoom.sh`
+   - `scripts/bootstrap.py`, both bootstrap wrappers, and `scripts/runtime-pins.txt`
+   - `.python-version` and `uv.lock`
 3. Confirm a fresh install works:
 
    ```bash
-   python -m pip install -e ".[gui,dev]"
-   layerloom-doctor
-   pytest
+   uv sync --locked --extra gui --extra dev --no-editable
+   uv run --no-sync layerloom-doctor
+   uv run --no-sync pytest
    ```
 
 4. Confirm no local generated files are staged:
@@ -31,13 +34,13 @@ they are needed for manuscript reproducibility.
 5. Build the source and wheel distributions:
 
    ```bash
-   python -m build
+   uv run --no-sync python -m build
    ```
 
 6. Validate package metadata:
 
    ```bash
-   python -m twine check dist/*
+   uv run --no-sync python -m twine check dist/*
    ```
 
 7. Inspect the built distributions and confirm that packaged examples and
@@ -48,6 +51,26 @@ they are needed for manuscript reproducibility.
 
 8. Update `CITATION.cff`, `.zenodo.json`, and `pyproject.toml` if the release
    version or author metadata changes.
+
+## Standalone Mac Release
+
+Use the **Mac desktop** workflow for a manual build first. It uses only free standard GitHub Actions runners in a public repository, with ad-hoc signing and no Apple Developer account or notarization. The workflow intentionally skips private repositories rather than incur runner charges.
+
+The build produces `LayerLoom-<version>-macos-arm64.dmg` (macOS 14+) and `LayerLoom-<version>-macos-x86_64.dmg` (macOS 15+), SHA-256 files, and archived applications that preserve executable permissions and symbolic links. The oldest supported OS builds each architecture once; the same artifact is tested across the supported OS matrix.
+
+Reproduce locally on a native Mac with pinned uv:
+
+```sh
+UV_PROJECT_ENVIRONMENT=.venv-desktop uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable
+.venv-desktop/bin/python scripts/build_macos.py
+.venv-desktop/bin/python scripts/validate_macos.py dist/macos/LayerLoom.app --gui --report dist/macos/validation
+```
+
+`packaging/macos/bundle_config.py` enumerates the runtime resources. `build-info.json` inside the application records the runtime, architecture, target OS and lock hash. `THIRD_PARTY_NOTICES` inside the application includes dependency metadata and license texts. Review PyQt/Qt redistribution and corresponding-source obligations before publishing; the source repository's MIT license does not replace dependency terms.
+
+Follow [the desktop release checklist](../packaging/macos/RELEASE_CHECKLIST.md), including inspection of GUI screenshots, browser quarantine, Finder opening, offline reopening, app replacement, and a person unfamiliar with Python completing the example. These manual checks cannot be inferred from automated tests. Once the initial gates pass, set the Actions repository variable `MAC_DESKTOP_RELEASES_ENABLED` to `true` to enable tagged draft builds. Tags must match the app version. All releases remain drafts until their manual checks pass; the workflow never publishes them.
+
+Keep the source-installation quick start as the default until a validated Mac download is actually published. Include the two DMGs, checksums, source/wheel distributions, dependency notices, and first-run instructions in the release.
 
 ## Creating A Persistent DOI
 

@@ -44,6 +44,9 @@ Repository = "https://github.com/Finn2400/layerloom"
 Issues = "https://github.com/Finn2400/layerloom/issues"
 
 [project.optional-dependencies]
+desktop = [
+  "pyinstaller==6.22.3",
+]
 gui = [
   "lib3mf>=2.3",
   "pygltflib>=1.16",
@@ -60,6 +63,7 @@ analysis = [
   "matplotlib>=3.7",
   "pandas>=2.0",
   "Pillow>=9.0",
+  "scikit-image>=0.22",
 ]
 headless = [
   "lib3mf>=2.3",
@@ -70,11 +74,13 @@ dev = [
   "build>=1.0",
   "pytest>=8.0",
   "twine>=5.0",
+  "scikit-image>=0.22",
 ]
 
 [project.scripts]
 layerloom-doctor = "layerloom.doctor:main"
 layerloom-gui = "layerloom.gui_app:main"
+layerloom-worker = "layerloom.worker:main"
 layerloom-weave = "layerloom.weave:main"
 layerloom-headless = "layerloom.headless:main"
 layerloom-glb-compat = "layerloom.glb_compat:main"

@@ -669,7 +669,7 @@ def bake_roundtrip(
 # -----------------------------------------------------------------------------
 # CLI
 # -----------------------------------------------------------------------------
-if __name__ == "__main__":
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--input", required=True)
     ap.add_argument("-o", "--output", required=True)
@@ -677,5 +677,10 @@ if __name__ == "__main__":
     ap.add_argument("--debug", action="store_true")
     ap.add_argument("--safe-volumes", action="store_true")
     ap.add_argument("--growth-limit", type=float, default=2.0)
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     bake_roundtrip(a.input, a.output, a.keep_stls, a.debug, a.safe_volumes, a.growth_limit)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -28,115 +28,44 @@ stable yet. Expect file-format edge cases and slicer-specific quirks.
 LayerLoom outputs are standard 3MF files intended for ordinary slicer workflows,
 but they are not full project round-trips for vendor-specific slicer files.
 
-## Quick Start From GitHub
+## Install And Open LayerLoom
 
-Use Python 3.10, 3.11, or 3.12. A virtual environment is strongly recommended
-so LayerLoom does not accidentally use a Python from another app or tool.
+The source launchers now install a private, pinned Python and the GUI dependencies
+for you. **You do not need to install Python, Git, Node, or Homebrew first.**
+The first setup needs an internet connection; later launches work offline.
 
-LayerLoom is not currently published on PyPI. To try it without Git, use
-GitHub's **Code → Download ZIP**, extract the folder, and run the included
-launcher:
+1. Choose **Code → Download ZIP** on this GitHub page and extract the download.
+2. Open the launcher in the extracted folder:
+   - macOS: **Launch LayerLoom.command**
+   - Windows x64: **Launch LayerLoom.bat**
+   - Linux x64: run `bash "Launch LayerLoom.sh"` from the extracted folder.
+3. Wait for setup to finish. The source launcher displays a terminal window;
+   you normally do not need to type commands into it.
+4. In LayerLoom, click **Try the example**, then **Weave**, and choose an output
+   folder. **Show in Finder / Show in folder** reveals the result.
 
-- macOS: `Launch LayerLoom.command`
-- Windows: `Launch LayerLoom.bat`
+Read the [installation guide](docs/install.md) for first-open security prompts,
+repair, and Linux graphics requirements. Existing system Python installations
+and repository `.venv` folders are not used or changed by these launchers.
 
-The launcher creates an isolated `.venv`, installs LayerLoom and its GUI
-dependencies, runs `layerloom-doctor`, and then opens the app. An internet
-connection is required the first time. If macOS removes the launcher's
-executable permission, run `chmod +x "Launch LayerLoom.command"` once.
+### Standalone Mac App — Release Validation In Progress
 
-For development or the newest source checkout, clone from GitHub:
+This repository includes standalone Mac build tooling. Public desktop downloads
+must pass the [release checklist](docs/release_and_zenodo.md) before becoming the
+default installation path. Do not mistake GitHub's **Source code** ZIP for an app.
 
-macOS and Linux:
+The desktop artifacts are separate DMGs for **Apple Silicon (macOS 14+)** and
+**Intel (macOS 15+)**. They contain Python and the required libraries and open
+without Terminal. They use free ad-hoc signing, not Apple notarization, so macOS
+may require **Privacy & Security → Open Anyway**. Follow the illustrated
+[Mac first-open guide](docs/mac_first_open.md) for a downloaded desktop build.
 
-```bash
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
+### Contributors And Command-Line Users
 
-On macOS, a source checkout also includes a double-click launcher:
-
-```text
-Launch LayerLoom.command
-```
-
-Double-clicking it creates or reuses `.venv`, installs the GUI dependencies if
-needed, runs `layerloom-doctor`, and opens the GUI. The terminal commands above
-remain the most explicit/reproducible install path. If a ZIP download loses the
-launcher permission, run `chmod +x "Launch LayerLoom.command"` once.
-
-On Windows, double-click:
-
-```text
-Launch LayerLoom.bat
-```
-
-The Windows launcher follows the same path: create or reuse `.venv`, install
-the GUI dependencies if needed, run `layerloom-doctor`, and open the GUI. It
-uses the Windows `py` launcher when available, then falls back to `python`.
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
-
-If PowerShell blocks virtual-environment activation, see
-[docs/install.md](docs/install.md).
-
-For development, analysis, and benchmark plotting tools:
-
-```bash
-python -m pip install -e ".[gui,bench,analysis,dev]"
-```
-
-## Run The GUI
-
-On macOS, double-click:
-
-```text
-Launch LayerLoom.command
-```
-
-On Windows, double-click:
-
-```text
-Launch LayerLoom.bat
-```
-
-Or run the installed command:
-
-```bash
-layerloom-gui
-```
-
-From a source checkout you can also run:
-
-```bash
-python src/layerloom/3mf_gui_v65.py
-```
-
-If the GUI does not open, run:
-
-```bash
-layerloom-doctor
-```
-
-The doctor command checks your Python environment, core dependencies, GUI
-dependencies, and tutorial example files.
+Use the [source/developer instructions](docs/install.md#developer-installation)
+for a reproducible environment and command-line tools. `layerloom-doctor` checks
+dependencies, native 3MF initialization, palettes, and tutorial files;
+`layerloom-doctor --render` also checks the Qt/VTK graphics stack.
 
 ## Beginner Tutorial And Examples
 
@@ -166,6 +95,11 @@ nominal screen color is closest.
 
 ## Command Line Tools
 
+These commands are for the developer environment described in the
+[installation guide](docs/install.md#developer-installation). Run them with
+`uv run --no-sync` from the source folder; the beginner launchers manage a
+separate private environment and do not add commands to your system PATH.
+
 Check whether the install is ready for the tutorial/GUI path:
 
 ```bash
@@ -193,9 +127,9 @@ Run the headless GLB-to-woven workflow, intended for colored GLB/GLTF exports
 from tools such as ChimeraX:
 
 ```bash
-python -m pip install -e ".[headless]"
-layerloom-headless protein.glb
-layerloom-headless protein.glb --output ~/Downloads/protein_woven.3mf --orientation-quality thorough
+uv sync --managed-python --locked --extra gui --extra headless
+uv run --no-sync layerloom-headless protein.glb
+uv run --no-sync layerloom-headless protein.glb --output ~/Downloads/protein_woven.3mf --orientation-quality thorough
 ```
 
 By default, `layerloom-headless` imports up to about 20 GLB color groups, matches
