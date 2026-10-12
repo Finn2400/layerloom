@@ -2,6 +2,21 @@ name: Mac desktop
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/macos-desktop.yml'
+      - '.python-version'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'src/**'
+      - 'examples/**'
+      - 'scripts/build_macos.py'
+      - 'scripts/validate_macos.py'
+      - 'scripts/runtime-pins.txt'
+      - 'packaging/macos/**'
+      - 'tests/test_macos_packaging.py'
+      - 'tests/test_worker.py'
+      - 'docs/images/mac-first-open.svg'
   push:
     tags: ['v*']
 
@@ -14,7 +29,7 @@ jobs:
   build:
     if: >-
       github.event.repository.private == false &&
-      (github.event_name == 'workflow_dispatch' || vars.MAC_DESKTOP_RELEASES_ENABLED == 'true')
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || vars.MAC_DESKTOP_RELEASES_ENABLED == 'true')
     name: Build ${{ matrix.arch }}
     strategy:
       fail-fast: false
@@ -43,8 +58,11 @@ jobs:
         run: uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable
       - name: Build app and DMG
         run: .venv-desktop/bin/python scripts/build_macos.py
-      - name: Preserve app permissions and symbolic links
-        run: tar -czf dist/macos/LayerLoom-${{ matrix.arch }}.app.tar.gz -C dist/macos LayerLoom.app
+      - name: Preserve application, architecture notices and build identity
+        run: |
+          tar -czf dist/macos/LayerLoom-${{ matrix.arch }}.app.tar.gz -C dist/macos LayerLoom.app
+          tar -czf dist/macos/THIRD_PARTY_NOTICES-${{ matrix.arch }}.tar.gz -C dist/macos/LayerLoom.app/Contents/Resources THIRD_PARTY_NOTICES
+          cp dist/macos/LayerLoom.app/Contents/Resources/build-info.json dist/macos/LayerLoom-${{ matrix.arch }}-build-info.json
       - uses: actions/upload-artifact@v4
         with:
           name: mac-${{ matrix.arch }}
@@ -52,6 +70,7 @@ jobs:
             dist/macos/*.dmg
             dist/macos/*.sha256
             dist/macos/*.tar.gz
+            dist/macos/*-build-info.json
           compression-level: 0
           retention-days: 14
 
@@ -118,14 +137,9 @@ jobs:
           cp packaging/macos/RELEASE_CHECKLIST.md artifacts/RELEASE_CHECKLIST.md
           cp 'packaging/macos/Read Me First.html' artifacts/Read-Me-First.html
           cp docs/images/mac-first-open.svg artifacts/mac-first-open.svg
-      - name: Recover notices from the built application
-        run: |
-          mkdir app-notices
-          tar -xzf artifacts/LayerLoom-arm64.app.tar.gz -C app-notices
-          tar -czf artifacts/THIRD_PARTY_NOTICES.tar.gz -C app-notices/LayerLoom.app/Contents/Resources THIRD_PARTY_NOTICES
       - name: Create draft only
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES.tar.gz artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl
+          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl

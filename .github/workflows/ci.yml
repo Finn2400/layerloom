@@ -7,17 +7,27 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     if: github.event.repository.private == false
     name: ${{ matrix.os }} / locked Python
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: LayerLoom café source
     strategy:
       fail-fast: false
       matrix:
         os: [macos-14, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          path: LayerLoom café source
       - uses: astral-sh/setup-uv@v6
         with:
           version: '0.13.0'
@@ -65,9 +75,48 @@ jobs:
         run: |
           PYTHON_EXECUTABLE=$(uv run --no-sync python -c 'import sys; print(sys.executable)')
           cd "$RUNNER_TEMP"
-          "$PYTHON_EXECUTABLE" -I -m layerloom.doctor
-          "$PYTHON_EXECUTABLE" -I -c 'import subprocess,sys,tempfile; from pathlib import Path; from layerloom.example_assets import find_example_file; output=Path(tempfile.mkdtemp())/"example_woven.3mf"; subprocess.run([sys.executable,"-I","-m","layerloom.worker","weave","-i",str(find_example_file("tutorial_cmy_cubes.3mf")),"-o",str(output),"--step","0.16","--no-export-stls"],check=True); assert output.stat().st_size > 0'
+          "$PYTHON_EXECUTABLE" -I -X utf8 -m layerloom.doctor
+          "$PYTHON_EXECUTABLE" -I -X utf8 - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import tempfile
+          import xml.etree.ElementTree as ET
+          import zipfile
+          import layerloom
+          from layerloom.example_assets import find_example_file
+          from layerloom.runtime import worker_command, worker_process_options
+
+          assert "site-packages" in str(layerloom.__file__), layerloom.__file__
+          root = Path(tempfile.mkdtemp(prefix="LayerLoom café 染 "))
+          output = root / "woven café 染 example.3mf"
+          env = os.environ.copy()
+          for name in ("PYTHONPATH", "PYTHONHOME", "PYTHONIOENCODING"):
+              env.pop(name, None)
+          env.update(PYTHONUTF8="0", PYTHONCOERCECLOCALE="0", LC_ALL="C")
+          result = subprocess.run(
+              worker_command("weave", ["-i", str(find_example_file("tutorial_cmy_cubes.3mf")),
+                                       "-o", str(output), "--step", "0.16", "--no-export-stls"]),
+              cwd=root, env=env, capture_output=True, timeout=180,
+              **worker_process_options(),
+          )
+          print(result.stdout)
+          print(result.stderr)
+          assert result.returncode == 0
+          assert "baked+repacked(stream)" in result.stdout
+          with zipfile.ZipFile(output) as archive:
+              model = ET.fromstring(archive.read("3D/3dmodel.model"))
+          ns = {"m": "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"}
+          assert model.findall(".//m:triangle", ns)
+          PY
+      - name: Preserve source bootstrap diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootstrap-logs-${{ matrix.os }}
+          path: ${{ runner.temp }}/LayerLoom café bootstrap/logs/*
+          if-no-files-found: ignore
       - uses: actions/upload-artifact@v4
         with:
           name: python-distributions-${{ matrix.os }}
-          path: dist/*
+          path: LayerLoom café source/dist/*

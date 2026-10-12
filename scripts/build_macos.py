@@ -108,6 +108,28 @@ def sign_app(app: Path):
     run(["/usr/bin/codesign", "--verify", "--deep", "--strict", "--verbose=2", app])
 
 
+def source_identity(root: Path) -> dict:
+    """Identify the exact checkout used for release artifacts without requiring Git."""
+    identity = {"source_revision": None, "source_tree": None, "source_dirty": None}
+    if (root / ".git").exists():
+        try:
+            def git(*arguments):
+                return subprocess.check_output(
+                    ["git", *arguments], cwd=root, text=True, stderr=subprocess.DEVNULL
+                ).strip()
+            identity.update(
+                source_revision=git("rev-parse", "HEAD"),
+                source_tree=git("rev-parse", "HEAD^{tree}"),
+                source_dirty=bool(git("status", "--porcelain", "--untracked-files=normal")),
+            )
+        except (OSError, subprocess.CalledProcessError):
+            pass  # A source archive or machine without Git can still build.
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        identity["workflow_revision"] = os.environ.get("GITHUB_SHA")
+        identity["workflow_run_id"] = os.environ.get("GITHUB_RUN_ID")
+    return identity
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist/macos")
@@ -149,6 +171,7 @@ def main(argv=None):
         "python": expected_python, "pyinstaller": importlib.metadata.version("pyinstaller"),
         "lock_sha256": hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
         "signing": "ad-hoc", "notarized": False,
+        **source_identity(ROOT),
     }
     (app / "Contents/Resources/build-info.json").write_text(json.dumps(build_info, indent=2) + "\n")
     sign_app(app)
