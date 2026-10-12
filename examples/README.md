@@ -30,9 +30,13 @@ quality over maximum palette complexity.
 
 ## Recommended First Run
 
-Start with `tutorial_cmy_cubes.3mf`, then move to
-`tutorial_cmy_benchy_cutup.3mf` after the basic workflow makes sense.
-The GUI **Load Example** button opens the Benchy example directly from the
-packaged install.
+Open LayerLoom using the [installation guide](../docs/install.md), then click
+**Try the example**. You do not need to download either model separately:
+LayerLoom opens a private copy of the four cubes and sets 0.16 mm layers.
+Click **Weave**, select an output folder, and use **Show in Finder / Show in
+folder** to find `tutorial_cmy_cubes_woven.3mf` when it finishes.
+
+After the cubes work, use **Load Example** or **Help → Load the Benchy example**
+for the larger sample. The bundled input files remain unchanged.
 
 See [../docs/tutorial.md](../docs/tutorial.md) for the full walkthrough.

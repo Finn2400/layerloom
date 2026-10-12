@@ -104,7 +104,7 @@ jobs:
       - name: Verify checksums, signatures, native requirements, workers and GUI
         run: |
           cd artifact
-          shasum -a 256 -c *.sha256
+          shasum -a 256 -c ./*.sha256
           cd ..
           python scripts/validate_macos.py artifact/LayerLoom.app --gui --report validation
       - uses: actions/upload-artifact@v4

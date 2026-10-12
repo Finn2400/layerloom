@@ -34,7 +34,9 @@ The source launchers now install a private, pinned Python and the GUI dependenci
 for you. **You do not need to install Python, Git, Node, or Homebrew first.**
 The first setup needs an internet connection; later launches work offline.
 
-1. Choose **Code → Download ZIP** on this GitHub page and extract the download.
+1. Choose **Code → Download ZIP** on this GitHub page. In Downloads, double-click
+   the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
+   Open the extracted folder containing this README and the launchers.
 2. Open the launcher in the extracted folder:
    - macOS: **Launch LayerLoom.command**
    - Windows x64: **Launch LayerLoom.bat**
@@ -42,7 +44,12 @@ The first setup needs an internet connection; later launches work offline.
 3. Wait for setup to finish. The source launcher displays a terminal window;
    you normally do not need to type commands into it.
 4. In LayerLoom, click **Try the example**, then **Weave**, and choose an output
-   folder. **Show in Finder / Show in folder** reveals the result.
+   folder such as Documents. Wait for **Your woven model**, then use
+   **Show in Finder / Show in folder** to find `tutorial_cmy_cubes_woven.3mf`.
+
+Keep the extracted folder and reopen the same launcher next time. If the Mac
+launcher is blocked or will not execute, the [installation guide](docs/install.md#macos)
+includes a short Terminal fallback that does not require knowing any Python.
 
 Read the [installation guide](docs/install.md) for first-open security prompts,
 repair, and Linux graphics requirements. Existing system Python installations
@@ -50,15 +57,20 @@ and repository `.venv` folders are not used or changed by these launchers.
 
 ### Standalone Mac App — Release Validation In Progress
 
-This repository includes standalone Mac build tooling. Public desktop downloads
-must pass the [release checklist](docs/release_and_zenodo.md) before becoming the
-default installation path. Do not mistake GitHub's **Source code** ZIP for an app.
+The standalone Mac release is being prepared as an **unpublished draft**.
+Draft assets are visible only to maintainers with repository write access;
+public users should use the source launchers above until a desktop release is
+published. A draft or a passing build does not establish that the required
+[first-open and beginner checks](packaging/macos/RELEASE_CHECKLIST.md) are complete.
 
-The desktop artifacts are separate DMGs for **Apple Silicon (macOS 14+)** and
-**Intel (macOS 15+)**. They contain Python and the required libraries and open
-without Terminal. They use free ad-hoc signing, not Apple notarization, so macOS
-may require **Privacy & Security → Open Anyway**. Follow the illustrated
-[Mac first-open guide](docs/mac_first_open.md) for a downloaded desktop build.
+Desktop artifacts are separate DMGs for **Apple Silicon (macOS 14+)** and
+**Intel (macOS 15+)**. To identify your Mac, choose **Apple menu → About This Mac**:
+an Apple M-series chip uses `arm64`; an Intel processor uses `x86_64`.
+The DMGs include Python and required libraries. Copy the app to Applications,
+open it, and follow the illustrated [Mac first-open guide](docs/mac_first_open.md).
+These free builds are ad-hoc signed without Apple notarization, so macOS may
+require approval under **Privacy & Security**. GitHub's **Source code (zip)**
+asset contains scripts and source, not a ready-to-open Mac app.
 
 ### Contributors And Command-Line Users
 
@@ -103,19 +115,19 @@ separate private environment and do not add commands to your system PATH.
 Check whether the install is ready for the tutorial/GUI path:
 
 ```bash
-layerloom-doctor
+uv run --no-sync layerloom-doctor
 ```
 
 Normalize a 3MF into LayerLoom's generic internal 3MF form:
 
 ```bash
-layerloom-normalize input.3mf --output normalized.3mf
+uv run --no-sync layerloom-normalize input.3mf --output normalized.3mf
 ```
 
 Generate a woven 3MF:
 
 ```bash
-layerloom-weave --input input.3mf --step 0.08 --output output_woven.3mf
+uv run --no-sync layerloom-weave --input input.3mf --step 0.08 --output output_woven.3mf
 ```
 
 By default, LayerLoom makes the first weave layer a single filament color and
@@ -140,8 +152,8 @@ support-saving orientation, fits the footprint into a 180 x 180 mm box, weaves a
 Generate benchmark geometry:
 
 ```bash
-layerloom-simplified-speed-suite --help
-layerloom-benchmark-suite --help
+uv run --no-sync layerloom-simplified-speed-suite --help
+uv run --no-sync layerloom-benchmark-suite --help
 ```
 
 ## How LayerLoom Works

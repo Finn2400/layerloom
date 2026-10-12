@@ -35,6 +35,15 @@ jobs:
       - name: Linux native GUI prerequisites
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libopengl0 libxkbcommon-x11-0
+      - name: Verify binary wheels for every supported desktop
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for target in x86_64-pc-windows-msvc x86_64-unknown-linux-gnu aarch64-apple-darwin x86_64-apple-darwin; do
+            UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/wheel-check-$target" uv sync \
+              --managed-python --locked --extra gui --extra dev --extra desktop \
+              --no-install-project --no-build --python-platform "$target" --dry-run
+          done
       - name: Install exact GUI and test dependencies
         run: uv sync --managed-python --locked --extra gui --extra dev --no-editable
       - name: Diagnose runtime and packaged resources

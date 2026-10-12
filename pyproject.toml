@@ -54,6 +54,9 @@ gui = [
   "pyvistaqt>=0.11",
   "qtpy>=2.4",
   "PyQt5>=5.15",
+  # Riverbank publishes newer Qt5 wheels for macOS/Linux, but Windows stops here.
+  "PyQt5-Qt5==5.15.2; sys_platform == 'win32'",
+  "PyQt5-Qt5==5.15.19; sys_platform != 'win32'",
 ]
 bench = [
   "matplotlib>=3.7",
@@ -113,3 +116,14 @@ layerloom = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.uv]
+# Require wheels for the managed runtime on every supported desktop target.
+# This prevents macOS locking from silently selecting a wheel-only package
+# that cannot be installed on Windows or Linux.
+required-environments = [
+  "python_version == '3.12' and sys_platform == 'win32' and platform_machine == 'AMD64'",
+  "python_version == '3.12' and sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "python_version == '3.12' and sys_platform == 'darwin' and platform_machine == 'x86_64'",
+  "python_version == '3.12' and sys_platform == 'linux' and platform_machine == 'x86_64'",
+]
