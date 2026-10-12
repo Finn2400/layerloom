@@ -108,7 +108,7 @@ def main(argv=None):
     native_count = 0
     for path in macho_files(args.app):
         native_count += 1
-        subprocess.run(["/usr/bin/lipo", "-verify_arch", arch, path], check=True)
+        subprocess.run(["/usr/bin/lipo", path, "-verify_arch", arch], check=True)
         dependencies = subprocess.check_output(["/usr/bin/otool", "-L", path], text=True)
         for line in dependencies.splitlines()[1:]:
             library = line.strip().split(" (", 1)[0]
