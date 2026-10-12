@@ -2,16 +2,20 @@
 from __future__ import annotations
 import importlib.util
 import json
+import os
 import struct
+import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "packaging/macos"))
 from bundle_config import EXCLUDES, GUI_FILES, gui_hidden_imports, resource_files
 from build_macos import is_license_file
-from validate_macos import deployment_versions, write_test_glb
+from validate_macos import command, deployment_versions, write_test_glb
 
 
 def test_explicit_desktop_resources_are_present():
@@ -60,3 +64,12 @@ def test_license_inventory_does_not_ship_native_test_binaries():
     assert is_license_file(Path("COPYING.LESSER"))
     assert not is_license_file(Path("copying.cpython-312-darwin.so"))
     assert not is_license_file(Path("test_copying.py"))
+
+
+def test_timed_out_native_command_preserves_output(tmp_path):
+    log = tmp_path / "gui.log"
+    with pytest.raises(subprocess.TimeoutExpired):
+        command([sys.executable, "-u", "-c",
+                 "import time; print('GUI stage reached'); time.sleep(30)"],
+                cwd=tmp_path, env=os.environ.copy(), log=log, timeout=2)
+    assert "GUI stage reached" in log.read_text()

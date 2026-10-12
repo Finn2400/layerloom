@@ -101,6 +101,28 @@ jobs:
           path: artifact
       - name: Extract exact oldest-OS application
         run: tar -xzf artifact/LayerLoom-${{ matrix.arch }}.app.tar.gz -C artifact
+      - name: Prepare affected Intel hosted runner icon service
+        if: matrix.runner == 'macos-26-intel'
+        run: |
+          mkdir -p validation
+          {
+            sw_vers
+            uname -m
+            printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+          } > validation/runner-image.txt
+          # This exact VM image has a crash-looping icon service on its virtual
+          # GPU. It blocks AppKit icon requests indefinitely; generic icons work.
+          # https://github.com/actions/runner-images/issues/14751
+          # This only prepares the disposable CI VM. App bytes and all native/
+          # GUI assertions stay unchanged; users do not need this workaround.
+          if [[ "${ImageVersion:-}" == '20260824.0517.1' ]]; then
+            service="gui/$(id -u)/com.apple.iconservices.iconservicesagent"
+            launchctl print "$service" > validation/iconservices-before.log 2>&1 || true
+            launchctl bootout "$service" > validation/iconservices-bootout.log 2>&1 || true
+            launchctl disable "$service"
+            launchctl print-disabled "gui/$(id -u)" > validation/iconservices-after.log 2>&1
+            printf '%s\n' 'Applied runner-images#14751 workaround to the affected CI image.' >> validation/runner-image.txt
+          fi
       - name: Verify checksums, signatures, native requirements, workers and GUI
         run: |
           cd artifact

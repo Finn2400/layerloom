@@ -68,12 +68,14 @@ def write_test_glb(path: Path):
 
 
 def command(command, *, cwd, env, log, timeout=300):
-    proc = subprocess.run([str(arg) for arg in command], cwd=cwd, env=env, text=True,
-                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=timeout)
-    log.write_text(proc.stdout, encoding="utf-8")
+    # Stream to disk so diagnostics survive TimeoutExpired or a hung GUI.
+    with log.open("w", encoding="utf-8") as stream:
+        proc = subprocess.run([str(arg) for arg in command], cwd=cwd, env=env,
+                              stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
+    output = log.read_text(encoding="utf-8", errors="replace")
     if proc.returncode:
-        raise RuntimeError(f"Command exited {proc.returncode}: {command}\n{proc.stdout[-12000:]}")
-    return proc.stdout
+        raise RuntimeError(f"Command exited {proc.returncode}: {command}\n{output[-12000:]}")
+    return output
 
 
 def deployment_versions(output: str) -> list[tuple[int, ...]]:
@@ -158,6 +160,9 @@ def main(argv=None):
                 assert gui["status"] == "passed" and gui["frozen"], gui
                 report["gui"] = gui
             report["status"] = "passed"
+    except Exception as exc:
+        report.update(status="failed", error=f"{type(exc).__name__}: {exc}")
+        raise
     finally:
         (report_dir / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
     return 0
