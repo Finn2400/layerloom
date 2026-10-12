@@ -21,7 +21,7 @@ Robust mapping:
 
 Defaults
 --------
-• step = 0.2 mm
+• step = 0.08 mm
 • output = <input_basename>_woven.3mf
 • stl_out = ./stl_out/
 
@@ -43,14 +43,15 @@ import random
 import zipfile
 import xml.etree.ElementTree as ET
 from typing import Dict, Tuple, List
-from collections import Counter
+from collections import Counter, defaultdict
 
 from layerloom.ingest import read_parts
 from layerloom.normalize_3mf_import import normalize_3mf_import
-from layerloom.strata import slice_repeating
+from layerloom.strata import slice_interval, slice_repeating
 from layerloom.group_by_color import group_by_color, write_color_stls
 from layerloom.export import write_basic_3mf
-from layerloom.tokens import PAT_TAG_RE, TOKEN_ALPHABET, sanitize_token_run
+from layerloom.tokens import NO_WEAVE_TAG_RE, PAT_TAG_RE, TOKEN_ALPHABET, sanitize_token_run
+from layerloom.runtime import log_worker_result, worker_command, worker_process_options
 
 # ---------------------------------------------------------------------
 # Literary intro
@@ -261,6 +262,98 @@ def sanitize(run: str) -> str:
     return sanitize_token_run(run, alphabet=ALPHABET, default="cmy")
 
 
+def colorize_part(
+    label: str,
+    mesh,
+    run: str,
+    *,
+    z0: float,
+    step: float,
+    first_layer_token: str | None = None,
+):
+    """Colorize a part, optionally replacing its bottommost weave layer."""
+    colored = []
+    if first_layer_token:
+        base_layer = slice_interval(mesh, z0, z0 + step)
+        if base_layer is not None:
+            colored.append((f"{label}__first_layer__PAT_{first_layer_token}__", base_layer))
+
+        remainder = slice_interval(
+            mesh,
+            z0 + step,
+            max(float(mesh.bounds[1, 2]) + step, z0 + 2.0 * step),
+        )
+        if remainder is None:
+            return colored
+        mesh = remainder
+
+    if len(run) == 1:
+        colored.append((f"{label}__direct__PAT_{run}__", mesh))
+        return colored
+
+    bands = slice_repeating(mesh, z0=z0, step=step, groups=len(run))
+    for group_index, group in enumerate(bands):
+        color = run[group_index]
+        for band_index, band in enumerate(group):
+            colored.append((f"{label}__slice{band_index:03d}__PAT_{color}__", band))
+    return colored
+
+
+def partition_no_weave_parts(parts):
+    """Separate pass-through parts without changing their labels or meshes."""
+    woven = []
+    no_weave = []
+    for label, mesh in parts:
+        target = no_weave if NO_WEAVE_TAG_RE.search(label) else woven
+        target.append((label, mesh))
+    return woven, no_weave
+
+
+def resolve_part_run(
+    label: str,
+    name_token_map: Dict[str, Tuple[str, str]],
+) -> Tuple[str, str]:
+    """Resolve a part's weave token using the same priority as the pipeline."""
+    match = PAT_RE.search(label)
+    if match:
+        return sanitize(match.group(1)), "label.PAT"
+    resolved = resolve_run_from_map(label, name_token_map)
+    if resolved:
+        return sanitize(resolved[0]), resolved[1]
+    return "cmy", "default.cmy"
+
+
+def choose_first_layer_token(
+    mode: str | None,
+    prepared_parts,
+    *,
+    z0: float,
+    step: float,
+) -> tuple[str | None, Dict[str, float]]:
+    """Resolve an explicit token or find the largest scheduled base footprint."""
+    requested = str(mode or "off").strip().lower()
+    if requested in {"", "off", "none", "false"}:
+        return None, {}
+    if requested != "auto":
+        if len(requested) != 1 or requested not in ALPHABET:
+            choices = ", ".join(["auto", "off", *TOKEN_ALPHABET])
+            raise ValueError(f"Invalid first-layer color {mode!r}; choose one of: {choices}")
+        return requested, {}
+
+    volumes: Dict[str, float] = defaultdict(float)
+    for _label, mesh, run, _source in prepared_parts:
+        base_layer = slice_interval(mesh, z0, z0 + step)
+        if base_layer is None:
+            continue
+        volumes[run[0]] += abs(float(base_layer.volume))
+
+    if not volumes:
+        raise RuntimeError("Could not determine a color for the first layer")
+    order = {token: index for index, token in enumerate(TOKEN_ALPHABET)}
+    selected = min(volumes, key=lambda token: (-volumes[token], order[token]))
+    return selected, dict(volumes)
+
+
 # ---------------------------------------------------------------------
 # Baking helper
 # ---------------------------------------------------------------------
@@ -290,10 +383,12 @@ def _auto_bake_if_needed(in_path: str, verbose: bool = True) -> str:
 
 def weave_pipeline(
     input_path: str,
-    step: float = 0.2,
+    step: float = 0.08,
     stl_out: str | None = None,
     verbose: bool = True,
     output_path: str | None = None,
+    export_stls: bool = True,
+    first_layer_color: str | None = "auto",
 ) -> None:
     """Execute the full LayerLoom color grouping workflow."""
     _configure_safe_stdout()
@@ -301,8 +396,7 @@ def weave_pipeline(
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
 
-    cwd = os.getcwd()
-    stl_out = stl_out or os.path.join(cwd, "stl_out")
+    stl_out = stl_out or os.path.join(os.getcwd(), "stl_out")
     t_start = time.time()
 
     # 1. Display weaving intro (always shown)
@@ -329,43 +423,74 @@ def weave_pipeline(
     parts = read_parts([baked_path])
     print(f"[load] read {len(parts)} part(s) from {os.path.basename(baked_path)}")
     print(f"[timing] geometry loaded in {time.time() - t0:.2f}s")
+    if not parts:
+        raise ValueError("No mesh parts found in normalized input")
+    woven_parts, no_weave_parts = partition_no_weave_parts(parts)
+    if no_weave_parts:
+        print(f"[load] preserving {len(no_weave_parts)} no-weave part(s) as independent objects")
+        if verbose:
+            for label, _ in no_weave_parts:
+                print(f"   {label}  ->  pass-through [label.__NOWEAVE__]")
 
     # 5. Compute Z baseline
     z0 = float(min(m.bounds[0, 2] for _, m in parts))
     print(f"[info] using z0 = {z0:.3f} mm")
+
+    prepared_parts = []
+    for label, mesh in woven_parts:
+        run, source = resolve_part_run(label, pre_map)
+        prepared_parts.append((label, mesh, run, source))
+
+    first_layer_token, base_volumes = choose_first_layer_token(
+        first_layer_color,
+        prepared_parts,
+        z0=z0,
+        step=step,
+    )
+    if first_layer_token:
+        if str(first_layer_color).lower() == "auto":
+            summary = ", ".join(
+                f"{token}={volume / step:.2f} mm^2"
+                for token, volume in sorted(base_volumes.items())
+            )
+            print(f"[first layer] auto footprint estimate: {summary}")
+        print(f"[first layer] using one color across the base: {first_layer_token}")
+    else:
+        print("[first layer] single-color override disabled")
 
     # 6. Slice by LayerLoom token sequence
     _section("Slicing and layering")
     print(f"[slice] Cutting parts into color-patterned Z-bands (step={step} mm)...")
     sliced = []
     t1 = time.time()
-    total_parts = len(parts)
+    total_parts = len(woven_parts)
 
     # Diagnostics
     if verbose:
         print("[slice] token resolution per part:")
 
-    for i, (lbl, mesh) in enumerate(parts, 1):
-        # Priority: PAT in baked label → pre-bake map → default 'cmy'
-        m = PAT_RE.search(lbl)
-        if m:
-            run = sanitize(m.group(1))
-            src = "label.PAT"
-        else:
-            resolved = resolve_run_from_map(lbl, pre_map)
-            if resolved:
-                run, src = sanitize(resolved[0]), resolved[1]
-            else:
-                run, src = "cmy", "default.cmy"
-
+    for i, (lbl, mesh, run, src) in enumerate(prepared_parts, 1):
         if verbose:
             print(f"   {lbl}  →  {run}   [{src}]")
 
-        bands = slice_repeating(mesh, z0=z0, step=step, groups=len(run))
-        for g, group in enumerate(bands):
-            color = run[g]  # single character
-            for bi, b in enumerate(group):
-                sliced.append((f"{lbl}__slice{bi:03d}__PAT_{color}__", b))
+        colored_parts = colorize_part(
+            lbl,
+            mesh,
+            run,
+            z0=z0,
+            step=step,
+            first_layer_token=first_layer_token,
+        )
+        sliced.extend(colored_parts)
+        part_slice_count = len(colored_parts)
+        if verbose and len(run) == 1:
+            print(f"      direct token '{run}': preserved closed volume without Z-band slicing")
+        if part_slice_count == 0:
+            raise RuntimeError(
+                f"Slicing produced no woven bands for part {lbl!r}. "
+                "The mesh may be an open surface rather than a solid volume; "
+                "repair or solidify the source before weaving."
+            )
         if verbose and (i % 5 == 0 or i == total_parts):
             print(f"[slice] processed {i}/{total_parts} parts ({len(sliced)} bands so far)")
 
@@ -374,41 +499,51 @@ def weave_pipeline(
     # 7. Group and merge by color
     _section("Grouping by color")
     print("[group] Gathering color threads into unified solids...")
-    grouped = group_by_color(sliced, merge=True, verbose=verbose)
+    grouped = group_by_color(sliced, merge=True, verbose=verbose) if sliced else []
+    output_parts = grouped + no_weave_parts
+    if not output_parts:
+        raise RuntimeError("LayerLoom produced no output parts")
 
-    # 8. Write grouped 3MF (temporary)
+    # 8. Write grouped 3MF and final-bake it from a run-private workspace.
+    # A deterministic file in the global temp directory allowed simultaneous
+    # weaves of same-named inputs to overwrite one another mid-read.
     _section("Exporting grouped 3MF")
-    tmp_dir = tempfile.gettempdir()
-    grouped_tmp = os.path.join(tmp_dir, f"grouped_{os.path.basename(input_path)}")
-    write_basic_3mf(grouped, grouped_tmp, title="LayerLoom Grouped Output")
-    print(f"[export] grouped file written → {grouped_tmp}")
+    with tempfile.TemporaryDirectory(prefix="layerloom_weave_") as work_dir:
+        grouped_tmp = os.path.join(work_dir, "grouped.3mf")
+        write_basic_3mf(output_parts, grouped_tmp, title="LayerLoom Grouped Output")
+        print(f"[export] grouped file written → {grouped_tmp}")
 
-    # 9. Final bake → woven output
-    _section("Final baking")
+        # 9. Final bake → woven output
+        _section("Final baking")
 
-    if output_path:
-        woven_path = output_path
-    else:
-        woven_name = os.path.splitext(os.path.basename(input_path))[0] + "_woven.3mf"
-        woven_path = os.path.join(os.path.dirname(input_path), woven_name)
+        if output_path:
+            woven_path = output_path
+        else:
+            woven_name = os.path.splitext(os.path.basename(input_path))[0] + "_woven.3mf"
+            woven_path = os.path.join(os.path.dirname(input_path), woven_name)
 
-    cmd = [
-        sys.executable,
-        "-m", "layerloom.bake_in_memory_stlroundtrip",
-        "-i", grouped_tmp,
-        "-o", woven_path,
-        "--safe-volumes",
-        "--keep-stls",
-    ]
-    print("[bake] running final bake for woven output...")
-    subprocess.run(cmd, check=True)
-    print(f"[bake] final woven file → {woven_path}")
+        cmd = worker_command("bake", [
+            "-i", grouped_tmp,
+            "-o", woven_path,
+            "--safe-volumes",
+        ])
+        print("[bake] running final bake for woven output...")
+        result = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+        log_worker_result("final bake", result)
+        if result.stdout:
+            print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+        if result.stderr:
+            print(result.stderr, end="" if result.stderr.endswith("\n") else "\n", file=sys.stderr)
+        if result.returncode != 0:
+            raise RuntimeError(result.stderr.strip() or result.stdout.strip() or "Final bake failed")
+        print(f"[bake] final woven file → {woven_path}")
 
-    # 10. Write per-color STL files
-    _section("Exporting color STLs")
-    os.makedirs(stl_out, exist_ok=True)
-    write_color_stls(grouped, stl_out)
-    print(f"[export] wrote STL group → {stl_out}")
+    # 10. Optionally write per-color STL files
+    if export_stls:
+        _section("Exporting color STLs")
+        os.makedirs(stl_out, exist_ok=True)
+        write_color_stls(grouped, stl_out)
+        print(f"[export] wrote STL group → {stl_out}")
 
     print(f"\n[done] Weave complete — threads bound, model ready → {woven_path} "
           f"({time.time() - t_start:.1f}s)\n")
@@ -424,14 +559,25 @@ def main(argv: list[str] | None = None) -> int:
         description="Run the full LayerLoom color-layer workflow (auto-bakes if needed)."
     )
     parser.add_argument("-i", "--input", required=True, help="Input .3mf file")
-    parser.add_argument("--step", type=float, default=0.2,
-                        help="Z-step (layer thickness in mm, default=0.2)")
+    parser.add_argument("--step", type=float, default=0.08,
+                        help="Z-step (layer thickness in mm, default=0.08)")
     parser.add_argument("--stl-out", type=str,
                         help="Optional output folder for per-color STL export (default: ./stl_out/)")
+    parser.add_argument(
+        "--no-export-stls",
+        action="store_true",
+        help="Only write the woven 3MF; do not also export per-color STLs",
+    )
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Enable verbose logging")
     parser.add_argument("-o", "--output", help="Output 3MF path "
                                                "(default: <input_basename>_woven.3mf)")
+    parser.add_argument(
+        "--first-layer-color",
+        default="auto",
+        choices=["auto", "off", *TOKEN_ALPHABET],
+        help="Make the first weave layer one color: auto (largest base footprint), off, or a filament token",
+    )
 
     args = parser.parse_args(argv)
 
@@ -442,6 +588,8 @@ def main(argv: list[str] | None = None) -> int:
             stl_out=os.path.abspath(args.stl_out) if args.stl_out else None,
             verbose=args.verbose,
             output_path=os.path.abspath(args.output) if args.output else None,
+            export_stls=not args.no_export_stls,
+            first_layer_color=args.first_layer_color,
         )
         return 0
     except Exception as e:

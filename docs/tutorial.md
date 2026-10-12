@@ -1,9 +1,9 @@
 # LayerLoom Beginner Tutorial
 
 This tutorial walks through a complete first LayerLoom workflow using the CMY
-sample files in [`examples/`](../examples/). It assumes you are comfortable
-opening a terminal and a slicer, but it does not assume much 3D-printing
-background.
+sample files bundled with the app and in [`examples/`](../examples/). You do not
+need Python experience or a separate example download. A slicer is only needed
+after you have created your first woven model.
 
 ## What LayerLoom Does
 
@@ -19,62 +19,23 @@ filament.
 
 ## First-Run Checklist
 
-1. Install LayerLoom in a virtual environment.
-2. Run `layerloom-doctor` and confirm the checks pass.
-3. Launch `layerloom-gui`.
-4. Open one of the sample inputs, or click **Load Example** to open the packaged
-   CMY Benchy example.
-5. Weave the model and save the output.
-6. Open the woven output in a slicer.
-7. Assign generated `all_...` objects to matching physical filaments.
-8. Set slicer layer height and first-layer height correctly.
+1. Install and open LayerLoom using the [installation guide](install.md).
+2. Click **Try the example** in the empty window. The small CMY cubes already
+   have their weave patterns assigned, and the example sets 0.16 mm layers.
+3. Click **Weave** and select an output folder, such as Documents. Confirm the
+   folder selection; the app chooses the filename automatically.
+4. Wait for the **Your woven model** panel, then click **Show in Finder**
+   (or **Show in folder** on Windows/Linux).
+5. Open that woven 3MF in your slicer. Assign the cyan, magenta, and yellow
+   output objects to matching physical filaments.
+6. Use **0.16 mm for both normal and first layers** in this first example.
+   Disable adaptive layer heights and keep all parts in their shared positions.
 
-## Install And Open The GUI
+You can repeat this workflow offline. The packaged examples remain unchanged.
+The **Load Example** toolbar action provides the larger CMY Benchy example.
 
-The simplest first attempt is to use the double-click launcher from the
-repository folder:
-
-- macOS: `Launch LayerLoom.command`
-- Windows: `Launch LayerLoom.bat`
-
-The launcher creates or reuses `.venv`, installs GUI dependencies if needed,
-runs `layerloom-doctor`, and opens the GUI. If anything fails, use the terminal
-install below so the error messages are easier to inspect.
-
-From a fresh clone on macOS or Linux:
-
-```bash
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
-
-From a fresh clone on Windows PowerShell:
-
-```powershell
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
-
-From a source checkout, you can also run the current GUI directly:
-
-```bash
-python src/layerloom/3mf_gui_v65.py
-```
-
-If the GUI opens to an empty build plate, that is normal. Load a sample file to
-begin.
+If the app does not behave as expected, use **Help → Copy diagnostics** or
+**Help → Open logs** and include the information when reporting the problem.
 
 ## A Few Terms
 
@@ -92,14 +53,20 @@ LayerLoom to use the `cy` pattern automatically.
 
 ## Tutorial 1: Weave The Basic CMY Cubes
 
-1. Launch LayerLoom with `layerloom-gui`.
-2. Click **Open 3MF**.
-3. Open [`examples/tutorial_cmy_cubes.3mf`](../examples/tutorial_cmy_cubes.3mf).
+1. Open LayerLoom.
+2. Click **Try the example**, or use **Help → Try the CMY cubes example**.
+3. Four packaged cubes open automatically. Their patterns are `c`, `y`, `cy`,
+   and `cm`; a mixed pattern alternates between its two filament colors.
 4. Confirm that the parts appear in the parts list. These sample objects already
    include `__PAT_...__` tags, so you do not need to manually color them.
 5. Set **Layer height** to `0.160` for this beginner example.
 6. Click **Weave**.
-7. Save the woven output as something like `tutorial_cmy_cubes_woven.3mf`.
+7. Select an output folder and confirm. LayerLoom writes
+   `tutorial_cmy_cubes_woven.3mf` there. If that file already exists, it asks
+   before replacing it. Choose a different folder if you want to keep both.
+8. When **Your woven model** appears, click **Show in Finder / Show in folder**.
+   The preview now shows the woven result, so it is normal for the parts list
+   to change from four inputs to three filament groups.
 
 The woven output should contain objects named by final filament, such as
 `all_cyan`, `all_magenta`, and `all_yellow`. This is expected. LayerLoom has
@@ -107,7 +74,11 @@ regrouped the thin bands by the physical filament that should print them.
 
 ## Open The Woven File In A Slicer
 
-Open `tutorial_cmy_cubes_woven.3mf` in your slicer.
+Open `tutorial_cmy_cubes_woven.3mf` in your slicer. If asked whether to load the
+meshes as a single object with multiple parts, choose that option. Preserve the
+parts' shared placement: do not auto-arrange them separately or drop each band
+independently onto the plate. **Save Labeled 3MF** in LayerLoom saves assignments;
+use the file produced by **Weave** for this step.
 
 Assign the generated objects to matching loaded filaments:
 
@@ -136,13 +107,14 @@ For example, if you weave at `0.08 mm`, a `0.16 mm` first layer is fine, but
 After the CMY cubes work, try the cut-up Benchy sample. It is still CMY-only,
 but it is a more realistic multi-part model than the beginner cubes.
 
-1. Click **Load Example** in the toolbar, or click **Open 3MF** and open
-   [`examples/tutorial_cmy_benchy_cutup.3mf`](../examples/tutorial_cmy_benchy_cutup.3mf).
+1. Click **Load Example** in the toolbar, or **Help → Load the Benchy example**.
+   This opens a private working copy of the bundled sample.
 2. Confirm that the Benchy parts appear in the parts list. The parts are already
    labeled with CMY `__PAT_...__` tokens.
 3. Set **Layer height** to the layer height you plan to use in the slicer, such
    as `0.120` for a finer tutorial print.
-4. Click **Weave** and save the output.
+4. Click **Weave**, select an output folder, and wait for
+   `tutorial_cmy_benchy_cutup_woven.3mf` to finish.
 5. In your slicer, assign each generated `all_...` object to the matching
    physical filament.
 
@@ -159,17 +131,19 @@ values; unmeasured recipes fall back to the nominal colors.
 
 ## Optional: Weave From The Command Line
 
-You can also weave the examples without opening the GUI:
+This optional section is for the [developer installation](install.md#developer-installation),
+with `uv` installed. Run these commands from the source folder. The beginner
+launchers and standalone app do not add commands to your system PATH.
 
 ```bash
-layerloom-weave \
+uv run --no-sync layerloom-weave \
   --input examples/tutorial_cmy_cubes.3mf \
   --step 0.16 \
   --output tutorial_cmy_cubes_woven.3mf
 ```
 
 ```bash
-layerloom-weave \
+uv run --no-sync layerloom-weave \
   --input examples/tutorial_cmy_benchy_cutup.3mf \
   --step 0.12 \
   --output tutorial_cmy_benchy_cutup_woven.3mf
@@ -180,12 +154,13 @@ before weaving.
 
 ## If Something Fails
 
-- If `layerloom-gui` or `layerloom-weave` is not found, confirm that the virtual
-  environment is activated.
-- If `layerloom-doctor` reports a missing package, rerun
-  `python -m pip install -e ".[gui]"` inside the activated environment.
-- If the GUI fails to import, include the full `layerloom-doctor` output when
-  reporting the problem.
+- If LayerLoom does not open, follow the [installation troubleshooting table](install.md#troubleshooting).
+  Reopen the beginner launcher; no environment activation is needed.
+- If a source installation reports a missing package, rerun its launcher with
+  `--repair`; see [repair instructions](install.md#repair-a-source-installation).
+  For a standalone app, replace the complete app from a fresh DMG.
+- If the GUI fails to start, include the error and log location shown by the
+  launcher or error dialog when reporting the problem.
 - If the slicer shows several separate objects, that is normal. Assign each
   final-color object to the corresponding filament.
 - If a woven model looks vertically scrambled, check that the slicer layer

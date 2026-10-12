@@ -28,111 +28,56 @@ stable yet. Expect file-format edge cases and slicer-specific quirks.
 LayerLoom outputs are standard 3MF files intended for ordinary slicer workflows,
 but they are not full project round-trips for vendor-specific slicer files.
 
-## Quick Start From GitHub
+## Install And Open LayerLoom
 
-Use Python 3.10, 3.11, or 3.12. A virtual environment is strongly recommended
-so LayerLoom does not accidentally use a Python from another app or tool.
+The source launchers now install a private, pinned Python and the GUI dependencies
+for you. **You do not need to install Python, Git, Node, or Homebrew first.**
+The first setup needs an internet connection; later launches work offline.
 
-For a packaged release, install the GUI extras:
+1. Choose **Code → Download ZIP** on this GitHub page. In Downloads, double-click
+   the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
+   Open the extracted folder containing this README and the launchers.
+2. Open the launcher in the extracted folder:
+   - macOS: **Launch LayerLoom.command**
+   - Windows x64: **Launch LayerLoom.bat**
+   - Linux x64: run `bash "Launch LayerLoom.sh"` from the extracted folder.
+3. Wait for setup to finish. The source launcher displays a terminal window;
+   you normally do not need to type commands into it.
+4. In LayerLoom, click **Try the example**, then **Weave**, and choose an output
+   folder such as Documents. Wait for **Your woven model**, then use
+   **Show in Finder / Show in folder** to find `tutorial_cmy_cubes_woven.3mf`.
 
-```bash
-python -m pip install "layerloom[gui]"
-layerloom-doctor
-layerloom-gui
-```
+Keep the extracted folder and reopen the same launcher next time. If the Mac
+launcher is blocked or will not execute, the [installation guide](docs/install.md#macos)
+includes a short Terminal fallback that does not require knowing any Python.
 
-For development or the newest source checkout, clone from GitHub:
+Read the [installation guide](docs/install.md) for first-open security prompts,
+repair, and Linux graphics requirements. Existing system Python installations
+and repository `.venv` folders are not used or changed by these launchers.
 
-macOS and Linux:
+### Standalone Mac App — Release Validation In Progress
 
-```bash
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
+The standalone Mac release is being prepared as an **unpublished draft**.
+Draft assets are visible only to maintainers with repository write access;
+public users should use the source launchers above until a desktop release is
+published. A draft or a passing build does not establish that the required
+[first-open and beginner checks](packaging/macos/RELEASE_CHECKLIST.md) are complete.
 
-On macOS, a source checkout also includes a double-click launcher:
+Desktop artifacts are separate DMGs for **Apple Silicon (macOS 14+)** and
+**Intel (macOS 15+)**. To identify your Mac, choose **Apple menu → About This Mac**:
+an Apple M-series chip uses `arm64`; an Intel processor uses `x86_64`.
+The DMGs include Python and required libraries. Copy the app to Applications,
+open it, and follow the illustrated [Mac first-open guide](docs/mac_first_open.md).
+These free builds are ad-hoc signed without Apple notarization, so macOS may
+require approval under **Privacy & Security**. GitHub's **Source code (zip)**
+asset contains scripts and source, not a ready-to-open Mac app.
 
-```text
-Launch LayerLoom.command
-```
+### Contributors And Command-Line Users
 
-Double-clicking it creates or reuses `.venv`, installs the GUI dependencies if
-needed, runs `layerloom-doctor`, and opens the GUI. The terminal commands above
-remain the most explicit/reproducible install path. If a ZIP download loses the
-launcher permission, run `chmod +x "Launch LayerLoom.command"` once.
-
-On Windows, double-click:
-
-```text
-Launch LayerLoom.bat
-```
-
-The Windows launcher follows the same path: create or reuse `.venv`, install
-the GUI dependencies if needed, run `layerloom-doctor`, and open the GUI. It
-uses the Windows `py` launcher when available, then falls back to `python`.
-
-Windows PowerShell:
-
-```powershell
-git clone https://github.com/Finn2400/layerloom.git
-cd layerloom
-py -3.12 -m venv .venv
-.\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-python -m pip install -e ".[gui]"
-layerloom-doctor
-layerloom-gui
-```
-
-If PowerShell blocks virtual-environment activation, see
-[docs/install.md](docs/install.md).
-
-For development, analysis, and benchmark plotting tools:
-
-```bash
-python -m pip install -e ".[gui,bench,analysis,dev]"
-```
-
-## Run The GUI
-
-On macOS, double-click:
-
-```text
-Launch LayerLoom.command
-```
-
-On Windows, double-click:
-
-```text
-Launch LayerLoom.bat
-```
-
-Or run the installed command:
-
-```bash
-layerloom-gui
-```
-
-From a source checkout you can also run:
-
-```bash
-python src/layerloom/3mf_gui_v65.py
-```
-
-If the GUI does not open, run:
-
-```bash
-layerloom-doctor
-```
-
-The doctor command checks your Python environment, core dependencies, GUI
-dependencies, and tutorial example files.
+Use the [source/developer instructions](docs/install.md#developer-installation)
+for a reproducible environment and command-line tools. `layerloom-doctor` checks
+dependencies, native 3MF initialization, palettes, and tutorial files;
+`layerloom-doctor --render` also checks the Qt/VTK graphics stack.
 
 ## Beginner Tutorial And Examples
 
@@ -162,29 +107,53 @@ nominal screen color is closest.
 
 ## Command Line Tools
 
+These commands are for the developer environment described in the
+[installation guide](docs/install.md#developer-installation). Run them with
+`uv run --no-sync` from the source folder; the beginner launchers manage a
+separate private environment and do not add commands to your system PATH.
+
 Check whether the install is ready for the tutorial/GUI path:
 
 ```bash
-layerloom-doctor
+uv run --no-sync layerloom-doctor
 ```
 
 Normalize a 3MF into LayerLoom's generic internal 3MF form:
 
 ```bash
-layerloom-normalize input.3mf --output normalized.3mf
+uv run --no-sync layerloom-normalize input.3mf --output normalized.3mf
 ```
 
 Generate a woven 3MF:
 
 ```bash
-layerloom-weave --input input.3mf --step 0.12 --output output_woven.3mf
+uv run --no-sync layerloom-weave --input input.3mf --step 0.08 --output output_woven.3mf
 ```
+
+By default, LayerLoom makes the first weave layer a single filament color and
+automatically chooses the color with the largest footprint on the model base.
+Use `--first-layer-color c` (or another filament token) to choose it explicitly,
+or `--first-layer-color off` to retain the repeating pattern on the first layer.
+
+Run the headless GLB-to-woven workflow, intended for colored GLB/GLTF exports
+from tools such as ChimeraX:
+
+```bash
+uv sync --managed-python --locked --extra gui --extra headless
+uv run --no-sync layerloom-headless protein.glb
+uv run --no-sync layerloom-headless protein.glb --output ~/Downloads/protein_woven.3mf --orientation-quality thorough
+```
+
+By default, `layerloom-headless` imports up to about 20 GLB color groups, matches
+them to the `Normal` palette, safely attempts mesh repair, searches for a
+support-saving orientation, fits the footprint into a 180 x 180 mm box, weaves at
+0.08 mm, and writes the final woven 3MF to `~/Downloads`.
 
 Generate benchmark geometry:
 
 ```bash
-layerloom-simplified-speed-suite --help
-layerloom-benchmark-suite --help
+uv run --no-sync layerloom-simplified-speed-suite --help
+uv run --no-sync layerloom-benchmark-suite --help
 ```
 
 ## How LayerLoom Works
@@ -199,6 +168,10 @@ LayerLoom shifts color planning into geometry:
    `all_magenta`, and `all_yellow`.
 6. Open the resulting 3MF in a standard slicer and assign those objects to the
    physical filaments loaded in the printer.
+
+Add `__NOWEAVE__` to a part name to exclude that part from slicing and color
+grouping. LayerLoom carries the mesh and its full name through as an independent
+output object, so it remains separately selectable and recolorable in the slicer.
 
 LayerLoom normalizes incoming 3MFs before editing:
 

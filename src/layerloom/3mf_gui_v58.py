@@ -9,14 +9,23 @@ This file is a direct working snapshot of v57, including the exact
 """
 
 from __future__ import annotations
-import os, re, sys, io, json, zipfile, colorsys, math, hashlib, importlib, queue, time, tkinter as tk, gc
+import os, re, sys, io, json, zipfile, colorsys, math, hashlib, importlib, queue, time, gc
 from collections import Counter
-from tkinter import ttk, filedialog, messagebox
+try:
+    import tkinter as tk
+    from tkinter import ttk, filedialog, messagebox
+except ImportError:
+    tk = ttk = filedialog = messagebox = None
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple, Optional
 import tempfile, subprocess
 import shutil, glob  # <-- Added for PLY Roundtrip
+
+try:
+    from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options
+except ImportError:
+    from runtime import log_worker_result, repair_available, worker_command, worker_process_options
 
 try:
     import resource
@@ -53,6 +62,7 @@ try:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -61,6 +71,7 @@ except Exception:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -156,9 +167,6 @@ CORE_NS = "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"
 NS = {"m": CORE_NS}
 M = lambda t: f"{{{CORE_NS}}}{t}"
 HEX_RE = re.compile(r"^#?[0-9A-Fa-f]{6}$")
-SUPPORT_SCRIPTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "supporting_scripts"))
-GLB_SPLIT_SCRIPT = os.path.join(SUPPORT_SCRIPTS_DIR, "glb_split_by_vertexcolor_v3_3mf.py")
-GLB_REPAIR_SCRIPT = os.path.join(SUPPORT_SCRIPTS_DIR, "3mf_meshlab_repair_3mf.py")
 PLATE_WIDTH_MM = 256.0
 PLATE_DEPTH_MM = 256.0
 _VTK_MOD = None
@@ -750,12 +758,12 @@ def _sync_build_partnumbers(root: ET.Element) -> None:
             if nm:
                 item.set("partnumber", nm)
 
-def _stamp_ids_only(input_3mf: str) -> str:
+def _stamp_ids_only(input_3mf: str, *, output_path: Optional[str] = None) -> str:
     """
     Create a temp-stamped .3mf where each object's name includes __ID_<oid>__,
     preserving any existing __PAT_*__ and trailing __E###.
     """
-    tmp_out = os.path.join(tempfile.gettempdir(), f"preview_id_{os.path.basename(input_3mf)}")
+    tmp_out = output_path or os.path.join(tempfile.gettempdir(), f"preview_id_{os.path.basename(input_3mf)}")
     info = _3mf_size_info(input_3mf)
     model_bytes = info.get("model_bytes") or 0
     if model_bytes >= GUI_ID_STAMP_MODEL_XML_MB * 1024.0 * 1024.0:
@@ -863,13 +871,14 @@ def _run_weave(input_3mf: str, step: float = 0.2, output_path: Optional[str] = N
             base = os.path.splitext(os.path.basename(input_3mf))[0]
             out_path = os.path.join(out_dir, f"{base}_woven.3mf")
 
-        cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", out_path]
+        cmd = worker_command("weave", ["-i", input_3mf, "-o", out_path])
         if step is not None:
             cmd += ["--step", str(step)]
 
         _log("INFO", "[weave] running:", " ".join(cmd))
         t0 = time.perf_counter()
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        proc = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+        log_worker_result("weave", proc)
         _perf_log("subprocess weave", t0, extra=f"returncode={proc.returncode}")
 
         if proc.stdout:
@@ -1983,8 +1992,10 @@ def _filter_by_bw_visibility(entries, add_k: bool, add_w: bool):
 # ─────────────────────────────────────────────────────────────────────
 # GUI
 # ─────────────────────────────────────────────────────────────────────
-class AssignColorsApp(tk.Tk):
+class AssignColorsApp(tk.Tk if tk is not None else object):
     def __init__(self):
+        if tk is None:
+            raise RuntimeError("The legacy Tk interface needs tkinter. Use layerloom-gui for the current Qt interface.")
         super().__init__()
         set_log_level("INFO") # <-- Set default log level
         self.title(APP_TITLE)
@@ -2285,6 +2296,9 @@ class AssignColorsApp(tk.Tk):
         self._load_palette(self.current_palette_name)
 
     # ---------- file ops ----------
+    def _stamp_for_preview(self, path: str, *, output_path: Optional[str] = None) -> str:
+        return _stamp_ids_only(path, output_path=output_path)
+
     def _on_open(self):
         p=filedialog.askopenfilename(title="Open 3MF",filetypes=[("3MF","*.3mf")])
         if not p: return
@@ -2298,7 +2312,8 @@ class AssignColorsApp(tk.Tk):
     def _run_external_tool(self, label: str, cmd: List[str]) -> subprocess.CompletedProcess:
         _log("INFO", f"[{label}] running: {' '.join(cmd)}")
         t0 = time.perf_counter()
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        proc = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+        log_worker_result(label, proc)
         if proc.stdout:
             _log("DEBUG", f"[{label} stdout]\n{proc.stdout}")
         if proc.stderr:
@@ -2865,8 +2880,6 @@ class AssignColorsApp(tk.Tk):
         self._reload_current()
 
     def _run_glb_import_pipeline(self, glb_path: str) -> Tuple[str, Dict[str, str], Optional[str], int]:
-        if not os.path.isfile(GLB_SPLIT_SCRIPT):
-            raise RuntimeError(f"GLB split script not found:\n{GLB_SPLIT_SCRIPT}")
         t0 = time.perf_counter()
 
         try:
@@ -2885,9 +2898,7 @@ class AssignColorsApp(tk.Tk):
         manifest_out = os.path.join(tmp_dir, f"{base}_split.colors.json")
         repaired_3mf = os.path.join(tmp_dir, f"{base}_repaired.3mf")
 
-        split_cmd = [
-            sys.executable,
-            GLB_SPLIT_SCRIPT,
+        split_cmd = worker_command("glb-split", [
             glb_path,
             "--out",
             split_3mf,
@@ -2895,21 +2906,19 @@ class AssignColorsApp(tk.Tk):
             manifest_out,
             "--color-levels",
             str(color_levels),
-        ]
+        ])
         self._run_external_tool("glb-split", split_cmd)
         manifest_map = _read_source_hex_manifest(manifest_out) if os.path.exists(manifest_out) else {}
 
         repair_warning = None
         import_3mf = split_3mf
-        if os.path.isfile(GLB_REPAIR_SCRIPT):
-            repair_cmd = [
-                sys.executable,
-                GLB_REPAIR_SCRIPT,
+        if repair_available():
+            repair_cmd = worker_command("repair", [
                 split_3mf,
                 "--out",
                 repaired_3mf,
                 "--quiet",
-            ]
+            ])
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
                 reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
@@ -2922,8 +2931,7 @@ class AssignColorsApp(tk.Tk):
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
         else:
-            repair_warning = f"Repair script not found; continuing with unrepaired 3MF.\n\n{GLB_REPAIR_SCRIPT}"
-            _log("WARN", repair_warning)
+            _log("INFO", "Imported without optional mesh repair.")
 
         _perf_log("glb import pipeline", t0, extra=os.path.basename(import_3mf))
         return import_3mf, manifest_map, repair_warning, color_levels
@@ -4017,6 +4025,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.base_file = None
         self.current_file = None
+        self.source_file_path = None
         self.transformed_preview_file = None
         self.model_objects: List[Tuple[str, str]] = []
         self.assignments: Dict[str, Dict[str, str]] = {}
@@ -4261,11 +4270,31 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
+        self.first_layer_color_combo = QtWidgets.QComboBox()
+        self.first_layer_color_combo.setFixedWidth(142)
+        self.first_layer_color_combo.setToolTip(
+            "Use one filament for the first weave layer. Auto chooses the color "
+            "with the largest footprint on the model base."
+        )
+        self.first_layer_color_combo.addItem("Auto", "auto")
+        self.first_layer_color_combo.addItem("Off", "off")
+        for token in TOKEN_ALPHABET:
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(QtGui.QColor(TOKEN_HEX[token]))
+            self.first_layer_color_combo.addItem(
+                QtGui.QIcon(swatch),
+                TOKEN_DISPLAY_NAMES[token].title(),
+                token,
+            )
+
         toolbar.addWidget(self._toolbar_label("GLB colors"))
         toolbar.addWidget(self.glb_colors_spin)
         toolbar.addSeparator()
         toolbar.addWidget(self._toolbar_label("Layer height"))
         toolbar.addWidget(self.layer_height_spin)
+        toolbar.addSeparator()
+        toolbar.addWidget(self._toolbar_label("First layer"))
+        toolbar.addWidget(self.first_layer_color_combo)
         toolbar.addSeparator()
         toolbar.addAction(weave_action)
         toolbar.addSeparator()
@@ -4971,6 +5000,9 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._reload_current()
 
     # ---------- file ops ----------
+    def _stamp_for_preview(self, path: str, *, output_path: Optional[str] = None) -> str:
+        return _stamp_ids_only(path, output_path=output_path)
+
     def _on_open(self):
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open 3MF", "", "3MF Files (*.3mf)")
         if not path:
@@ -4978,6 +5010,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = {}
         stamped = _stamp_ids_only(path)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened: {path}")
         if stamped != path:
             _log("INFO", f"Previewing ID-stamped temp copy: {stamped}")
@@ -4985,7 +5018,8 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
     def _run_external_tool(self, label: str, cmd: List[str]) -> subprocess.CompletedProcess:
         _log("INFO", f"[{label}] running: {' '.join(cmd)}")
         t0 = time.perf_counter()
-        proc = subprocess.run(cmd, capture_output=True, text=True)
+        proc = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+        log_worker_result(label, proc)
         if proc.stdout:
             _log("DEBUG", f"[{label} stdout]\n{proc.stdout}")
         if proc.stderr:
@@ -4996,8 +5030,6 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return proc
 
     def _run_glb_import_pipeline(self, glb_path: str):
-        if not os.path.isfile(GLB_SPLIT_SCRIPT):
-            raise RuntimeError(f"GLB split script not found:\n{GLB_SPLIT_SCRIPT}")
         t0 = time.perf_counter()
         target_colors = int(self.glb_colors_spin.value())
         if target_colors < 2:
@@ -5010,9 +5042,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         manifest_out = os.path.join(tmp_dir, f"{base}_split.colors.json")
         repaired_3mf = os.path.join(tmp_dir, f"{base}_repaired.3mf")
 
-        split_cmd = [
-            sys.executable,
-            GLB_SPLIT_SCRIPT,
+        split_cmd = worker_command("glb-split", [
             glb_path,
             "--out",
             split_3mf,
@@ -5020,14 +5050,14 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             manifest_out,
             "--color-levels",
             str(color_levels),
-        ]
+        ])
         self._run_external_tool("glb-split", split_cmd)
         manifest_map = _read_source_hex_manifest(manifest_out) if os.path.exists(manifest_out) else {}
 
         repair_warning = None
         import_3mf = split_3mf
-        if os.path.isfile(GLB_REPAIR_SCRIPT):
-            repair_cmd = [sys.executable, GLB_REPAIR_SCRIPT, split_3mf, "--out", repaired_3mf, "--quiet"]
+        if repair_available():
+            repair_cmd = worker_command("repair", [split_3mf, "--out", repaired_3mf, "--quiet"])
             try:
                 self._run_external_tool("3mf-repair", repair_cmd)
                 reject_reason = _glb_repair_rejection_reason(split_3mf, repaired_3mf)
@@ -5040,8 +5070,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
                 repair_warning = f"Repair failed; continuing with unrepaired 3MF.\n\n{e}"
                 _log("WARN", repair_warning)
         else:
-            repair_warning = f"Repair script not found; continuing with unrepaired 3MF.\n\n{GLB_REPAIR_SCRIPT}"
-            _log("WARN", repair_warning)
+            _log("INFO", "Imported without optional mesh repair.")
         _perf_log("glb import pipeline", t0, extra=os.path.basename(import_3mf))
         return import_3mf, manifest_map, repair_warning, color_levels
 
@@ -5057,6 +5086,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = manifest_map
         stamped = _stamp_ids_only(import_3mf)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened GLB: {path}")
         _log("INFO", f"GLB import produced 3MF: {import_3mf} (target_colors={self.glb_colors_spin.value()}, color_levels={color_levels})")
         if repair_warning:
@@ -5282,21 +5312,36 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         except Exception as e:
             self._error("Save", f"Failed to write 3MF:\n{e}")
 
-    def _run_weave_subprocess(self, input_3mf: str, *, step: float, output_path: str) -> Optional[str]:
+    def _run_weave_subprocess(
+        self,
+        input_3mf: str,
+        *,
+        step: float,
+        output_path: str,
+        first_layer_color: str = "auto",
+    ) -> Optional[str]:
         try:
-            cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", output_path]
+            cmd = worker_command("weave", [
+                "-i",
+                input_3mf,
+                "-o",
+                output_path,
+                "--no-export-stls",
+            ])
             if step is not None:
                 cmd += ["--step", str(step)]
+            cmd += ["--first-layer-color", first_layer_color]
             _log("INFO", "[weave] running:", " ".join(cmd))
             t0 = time.perf_counter()
-            proc = subprocess.run(cmd, capture_output=True, text=True)
+            proc = subprocess.run(cmd, capture_output=True, text=True, **worker_process_options())
+            log_worker_result("weave", proc)
             _perf_log("subprocess weave", t0, extra=f"returncode={proc.returncode}")
             if proc.stdout:
                 _log("DEBUG", "[weave stdout]\n" + proc.stdout)
             if proc.stderr:
                 _log("DEBUG", "[weave stderr]\n" + proc.stderr)
             if proc.returncode != 0:
-                self._error("Weave Error", proc.stderr or "Weave failed.")
+                self._error("Weave Error", proc.stderr or proc.stdout or "Weave failed.")
                 return None
             if os.path.exists(output_path):
                 return output_path
@@ -5344,26 +5389,36 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
-        base = os.path.splitext(os.path.basename(self.base_file))[0]
+        output_source = self.source_file_path or self.base_file
+        base = os.path.splitext(os.path.basename(output_source))[0]
         base = re.sub(r"^(preview_id_|tmp_weave_)+", "", base)
         final_woven_path = os.path.join(out_dir, f"{base}_woven.3mf")
         if os.path.exists(final_woven_path):
             if not self._confirm("Overwrite?", f"File already exists:\n{final_woven_path}\n\nOverwrite it?"):
                 return
-        try:
-            tmp_out = os.path.join(tempfile.gettempdir(), f"tmp_weave_{base}.3mf")
-            plan = self._materialize_current_model(tmp_out, include_assignments=True)
-            self._last_transform_plan = plan
-            self.transform_dirty = False
-            self._refresh_transform_readout(plan)
-            _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
-        except Exception as e:
-            self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
-            return
-        self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
-        woven = self._run_weave_subprocess(tmp_out, step=self.layer_height_spin.value(), output_path=final_woven_path)
+        with tempfile.TemporaryDirectory(prefix="layerloom_gui_weave_") as weave_work_dir:
+            try:
+                tmp_out = os.path.join(weave_work_dir, "labeled_input.3mf")
+                plan = self._materialize_current_model(tmp_out, include_assignments=True)
+                self._last_transform_plan = plan
+                self.transform_dirty = False
+                self._refresh_transform_readout(plan)
+                _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
+            except Exception as e:
+                self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
+                return
+            self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
+            woven = self._run_weave_subprocess(
+                tmp_out,
+                step=self.layer_height_spin.value(),
+                output_path=final_woven_path,
+                first_layer_color=str(self.first_layer_color_combo.currentData()),
+            )
         if not (woven and os.path.exists(woven)):
             return
+        completion_hook = getattr(self, "_on_weave_complete", None)
+        if completion_hook is not None:
+            completion_hook(woven)
         is_large_woven, woven_reason, _woven_info = _large_3mf_reason(woven)
         if is_large_woven:
             _log("WARN", f"[weave] large woven file entering auto-preview safe mode: {woven_reason}")

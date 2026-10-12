@@ -26,6 +26,7 @@ import argparse, os, tempfile, shutil, zipfile, math, struct, mmap, sys, time
 import xml.etree.ElementTree as ET
 from array import array
 from typing import List, Dict, Optional, Tuple, Iterable
+from xml.sax.saxutils import escape, quoteattr
 
 try:
     import resource
@@ -435,6 +436,10 @@ def pack_3mf_stream(
       - tf_mm_total
     meshes: leaf_obj_id -> spool metadata
     """
+    valid_parts = [part for part in parts if meshes.get(part["leaf_obj_id"])]
+    if not valid_parts:
+        raise RuntimeError("No mesh-backed parts were available for the output 3MF.")
+
     # Build XML to a temp file so we can zip it
     tmp_xml = tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8", newline="\n")
     tmp_xml_path = tmp_xml.name
@@ -445,27 +450,25 @@ def pack_3mf_stream(
     # XML header + root + metadata
     w('<?xml version="1.0" encoding="utf-8"?>\n')
     w(f'<model xmlns="{CORE_NS}" unit="millimeter" xml:lang="en-US">\n')
-    w(f'  <metadata name="Title">{title}</metadata>\n')
+    w(f'  <metadata name="Title">{escape(str(title))}</metadata>\n')
     w('  <resources>\n')
 
     # Write each object as its own mesh, re-indexing verts/tris 1..N
     # (We keep triangles referencing original indices; since we re-emit all vertices in order, indices match.)
-    for out_id, part in enumerate(parts, start=1):
-        label = part["label"]
+    for out_id, part in enumerate(valid_parts, start=1):
+        label = str(part["label"])
         leaf_id = part["leaf_obj_id"]
         tf12 = part["tf_mm_total"]
 
-        m = meshes.get(leaf_id)
-        if not m:
-            # No geometry for this leaf (shouldn't happen)
-            continue
+        m = meshes[leaf_id]
 
         v_path = m["v_path"]; t_path = m["t_path"]
         v_count = m["v_count"]; t_count = m["t_count"]
 
-        w(f'    <object id="{out_id}" type="model" name="{label}">\n')
-        w(f'      <metadata name="Title">{label}</metadata>\n')
-        w(f'      <metadata name="Name">{label}</metadata>\n')
+        w(
+            f'    <object id="{out_id}" type="model" '
+            f'name={quoteattr(label)}>\n'
+        )
         w('      <mesh>\n')
         w('        <vertices>\n')
 
@@ -499,9 +502,9 @@ def pack_3mf_stream(
     w('  <build>\n')
 
     # build items: each output object gets a build item at identity
-    for out_id, part in enumerate(parts, start=1):
-        label = part["label"]
-        w(f'    <item objectid="{out_id}" printable="1" partnumber="{label}"/>\n')
+    for out_id, part in enumerate(valid_parts, start=1):
+        label = str(part["label"])
+        w(f'    <item objectid="{out_id}" partnumber={quoteattr(label)}/>\n')
 
     w('  </build>\n')
     w('</model>\n')
@@ -525,7 +528,7 @@ def pack_3mf_stream(
             "_rels/.rels",
             b'<?xml version="1.0"?>'
             b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
-            b'<Relationship Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="3D/3dmodel.model"/>'
+            b'<Relationship Id="rel0" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="/3D/3dmodel.model"/>'
             b'</Relationships>'
         )
         z.writestr("3D/3dmodel.model", xml_bytes)
@@ -666,7 +669,7 @@ def bake_roundtrip(
 # -----------------------------------------------------------------------------
 # CLI
 # -----------------------------------------------------------------------------
-if __name__ == "__main__":
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--input", required=True)
     ap.add_argument("-o", "--output", required=True)
@@ -674,5 +677,10 @@ if __name__ == "__main__":
     ap.add_argument("--debug", action="store_true")
     ap.add_argument("--safe-volumes", action="store_true")
     ap.add_argument("--growth-limit", type=float, default=2.0)
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
     bake_roundtrip(a.input, a.output, a.keep_stls, a.debug, a.safe_volumes, a.growth_limit)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

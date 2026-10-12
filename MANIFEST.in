@@ -2,14 +2,26 @@ include README.md
 include CHANGELOG.md
 include LICENSE
 include pyproject.toml
+include .python-version
+include uv.lock
 include Launch*LayerLoom.command
 include Launch*LayerLoom.bat
+include Launch*LayerLoom.sh
+include scripts/bootstrap.py
+include scripts/bootstrap.sh
+include scripts/bootstrap.ps1
+include scripts/runtime-pins.txt
+include scripts/build_macos.py
+include scripts/validate_macos.py
+recursive-include packaging/macos *.py *.spec *.txt *.html *.md
 include docs/*.md
 include docs/images/layerloom_applications_overview.jpg
+include docs/images/mac-first-open.svg
 include examples/*.md
 include examples/*.3mf
 recursive-include src/layerloom/examples *.3mf
 recursive-include src/layerloom/palettes *.json
+recursive-include src/supporting_scripts *.py
 prune src/layerloom/gamut_photo_analysis
 prune src/layerloom/legacy
 prune src/layerloom/LayerLoomPhotos100NCZ_5

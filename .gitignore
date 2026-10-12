@@ -78,3 +78,7 @@ preview_id_*.3mf
 # Keep intentional tiny tutorial fixtures/examples in git.
 !examples/
 !examples/*.3mf
+!src/layerloom/examples/*.3mf
+
+# Isolated, locked desktop packaging environment
+.venv-desktop/
