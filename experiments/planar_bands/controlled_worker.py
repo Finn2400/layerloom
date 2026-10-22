@@ -100,11 +100,10 @@ def _load_case(case, input_path=None):
     if case in EXAMPLES:
         candidates = [Path(input_path)] if input_path else [
             ROOT / "examples" / EXAMPLES[case],
-            Path("/Users/finn/Documents/layerloom/examples") / EXAMPLES[case],
         ]
         path = next((candidate.resolve() for candidate in candidates if candidate.is_file()), None)
         if path is None:
-            raise FileNotFoundError(f"No source found: {candidates}")
+            raise FileNotFoundError(f"No source found: {candidates}; use --input to select a source explicitly")
         return read_parts([str(path)]), {
             "synthetic": False, "path": str(path),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -554,7 +553,7 @@ def main(argv=None):
     result = run_case(args.case, args.height, args.method, args.audit == "full", input_path=args.input,
                       baseline_planar_path=args.baseline_planar)
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, default=_json_default, allow_nan=False) + "\n")
+    args.output.write_text(json.dumps(result, indent=2, default=_json_default, allow_nan=False) + "\n", encoding="utf-8")
     print(json.dumps({"case": args.case, "method": args.method, "status": result["status"],
                       "timings": result["timings"], "output": str(args.output)}))
     # Geometry failures are data; worker crashes alone are process failures.

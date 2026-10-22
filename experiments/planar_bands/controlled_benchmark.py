@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -24,30 +25,82 @@ THREAD_ENV = {name: "1" for name in (
 )}
 
 
-def schedule(cases, heights, repetitions, seed):
-    """Rotate methods so each occupies every position once per three repeats."""
+def schedule(cases, heights, repetitions, seed, *, methods=METHODS):
+    """Rotate methods through every position, preserving seeded run order."""
     rng = random.Random(seed)
     cells = [(case, height) for height in heights for case in cases]
     orders = {}
     for cell in cells:
-        methods = list(METHODS)
-        rng.shuffle(methods)
-        orders[cell] = methods
+        order = list(methods)
+        rng.shuffle(order)
+        orders[cell] = order
     jobs = []
     for repeat in range(repetitions):
         rng.shuffle(cells)
         for case, height in cells:
-            methods = orders[(case, height)]
-            offset = repeat % len(methods)
-            for method in methods[offset:] + methods[:offset]:
+            order = orders[(case, height)]
+            offset = repeat % len(order)
+            for method in order[offset:] + order[:offset]:
                 jobs.append({"case": case, "height_mm": height,
                              "method": method, "repeat": repeat + 1})
     return jobs
 
 
+def positive_finite_float(value):
+    """Reject NaN/Inf before creating a run directory or launching workers."""
+    try:
+        number = float(value)
+    except (TypeError, ValueError) as exc:
+        raise argparse.ArgumentTypeError("Expected a finite positive number") from exc
+    if not math.isfinite(number) or number <= 0:
+        raise argparse.ArgumentTypeError("Expected a finite positive number")
+    return number
+
+
+def load_average():
+    """Load averages are optional metadata and unavailable on Windows."""
+    try:
+        return list(os.getloadavg())
+    except (AttributeError, OSError):
+        return None
+
+
+def read_worker_result(path):
+    """Accept only finite JSON reports with a timing map, even on zero exit."""
+    def finite_number(text):
+        value = float(text)
+        if not math.isfinite(value):
+            raise ValueError("Worker report contains a non-finite number")
+        return value
+
+    result = json.loads(path.read_text(encoding="utf-8"), parse_float=finite_number,
+                        parse_constant=finite_number)
+    if not isinstance(result, dict) or not isinstance(result.get("timings"), dict):
+        raise ValueError("Worker report must be an object with a timing map")
+    for name in ("audit", "source", "fingerprints", "settings", "counts", "versions",
+                 "baseline_planar", "implementation"):
+        if name in result and not isinstance(result[name], dict):
+            raise ValueError(f"Worker report {name} must be an object")
+    for parent, name in (("audit", "summary"), ("implementation", "bindings"),
+                         ("implementation", "source_sha256")):
+        mapping = result.get(parent, {})
+        if name in mapping and not isinstance(mapping[name], dict):
+            raise ValueError(f"Worker report {parent}.{name} must be an object")
+    for parent, name in (("source", "sha256"), ("fingerprints", "combined_sha256"),
+                         ("fingerprints", "native_parts_sha256"), ("baseline_planar", "sha256")):
+        value = result.get(parent, {}).get(name)
+        if value is not None and not isinstance(value, str):
+            raise ValueError(f"Worker report {parent}.{name} must be a string or null")
+    if any(value is not None and (type(value) not in (int, float) or value < 0)
+           for value in result["timings"].values()):
+        raise ValueError("Worker timings must be nonnegative numbers or null")
+    return result
+
+
 def command_output(args):
     try:
         return subprocess.check_output(args, cwd=ROOT, text=True,
+                                       encoding="utf-8", errors="replace",
                                        stderr=subprocess.DEVNULL).strip()
     except (OSError, subprocess.SubprocessError):
         return None
@@ -59,22 +112,24 @@ def metadata():
              ROOT / "src/layerloom/planar_materials.py",
              ROOT / "src/layerloom/strata.py",
              ROOT / "src/supporting_scripts/3mf_meshlab_repair_3mf.py"]
+    darwin = platform.system() == "Darwin"
     return {
         "utc_started": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "platform": platform.platform(), "machine": platform.machine(),
-        "processor": command_output(["sysctl", "-n", "machdep.cpu.brand_string"]),
-        "physical_cores": command_output(["sysctl", "-n", "hw.physicalcpu"]),
+        "processor": (command_output(["sysctl", "-n", "machdep.cpu.brand_string"])
+                      if darwin else platform.processor() or None),
+        "physical_cores": command_output(["sysctl", "-n", "hw.physicalcpu"]) if darwin else None,
         "logical_cores": os.cpu_count(),
-        "memory_bytes": command_output(["sysctl", "-n", "hw.memsize"]),
+        "memory_bytes": command_output(["sysctl", "-n", "hw.memsize"]) if darwin else None,
         "python": sys.version, "python_executable": sys.executable,
         "git_revision": command_output(["git", "rev-parse", "HEAD"]),
         "git_branch": command_output(["git", "branch", "--show-current"]),
         "git_status": command_output(["git", "status", "--short"]),
-        "source_sha256": {str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+        "source_sha256": {p.relative_to(ROOT).as_posix(): hashlib.sha256(p.read_bytes()).hexdigest()
                           for p in files if p.exists()},
         "thread_environment": THREAD_ENV,
         "thread_control_limit": "Environment limits common BLAS/OpenMP runtimes; not a guarantee for every native library.",
-        "load_average_at_start": list(os.getloadavg()),
+        "load_average_at_start": load_average(),
     }
 
 
@@ -127,10 +182,10 @@ def compact_result(result):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", nargs="+", choices=CASES, default=list(CASES))
-    parser.add_argument("--heights", nargs="+", type=float, default=[0.2])
+    parser.add_argument("--heights", nargs="+", type=positive_finite_float, default=[0.2])
     parser.add_argument("--repetitions", type=int, default=3)
     parser.add_argument("--seed", type=int, default=20261022)
-    parser.add_argument("--timeout", type=float, default=1200)
+    parser.add_argument("--timeout", type=positive_finite_float, default=1200)
     parser.add_argument("--output", type=Path, default=HERE / "results/controlled_benchmark.json")
     args = parser.parse_args()
     if args.repetitions < 1 or any(h <= 0 for h in args.heights):
@@ -140,7 +195,8 @@ def main():
     run_dir.mkdir(parents=True, exist_ok=True)
     jobs = schedule(args.cases, args.heights, args.repetitions, args.seed)
     env = {**os.environ, **THREAD_ENV, "PYTHONHASHSEED": "0",
-           "PYTHONDONTWRITEBYTECODE": "1", "PYTHONPATH": str(ROOT / "src")}
+           "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8",
+           "PYTHONPATH": str(ROOT / "src")}
     report = {"schema_version": 1, "metadata": metadata(),
               "protocol": {
                   "cases": args.cases, "heights_mm": args.heights,
@@ -155,7 +211,7 @@ def main():
 
     def save():
         report["summary"] = summarize(report["runs"])
-        args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+        args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
     save()
     for index, job in enumerate(jobs, 1):
@@ -170,17 +226,18 @@ def main():
                    "--method", job["method"], "--audit", audit,
                    "--output", str(result_path)]
         run = {**job, "order": index, "audit_requested": audit,
-               "load_average_before": list(os.getloadavg())}
+               "load_average_before": load_average()}
         print(f"[{index}/{len(jobs)}] {stem} audit={audit}", flush=True)
         start = time.perf_counter()
         try:
             proc = subprocess.run(command, cwd=ROOT, env=env, text=True,
+                                  encoding="utf-8", errors="replace",
                                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                   timeout=args.timeout)
             run["process_returncode"] = proc.returncode
-            (run_dir / f"{stem}.log").write_text(proc.stdout)
+            (run_dir / f"{stem}.log").write_text(proc.stdout, encoding="utf-8")
             if proc.returncode == 0 and result_path.exists():
-                run["result"] = compact_result(json.loads(result_path.read_text()))
+                run["result"] = compact_result(read_worker_result(result_path))
                 run["detail_file"] = str(result_path.relative_to(args.output.parent))
                 run["status"] = "completed"
             else:
@@ -191,15 +248,18 @@ def main():
             output = exc.stdout or b""
             if isinstance(output, bytes):
                 output = output.decode(errors="replace")
-            (run_dir / f"{stem}.log").write_text(output)
+            (run_dir / f"{stem}.log").write_text(output, encoding="utf-8")
             run["diagnostic_tail"] = output[-4000:]
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            run.pop("result", None)
+            run.update(status="failed", diagnostic_tail=f"{type(exc).__name__}: {exc}")
         run["process_elapsed_s_including_excluded_work"] = time.perf_counter() - start
         report["runs"].append(run)
         save()
         timings = run.get("result", {}).get("timings", {})
         print(f"  {run['status']}: matched={timings.get('matched_part_bands_s')}s core={timings.get('core_s')}s", flush=True)
     report["metadata"]["utc_finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    report["metadata"]["load_average_at_finish"] = list(os.getloadavg())
+    report["metadata"]["load_average_at_finish"] = load_average()
     save()
     print(f"Saved {args.output}", flush=True)
     return 0 if all(r["status"] == "completed" for r in report["runs"]) else 1

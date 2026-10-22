@@ -778,3 +778,55 @@ Evidence: [`profiled_benchmark.json`](results/profiled_benchmark.json),
 desktop measurements with four observations per cell, unchanged thread limits
 and no CPU pinning or isolation from background applications. Ranges show
 observations, not confidence intervals.
+
+## Hardening and portability, 22 October 2026
+
+The repair path now rejects nonfinite input bounds and coordinates that overflow
+the float32 export format before publishing output. NumPy's alternate inverse
+index shape is accepted explicitly. Triangulation falls back to Earcut when
+the installed Shapely lacks constrained triangulation or the linked GEOS cannot
+run it; other triangulation errors still fail the repair. Both triangulators
+remain subject to the same volume, footprint and export checks.
+
+File publication checks existing file identity as well as resolved paths, so
+hard links and case aliases cannot overwrite an input or report. Temporary
+files close before cleanup on serialization errors, including on Windows, and
+the output hash is read before publishing the 3MF. Reports use explicit UTF-8,
+and export status messages safely escape characters unsupported by a console's
+encoding, including Unicode filenames on redirected Windows consoles.
+The 3MF and report are each replaced atomically, but they are not a two-file
+transaction: an OS error publishing the report can follow a successful 3MF
+publication. Existing geometry and representation tolerances are unchanged.
+
+The benchmark drivers share one seeded scheduling implementation. They accept
+only finite positive heights and timeouts, validate worker-report shapes and
+timings, and require complete audit counters before reusing quality evidence.
+Malformed worker results are recorded as failures while remaining jobs run.
+Load averages and macOS-only metadata are optional; source-hash keys use `/`
+on every OS, and worker output and logs use UTF-8. Fixture lookup uses repository
+examples or explicit input paths instead of a personal checkout location.
+
+CI now adds a real contour CLI export on Windows, macOS and Linux, plus a second
+dependency lane with Shapely 2.0 and NumPy 1.x to exercise Earcut. The install
+diagnostic also checks the required native geometry dependencies. Local tests
+exercise limited capabilities and filesystem failures; actual Windows/Linux
+execution still depends on running the CI workflow. Different triangulators or
+GEOS versions may choose different triangle indices, so cross-version tests
+assert geometric invariants instead of assuming byte-identical meshes.
+
+Local validation passed **484 tests, 1 skipped** with NumPy 2.4.6 and Shapely
+2.1.2 / GEOS 3.13.1, and **472 tests, 13 skipped** with isolated NumPy 1.26.4
+and Shapely 2.0.7 / GEOS 3.11.4. The additional 12 skips are CDT-specific
+implementation comparisons; fallback geometry and export checks still run.
+A separate CLI invocation with the older dependencies exported 100 cube bands
+successfully using a Unicode output path and `cp1252` stdout. The optional
+slow headless integration test remains outside these runs.
+
+The production Benchy reconstruction passed all export and reimport checks and
+matches the previously inspected file exactly: 349 named bands, 182 layers and
+1,466,260 triangles, with unchanged diagnostic metadata. The geometry hash is
+`7a1285de8ba1dd48d23918a1e2a1728f45deda803a8336925483e8e18892e279`.
+The new local output is `results/benchy_hardened.3mf`; the proof is
+[`hardening_validation.json`](results/hardening_validation.json). Historical
+timing and geometry evidence has not been rewritten. This pass addresses
+correctness and compatibility; it makes no new speed claim.

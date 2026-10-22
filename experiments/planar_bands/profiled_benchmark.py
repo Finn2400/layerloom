@@ -24,10 +24,10 @@ METHODS = ("cut", "repair_cut", "contour", "contour_optimized")
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", nargs="+", choices=base.CASES, default=list(base.CASES))
-    parser.add_argument("--heights", nargs="+", type=float, default=[0.2])
+    parser.add_argument("--heights", nargs="+", type=base.positive_finite_float, default=[0.2])
     parser.add_argument("--repetitions", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20261022)
-    parser.add_argument("--timeout", type=float, default=1200)
+    parser.add_argument("--timeout", type=base.positive_finite_float, default=1200)
     parser.add_argument("--baseline-revision", default="514b61a6")
     parser.add_argument("--reference", type=Path, default=HERE / "results/controlled_benchmark.json")
     parser.add_argument("--prism-audit", type=Path, default=HERE / "results/controlled_prism_audit.json")
@@ -42,8 +42,8 @@ def main():
     protected_run_dirs = {(path.parent / (path.stem + "_runs")).resolve() for path in evidence}
     if output in evidence or run_dir in protected_run_dirs:
         parser.error("Output must not overwrite previous evidence")
-    reference = json.loads(args.reference.read_text())
-    supplement = json.loads(args.prism_audit.read_text())
+    reference = json.loads(args.reference.read_text(encoding="utf-8"))
+    supplement = json.loads(args.prism_audit.read_text(encoding="utf-8"))
     ref_rows = references(reference)
     jobs = schedule(args.cases, args.heights, args.repetitions, args.seed)
     for job in jobs:
@@ -51,7 +51,7 @@ def main():
         if (job["case"], job["height_mm"], ref_method) not in ref_rows:
             parser.error("Requested case/height has no archived audited reference")
     run_dir.mkdir(parents=True, exist_ok=True)
-    previous = json.loads(args.previous.read_text())
+    previous = json.loads(args.previous.read_text(encoding="utf-8"))
     frozen_path = run_dir / "previous_kernel"
     frozen_path.mkdir(exist_ok=True)
     frozen_hashes = {}
@@ -82,13 +82,13 @@ def main():
         "limitations": "Local desktop; no CPU pinning or isolation from background applications. Environment thread limits do not cover every possible native runtime.",
     }, "runs": []}
     for path in (Path(__file__), HERE / "profiled_worker.py", ROOT / "src/layerloom/contour_repair.py"):
-        report["metadata"]["source_sha256"][str(path.relative_to(ROOT))] = digest(path)
+        report["metadata"]["source_sha256"][path.relative_to(ROOT).as_posix()] = digest(path)
     env = {**os.environ, **base.THREAD_ENV, "PYTHONHASHSEED": "0", "PYTHONDONTWRITEBYTECODE": "1",
-           "PYTHONPATH": str(ROOT / "src")}
+           "PYTHONIOENCODING": "utf-8", "PYTHONPATH": str(ROOT / "src")}
 
     def save():
         report["summary"] = summarize(report["runs"])
-        output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+        output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
     save()
     for index, job in enumerate(jobs, 1):
@@ -100,16 +100,17 @@ def main():
                    "--height", str(job["height_mm"]), "--method", actual_method, "--output", str(path)]
         if job["method"] == "contour":
             command += ["--frozen-directory", str(frozen_path)]
-        run = {**job, "order": index, "load_average_before": list(os.getloadavg())}
+        run = {**job, "order": index, "load_average_before": base.load_average()}
         print(f"[{index}/{len(jobs)}] {stem}", flush=True)
         started = time.perf_counter()
         try:
             proc = subprocess.run(command, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
+                                  encoding="utf-8", errors="replace",
                                   stderr=subprocess.STDOUT, timeout=args.timeout)
-            (run_dir / f"{stem}.log").write_text(proc.stdout)
+            (run_dir / f"{stem}.log").write_text(proc.stdout, encoding="utf-8")
             run["process_returncode"] = proc.returncode
             if proc.returncode == 0 and path.is_file():
-                result = json.loads(path.read_text())
+                result = base.read_worker_result(path)
                 ref_method = "contour" if job["method"] == "contour_optimized" else job["method"]
                 run["result"] = base.compact_result(result)
                 run["validation"] = verify(result, ref_rows[(job["case"], job["height_mm"], ref_method)], supplement)
@@ -132,8 +133,11 @@ def main():
             diagnostic = exc.stdout or b""
             if isinstance(diagnostic, bytes):
                 diagnostic = diagnostic.decode(errors="replace")
-            (run_dir / f"{stem}.log").write_text(diagnostic)
+            (run_dir / f"{stem}.log").write_text(diagnostic, encoding="utf-8")
             run.update(status="timeout", diagnostic_tail=diagnostic[-4000:])
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            run.pop("result", None)
+            run.update(status="failed", diagnostic_tail=f"{type(exc).__name__}: {exc}")
         run["process_elapsed_s_including_excluded_work"] = time.perf_counter() - started
         report["runs"].append(run)
         save()
@@ -141,7 +145,7 @@ def main():
         equal = run.get("validation", {}).get("audit_inherited_by_exact_identity")
         print(f"  {run['status']}: core={seconds}s final geometry identical={equal}", flush=True)
     report["metadata"]["utc_finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    report["metadata"]["load_average_at_finish"] = list(os.getloadavg())
+    report["metadata"]["load_average_at_finish"] = base.load_average()
     save()
     return 0 if all(r["status"] == "completed" and r["validation"]["audit_inherited_by_exact_identity"]
                    and r["frozen_control_verified"] for r in report["runs"]) else 1

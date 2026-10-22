@@ -17,3 +17,4 @@ results/*
 !results/profiled_benchmark.json
 !results/profiled_comparison.png
 !results/profiled_validation.json
+!results/hardening_validation.json

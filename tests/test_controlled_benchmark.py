@@ -138,7 +138,7 @@ def test_summary_keeps_methods_heights_and_cases_separate_and_handles_no_complet
 def configure_driver(monkeypatch, tmp_path, *extra_args):
     output = tmp_path / "controlled.json"
     monkeypatch.setattr(benchmark, "metadata", lambda: {"test_metadata": True})
-    monkeypatch.setattr(benchmark.os, "getloadavg", lambda: (0.1, 0.2, 0.3))
+    monkeypatch.setattr(benchmark.os, "getloadavg", lambda: (0.1, 0.2, 0.3), raising=False)
     monkeypatch.setattr(benchmark.sys, "argv", [str(DRIVER), "--cases", "cubes",
                                                "--repetitions", "1", "--output", str(output), *extra_args])
     return output
@@ -172,6 +172,7 @@ def test_driver_runs_fresh_workers_serially_with_controls_and_checkpoints(monkey
         assert all(env[key] == "1" for key in benchmark.THREAD_ENV)
         assert env["PYTHONHASHSEED"] == "0"
         assert env["PYTHONDONTWRITEBYTECODE"] == "1"
+        assert env["PYTHONIOENCODING"] == "utf-8"
         assert env["PYTHONPATH"] == str(DRIVER.parents[2] / "src")
         assert env["CONTROLLED_TEST_ENV"] == "preserved"
         assert arguments["--case"] == job["case"]
@@ -243,3 +244,24 @@ def test_driver_never_accepts_a_previous_invocations_result_file(monkeypatch, tm
     report = json.loads(output.read_text())
     assert all(r["status"] == "failed" and "result" not in r for r in report["runs"])
     assert all(s["completed_repeats"] == 0 for s in report["summary"])
+
+
+@pytest.mark.parametrize("payload", ["{truncated", "[]", '{"timings": {"core_s": NaN}}',
+                                    '{"timings": {"core_s": 1}, "audit": null}',
+                                    '{"timings": {"core_s": 1}, "source": []}',
+                                    '{"timings": {"core_s": 1}, "source": {"sha256": ["bad"]}}',
+                                    '{"timings": {"core_s": 1}, "fingerprints": {"combined_sha256": {"bad": 1}}}'])
+def test_invalid_worker_report_is_recorded_without_aborting_remaining_jobs(monkeypatch, tmp_path, payload):
+    output = configure_driver(monkeypatch, tmp_path)
+
+    def fake_worker(command, **kwargs):
+        arguments = worker_arguments(command)
+        Path(arguments["--output"]).write_text(payload, encoding="utf-8")
+        return SimpleNamespace(returncode=0, stdout="worker returned malformed output")
+
+    monkeypatch.setattr(benchmark.subprocess, "run", fake_worker)
+    assert benchmark.main() == 1
+    report = json.loads(output.read_text())
+    assert len(report["runs"]) == 3
+    assert all(row["status"] == "failed" and "result" not in row for row in report["runs"])
+    assert all(row["diagnostic_tail"] for row in report["runs"])

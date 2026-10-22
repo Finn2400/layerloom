@@ -139,6 +139,28 @@ def test_reference_audit_must_actually_exist(audit):
     assert benchmark.verify(result, reference)["audit_inherited_by_exact_identity"] is False
 
 
+@pytest.mark.parametrize("counter", benchmark.AUDIT_COUNTS)
+@pytest.mark.parametrize("value", [None, -1, False, 0.0, "0"])
+def test_audit_counters_must_be_explicit_nonnegative_integers(counter, value):
+    reference = reference_result()
+    summary = reference["audit"]["summary"]
+    if value is None:
+        summary.pop(counter)
+    else:
+        summary[counter] = value
+    validation = benchmark.verify(new_result(reference), reference)
+    assert validation["audit_inherited_by_exact_identity"] is False
+    assert validation["final_geometry_checks_pass"] is False
+
+
+@pytest.mark.parametrize("value", [float("inf"), float("-inf"), True])
+def test_equal_but_invalid_numeric_settings_cannot_inherit_audit(value):
+    reference = reference_result()
+    reference["settings"]["precision"] = value
+    validation = benchmark.verify(new_result(reference), reference)
+    assert validation["audit_inherited_by_exact_identity"] is False
+
+
 @pytest.mark.parametrize("defect", NATIVE_DEFECTS)
 def test_original_native_defects_remain_failures_despite_a_valid_supplement(defect):
     reference = reference_result()
@@ -233,7 +255,7 @@ def configure_driver(monkeypatch, tmp_path, *extra):
     original.write_text(json.dumps(report))
     supplement.write_text(json.dumps({"passed": False}))
     monkeypatch.setattr(benchmark.base, "metadata", lambda: {"source_sha256": {}})
-    monkeypatch.setattr(benchmark.os, "getloadavg", lambda: (0.1, 0.2, 0.3))
+    monkeypatch.setattr(benchmark.os, "getloadavg", lambda: (0.1, 0.2, 0.3), raising=False)
     monkeypatch.setattr(benchmark.subprocess, "check_output", lambda *a, **k: frozen)
     monkeypatch.setattr(benchmark.sys, "argv", [str(DRIVER), "--cases", "benchy", "--reference", str(original),
         "--prism-audit", str(supplement), "--output", str(output), "--repetitions", "4", *extra])
@@ -253,6 +275,7 @@ def install_stub_workers(monkeypatch, output, rows, frozen, tamper=None):
         assert all(kwargs["env"][key] == "1" for key in benchmark.base.THREAD_ENV)
         assert kwargs["env"]["PYTHONHASHSEED"] == "0"
         assert kwargs["env"]["PYTHONDONTWRITEBYTECODE"] == "1"
+        assert kwargs["env"]["PYTHONIOENCODING"] == "utf-8"
         assert kwargs["env"]["PYTHONPATH"] == str(DRIVER.parents[2] / "src")
         baseline = Path(arguments["--baseline-planar"])
         assert baseline.read_bytes() == frozen
@@ -319,7 +342,12 @@ def test_output_cannot_overwrite_archived_evidence_or_its_detail_directory(monke
     saved = {path: path.read_bytes() for path in (original, supplement)}
     if target == "symlink":
         output = tmp_path / "alias.json"
-        output.symlink_to(original)
+        try:
+            output.symlink_to(original)
+        except OSError as exc:
+            if sys.platform == "win32" and getattr(exc, "winerror", None) == 1314:
+                pytest.skip("Windows symlink creation requires Developer Mode or elevated privileges")
+            raise
     elif target == "same_stem":
         output = original.with_suffix(".txt")
     else:

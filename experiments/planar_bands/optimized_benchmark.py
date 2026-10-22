@@ -8,9 +8,9 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 from pathlib import Path
-import random
 import statistics
 import subprocess
 import sys
@@ -21,6 +21,12 @@ import controlled_benchmark as base
 HERE, ROOT = base.HERE, base.ROOT
 METHODS = ("cut", "repair_cut", "contour", "contour_optimized")
 SETTINGS = ("z0_mm", "z_gap_mm", "precision", "max_gap", "contour_tolerance", "seam_tolerance")
+NATIVE_DEFECTS = (
+    "native_indexed_nonvolume_parts", "native_float32_nonvolume_parts",
+    "native_zero_area_triangles", "native_duplicate_faces", "native_footprint_area_failures",
+)
+AUDIT_COUNTS = (*NATIVE_DEFECTS, "native_output_profile_failures",
+                "native_missing_expected_midpoints", "reference_profile_failures")
 
 
 def digest(path):
@@ -28,22 +34,7 @@ def digest(path):
 
 
 def schedule(cases, heights, repetitions, seed):
-    rng = random.Random(seed)
-    cells = [(case, height) for height in heights for case in cases]
-    orders = {}
-    for cell in cells:
-        order = list(METHODS)
-        rng.shuffle(order)
-        orders[cell] = order
-    jobs = []
-    for repeat in range(repetitions):
-        rng.shuffle(cells)
-        for case, height in cells:
-            order = orders[(case, height)]
-            offset = repeat % len(order)
-            for method in order[offset:] + order[:offset]:
-                jobs.append({"case": case, "height_mm": height, "method": method, "repeat": repeat + 1})
-    return jobs
+    return base.schedule(cases, heights, repetitions, seed, methods=METHODS)
 
 
 def references(report):
@@ -60,6 +51,7 @@ def references(report):
 
 def verify(result, reference, supplement=None):
     """Conservative inheritance: final coordinates, faces and color labels match."""
+    old_summary = reference.get("audit", {}).get("summary", {})
     checks = {
         "source_sha256_matches": bool(result.get("source", {}).get("sha256"))
         and result["source"]["sha256"] == reference.get("source", {}).get("sha256"),
@@ -69,7 +61,10 @@ def verify(result, reference, supplement=None):
         or (result.get("method") == "contour_optimized" and reference.get("method") == "contour"),
         "reference_audit_present": reference.get("audit", {}).get("enabled") is True
         and bool(reference.get("audit", {}).get("summary")),
-        "settings_match": all(result.get("settings", {}).get(key) is not None
+        "reference_audit_counts_complete": all(type(old_summary.get(key)) is int
+                                                and old_summary[key] >= 0 for key in AUDIT_COUNTS),
+        "settings_match": all(type(result.get("settings", {}).get(key)) in (float, int)
+                              and math.isfinite(result["settings"][key])
                               and result["settings"][key] == reference.get("settings", {}).get(key)
                               for key in SETTINGS),
         "library_versions_match": bool(result.get("versions")) and result.get("versions") == reference.get("versions"),
@@ -82,18 +77,15 @@ def verify(result, reference, supplement=None):
         "no_algorithm_errors": result.get("errors") == [] and reference.get("errors") == [],
     }
     inherited = all(checks.values())
-    old_summary = reference.get("audit", {}).get("summary", {})
-    native_defects = {key: old_summary.get(key, 0) for key in (
-        "native_indexed_nonvolume_parts", "native_float32_nonvolume_parts",
-        "native_zero_area_triangles", "native_duplicate_faces", "native_footprint_area_failures")}
-    profile_failures = old_summary.get("native_output_profile_failures", 0)
-    cap_proof = bool(inherited and profile_failures > 0 and supplement and supplement.get("passed")
+    native_defects = {key: old_summary.get(key) for key in NATIVE_DEFECTS}
+    profile_failures = old_summary.get("native_output_profile_failures")
+    cap_proof = bool(inherited and profile_failures > 0 and supplement and supplement.get("passed") is True
                      and supplement.get("case") == result.get("case")
                      and supplement.get("method") == reference.get("method")
                      and supplement.get("source_sha256") == result["source"]["sha256"]
                      and supplement.get("measured_native_parts_sha256") == result["fingerprints"]["native_parts_sha256"]
-                     and supplement.get("checked_profiles") == profile_failures
-                     and supplement.get("matching_geometry_hashes") == profile_failures)
+                     and all(type(supplement.get(key)) is int and supplement[key] == profile_failures
+                             for key in ("checked_profiles", "matching_geometry_hashes")))
     quality = (inherited and not any(native_defects.values())
                and old_summary.get("reference_profile_failures", 0) == 0
                and (profile_failures == 0 or cap_proof)
@@ -139,10 +131,10 @@ def summarize(runs):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cases", nargs="+", choices=base.CASES, default=list(base.CASES))
-    parser.add_argument("--heights", nargs="+", type=float, default=[0.2])
+    parser.add_argument("--heights", nargs="+", type=base.positive_finite_float, default=[0.2])
     parser.add_argument("--repetitions", type=int, default=4)
     parser.add_argument("--seed", type=int, default=20261022)
-    parser.add_argument("--timeout", type=float, default=1200)
+    parser.add_argument("--timeout", type=base.positive_finite_float, default=1200)
     parser.add_argument("--baseline-revision", default="a27dc7de")
     parser.add_argument("--reference", type=Path, default=HERE / "results/controlled_benchmark.json")
     parser.add_argument("--prism-audit", type=Path, default=HERE / "results/controlled_prism_audit.json")
@@ -156,8 +148,8 @@ def main():
     protected_run_dirs = {(path.parent / (path.stem + "_runs")).resolve() for path in evidence}
     if output in evidence or run_dir in protected_run_dirs:
         parser.error("Output must not overwrite previous evidence")
-    reference = json.loads(args.reference.read_text())
-    supplement = json.loads(args.prism_audit.read_text())
+    reference = json.loads(args.reference.read_text(encoding="utf-8"))
+    supplement = json.loads(args.prism_audit.read_text(encoding="utf-8"))
     ref_rows = references(reference)
     jobs = schedule(args.cases, args.heights, args.repetitions, args.seed)
     for job in jobs:
@@ -187,13 +179,13 @@ def main():
         "limitations": "Local desktop; no CPU pinning or isolation from background applications. Environment thread limits do not cover every possible native runtime.",
     }, "runs": []}
     for path in (Path(__file__), ROOT / "src/layerloom/contour_repair.py"):
-        report["metadata"]["source_sha256"][str(path.relative_to(ROOT))] = digest(path)
+        report["metadata"]["source_sha256"][path.relative_to(ROOT).as_posix()] = digest(path)
     env = {**os.environ, **base.THREAD_ENV, "PYTHONHASHSEED": "0", "PYTHONDONTWRITEBYTECODE": "1",
-           "PYTHONPATH": str(ROOT / "src")}
+           "PYTHONIOENCODING": "utf-8", "PYTHONPATH": str(ROOT / "src")}
 
     def save():
         report["summary"] = summarize(report["runs"])
-        output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
+        output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n", encoding="utf-8")
 
     save()
     for index, job in enumerate(jobs, 1):
@@ -203,16 +195,17 @@ def main():
         command = [sys.executable, str(HERE / "controlled_worker.py"), "--case", job["case"],
                    "--height", str(job["height_mm"]), "--method", job["method"], "--audit", "none",
                    "--baseline-planar", str(frozen_path), "--output", str(path)]
-        run = {**job, "order": index, "load_average_before": list(os.getloadavg())}
+        run = {**job, "order": index, "load_average_before": base.load_average()}
         print(f"[{index}/{len(jobs)}] {stem}", flush=True)
         started = time.perf_counter()
         try:
             proc = subprocess.run(command, cwd=ROOT, env=env, text=True, stdout=subprocess.PIPE,
+                                  encoding="utf-8", errors="replace",
                                   stderr=subprocess.STDOUT, timeout=args.timeout)
-            (run_dir / f"{stem}.log").write_text(proc.stdout)
+            (run_dir / f"{stem}.log").write_text(proc.stdout, encoding="utf-8")
             run["process_returncode"] = proc.returncode
             if proc.returncode == 0 and path.is_file():
-                result = json.loads(path.read_text())
+                result = base.read_worker_result(path)
                 ref_method = "contour" if job["method"] == "contour_optimized" else job["method"]
                 run["result"] = base.compact_result(result)
                 run["validation"] = verify(result, ref_rows[(job["case"], job["height_mm"], ref_method)], supplement)
@@ -231,8 +224,11 @@ def main():
             diagnostic = exc.stdout or b""
             if isinstance(diagnostic, bytes):
                 diagnostic = diagnostic.decode(errors="replace")
-            (run_dir / f"{stem}.log").write_text(diagnostic)
+            (run_dir / f"{stem}.log").write_text(diagnostic, encoding="utf-8")
             run.update(status="timeout", diagnostic_tail=diagnostic[-4000:])
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            run.pop("result", None)
+            run.update(status="failed", diagnostic_tail=f"{type(exc).__name__}: {exc}")
         run["process_elapsed_s_including_excluded_work"] = time.perf_counter() - started
         report["runs"].append(run)
         save()
@@ -240,7 +236,7 @@ def main():
         equal = run.get("validation", {}).get("audit_inherited_by_exact_identity")
         print(f"  {run['status']}: core={seconds}s final geometry identical={equal}", flush=True)
     report["metadata"]["utc_finished"] = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
-    report["metadata"]["load_average_at_finish"] = list(os.getloadavg())
+    report["metadata"]["load_average_at_finish"] = base.load_average()
     save()
     return 0 if all(r["status"] == "completed" and r["validation"]["audit_inherited_by_exact_identity"]
                    and r["frozen_control_verified"] for r in report["runs"]) else 1

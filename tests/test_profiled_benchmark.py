@@ -72,7 +72,12 @@ def test_previous_reports_and_detail_directories_are_protected(monkeypatch, tmp_
     originals = {p: p.read_bytes() for p in (reference, supplement, previous)}
     if target == "previous_symlink":
         destination = tmp_path / "alias.json"
-        destination.symlink_to(previous)
+        try:
+            destination.symlink_to(previous)
+        except OSError as exc:
+            if sys.platform == "win32" and getattr(exc, "winerror", None) == 1314:
+                pytest.skip("Windows symlink creation requires Developer Mode or elevated privileges")
+            raise
     elif target == "previous_detail":
         destination = previous.with_suffix(".txt")
     else:
@@ -94,6 +99,7 @@ def test_driver_checks_complete_runtime_provenance_for_both_2d_arms(monkeypatch,
     def run(command, **kwargs):
         arguments = dict(zip(command[2::2], command[3::2]))
         assert all(kwargs["env"][key] == "1" for key in benchmark.base.THREAD_ENV)
+        assert kwargs["env"]["PYTHONIOENCODING"] == "utf-8"
         is_frozen = "--frozen-directory" in arguments
         directory = Path(arguments["--frozen-directory"]) if is_frozen else benchmark.ROOT / "src/layerloom"
         method = arguments["--method"]

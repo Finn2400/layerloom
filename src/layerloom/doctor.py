@@ -27,7 +27,8 @@ except Exception:  # pragma: no cover - supports direct script execution.
     from example_assets import EXAMPLE_FILES, example_search_dirs, repo_root_guess
 
 
-CORE_IMPORTS = ("lxml", "networkx", "numpy", "scipy", "trimesh")
+CORE_IMPORTS = ("lxml", "mapbox_earcut", "manifold3d", "networkx", "numpy",
+                "rtree", "shapely", "scipy", "trimesh")
 GUI_IMPORTS = ("PyQt5", "pyvista", "pyvistaqt", "vtk")
 
 

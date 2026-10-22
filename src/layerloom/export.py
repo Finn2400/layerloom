@@ -19,6 +19,7 @@ import math
 import os
 import re
 import io
+import sys
 import uuid
 import zipfile
 import numpy as np
@@ -45,6 +46,14 @@ GROUPED_COLOR_INFO = {
     label: {"token": token, "hex": TOKEN_HEX.get(token, "")}
     for token, label in COLOR_OBJECT_LABELS.items()
 }
+
+
+def _print_status(message: str) -> None:
+    """Keep status output safe for redirected Windows consoles and Unicode paths."""
+    encoding = getattr(sys.stdout, "encoding", None)
+    if encoding:
+        message = message.encode(encoding, errors="backslashreplace").decode(encoding)
+    print(message)
 
 
 @dataclass(frozen=True)
@@ -284,7 +293,7 @@ def write_basic_3mf(
         z.writestr("_rels/.rels", _rels_root_xml())
         z.writestr("3D/3dmodel.model", xml_bytes)
 
-    print(f"[export] wrote {obj_id - 1} object(s) → {out_path}")
+    _print_status(f"[export] wrote {obj_id - 1} object(s) → {out_path}")
 
 
 def write_safe_assembly_3mf(
@@ -448,7 +457,7 @@ def write_safe_assembly_3mf(
         for name, data in zip_entries.items():
             zf.writestr(name, data)
 
-    print(
+    _print_status(
         f"[export] wrote safe assembly 3MF → {out_path} "
         f"(top_level={root_object_id - 1}, child_models={len(child_targets)}, leaf_meshes={total_leaf_count})"
     )

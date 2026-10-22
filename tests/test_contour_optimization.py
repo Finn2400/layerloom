@@ -150,8 +150,8 @@ def test_optimized_path_preserves_final_rejection_and_previous_output(tmp_path, 
 ])
 def test_bulk_cdt_preserves_exact_cap_and_mesh_arrays(region, monkeypatch):
     cdt = getattr(shapely, "constrained_delaunay_triangles", None)
-    if cdt is None:
-        pytest.skip("CDT is unavailable with Shapely 2.0")
+    if cdt is None or shapely.geos_version < (3, 10, 0):
+        pytest.skip("CDT-specific array comparison requires Shapely 2.1 and GEOS 3.10")
     prepared, _ = bands.prepare_export_region(region)
     for polygon in shapely.get_parts(prepared):
         triangulated = cdt(polygon)

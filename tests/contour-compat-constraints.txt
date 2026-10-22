@@ -1,0 +1,3 @@
+# Exercise the older supported numerical/API line, not a deployment lockfile.
+numpy>=1.23,<2
+shapely>=2.0,<2.1

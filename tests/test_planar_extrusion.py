@@ -77,7 +77,7 @@ def test_rounding_preserves_ordinary_hole_and_is_idempotent():
 
 
 def test_basic_extrusion_has_validated_fallback_without_geos_cdt(monkeypatch):
-    monkeypatch.setattr(shapely, "constrained_delaunay_triangles", None)
+    monkeypatch.setattr(shapely, "constrained_delaunay_triangles", None, raising=False)
     mesh = extrude_profile(box(0, 0, 1, 1), 0, 0.2)
     exported_checks(mesh)
     assert mesh.metadata["extrusion"]["triangulator"] == "earcut"

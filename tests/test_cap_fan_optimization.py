@@ -74,10 +74,13 @@ def test_random_cap_collections_preserve_original_indices(seed):
     edges, _, _, incidence = _cap_edge_topology(faces)
     _, inverse, counts = np.unique(np.sort(edges, axis=1), axis=0,
                                    return_inverse=True, return_counts=True)
-    assert np.array_equal(incidence, counts[inverse])
+    assert np.array_equal(incidence, counts[inverse.reshape(-1)])
 
 
 @pytest.mark.parametrize("seed", range(8))
+@pytest.mark.skipif(getattr(shapely, "constrained_delaunay_triangles", None) is None
+                    or shapely.geos_version < (3, 10, 0),
+                    reason="CDT fan comparison requires Shapely 2.1 and GEOS 3.10")
 def test_triangulated_holes_and_point_contacts_keep_exact_geometry(seed):
     rng = np.random.default_rng(seed)
     profile = Polygon([(0, 0), (8, 0), (8, 8), (0, 8)],
@@ -115,6 +118,9 @@ def test_collapsed_triangle_is_still_rejected():
                              np.asarray([(0, 1, 2)]), 0, 0.2)
 
 
+@pytest.mark.skipif(getattr(shapely, "constrained_delaunay_triangles", None) is None
+                    or shapely.geos_version < (3, 10, 0),
+                    reason="CDT fan comparison requires Shapely 2.1 and GEOS 3.10")
 def test_ordinary_dense_cap_needs_no_splits():
     profile = box(0, 0, 20, 20).difference(shapely.Point(10, 10).buffer(4, quad_segs=64))
     vertices, faces = _cdt_cap_arrays(shapely.constrained_delaunay_triangles(profile))

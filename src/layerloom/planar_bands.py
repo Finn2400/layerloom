@@ -78,7 +78,9 @@ def _graph(segments):
     if not len(segments):
         return np.empty((0, 2)), np.empty(0, dtype=int)
     vertices, inverse = np.unique(segments.reshape(-1, 2), axis=0, return_inverse=True)
-    return vertices, np.bincount(inverse, minlength=len(vertices))
+    # NumPy 2.0.0 returned a column-shaped inverse with axis=0; subsequent
+    # releases restored the one-dimensional result. Accept either layout.
+    return vertices, np.bincount(inverse.reshape(-1), minlength=len(vertices))
 
 
 def _node(segments, precision):
@@ -566,7 +568,14 @@ def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
     cdt = getattr(shapely, "constrained_delaunay_triangles", None)
     for polygon in shapely.get_parts(region):
         if cdt is not None:
-            triangulated = cdt(polygon)
+            try:
+                triangulated = cdt(polygon)
+            except shapely.errors.UnsupportedGEOSVersionError:
+                # Some Shapely builds expose CDT even when the linked GEOS
+                # cannot run it. Only this capability error permits fallback;
+                # genuine triangulation errors must remain blocking failures.
+                cdt = None
+        if cdt is not None:
             vertices, faces = _cdt_cap_arrays(triangulated)
         else:
             # Keep basic inputs usable with Shapely 2.0. Validation below still
@@ -575,7 +584,10 @@ def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
         mesh, contacts = _extrude_indexed_cap(vertices, faces, low, high)
         if not mesh.is_volume:
             raise ValueError("polygon extrusion did not produce a closed positive volume")
-        exported = np.round(np.asarray(mesh.vertices), 9).astype(np.float32).astype(float)
+        with np.errstate(over="ignore", invalid="ignore"):
+            exported = np.round(np.asarray(mesh.vertices), 9).astype(np.float32).astype(float)
+        if not np.isfinite(exported).all():
+            raise ValueError("extruded coordinates exceed the float32 export range")
         triangle = exported[mesh.faces]
         area_vector = np.cross(triangle[:, 1] - triangle[:, 0],
                                triangle[:, 2] - triangle[:, 0])

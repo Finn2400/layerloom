@@ -92,18 +92,28 @@ def _read_native_bands(path: Path):
 
 def _atomic_json(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(mode="w", dir=path.parent, suffix=".json", delete=False) as stream:
-        temporary = Path(stream.name)
-        try:
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                         suffix=".json", delete=False) as stream:
+            temporary = Path(stream.name)
             json.dump(value, stream, indent=2, allow_nan=False)
             stream.write("\n")
-        except BaseException:
-            temporary.unlink(missing_ok=True)
-            raise
-    try:
         os.replace(temporary, path)
     finally:
-        temporary.unlink(missing_ok=True)
+        # Windows cannot unlink an open NamedTemporaryFile, including on errors.
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+def _same_file(left: Path, right: Path) -> bool:
+    """Compare resolved names and existing file identity on any filesystem."""
+    if left == right:
+        return True
+    try:
+        return left.samefile(right)
+    except FileNotFoundError:
+        return False
 
 
 def _float32_mesh_checks(mesh: trimesh.Trimesh) -> dict:
@@ -178,7 +188,8 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
     """Write complete valid output atomically, or a failure report with no new 3MF."""
     input_path, output_path = Path(input_path).resolve(), Path(output_path).resolve()
     report_path = Path(report_path).resolve() if report_path else output_path.with_suffix(".report.json")
-    if len({input_path, output_path, report_path}) != 3:
+    if any(_same_file(left, right) for left, right in
+           ((input_path, output_path), (input_path, report_path), (output_path, report_path))):
         raise ValueError("Input, output, and report paths must be different")
     if output_path.suffix.lower() != ".3mf":
         raise ValueError("Output must have the .3mf extension")
@@ -224,6 +235,10 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
         parts = read_parts([str(input_path)])
         if not parts:
             raise ValueError("Input contains no mesh parts")
+        for label, mesh in parts:
+            bounds = np.asarray(mesh.bounds)
+            if bounds.shape != (2, 3) or not np.isfinite(bounds).all():
+                raise ValueError(f"Part {label!r} must have finite, nonempty mesh bounds")
         z0 = float(min(mesh.bounds[0, 2] for _, mesh in parts))
         zmax = float(max(mesh.bounds[1, 2] for _, mesh in parts))
         report["z_origin_mm"] = z0
@@ -323,8 +338,9 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                 report["roundtrip_residual_material_overlaps"] = residual_overlaps
                 if residual_overlaps:
                     report["warnings"].append("Float32 export leaves bounded residual material overlaps; see roundtrip_residual_material_overlaps")
+                output_sha256 = hashlib.sha256(temporary.read_bytes()).hexdigest()
                 os.replace(temporary, output_path)
-                report["output_sha256"] = hashlib.sha256(output_path.read_bytes()).hexdigest()
+                report["output_sha256"] = output_sha256
             finally:
                 temporary.unlink(missing_ok=True)
             report["status"] = "ok"

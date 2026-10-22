@@ -15,6 +15,24 @@ worker = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(worker)
 
 
+def test_missing_repository_example_requires_explicit_input(monkeypatch, tmp_path):
+    monkeypatch.setattr(worker, "ROOT", tmp_path)
+    monkeypatch.setattr(worker, "read_parts", lambda *a, **k: pytest.fail("Missing input cannot be read"))
+    with pytest.raises(FileNotFoundError, match="use --input"):
+        worker._load_case("benchy")
+
+
+def test_explicit_example_input_is_used_and_fingerprinted(monkeypatch, tmp_path):
+    path = tmp_path / "explicit.3mf"
+    path.write_bytes(b"fixture data")
+    monkeypatch.setattr(worker, "ROOT", tmp_path / "no repository examples")
+    monkeypatch.setattr(worker, "read_parts", lambda paths: [("selected", paths)])
+    parts, source = worker._load_case("benchy", input_path=path)
+    assert parts == [("selected", [str(path.resolve())])]
+    assert source["path"] == str(path.resolve())
+    assert source["sha256"] == hashlib.sha256(b"fixture data").hexdigest()
+
+
 def box(height=0.4, bottom=0.0, x=0.0):
     mesh = trimesh.creation.box(extents=(1, 1, height))
     mesh.apply_translation((x, 0, bottom + height / 2))
