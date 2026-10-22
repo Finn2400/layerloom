@@ -24,8 +24,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": true,
       "baseline_error": null,
-      "elapsed_ms_single_run": 209.6581249497831,
-      "baseline_elapsed_ms_single_run": 56.060041999444366,
+      "elapsed_ms_single_run": 6.211458006873727,
+      "baseline_elapsed_ms_single_run": 7.4477080488577485,
       "diagnostics": {
         "status": "ok",
         "input_segments": 8,
@@ -70,8 +70,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": true,
       "baseline_error": null,
-      "elapsed_ms_single_run": 4.199958988465369,
-      "baseline_elapsed_ms_single_run": 3.9984999457374215,
+      "elapsed_ms_single_run": 2.0588330226019025,
+      "baseline_elapsed_ms_single_run": 1.856875023804605,
       "diagnostics": {
         "status": "ok",
         "input_segments": 8,
@@ -116,8 +116,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": false,
       "baseline_error": null,
-      "elapsed_ms_single_run": 6.901583052240312,
-      "baseline_elapsed_ms_single_run": 29.011083068326116,
+      "elapsed_ms_single_run": 8.240292081609368,
+      "baseline_elapsed_ms_single_run": 14.844915946014225,
       "diagnostics": {
         "status": "repaired",
         "input_segments": 10,
@@ -173,8 +173,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": false,
       "baseline_error": null,
-      "elapsed_ms_single_run": 4.807999939657748,
-      "baseline_elapsed_ms_single_run": 10.155041934922338,
+      "elapsed_ms_single_run": 4.280833061784506,
+      "baseline_elapsed_ms_single_run": 1.8884169403463602,
       "diagnostics": {
         "status": "unresolved",
         "input_segments": 10,
@@ -215,8 +215,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": true,
       "baseline_error": null,
-      "elapsed_ms_single_run": 37.822999991476536,
-      "baseline_elapsed_ms_single_run": 55.170458974316716,
+      "elapsed_ms_single_run": 12.728790985420346,
+      "baseline_elapsed_ms_single_run": 7.61179206892848,
       "diagnostics": {
         "status": "ok",
         "input_segments": 192,
@@ -243,7 +243,7 @@
       "stl": "hollow_tube.stl",
       "roundtrip_positive_volume": true,
       "roundtrip_profile_ok": true,
-      "roundtrip_symmetric_difference_mm2": 5.688900000018023e-06
+      "roundtrip_symmetric_difference_mm2": 5.727400000018179e-06
     },
     {
       "fixture": "sphere",
@@ -261,8 +261,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": true,
       "baseline_error": null,
-      "elapsed_ms_single_run": 3.0202920315787196,
-      "baseline_elapsed_ms_single_run": 11.249750037677586,
+      "elapsed_ms_single_run": 2.8601670637726784,
+      "baseline_elapsed_ms_single_run": 1.6927910037338734,
       "diagnostics": {
         "status": "ok",
         "input_segments": 28,
@@ -307,8 +307,8 @@
       "baseline_returned_mesh": true,
       "baseline_positive_volume": true,
       "baseline_error": null,
-      "elapsed_ms_single_run": 0.278791063465178,
-      "baseline_elapsed_ms_single_run": 2.609624993056059,
+      "elapsed_ms_single_run": 0.1694579841569066,
+      "baseline_elapsed_ms_single_run": 1.1884999694302678,
       "diagnostics": {
         "status": "empty",
         "input_segments": 0,

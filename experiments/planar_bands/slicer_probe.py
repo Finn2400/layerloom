@@ -19,18 +19,66 @@ from layerloom.ingest import read_parts
 
 
 def inspect_gcode(path):
+    """Count linear XY moves with positive extrusion, using Marlin modes.
+
+    G90/G91 also reset the E mode; a subsequent M82/M83 overrides it. Unknown
+    absolute starting coordinates cannot establish displacement until a move
+    or G92 supplies them. This is a probe for the generated linear G-code,
+    not a general interpreter for arcs, macros, or printer-specific commands.
+    See https://marlinfw.org/docs/gcode/M082.html for mode precedence.
+    """
     if not path.exists():
         return {}
     text = path.read_text()
-    z_values = [float(z) for z in re.findall(r"^;Z:([\d.]+)$", text, re.MULTILINE)]
+    number = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)"
+    word_pattern = re.compile(rf"([A-Z])\s*({number})")
+    layer_pattern = re.compile(rf"^\s*;Z:\s*({number})\s*$")
     layers = []
     current = None
+    position = dict.fromkeys("XYZE")
+    xyz_relative = e_relative = False
     for line in text.splitlines():
-        if line.startswith(";Z:"):
-            current = {"z": float(line[3:]), "xy_extrusion_moves": 0}
+        layer_match = layer_pattern.fullmatch(line)
+        if layer_match:
+            current = {"z": float(layer_match[1]), "xy_extrusion_moves": 0}
             layers.append(current)
-        elif current and line.startswith("G1 ") and re.search(r" [XY]-?[\d.]", line) and re.search(r" E[\d.]", line):
+            continue
+        code = re.sub(r"\([^)]*\)", "", line.split(";", 1)[0]).upper()
+        words = word_pattern.findall(code)
+        if words and words[0][0] == "N":
+            words = words[1:]
+        if not words:
+            continue
+        command = (words[0][0], float(words[0][1]))
+        parameters = {axis: float(value) for axis, value in words[1:]}
+        if command in {("G", 90), ("G", 91)}:
+            xyz_relative = e_relative = command[1] == 91
+            continue
+        if command in {("M", 82), ("M", 83)}:
+            e_relative = command[1] == 83
+            continue
+        if command == ("G", 92):
+            for axis in position.keys() & parameters.keys():
+                position[axis] = parameters[axis]
+            continue
+        if command == ("G", 28):
+            # Homing positions depend on the printer configuration. Forget
+            # them conservatively instead of assuming every axis homes at 0.
+            position.update(dict.fromkeys("XYZ"))
+            continue
+        if command not in {("G", 0), ("G", 1)}:
+            continue
+        delta = {}
+        for axis in position.keys() & parameters.keys():
+            value, previous = parameters[axis], position[axis]
+            relative = e_relative if axis == "E" else xyz_relative
+            delta[axis] = value if relative else value - previous if previous is not None else None
+            position[axis] = (previous + value if previous is not None else None) if relative else value
+        xy_moves = any(delta.get(axis) is not None and delta[axis] != 0 for axis in "XY")
+        extrudes = delta.get("E") is not None and delta["E"] > 0
+        if current is not None and xy_moves and extrudes:
             current["xy_extrusion_moves"] += 1
+    z_values = [layer["z"] for layer in layers]
     return {
         "bytes": path.stat().st_size,
         "layer_z_mm": z_values,

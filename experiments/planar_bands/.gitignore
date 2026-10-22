@@ -3,3 +3,6 @@ results/*
 !results/comparison.png
 !results/real_input_summary.json
 !results/slicer_validation.json
+!results/benchy_validation.json
+!results/spline_report.json
+!results/spline_comparison.png

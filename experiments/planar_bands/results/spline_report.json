@@ -1,0 +1,512 @@
+{
+  "input": "/Users/finn/Documents/layerloom/src/layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
+  "source_sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+  "scipy_version": "1.17.1",
+  "shapely_version": "2.1.2",
+  "layer_height_mm": 0.2,
+  "reference_cleanup_bound_mm": 0.0001,
+  "linear_simplification_tolerance_mm": 0.005,
+  "acceptance_boundary_budget_mm": 0.01,
+  "spline_samples_per_control_edge": 8,
+  "uniform_cubic_control_pitch_mm": 0.02,
+  "uniform_cubic_samples_per_control_edge": 4,
+  "methods": {
+    "linear": "GEOS simplify with preserve_topology=True",
+    "cubic": "Periodic parametric cubic through reference contour points, chord-length parameterization",
+    "simplified_cubic": "Same cubic through linearly simplified control points",
+    "uniform_cubic": "Periodic cubic after uniform arclength resampling at <=0.02 mm spacing"
+  },
+  "measurement_limit": "Distances concern sampled cubic polygons; they are not certified continuous-curve bounds. No source color-boundary consistency or layer-to-layer interpolation is established.",
+  "sources": [
+    "https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.CubicSpline.html",
+    "https://shapely.readthedocs.io/en/2.1.2/reference/shapely.simplify.html"
+  ],
+  "cases": [
+    {
+      "part": "object_1__ID_1____PAT_my__",
+      "part_index": 0,
+      "layer_index": 103,
+      "sample_z_mm": 20.699999973000004,
+      "source_ring_cleanup": [
+        {
+          "input_valid": false,
+          "input_validity_reason": "Self-intersection[142.584473877128 132.347777526351]",
+          "input_vertices": 915,
+          "reference_vertices": 267,
+          "boundary_hausdorff_mm": 9.676773185847396e-05,
+          "signed_area_change_mm2": -5.762889898619505e-06
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 252,
+          "reference_vertices": 76,
+          "boundary_hausdorff_mm": 9.545397110762084e-05,
+          "signed_area_change_mm2": 0.0002016717254349487
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 149,
+          "reference_vertices": 32,
+          "boundary_hausdorff_mm": 8.820186118256121e-05,
+          "signed_area_change_mm2": 1.8046819288741744e-05
+        }
+      ],
+      "reference_vertices": 375,
+      "reference_area_mm2": 41.0954520419158,
+      "reference_topology": {
+        "components": 3,
+        "holes": 0
+      },
+      "candidates": {
+        "linear": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 85,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.004563734336302842,
+          "signed_area_change_mm2": -0.016908994871023708,
+          "symmetric_difference_mm2": 0.04070868994020885,
+          "accepted_under_budget": true
+        },
+        "cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 3000,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 1.3170660471279663,
+          "signed_area_change_mm2": 8.301977099447527,
+          "symmetric_difference_mm2": 10.870978000136285,
+          "accepted_under_budget": false
+        },
+        "simplified_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 680,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 1.2119739967913008,
+          "signed_area_change_mm2": 9.452184345903738,
+          "symmetric_difference_mm2": 16.45438216489037,
+          "accepted_under_budget": false
+        },
+        "uniform_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 11872,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.00777212348060981,
+          "signed_area_change_mm2": 7.873317365181265e-06,
+          "symmetric_difference_mm2": 0.0014788445223739568,
+          "accepted_under_budget": true
+        }
+      }
+    },
+    {
+      "part": "object_7__ID_7____PAT_my__",
+      "part_index": 6,
+      "layer_index": 16,
+      "sample_z_mm": 3.2999999730000003,
+      "source_ring_cleanup": [
+        {
+          "input_valid": false,
+          "input_validity_reason": "Self-intersection[111.019542293151 124.717861653164]",
+          "input_vertices": 689,
+          "reference_vertices": 292,
+          "boundary_hausdorff_mm": 9.636948041698645e-05,
+          "signed_area_change_mm2": -8.04414582944446e-05
+        }
+      ],
+      "reference_vertices": 292,
+      "reference_area_mm2": 95.94725213713873,
+      "reference_topology": {
+        "components": 1,
+        "holes": 0
+      },
+      "candidates": {
+        "linear": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 59,
+          "topology": {
+            "components": 1,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.004974172462338288,
+          "signed_area_change_mm2": -0.028610847054721944,
+          "symmetric_difference_mm2": 0.04266548077570294,
+          "accepted_under_budget": true
+        },
+        "cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 2336,
+          "topology": {
+            "components": 1,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.8260468989407505,
+          "signed_area_change_mm2": 5.446879168919338,
+          "symmetric_difference_mm2": 5.7075457387648845,
+          "accepted_under_budget": false
+        },
+        "simplified_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 472,
+          "topology": {
+            "components": 1,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.6862228592385038,
+          "signed_area_change_mm2": 5.248462399712935,
+          "symmetric_difference_mm2": 6.18522833153408,
+          "accepted_under_budget": false
+        },
+        "uniform_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 9020,
+          "topology": {
+            "components": 1,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.007602930687071157,
+          "signed_area_change_mm2": -1.3709038228171266e-05,
+          "symmetric_difference_mm2": 0.0011461012703565278,
+          "accepted_under_budget": true
+        }
+      }
+    },
+    {
+      "part": "object_7__ID_7____PAT_my__",
+      "part_index": 6,
+      "layer_index": 35,
+      "sample_z_mm": 7.099999973000001,
+      "source_ring_cleanup": [
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 427,
+          "reference_vertices": 220,
+          "boundary_hausdorff_mm": 9.890233099414962e-05,
+          "signed_area_change_mm2": 1.2428125175212301e-05
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 713,
+          "reference_vertices": 211,
+          "boundary_hausdorff_mm": 9.811856638162193e-05,
+          "signed_area_change_mm2": -5.68382435943704e-05
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 6,
+          "reference_vertices": 3,
+          "boundary_hausdorff_mm": 2.1270256894283243e-06,
+          "signed_area_change_mm2": -2.31325137356464e-06
+        }
+      ],
+      "reference_vertices": 434,
+      "reference_area_mm2": 119.33547118193727,
+      "reference_topology": {
+        "components": 2,
+        "holes": 1
+      },
+      "candidates": {
+        "linear": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 127,
+          "topology": {
+            "components": 2,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.004940945984907503,
+          "signed_area_change_mm2": -0.00021988363675973233,
+          "symmetric_difference_mm2": 0.04480857044318808,
+          "accepted_under_budget": true
+        },
+        "cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 3472,
+          "topology": {
+            "components": 2,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 2.356658290337946,
+          "signed_area_change_mm2": 31.774759543906697,
+          "symmetric_difference_mm2": 48.28839242547856,
+          "accepted_under_budget": false
+        },
+        "simplified_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 1016,
+          "topology": {
+            "components": 2,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 2.3171543746936116,
+          "signed_area_change_mm2": 31.5835025948671,
+          "symmetric_difference_mm2": 48.007539378967806,
+          "accepted_under_budget": false
+        },
+        "uniform_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 15612,
+          "topology": {
+            "components": 2,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.008958143321015062,
+          "signed_area_change_mm2": 5.3371445176253474e-05,
+          "symmetric_difference_mm2": 0.0014564847435534405,
+          "accepted_under_budget": true
+        }
+      }
+    },
+    {
+      "part": "object_7__ID_7____PAT_my__",
+      "part_index": 6,
+      "layer_index": 82,
+      "sample_z_mm": 16.499999973,
+      "source_ring_cleanup": [
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 275,
+          "reference_vertices": 120,
+          "boundary_hausdorff_mm": 9.974783625439771e-05,
+          "signed_area_change_mm2": -0.00014773111936605687
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 184,
+          "reference_vertices": 93,
+          "boundary_hausdorff_mm": 9.402886699596196e-05,
+          "signed_area_change_mm2": 1.9906959167759197e-05
+        },
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 59,
+          "reference_vertices": 8,
+          "boundary_hausdorff_mm": 9.3364226146895e-05,
+          "signed_area_change_mm2": -6.579616370766539e-07
+        }
+      ],
+      "reference_vertices": 221,
+      "reference_area_mm2": 14.25177564722883,
+      "reference_topology": {
+        "components": 3,
+        "holes": 0
+      },
+      "candidates": {
+        "linear": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 33,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.004976952967757426,
+          "signed_area_change_mm2": -0.00014169345045900172,
+          "symmetric_difference_mm2": 0.006724841187135424,
+          "accepted_under_budget": true
+        },
+        "cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 1768,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.45701168153650623,
+          "signed_area_change_mm2": 1.8522189389452581,
+          "symmetric_difference_mm2": 2.23477653778475,
+          "accepted_under_budget": false
+        },
+        "simplified_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 264,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.6860154010584296,
+          "signed_area_change_mm2": 3.6674673516713927,
+          "symmetric_difference_mm2": 4.8097129844449364,
+          "accepted_under_budget": false
+        },
+        "uniform_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 5296,
+          "topology": {
+            "components": 3,
+            "holes": 0
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.0077448895737260905,
+          "signed_area_change_mm2": -6.2151735296112065e-06,
+          "symmetric_difference_mm2": 0.0008681745813723142,
+          "accepted_under_budget": true
+        }
+      }
+    },
+    {
+      "part": "object_8__ID_8____PAT_cm__",
+      "part_index": 7,
+      "layer_index": 27,
+      "sample_z_mm": 5.499999973,
+      "source_ring_cleanup": [
+        {
+          "input_valid": true,
+          "input_validity_reason": "Valid Geometry",
+          "input_vertices": 79,
+          "reference_vertices": 24,
+          "boundary_hausdorff_mm": 6.771072388237344e-05,
+          "signed_area_change_mm2": 4.953959042902634e-06
+        },
+        {
+          "input_valid": false,
+          "input_validity_reason": "Self-intersection[111.086033568907 119.802326282752]",
+          "input_vertices": 872,
+          "reference_vertices": 262,
+          "boundary_hausdorff_mm": 9.99889128121371e-05,
+          "signed_area_change_mm2": 2.478393599858464e-05
+        }
+      ],
+      "reference_vertices": 286,
+      "reference_area_mm2": 70.31617527422856,
+      "reference_topology": {
+        "components": 1,
+        "holes": 1
+      },
+      "candidates": {
+        "linear": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 75,
+          "topology": {
+            "components": 1,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.00497507617142687,
+          "signed_area_change_mm2": -0.008883382660556549,
+          "symmetric_difference_mm2": 0.02415610538468517,
+          "accepted_under_budget": true
+        },
+        "cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 2288,
+          "topology": {
+            "components": 1,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 3.8318674389410465,
+          "signed_area_change_mm2": 52.43947840891758,
+          "symmetric_difference_mm2": 52.9187144425715,
+          "accepted_under_budget": false
+        },
+        "simplified_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 600,
+          "topology": {
+            "components": 1,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 3.8874159394801353,
+          "signed_area_change_mm2": 54.441259799378756,
+          "symmetric_difference_mm2": 55.30986214445258,
+          "accepted_under_budget": false
+        },
+        "uniform_cubic": {
+          "valid": true,
+          "validity_reason": "Valid Geometry",
+          "vertices": 9200,
+          "topology": {
+            "components": 1,
+            "holes": 1
+          },
+          "topology_matches": true,
+          "boundary_hausdorff_mm": 0.008846373622390177,
+          "signed_area_change_mm2": 4.9757737002664726e-05,
+          "symmetric_difference_mm2": 0.0016494366147963065,
+          "accepted_under_budget": true
+        }
+      }
+    }
+  ],
+  "summary": {
+    "linear": {
+      "accepted": 5,
+      "invalid": 0,
+      "maximum_boundary_hausdorff_mm": 0.004976952967757426,
+      "reference_vertices_total": 1608,
+      "candidate_vertices_total": 379
+    },
+    "cubic": {
+      "accepted": 0,
+      "invalid": 0,
+      "maximum_boundary_hausdorff_mm": 3.8318674389410465,
+      "reference_vertices_total": 1608,
+      "candidate_vertices_total": 12864
+    },
+    "simplified_cubic": {
+      "accepted": 0,
+      "invalid": 0,
+      "maximum_boundary_hausdorff_mm": 3.8874159394801353,
+      "reference_vertices_total": 1608,
+      "candidate_vertices_total": 3032
+    },
+    "uniform_cubic": {
+      "accepted": 5,
+      "invalid": 0,
+      "maximum_boundary_hausdorff_mm": 0.008958143321015062,
+      "reference_vertices_total": 1608,
+      "candidate_vertices_total": 51000
+    }
+  }
+}

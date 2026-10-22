@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import shapely
 from shapely.geometry import Polygon, box
 import trimesh
 
@@ -34,6 +35,24 @@ def box_mesh(size=(10, 10, 10)):
     mesh = trimesh.creation.box(extents=size)
     mesh.apply_translation(np.asarray(size) / 2)
     return mesh
+
+
+def wall_mesh(points, closed=True):
+    """Vertical triangle strip whose section retains the supplied contour."""
+    points = np.asarray(points, dtype=float)
+    pairs = zip(points, np.roll(points, -1, axis=0)) if closed else zip(points[:-1], points[1:])
+    vertices, faces = [], []
+    for a, b in pairs:
+        n = len(vertices)
+        vertices.extend([(*a, 0), (*b, 0), (*b, 1), (*a, 1)])
+        faces.extend([(n, n + 1, n + 2), (n, n + 2, n + 3)])
+    return trimesh.Trimesh(vertices=vertices, faces=faces, process=True)
+
+
+def microscopic_crossing_mesh():
+    # An ordered loop with a 10 nm backtracking crossing on its top edge.
+    return wall_mesh([(0, 0), (2, 0), (2, 1), (1.00001, 1),
+                      (1, 1.00001), (1.00002, 1.00001), (0.99999, 1), (0, 1)])
 
 
 def independent_convex_section(mesh, z):
@@ -132,6 +151,89 @@ def test_crossings_and_branches_are_not_guessed(segments):
     assert result.diagnostics
 
 
+def test_mesh_micro_crossing_recovery_is_bounded_and_reported():
+    source = microscopic_crossing_mesh()
+    config = RepairConfig(precision=1e-7, contour_tolerance=0.001)
+    result = section_profile(source, 0.37, config)
+    assert result.ok, result.diagnostics
+    assert result.region.equals(box(0, 0, 2, 1))
+    d = result.diagnostics
+    assert d["status"] == "contour_repaired"
+    assert d["strict_status"] == "branching"
+    assert d["strict_branching_vertices"] > 0
+    assert d["source_dangling_entities"] > 0
+    assert d["max_contour_deviation_mm"] == pytest.approx(1e-5)
+    assert d["contour_symmetric_difference_mm2"] < 1e-9
+    assert d["contour_deviation_bound_mm"] == config.contour_tolerance
+    raw = trimesh.intersections.mesh_plane(source, [0, 0, 1], [0, 0, 0.37])[:, :, :2]
+    boundary = shapely.multilinestrings(raw)
+    assert boundary.covered_by(result.region.boundary.buffer(config.contour_tolerance))
+    assert result.region.boundary.covered_by(boundary.buffer(config.contour_tolerance))
+
+
+@pytest.mark.parametrize("tolerance", [0, 1e-6])
+def test_mesh_contour_recovery_can_be_disabled_or_exceed_its_budget(tolerance):
+    result = section_profile(microscopic_crossing_mesh(), 0.37,
+                             RepairConfig(precision=1e-7, contour_tolerance=tolerance))
+    assert not result.ok
+    assert result.diagnostics["status"] == "branching"
+
+
+def test_mesh_contour_recovery_preserves_nested_hole():
+    source = trimesh.util.concatenate([
+        microscopic_crossing_mesh(),
+        wall_mesh([(0.3, 0.2), (0.6, 0.2), (0.6, 0.8), (0.3, 0.8)]),
+    ])
+    result = section_profile(source, 0.37, RepairConfig(precision=1e-7))
+    expected = box(0, 0, 2, 1).difference(box(0.3, 0.2, 0.6, 0.8))
+    assert result.ok, result.diagnostics
+    assert result.region.symmetric_difference(expected).area < 1e-12
+    assert result.diagnostics["holes"] == 1
+    assert len(result.diagnostics["contour_repairs"]) == 2
+
+
+def test_mesh_contour_recovery_preserves_valid_subgrid_gap():
+    first, second = box(0, 0, 1, 1), box(1.000004, 0, 2.000004, 1)
+    source = trimesh.util.concatenate([
+        wall_mesh(np.asarray(first.exterior.coords)[:-1]),
+        wall_mesh(np.asarray(second.exterior.coords)[:-1]),
+    ])
+    result = section_profile(source, 0.37)
+    assert result.ok, result.diagnostics
+    assert result.diagnostics["status"] == "contour_repaired"
+    assert result.diagnostics["components"] == 2
+    assert result.region.symmetric_difference(first.union(second)).area < 1e-12
+    assert all(c["simplification_tolerance_mm"] == 0 for c in result.diagnostics["contour_repairs"])
+
+
+@pytest.mark.parametrize("source", [
+    wall_mesh([(0, 0), (2, 2), (0, 2), (1.9, 0)]),
+    trimesh.util.concatenate([microscopic_crossing_mesh(),
+                              wall_mesh([(1.5, 1), (1.5, 1.1)], closed=False)]),
+])
+def test_mesh_fallback_cannot_discard_large_crossing_or_dangling_spur(source):
+    result = section_profile(source, 0.37, RepairConfig(precision=1e-7))
+    assert not result.ok
+
+
+@pytest.mark.parametrize("region", [
+    box(0, 0, 1, 1).union(box(1, 1, 2, 2)),
+    Polygon([(0, 0), (2, 0), (2, 2), (0, 2)],
+            holes=[[(1, 0), (1.5, 0.5), (1, 1), (0.5, 0.5)]]),
+])
+def test_mesh_contour_recovery_preserves_existing_point_contacts(region):
+    source = extrude_profile(region, 0, 1)
+    # Both indexed fan geometry and coordinate-welded reloads retain the shape.
+    for welded in (False, True):
+        if welded:
+            source.merge_vertices()
+        result = section_profile(source, 0.37, RepairConfig(precision=1e-7))
+        assert result.ok, result.diagnostics
+        assert result.region.symmetric_difference(region).area < 1e-12
+        assert result.diagnostics["components"] == len(shapely.get_parts(region))
+        assert result.diagnostics["holes"] == sum(len(p.interiors) for p in shapely.get_parts(region))
+
+
 def test_duplicate_and_reversed_segments_do_not_cancel_footprint():
     segments = ring_segments([(0, 0), (1, 0), (1, 1), (0, 1)])
     result = recover_profile(np.concatenate((segments, segments[:, ::-1], segments)))
@@ -197,6 +299,8 @@ def test_partial_top_uses_global_nominal_layer_midpoint():
     {"precision": 0}, {"precision": -1}, {"precision": float("nan")},
     {"precision": float("inf")}, {"max_gap": -1},
     {"max_gap": float("nan")}, {"max_gap": float("inf")},
+    {"contour_tolerance": -1}, {"contour_tolerance": float("nan")},
+    {"contour_tolerance": float("inf")},
 ])
 def test_invalid_repair_tolerances_fail_early(kwargs):
     with pytest.raises(ValueError):

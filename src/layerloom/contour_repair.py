@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from collections import defaultdict
+import hashlib
 import json
 import math
 import os
@@ -18,12 +19,13 @@ import xml.etree.ElementTree as ET
 import zipfile
 
 import numpy as np
-from shapely import union_all
+from shapely import polygons, union_all
 import trimesh
 
 from layerloom.export import write_basic_3mf
 from layerloom.ingest import read_parts
-from layerloom.planar_bands import RepairConfig, extrude_profile, reconstruct_layers, section_profile
+from layerloom.planar_bands import RepairConfig, extrude_profile, reconstruct_layers
+from layerloom.planar_materials import partition_materials
 from layerloom.tokens import TOKEN_ALPHABET, COLOR_OBJECT_LABELS
 
 
@@ -123,8 +125,54 @@ def _float32_mesh_checks(mesh: trimesh.Trimesh) -> dict:
     }
 
 
+def _exported_band_footprint(mesh: trimesh.Trimesh):
+    """Measure an exported prism without adding another XY snapping grid.
+
+    Equal top/bottom cap unions and vertical sides establish a constant XY
+    footprint through this prototype's band. This also retains microscopic
+    seams which an ordinary section reconstruction could snap away.
+    """
+    triangles = np.asarray(mesh.vertices)[mesh.faces]
+    low, high = mesh.bounds[:, 2]
+    top = np.all(triangles[:, :, 2] == high, axis=1)
+    bottom = np.all(triangles[:, :, 2] == low, axis=1)
+    if high <= low or not top.any() or not bottom.any():
+        raise ValueError("Exported band has no complete top and bottom caps")
+    sides = triangles[~(top | bottom), :, :2]
+    a, b = sides[:, 1] - sides[:, 0], sides[:, 2] - sides[:, 0]
+    if np.any(a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0] != 0):
+        raise ValueError("Exported band contains nonvertical sides")
+    upper = union_all(polygons(triangles[top, :, :2]), grid_size=0)
+    lower = union_all(polygons(triangles[bottom, :, :2]), grid_size=0)
+    if upper.symmetric_difference(lower).area != 0:
+        raise ValueError("Exported band's top and bottom footprints differ")
+    return upper
+
+
+def _exported_seams(actual, expected, displacements, *, precision):
+    """Report residual rounding overlaps; reject changes beyond both seams."""
+    overlaps = []
+    names = sorted(actual)
+    for i, name in enumerate(names):
+        for other in names[i + 1:]:
+            overlap = actual[name].intersection(actual[other])
+            if overlap.area == 0:
+                continue
+            # Either neighbor may move while the other is exactly on-lattice.
+            # A circumscribed distance buffer covers the sum of their moves.
+            radius = (displacements[name] + displacements[other] + precision * 1e-6) / math.cos(3 * math.pi / 128)
+            outside = max(overlap.difference(expected[n].boundary.buffer(radius)).area
+                          for n in (name, other))
+            if outside > precision ** 2 * 0.01:
+                raise ValueError(f"Exported materials {name}/{other} overlap beyond rounding bounds")
+            overlaps.append({"bands": [name, other], "area_mm2": float(overlap.area),
+                             "boundary_budget_mm": radius})
+    return overlaps
+
+
 def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float,
                      max_gap: float = 0.03, precision: float = 1e-5,
+                     contour_tolerance: float = 0.001, seam_tolerance: float = 0.001,
                      run: str = "cmy", z_gap: float = 0.001,
                      report_path: Path | None = None) -> dict:
     """Write complete valid output atomically, or a failure report with no new 3MF."""
@@ -141,11 +189,14 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
     run = run.lower()
     if not run or any(token not in TOKEN_ALPHABET for token in run):
         raise ValueError(f"run must contain only {TOKEN_ALPHABET}")
-    config = RepairConfig(precision=precision, max_gap=max_gap)
+    config = RepairConfig(precision=precision, max_gap=max_gap, contour_tolerance=contour_tolerance)
+    if not math.isfinite(seam_tolerance) or seam_tolerance < 0:
+        raise ValueError("seam_tolerance must be finite and nonnegative")
     report = {
         "experimental": True, "status": "failed", "input": str(input_path),
         "output": str(output_path), "layer_height_mm": layer_height,
         "max_gap_mm": max_gap, "precision_mm": precision, "z_gap_mm": z_gap,
+        "contour_tolerance_mm": contour_tolerance, "seam_tolerance_mm": seam_tolerance,
         "fallback_recipe": run, "recipe_policy": "last PAT label, otherwise fallback recipe",
         "packaging": "one mesh object with named per-layer PrusaSlicer volume ranges",
         "sampling": "global layer midpoint; piecewise constant XY profile through each band",
@@ -153,6 +204,8 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                         "Surface color patches do not define volumetric regions.",
                         "Downstream first and subsequent layer heights and Z origin must match; adaptive layers must be disabled.",
                         "Internal Z gaps avoid coincident band caps but are an explicit geometry change.",
+                        "Float32 export can leave measured, bounded residual overlaps or gaps between materials.",
+                        "Separate mesh indices preserve some geometric point contacts; a clean geometric union is not certified.",
                         "Native volume names preserve recipes, but physical extruders must be assigned in the slicer.",
                         "Ordinary LayerLoom ingest and other slicers may ignore the native volume ranges and see one uncolored mesh."],
         "parts": [], "layers": [], "errors": [], "warnings": [],
@@ -186,7 +239,8 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                 part_report["layers"].append({"index": band.index, "sample_z_mm": band.sample_z,
                                                "ok": band.profile.ok, **band.profile.diagnostics})
                 if not band.profile.ok:
-                    report["errors"].append(f"Part {label!r}, layer {band.index}: unresolved contour")
+                    reason = band.profile.diagnostics.get("error", "unresolved contour")
+                    report["errors"].append(f"Part {label!r}, layer {band.index}: {reason}")
                 elif not band.profile.region.is_empty:
                     by_layer[band.index][recipe[band.index % len(recipe)]].append(band.profile.region)
                 else:
@@ -194,18 +248,14 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
 
         export_parts = []
         intended_profiles = {}
+        export_displacements = {}
         for index, token_regions in sorted(by_layer.items()):
-            regions = {token: union_all(regions) for token, regions in token_regions.items()}
+            regions, partition, partition_errors = partition_materials(
+                token_regions, precision=precision, seam_tolerance=seam_tolerance)
             layer_report = {"index": index, "sample_z_mm": z0 + (index + 0.5) * layer_height,
-                            "materials": [], "overlaps": []}
+                            "materials": [], "overlaps": partition["overlaps"], "partition": partition}
             report["layers"].append(layer_report)
-            tokens = sorted(regions)
-            for i, token in enumerate(tokens):
-                for other in tokens[i + 1:]:
-                    overlap = float(regions[token].intersection(regions[other]).area)
-                    if overlap > 0:
-                        layer_report["overlaps"].append({"tokens": [token, other], "area_mm2": overlap})
-                        report["errors"].append(f"Layer {index}: material overlap {token}/{other} ({overlap:g} mm²)")
+            report["errors"].extend(f"Layer {index}: {error}" for error in partition_errors)
             low = z0 + index * layer_height + (z_gap / 2 if index > 0 else 0)
             high = z0 + (index + 1) * layer_height - (z_gap / 2 if index < last_layer else 0)
             for token, region in sorted(regions.items()):
@@ -215,12 +265,14 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                     continue
                 checks = _float32_mesh_checks(mesh)
                 layer_report["materials"].append({"token": token, "area_mm2": float(region.area),
-                                                    "low_mm": low, "high_mm": high, **checks})
+                                                    "low_mm": low, "high_mm": high,
+                                                    "extrusion": mesh.metadata.get("extrusion", {}), **checks})
                 if not checks["is_volume"] or checks["zero_area_triangles"] or checks["duplicate_faces"]:
                     report["errors"].append(f"Layer {index}/{token}: exported float32 geometry failed validation")
                 name = f"{COLOR_OBJECT_LABELS[token]}__layer{index:05d}__PAT_{token}__"
                 export_parts.append((name, mesh))
                 intended_profiles[name] = (region, z0 + (index + 0.5) * layer_height)
+                export_displacements[name] = mesh.metadata["extrusion"]["max_xy_displacement_mm"]
         if not export_parts:
             report["errors"].append("No printable layer regions were reconstructed")
         if not report["errors"]:
@@ -234,31 +286,44 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                 if len(reimported) != len(export_parts):
                     raise ValueError("Export round trip changed the number of bands")
                 largest_error = 0.0
-                combined_expected, combined_actual = defaultdict(list), defaultdict(list)
+                combined_expected, combined_actual = defaultdict(dict), defaultdict(dict)
                 for name, mesh in reimported:
                     expected, sample_z = intended_profiles[name]
                     checks = _float32_mesh_checks(mesh)
                     if not checks["is_volume"] or checks["zero_area_triangles"] or checks["duplicate_faces"]:
                         raise ValueError(f"Reimported band {name!r} failed float32 validation")
                     mesh.vertices = np.asarray(mesh.vertices).astype(np.float32).astype(np.float64)
-                    profile = section_profile(mesh, sample_z, config=config)
-                    error = float(expected.symmetric_difference(profile.region).area)
+                    actual = _exported_band_footprint(mesh)
+                    error = float(expected.symmetric_difference(actual).area)
                     largest_error = max(largest_error, error)
-                    if not profile.ok or error > 2 * precision * expected.length + precision ** 2:
+                    if error > 2 * precision * expected.length + precision ** 2:
                         raise ValueError(f"Reimported band {name!r} changed its midpoint footprint ({error:g} mm²)")
-                    combined_expected[sample_z].append(expected)
-                    combined_actual[sample_z].append(profile.region)
+                    combined_expected[sample_z][name] = expected
+                    combined_actual[sample_z][name] = actual
                 whole_errors = []
+                missing_areas, extra_areas, residual_overlaps = [], [], []
                 for sample_z, regions in combined_expected.items():
-                    expected = union_all(regions)
-                    actual = union_all(combined_actual[sample_z])
+                    expected = union_all(list(regions.values()))
+                    actual = union_all(list(combined_actual[sample_z].values()))
                     error = float(expected.symmetric_difference(actual).area)
                     if error > 2 * precision * expected.length + precision ** 2:
                         raise ValueError(f"Exported complete-layer footprint changed at Z={sample_z:g}")
                     whole_errors.append(error)
+                    missing_areas.append(float(expected.difference(actual).area))
+                    extra_areas.append(float(actual.difference(expected).area))
+                    residual_overlaps.extend({"sample_z_mm": sample_z, **overlap} for overlap in
+                        _exported_seams(combined_actual[sample_z], regions,
+                                        export_displacements, precision=precision))
                 report["roundtrip_max_footprint_error_mm2"] = largest_error
                 report["roundtrip_max_complete_layer_error_mm2"] = max(whole_errors, default=0.0)
+                report["roundtrip_footprint_method"] = "float32 cap unions; equal top/bottom footprints and vertical sides"
+                report["roundtrip_max_missing_area_mm2"] = max(missing_areas, default=0.0)
+                report["roundtrip_max_extra_area_mm2"] = max(extra_areas, default=0.0)
+                report["roundtrip_residual_material_overlaps"] = residual_overlaps
+                if residual_overlaps:
+                    report["warnings"].append("Float32 export leaves bounded residual material overlaps; see roundtrip_residual_material_overlaps")
                 os.replace(temporary, output_path)
+                report["output_sha256"] = hashlib.sha256(output_path.read_bytes()).hexdigest()
             finally:
                 temporary.unlink(missing_ok=True)
             report["status"] = "ok"
@@ -276,6 +341,10 @@ def main(argv=None) -> int:
     parser.add_argument("--layer-height", type=float, required=True)
     parser.add_argument("--max-gap", type=float, default=0.03, help="Maximum XY bridge length in mm")
     parser.add_argument("--precision", type=float, default=1e-5, help="XY snapping grid in mm")
+    parser.add_argument("--contour-tolerance", type=float, default=0.001,
+                        help="Maximum bounded ordered-loop cleanup in mm; zero disables")
+    parser.add_argument("--seam-tolerance", type=float, default=0.001,
+                        help="Boundary band permitting microscopic material-overlap assignment in mm")
     parser.add_argument("--run", default="cmy", help="Fallback weave recipe for parts without PAT labels")
     parser.add_argument("--z-gap", type=float, default=0.001, help="Gap between adjacent band intervals in mm")
     parser.add_argument("--report", type=Path)
@@ -283,6 +352,7 @@ def main(argv=None) -> int:
     try:
         report = reconstruct_file(args.input, args.output, layer_height=args.layer_height,
                                   max_gap=args.max_gap, precision=args.precision, run=args.run,
+                                  contour_tolerance=args.contour_tolerance, seam_tolerance=args.seam_tolerance,
                                   z_gap=args.z_gap, report_path=args.report)
     except ValueError as exc:
         parser.error(str(exc))

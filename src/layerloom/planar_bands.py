@@ -20,16 +20,19 @@ import trimesh
 
 @dataclass(frozen=True)
 class RepairConfig:
-    """XY grid spacing and maximum explicitly permitted gap, in input units (mm)."""
+    """XY grid, gap closure, and mesh contour displacement budgets, in mm."""
 
     precision: float = 1e-5
     max_gap: float = 0.03
+    contour_tolerance: float = 0.001
 
     def __post_init__(self):
         if not math.isfinite(self.precision) or self.precision <= 0:
             raise ValueError("precision must be finite and positive")
         if not math.isfinite(self.max_gap) or self.max_gap < 0:
             raise ValueError("max_gap must be finite and nonnegative")
+        if not math.isfinite(self.contour_tolerance) or self.contour_tolerance < 0:
+            raise ValueError("contour_tolerance must be finite and nonnegative")
 
 
 @dataclass
@@ -165,6 +168,124 @@ def recover_profile(segments, config: RepairConfig = RepairConfig()) -> ProfileR
     return ProfileResult(region, d, True)
 
 
+def _boundaries_within_tolerance(first, second, tolerance):
+    """Conservatively bound every boundary point, including segment interiors.
+
+    GEOS's Hausdorff distance samples line segments. The polygonal round buffers
+    lie inside the exact distance band, so mutual coverage also checks points
+    between samples without relying on that sampled estimate as an upper bound.
+    """
+    return first.covered_by(second.buffer(tolerance)) and second.covered_by(first.buffer(tolerance))
+
+
+def _closed_mesh_profile(mesh, z, config, failed, raw_lines):
+    """Recover only bounded defects in otherwise complete ordered section loops.
+
+    Noding quantized linework can turn tiny self-crossings or near-touching
+    vertices into branches. The source section still supplies ordered closed
+    loops. Simplify those loops without grid rounding, but accept the result
+    only after measuring its actual displacement and area change. No loop may
+    disappear, split, or acquire a hole, and distinct loops must retain nesting.
+    This is a mesh-section fallback, not a general crossing-line fill policy.
+    """
+    if config.contour_tolerance == 0:
+        return failed
+    # Splitting by face connectivity first preserves separate topological fans
+    # at geometric contacts. A single Path3D would weld equal XY coordinates
+    # and can invent connecting chords between point-touching solids.
+    paths = [component.section(plane_origin=[0, 0, z], plane_normal=[0, 0, 1])
+             for component in mesh.split(only_watertight=False, repair=False)]
+    paths = [path for path in paths if path is not None]
+    if not paths:
+        return failed
+    rings = [Polygon(np.asarray(loop)[:, :2]) for path in paths for loop in path.discrete]
+    if not rings or any(p.is_empty or p.area <= 0 for p in rings):
+        return failed
+
+    tolerance = config.contour_tolerance
+    candidates, changes = [], []
+    for original in rings:
+        reference = original if original.is_valid else shapely.make_valid(original)
+        area_budget = tolerance * original.length + math.pi * tolerance ** 2
+        candidate = None
+        factors = (0.0,) if original.is_valid else (1.0, 0.5, 0.25, 0.125, 0.0625)
+        for factor in factors:
+            proposed = original.simplify(tolerance * factor, preserve_topology=True)
+            if not proposed.is_valid:
+                proposed = original.simplify(tolerance * factor, preserve_topology=False)
+            if proposed.geom_type != "Polygon" or proposed.is_empty or not proposed.is_valid or proposed.interiors:
+                continue
+            displacement = float(shapely.hausdorff_distance(original.boundary, proposed.boundary, densify=0.25))
+            area_change = float(reference.symmetric_difference(proposed).area)
+            if (displacement <= tolerance and area_change <= area_budget
+                    and _boundaries_within_tolerance(original.boundary, proposed.boundary, tolerance)):
+                candidate = proposed
+                break
+        if candidate is None:
+            return failed
+        candidates.append(candidate)
+        changes.append({"source_valid": bool(original.is_valid),
+                        "source_vertices": len(original.exterior.coords) - 1,
+                        "result_vertices": len(candidate.exterior.coords) - 1,
+                        "max_deviation_mm": displacement,
+                        "simplification_tolerance_mm": tolerance * factor,
+                        "symmetric_difference_mm2": area_change,
+                        "area_budget_mm2": float(area_budget)})
+
+    # Every loop remains a loop, and its relationship to other loops is checked
+    # before parity filling. A fit must not merge two islands or close a cavity.
+    for i, candidate in enumerate(candidates):
+        for j in range(i):
+            other = candidates[j]
+            contact = candidate.boundary.intersection(other.boundary)
+            source_contact = rings[i].boundary.intersection(rings[j].boundary)
+            if candidate.overlaps(other):
+                return failed
+            if not contact.is_empty and (contact.geom_type not in {"Point", "MultiPoint"}
+                                         or source_contact.geom_type not in {"Point", "MultiPoint"}):
+                return failed
+            if contact.is_empty != source_contact.is_empty:
+                return failed
+            source_contains = rings[i].area > rings[j].area and bool(rings[i].contains(rings[j].representative_point()))
+            source_inside = rings[j].area > rings[i].area and bool(rings[j].contains(rings[i].representative_point()))
+            if source_contains != bool(candidate.contains(other)):
+                return failed
+            if source_inside != bool(other.contains(candidate)):
+                return failed
+
+    region = Polygon()
+    for candidate in candidates:
+        region = region.symmetric_difference(candidate)
+    if region.is_empty or not region.is_valid:
+        return failed
+    # Trimesh may report a tiny backtracking spur as a dangling entity. Never
+    # simply discard it: compare the final boundary with *all* raw segments,
+    # including entities omitted from closed_paths, under the same distance cap.
+    raw_boundary = shapely.multilinestrings(raw_lines[:, :, :2])
+    global_deviation = float(shapely.hausdorff_distance(raw_boundary, region.boundary, densify=0.25))
+    if (global_deviation > tolerance
+            or not _boundaries_within_tolerance(raw_boundary, region.boundary, tolerance)):
+        return failed
+    d = dict(failed.diagnostics)
+    d.update(status="contour_repaired", recovery_method="bounded ordered-loop simplification",
+             fill_rule="even-odd ordered loops; bounded mesh contour repair",
+             strict_diagnostics=dict(failed.diagnostics),
+             strict_status=failed.diagnostics["status"],
+             strict_branching_vertices=failed.diagnostics["branching_vertices"],
+             strict_open_endpoints=failed.diagnostics["open_endpoints"],
+             bridges=[], max_bridge_length=0.0, max_snap_displacement=0.0,
+             branching_vertices=0, open_endpoints=0, cut_length=0.0, dangle_length=0.0,
+             invalid_rings=0, contour_tolerance=tolerance, contour_repairs=changes,
+             source_dangling_entities=sum(len(path.dangling) for path in paths),
+             max_contour_deviation_mm=global_deviation,
+             contour_deviation_bound_mm=tolerance,
+             contour_bound_check="mutual coverage by inscribed distance-band buffers",
+             contour_symmetric_difference_mm2=sum(c["symmetric_difference_mm2"] for c in changes),
+             area=float(region.area), components=len(shapely.get_parts(region)),
+             holes=sum(len(p.interiors) for p in shapely.get_parts(region)))
+    return ProfileResult(region, d, True)
+
+
 def section_profile(mesh: trimesh.Trimesh, z: float,
                     config: RepairConfig = RepairConfig()) -> ProfileResult:
     """Intersect triangles directly; source topology and face winding may be broken."""
@@ -175,26 +296,214 @@ def section_profile(mesh: trimesh.Trimesh, z: float,
     lines = trimesh.intersections.mesh_plane(mesh, plane_normal=[0, 0, 1],
                                              plane_origin=[0, 0, z])
     result = recover_profile(lines[:, :, :2], config)
+    if not result.ok:
+        result = _closed_mesh_profile(mesh, z, config, result, lines)
     result.diagnostics["sample_z"] = float(z)
     return result
 
 
+def prepare_export_region(region):
+    """Quantize XY before triangulation to the actual XML/float32 output lattice.
+
+    Triangulating at double precision and rounding afterwards can flatten a
+    narrow cap triangle. This performs that unavoidable representation change
+    first. Coordinate collisions are normalized only when all changed area
+    stays in the original boundary's measured rounding band. Component and
+    hole changes are reported; a whole component may not disappear.
+    """
+    if region.is_empty:
+        return region, {"quantization_area_error_mm2": 0.0,
+                        "max_xy_displacement_mm": 0.0}
+    if not region.is_valid or region.geom_type not in {"Polygon", "MultiPolygon"}:
+        raise ValueError("extrusion requires valid polygonal geometry")
+    # Clear an inherited GEOS precision model before changing coordinates or
+    # measuring errors: it could otherwise resnap output to an earlier grid.
+    region = shapely.set_precision(region, 0)
+    source_parts = list(shapely.get_parts(region))
+
+    def quantize(geometry):
+        coordinates = shapely.get_coordinates(geometry)
+        rounded = np.round(coordinates, 9).astype(np.float32).astype(np.float64)
+        # A second pass makes decimal serialization stable close to zero.
+        rounded = np.round(rounded, 9).astype(np.float32).astype(np.float64)
+        if not np.isfinite(rounded).all():
+            raise ValueError("polygon coordinates exceed the float32 export range")
+        return shapely.set_coordinates(geometry, rounded), float(
+            np.linalg.norm(rounded - coordinates, axis=1).max())
+
+    def polygon_parts(geometry):
+        if geometry.geom_type == "Polygon":
+            return [geometry] if not geometry.is_empty else []
+        if hasattr(geometry, "geoms"):
+            return [polygon for part in geometry.geoms for polygon in polygon_parts(part)]
+        return []
+
+    output, displacement = quantize(region)
+    normalization_passes = 0
+    for _ in range(3):
+        if output.is_valid and not output.is_empty and output.area > 0:
+            break
+        polygons = polygon_parts(shapely.make_valid(output))
+        if not polygons:
+            raise ValueError("polygon collapses at float32 export precision")
+        output, _ = quantize(shapely.union_all(polygons, grid_size=0))
+        normalization_passes += 1
+    if output.is_empty or not output.is_valid or output.area <= 0:
+        raise ValueError("polygon remains invalid at float32 export precision")
+    output_parts = list(shapely.get_parts(output))
+    if any(part.intersection(output).area <= 0 for part in source_parts):
+        raise ValueError("polygon component collapses at float32 export precision")
+    changed = region.symmetric_difference(output)
+    # A buffer bounds changed *filled area*, including a disappearing narrow
+    # slit. A Hausdorff bound would misreport that slit as a large movement.
+    numerical_slack = max(float(np.max(np.abs(shapely.get_coordinates(region)))) *
+                          np.finfo(float).eps * 64, 1e-12)
+    # GEOS approximates circular buffer arcs with inscribed chords. Its fillet
+    # segment count rounds to the nearest integer, so a short join can use an
+    # angular step up to 1.5 times the nominal quadrant step. Compensate that
+    # worst-case sagitta rather than rejecting points at the measured radius.
+    # See GEOS OffsetSegmentGenerator::addDirectedFillet (nSegs = angle/step+.5).
+    arc_segments = 32
+    buffer_radius = (displacement + numerical_slack) / math.cos(3 * math.pi / (8 * arc_segments))
+    boundary_band = region.boundary.buffer(buffer_radius, quad_segs=arc_segments)
+    outside = changed.difference(boundary_band).area
+    if outside > numerical_slack ** 2 or changed.area > boundary_band.area + numerical_slack ** 2:
+        raise ValueError("float32 normalization exceeds the measured rounding boundary band")
+    contact_pairs = shapely.STRtree(output_parts).query(output_parts, predicate="intersects")
+    component_contacts = int(np.count_nonzero(contact_pairs[0] < contact_pairs[1]))
+    return output, {
+        "quantization_area_error_mm2": float(changed.area),
+        "max_xy_displacement_mm": displacement,
+        "quantization_normalization_passes": normalization_passes,
+        "quantization_components_before": len(source_parts),
+        "quantization_components_after": len(output_parts),
+        "quantization_holes_before": sum(len(part.interiors) for part in source_parts),
+        "quantization_holes_after": sum(len(part.interiors) for part in output_parts),
+        "quantization_boundary_band_area_mm2": float(boundary_band.area),
+        "quantization_buffer_chord_allowance_mm": float(buffer_radius - displacement - numerical_slack),
+        "geometric_component_contacts": component_contacts,
+    }
+
+
+def _split_cap_vertex_fans(vertices, faces):
+    """Give disconnected triangle fans distinct indices at a geometric contact.
+
+    A valid planar polygon can have a hole touching its shell at one point.
+    Coordinate welding joins the resulting vertical edges into a nonmanifold
+    edge. Splitting their indices preserves the footprint but does not remove
+    the geometric contact; callers receive an explicit contact count.
+    """
+    from collections import defaultdict
+
+    incident = defaultdict(list)
+    for face_index, face in enumerate(faces):
+        for vertex in face:
+            incident[int(vertex)].append(face_index)
+    points, faces = vertices.tolist(), faces.copy()
+    splits = 0
+    for vertex, face_indices in incident.items():
+        edge_faces = defaultdict(list)
+        for face_index in face_indices:
+            for other in faces[face_index]:
+                if other != vertex:
+                    edge_faces[int(other)].append(face_index)
+        neighbors = defaultdict(set)
+        for shared in edge_faces.values():
+            for face_index in shared:
+                neighbors[face_index].update(shared)
+        unseen, components = set(face_indices), []
+        while unseen:
+            stack, component = [unseen.pop()], []
+            while stack:
+                face_index = stack.pop()
+                component.append(face_index)
+                for other in neighbors[face_index] & unseen:
+                    unseen.remove(other)
+                    stack.append(other)
+            components.append(component)
+        for component in components[1:]:
+            replacement = len(points)
+            points.append(points[vertex])
+            for face_index in component:
+                faces[face_index][faces[face_index] == vertex] = replacement
+            splits += 1
+    return np.asarray(points, dtype=float), faces, splits
+
+
+def _extrude_indexed_cap(vertices, faces, low, high):
+    """Extrude cap topology without a coordinate-welding postprocess."""
+    a = vertices[faces[:, 1]] - vertices[faces[:, 0]]
+    b = vertices[faces[:, 2]] - vertices[faces[:, 0]]
+    cross = a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0]
+    if np.any(cross == 0):
+        raise ValueError("triangulator produced a collapsed cap triangle")
+    faces = faces.copy()
+    faces[cross < 0] = faces[cross < 0, ::-1]
+    vertices, faces, splits = _split_cap_vertex_fans(vertices, faces)
+    count = len(vertices)
+    edges = np.concatenate((faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]))
+    _, inverse, incidence = np.unique(np.sort(edges, axis=1), axis=0,
+                                      return_inverse=True, return_counts=True)
+    if np.any(incidence > 2):
+        raise ValueError("triangulated cap has a nonmanifold edge")
+    boundary = edges[incidence[inverse] == 1]
+    left, right = boundary.T
+    sides = np.vstack((np.column_stack((left, right, right + count)),
+                       np.column_stack((left, right + count, left + count))))
+    points = np.vstack((np.column_stack((vertices, np.full(count, low))),
+                        np.column_stack((vertices, np.full(count, high)))))
+    triangles = np.vstack((faces[:, ::-1], faces + count, sides))
+    mesh = trimesh.Trimesh(vertices=points, faces=triangles, process=False)
+    return mesh, splits
+
+
 def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
-    """Build watertight positive-volume slabs, including polygon holes."""
+    """Build closed bands on the output coordinate lattice, retaining holes.
+
+    Mesh metadata records the representation error and any geometric point
+    contacts preserved with separate topological vertex fans. Those contacts
+    are not claimed to be a clean geometric union.
+    """
     if not math.isfinite(low) or not math.isfinite(high) or high <= low:
         raise ValueError("band limits must be finite and increasing")
     if region.is_empty:
         return None
-    if not region.is_valid or region.geom_type not in {"Polygon", "MultiPolygon"}:
-        raise ValueError("extrusion requires valid polygonal geometry")
+    region, diagnostics = prepare_export_region(region)
     meshes = []
+    splits = 0
+    cdt = getattr(shapely, "constrained_delaunay_triangles", None)
     for polygon in shapely.get_parts(region):
-        mesh = trimesh.creation.extrude_polygon(polygon, height=high - low, engine="earcut")
-        mesh.apply_translation([0, 0, low])
+        if cdt is not None:
+            triangulated = cdt(polygon)
+            points = np.asarray([np.asarray(triangle.exterior.coords)[:3]
+                                 for triangle in triangulated.geoms]).reshape(-1, 2)
+            vertices, inverse = np.unique(points, axis=0, return_inverse=True)
+            faces = inverse.reshape(-1, 3)
+        else:
+            # Keep basic inputs usable with Shapely 2.0. Validation below still
+            # rejects any degenerate triangulation instead of dropping faces.
+            vertices, faces = trimesh.creation.triangulate_polygon(polygon, engine="earcut")
+        mesh, contacts = _extrude_indexed_cap(vertices, faces, low, high)
         if not mesh.is_volume:
             raise ValueError("polygon extrusion did not produce a closed positive volume")
+        exported = np.round(np.asarray(mesh.vertices), 9).astype(np.float32).astype(float)
+        triangle = exported[mesh.faces]
+        area_vector = np.cross(triangle[:, 1] - triangle[:, 0],
+                               triangle[:, 2] - triangle[:, 0])
+        if np.any(np.all(area_vector == 0, axis=1)):
+            raise ValueError("extruded triangle collapses at float32 export precision")
+        if not np.isclose(mesh.volume, polygon.area * (high - low), rtol=1e-8, atol=1e-12):
+            raise ValueError("triangulation changed the polygon's filled area")
         meshes.append(mesh)
-    return trimesh.util.concatenate(meshes)
+        splits += contacts
+    result = trimesh.util.concatenate(meshes)
+    result.metadata["extrusion"] = {
+        **diagnostics,
+        "triangulator": "constrained_delaunay" if cdt is not None else "earcut",
+        "split_vertex_fans": splits,
+        "geometric_point_contacts": bool(splits or diagnostics["geometric_component_contacts"]),
+    }
+    return result
 
 
 def reconstruct_layers(mesh: trimesh.Trimesh, layer_height: float, z0: float | None = None,

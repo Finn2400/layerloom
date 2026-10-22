@@ -7,7 +7,10 @@ import numpy as np
 import pytest
 import trimesh
 
-from layerloom.contour_repair import main, reconstruct_file, _read_native_bands
+from layerloom.contour_repair import (main, reconstruct_file, _read_native_bands,
+                                     _exported_band_footprint, _exported_seams)
+from layerloom.planar_bands import extrude_profile
+from layerloom.planar_materials import partition_materials
 from layerloom.export import write_basic_3mf
 from layerloom.ingest import read_parts
 
@@ -140,3 +143,37 @@ def test_zero_z_gap_has_assembly_warning(tmp_path):
     report = reconstruct_file(source, tmp_path / "reconstructed.3mf", layer_height=1.0, z_gap=0)
     assert report["status"] == "ok"
     assert any("coincident caps" in warning for warning in report["warnings"])
+
+
+def test_export_check_detects_rounding_overlap_on_unequally_segmented_seam():
+    from shapely.geometry import Polygon
+
+    x, dx = 200.12345, 1.23456
+    regions, _, errors = partition_materials({
+        "c": [Polygon([(x-1, 0), (x, 0), (x+dx, 1), (x-1, 1)])],
+        "m": [Polygon([(x, 0), (x+3, 0), (x+3, 1), (x+dx, 1), (x+dx/2, .5)])],
+    })
+    assert not errors
+    assert regions["c"].intersection(regions["m"]).area == 0
+    meshes = {name: extrude_profile(region, 0, .2) for name, region in regions.items()}
+    actual = {name: _exported_band_footprint(mesh) for name, mesh in meshes.items()}
+    displacements = {name: mesh.metadata["extrusion"]["max_xy_displacement_mm"]
+                     for name, mesh in meshes.items()}
+    overlaps = _exported_seams(actual, regions, displacements, precision=1e-5)
+    assert overlaps[0]["area_mm2"] == pytest.approx(3.814697265625e-6)
+
+
+def test_export_overlap_guard_rejects_change_beyond_rounding_band():
+    from shapely.geometry import box
+
+    expected = {"c": box(0, 0, 1, 1), "m": box(1, 0, 2, 1)}
+    actual = {"c": box(0, 0, 1.01, 1), "m": expected["m"]}
+    with pytest.raises(ValueError, match="overlap beyond rounding"):
+        _exported_seams(actual, expected, {"c": 1e-5, "m": 0}, precision=1e-5)
+
+
+def test_roundtrip_footprint_does_not_accept_a_sloping_band():
+    mesh = cube()
+    mesh.vertices[mesh.vertices[:, 2] > 1, 0] += .1
+    with pytest.raises(ValueError, match="nonvertical"):
+        _exported_band_footprint(mesh)
