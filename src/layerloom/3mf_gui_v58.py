@@ -750,12 +750,12 @@ def _sync_build_partnumbers(root: ET.Element) -> None:
             if nm:
                 item.set("partnumber", nm)
 
-def _stamp_ids_only(input_3mf: str) -> str:
+def _stamp_ids_only(input_3mf: str, *, directory: Optional[str] = None) -> str:
     """
     Create a temp-stamped .3mf where each object's name includes __ID_<oid>__,
     preserving any existing __PAT_*__ and trailing __E###.
     """
-    tmp_out = os.path.join(tempfile.gettempdir(), f"preview_id_{os.path.basename(input_3mf)}")
+    tmp_out = os.path.join(directory or tempfile.gettempdir(), f"preview_id_{os.path.basename(input_3mf)}")
     info = _3mf_size_info(input_3mf)
     model_bytes = info.get("model_bytes") or 0
     if model_bytes >= GUI_ID_STAMP_MODEL_XML_MB * 1024.0 * 1024.0:
@@ -4012,8 +4012,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         )
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
 
-        self.temp_ply_dir = os.path.join(tempfile.gettempdir(), "layerloom_ply_cache")
-        self._clear_ply_cache()
+        self._init_temp_workspace()
 
         self.base_file = None
         self.current_file = None
@@ -4042,11 +4041,27 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.current_palette: List[Dict[str, str]] = []
 
         self.viewer = EmbeddedPVViewer()
+        self.viewer.temp_ply_dir = self.temp_ply_dir
         self._build_ui()
         self._load_palette(self.current_palette_name)
         self._refresh_transform_readout()
         self._refresh_status_summary()
         _log("INFO", "[startup] v58 main window ready")
+
+    def _init_temp_workspace(self):
+        # Every window owns its previews, including when two windows open the
+        # same source. Never clear another window's shared system-temp files.
+        self._temp_workspace = tempfile.TemporaryDirectory(prefix="layerloom_gui_")
+        self._temp_dir = self._temp_workspace.name
+        self.temp_ply_dir = os.path.join(self._temp_dir, "ply_cache")
+        self._clear_ply_cache()
+
+    def _cleanup_temp_workspace(self):
+        self._temp_workspace.cleanup()
+        self._ply_cache_signature = None
+
+    def _stamp_ids_only(self, input_3mf: str) -> str:
+        return _stamp_ids_only(input_3mf, directory=self._temp_dir)
 
     # ---------- UI ----------
     def _build_ui(self):
@@ -4742,7 +4757,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         base = os.path.splitext(os.path.basename(self.base_file or self.current_file or "model"))[0]
         base = re.sub(r"[^A-Za-z0-9._-]+", "_", base) or "model"
         token = hashlib.md5((self.base_file or self.current_file or base).encode("utf-8")).hexdigest()[:10]
-        return os.path.join(tempfile.gettempdir(), f"layerloom_{suffix}_{base}_{token}.3mf")
+        return os.path.join(self._temp_dir, f"layerloom_{suffix}_{base}_{token}.3mf")
 
     def _build_name_updates(self) -> Dict[str, str]:
         out = {}
@@ -4976,7 +4991,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         if not path:
             return
         self._pending_source_hex_by_name = {}
-        stamped = _stamp_ids_only(path)
+        stamped = self._stamp_ids_only(path)
         self._load_canonical_model(stamped)
         _log("INFO", f"Opened: {path}")
         if stamped != path:
@@ -5003,7 +5018,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         if target_colors < 2:
             raise RuntimeError("GLB colors must be at least 2.")
         color_levels = _target_colors_to_levels(target_colors)
-        tmp_dir = os.path.join(tempfile.gettempdir(), "layerloom_glb_import")
+        tmp_dir = os.path.join(self._temp_dir, "glb_import")
         os.makedirs(tmp_dir, exist_ok=True)
         base = re.sub(r"[^A-Za-z0-9._-]+", "_", os.path.splitext(os.path.basename(glb_path))[0]) or "import"
         split_3mf = os.path.join(tmp_dir, f"{base}_split.3mf")
@@ -5055,7 +5070,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             self._error("Open GLB", f"Failed to import GLB:\n{e}")
             return
         self._pending_source_hex_by_name = manifest_map
-        stamped = _stamp_ids_only(import_3mf)
+        stamped = self._stamp_ids_only(import_3mf)
         self._load_canonical_model(stamped)
         _log("INFO", f"Opened GLB: {path}")
         _log("INFO", f"GLB import produced 3MF: {import_3mf} (target_colors={self.glb_colors_spin.value()}, color_levels={color_levels})")
@@ -5284,12 +5299,16 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
     def _run_weave_subprocess(self, input_3mf: str, *, step: float, output_path: str) -> Optional[str]:
         try:
+            try:
+                from layerloom.gui_process import run_gui_process
+            except ImportError:
+                from gui_process import run_gui_process
             cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", output_path]
             if step is not None:
                 cmd += ["--step", str(step)]
             _log("INFO", "[weave] running:", " ".join(cmd))
             t0 = time.perf_counter()
-            proc = subprocess.run(cmd, capture_output=True, text=True)
+            proc = run_gui_process(self, cmd, label="Weaving layers", temp_dir=self._temp_dir)
             _perf_log("subprocess weave", t0, extra=f"returncode={proc.returncode}")
             if proc.stdout:
                 _log("DEBUG", "[weave stdout]\n" + proc.stdout)
@@ -5351,7 +5370,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             if not self._confirm("Overwrite?", f"File already exists:\n{final_woven_path}\n\nOverwrite it?"):
                 return
         try:
-            tmp_out = os.path.join(tempfile.gettempdir(), f"tmp_weave_{base}.3mf")
+            tmp_out = os.path.join(self._temp_dir, f"tmp_weave_{base}.3mf")
             plan = self._materialize_current_model(tmp_out, include_assignments=True)
             self._last_transform_plan = plan
             self.transform_dirty = False
@@ -5371,14 +5390,14 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             self.transform_info_label.setStyleSheet("color: #ffb347;")
             self._prepare_for_heavy_preview_build()
             self._pending_source_hex_by_name = {}
-            stamped_woven = _stamp_ids_only(woven)
+            stamped_woven = self._stamp_ids_only(woven)
             self._load_canonical_model(stamped_woven)
             self._refresh_preview_from_current_file(force=True)
             _log("INFO", f"[weave] woven model loaded in large-file safety mode → {woven}")
             self.status_bar.showMessage(f"Weave complete in safety mode: {os.path.basename(woven)}", 5000)
             return
         self._postweave_pat_audit(woven, "[post-weave PAT check]")
-        stamped_woven = _stamp_ids_only(woven)
+        stamped_woven = self._stamp_ids_only(woven)
         if stamped_woven != woven:
             _log("INFO", f"Previewing ID-stamped *woven* temp copy: {stamped_woven}")
         self._load_canonical_model(stamped_woven)
@@ -5433,13 +5452,17 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
                 original_hex = entry.get("hex")
         flash_hex = "#FF0000" if original_hex.upper() != "#FF0000" else "#00FF00"
         self.viewer.set_color_by_name(name, flash_hex)
+        source_file = self.base_file
 
         def _restore():
-            if not self.viewer:
+            if not self.viewer or self.base_file != source_file:
                 return
-            if oid and self._current_selected_oid() != oid:
+            if oid and self.oid_to_name.get(oid) != name:
                 return
-            self.viewer.set_color_by_name(name, original_hex)
+            # A swatch can change during the flash, or selection can move to a
+            # different part. Restore the latest assignment in either case.
+            current_hex = self.assignments.get(oid, {}).get("hex", original_hex)
+            self.viewer.set_color_by_name(name, current_hex)
 
         QtCore.QTimer.singleShot(250, _restore)
 
@@ -5547,15 +5570,13 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.setWindowTitle(f"{APP_TITLE} — {model_text}" if model_text else APP_TITLE)
 
     def closeEvent(self, event):
-        _log("INFO", "Exiting. Cleaning up PLY cache...")
-        try:
-            if os.path.isdir(self.temp_ply_dir):
-                shutil.rmtree(self.temp_ply_dir)
-            self._ply_cache_signature = None
-        except Exception as e:
-            _log("WARN", f"Could not clean cache on exit: {e}")
+        _log("INFO", "Exiting. Cleaning up window previews...")
         if self.viewer:
             self.viewer.close()
+        try:
+            self._cleanup_temp_workspace()
+        except Exception as e:
+            _log("WARN", f"Could not clean window previews on exit: {e}")
         gc.collect()
         super().closeEvent(event)
 

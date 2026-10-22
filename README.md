@@ -290,6 +290,43 @@ tests/
   test_smoke.py               # lightweight import/package checks
 ```
 
+## GUI Tests
+
+The regular test suite checks GUI imports, temporary-file isolation, subprocess
+encoding, and event-loop behavior. A separate integration test launches the real
+Qt/VTK window and exercises Load Example, rendering, part selection, palette
+assignment, transforms, save/reopen, and weaving at 0.20 mm. It checks exported
+geometry and color metadata, canceled dialogs, and recovery from invalid input.
+Native file/message dialogs are supplied with test responses; the viewer and
+processing backends run normally.
+
+On macOS or Linux with a working display:
+
+```bash
+LAYERLOOM_GUI_INTEGRATION=1 python -m pytest tests/test_gui_workflow.py
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:LAYERLOOM_GUI_INTEGRATION = "1"
+python -m pytest tests/test_gui_workflow.py
+```
+
+Set `LAYERLOOM_GUI_ARTIFACT_DIR` to retain viewport screenshots, control images,
+exported test models, and the JSON/log report in a chosen directory. Otherwise
+they are stored in pytest's temporary directory. Use a fresh artifact directory
+for each run. Qt widget captures cannot reliably include native VTK surfaces, so
+the test saves the rendered viewport separately from the controls.
+
+CI runs this workflow on Windows, macOS, and Linux with Python 3.12; Linux uses
+Xvfb and software OpenGL. Every run uploads GUI evidence, including on failure.
+The full rendering test is opt-in locally because a missing graphics display can
+abort Qt/VTK. Do not use Qt's `offscreen` platform for the full VTK workflow on
+macOS. These tests exercise the source application, not a packaged installer.
+The GUI's Weave action still uses the existing weave pipeline; experimental 2D
+contour repair remains a separate command-line workflow on this branch.
+
 ## Large Files
 
 Generated 3MF/STL/GLB files are intentionally ignored by git. The tiny tutorial

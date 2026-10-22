@@ -27,7 +27,7 @@ jobs:
 
       - name: Linux native GUI and repair prerequisites
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libopengl0 libxkbcommon-x11-0
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libopengl0 libxkbcommon-x11-0 libxcb-xinerama0 libxcb-cursor0 xvfb xauth
 
       - name: Install LayerLoom
         run: |
@@ -47,6 +47,31 @@ jobs:
 
       - name: Run tests
         run: pytest
+
+      - name: Exercise real GUI workflow (Linux virtual display)
+        if: matrix.python-version == '3.12' && runner.os == 'Linux'
+        env:
+          LAYERLOOM_GUI_INTEGRATION: "1"
+          LAYERLOOM_GUI_ARTIFACT_DIR: ${{ runner.temp }}/layerloom-gui
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          QT_API: pyqt5
+        run: xvfb-run -a -s "-screen 0 1600x1000x24" python -m pytest tests/test_gui_workflow.py -ra
+
+      - name: Exercise real GUI workflow (native desktop)
+        if: matrix.python-version == '3.12' && runner.os != 'Linux'
+        env:
+          LAYERLOOM_GUI_INTEGRATION: "1"
+          LAYERLOOM_GUI_ARTIFACT_DIR: ${{ runner.temp }}/layerloom-gui
+          QT_API: pyqt5
+        run: python -m pytest tests/test_gui_workflow.py -ra
+
+      - name: Upload GUI screenshots and diagnostics
+        if: always() && matrix.python-version == '3.12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-${{ matrix.os }}
+          path: ${{ runner.temp }}/layerloom-gui
+          if-no-files-found: warn
 
       - name: CLI smoke test
         run: |

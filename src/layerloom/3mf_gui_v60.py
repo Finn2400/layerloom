@@ -16,7 +16,6 @@ import importlib.util
 import os
 import re
 import sys
-import tempfile
 import time
 from typing import Optional
 
@@ -492,7 +491,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
 
     def _normalize_incoming_3mf(self, path: str, title: str) -> str | None:
         try:
-            result = normalize_3mf_import(path)
+            result = normalize_3mf_import(path, cache_dir=self._temp_dir)
         except Exception as e:
             self._error(title, f"Failed to normalize 3MF import:\n{e}")
             return None
@@ -506,7 +505,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         t0 = time.perf_counter()
         base = re.sub(r"[^A-Za-z0-9._-]+", "_", os.path.splitext(os.path.basename(path))[0]) or "glb_import"
         token = hashlib.md5(os.path.abspath(path).encode("utf-8")).hexdigest()[:10]
-        placed = os.path.join(tempfile.gettempdir(), f"layerloom_glb_placed_{base}_{token}.3mf")
+        placed = os.path.join(self._temp_dir, f"layerloom_glb_placed_{base}_{token}.3mf")
         try:
             plan = _V58.compute_transform_plan(
                 path,
@@ -539,7 +538,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         if not normalized:
             return
         self._pending_source_hex_by_name = {}
-        stamped = _V58._stamp_ids_only(normalized)
+        stamped = self._stamp_ids_only(normalized)
         self._load_canonical_model(stamped)
         _V58._log("INFO", f"Opened: {path}")
         if normalized != path:
@@ -560,7 +559,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         if not normalized:
             return
         self._pending_source_hex_by_name = manifest_map
-        stamped = _V58._stamp_ids_only(normalized)
+        stamped = self._stamp_ids_only(normalized)
         placed = self._auto_place_glb_import(stamped)
         placed_on_plate = placed != stamped
         self._load_canonical_model(placed)

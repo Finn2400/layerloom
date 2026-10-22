@@ -137,7 +137,7 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
             return
         try:
             self._pending_source_hex_by_name = {}
-            stamped = _V58._stamp_ids_only(str(path))
+            stamped = self._stamp_ids_only(str(path))
             self._load_canonical_model(stamped)
             _V58._log("INFO", f"Loaded example: {path}")
             self.status_bar.showMessage(f"Loaded example: {path.name}", 5000)

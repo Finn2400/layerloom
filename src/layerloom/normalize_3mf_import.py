@@ -757,7 +757,7 @@ def _write_normalized_3mf(
     os.unlink(tmp_xml_path)
 
 
-def normalize_3mf_import(path: str) -> NormalizedImportResult:
+def normalize_3mf_import(path: str, *, cache_dir: str | None = None) -> NormalizedImportResult:
     source_path = os.path.abspath(path)
     if not os.path.exists(source_path):
         raise FileNotFoundError(source_path)
@@ -769,7 +769,9 @@ def normalize_3mf_import(path: str) -> NormalizedImportResult:
         f"{source_path}|{int(st.st_size)}|{int(getattr(st, 'st_mtime_ns', int(st.st_mtime * 1_000_000_000)))}".encode("utf-8")
     ).hexdigest()[:12]
     base = os.path.splitext(os.path.basename(source_path))[0]
-    out_path = os.path.join(tempfile.gettempdir(), f"layerloom_normalized_{base}_{token}.3mf")
+    output_dir = tempfile.gettempdir() if cache_dir is None else os.path.abspath(cache_dir)
+    os.makedirs(output_dir, exist_ok=True)
+    out_path = os.path.join(output_dir, f"layerloom_normalized_{base}_{token}.3mf")
     if os.path.exists(out_path) and _is_layerloom_normalized(out_path):
         return NormalizedImportResult(out_path, _read_normalized_records(out_path), [])
 
