@@ -6,3 +6,6 @@ results/*
 !results/benchy_validation.json
 !results/spline_report.json
 !results/spline_comparison.png
+!results/controlled_benchmark.json
+!results/controlled_comparison.png
+!results/controlled_prism_audit.json

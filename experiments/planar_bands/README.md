@@ -350,3 +350,175 @@ independent coverage reference for material partitions, and diagnostic sampling
 between nominal layer midpoints.
 The evidence supports an optional alternative backend; it does not yet support
 replacing the default workflow or claiming general non-manifold repair.
+
+## Controlled repair and layer-creation benchmark
+
+`controlled_benchmark.py` compares in-memory geometry work on tutorial cubes,
+the cut-up tutorial Benchy, and intact/damaged versions of a deterministic
+hollow tube. The tube is 20 mm tall, with 20/16 mm outer/inner diameters and
+256 circumferential facets. Its damaged twin removes four wall triangles,
+leaving a 0.020 mm outer seam and a 0.016 mm inner seam. Its intended annular
+footprint is known independently of the repair algorithm.
+
+Three methods use the same original inputs, orientation, scale, global Z
+origin, original per-part band indices, PAT assignments, 0.20 mm layer height,
+and 0.001 mm gap:
+
+- `cut`: existing `_slice_between` calls, including their normal fallbacks.
+- `repair_cut`: the actual MeshLab helper's default `repair_geometry` kernel,
+  including its topology checks, followed by the existing global destructive
+  repair rejection guard and the same cuts. Ordinary 3MF weaving can skip this
+  prepass, which is why both older paths are included.
+- `contour`: bounded midpoint profiles and source-part extrusion, followed by
+  the current prototype's material partition and final material extrusion.
+
+`matched_part_bands_s` measures repair plus source-part layer creation. The
+additional `assembly_s` measures each backend's native color assembly: mesh
+concatenation for the old paths, partition and another extrusion for contours.
+`core_s` is their sum. This separation exposes the prototype's extra work;
+its second extrusion and mandatory float32 checks remain included. The
+benchmark adapter trims both ends of every nominal contour band by 0.0005 mm
+to match the cutter, including the model's outer boundaries. The standalone
+contour CLI normally exempts its first/last outer boundaries from that trim.
+
+Each measurement runs serially in a fresh process, after the same small-box
+warm-up. A fixed seed randomizes case order and rotates method order so each
+method occupies each position once across three repeats. Common BLAS/OpenMP
+environment variables are limited to one thread; this is not a guarantee that
+every native library is single-threaded. The desktop is not CPU-pinned or
+isolated from background applications. Hardware, library versions, source
+hashes, CPU time, and every measured wall time are recorded.
+
+Input loading, imports, warm-up, geometry hashing, export, common posthoc
+audits, slicer work, and printing are excluded. Checks performed intrinsically
+by each algorithm remain timed. The first repetition gets a common external
+audit; subsequent results inherit it only if exact source and output geometry
+hashes match. Individual run JSON files retain the detailed diagnostics; the
+tracked aggregate retains timings, checks, hashes, and repair outcomes.
+
+The common audit checks positive indexed volumes, float32 volumes, collapsed
+triangles, duplicate faces, and original-input midpoint footprints before and
+after native assembly. The declared footprint area budget is 0.001 mm times
+the reference perimeter. Hole/component counts and boundary distances are
+also recorded, but do not independently determine pass/fail. The tube uses its
+independent intended polygon; real inputs
+use bounded section reconstruction of the original source, so their reference
+is not independent of the contour algorithm. Any reference or audit-only
+contour repairs are reported. This common audit does not repeat the contour
+CLI's exact exported cap-union and intermaterial seam checks; section repair
+can mask microscopic seams. Passing these checks does not certify continuous
+3D fidelity, all non-manifold contacts, or downstream slicer acceptance.
+Raw `missing_bands` includes legitimate empty midpoint samples; actual loss
+must be assessed using the reference/audit diagnostics. A failed profile
+reconstruction also cannot establish that material is physically absent.
+
+Run from the repository root:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/controlled_benchmark.py
+
+PYTHONPATH=src python experiments/planar_bands/controlled_plot.py \
+  experiments/planar_bands/results/controlled_benchmark.json \
+  --prism-audit experiments/planar_bands/results/controlled_prism_audit.json
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python -m pytest \
+  tests/test_controlled_benchmark.py tests/test_controlled_worker.py
+```
+
+The cube and Benchy files must be available in `examples/`; the worker also
+supports `--input` for a different local path to either example. A separate
+one-repeat cube pilot validates the harness and is excluded from measured
+repetitions.
+
+### Measured results, 22 October 2026
+
+All 36 workers completed on an Apple M1 Pro with 10 CPU cores and 16 GiB RAM.
+Each case/method produced identical exact source/output hashes across all three
+repetitions. The aggregate is in
+[`results/controlled_benchmark.json`](results/controlled_benchmark.json).
+These are local measurements of this implementation, not a hardware-independent
+performance claim. The intact-tube cut-only arm includes one slow wall-time
+observation; it remains in the reported range.
+
+Repair plus source-part layer creation, seconds: **median [minimum–maximum]**.
+Bounded 2D contour repair is included in the contour column's layer time.
+
+| Input | Existing cuts | MeshLab repair + cuts | Contour reconstruction |
+| --- | ---: | ---: | ---: |
+| Tutorial cubes | 0.217 [0.203–0.236] | 0.208 [0.206–0.210] | 0.252 [0.248–0.255] |
+| Benchy | 11.430 [11.088–12.652] | 12.255 [11.817–14.294] | 34.545 [34.377–34.595] |
+| Intact hollow tube | 1.139 [1.131–2.443] | 1.166 [1.154–1.179] | 6.277 [5.842–6.353] |
+| Tube with 0.020 mm seam | 1.538 [1.534–1.550] | 1.139 [1.118–1.159] | 8.027 [7.996–8.144] |
+
+Including each backend's native color assembly, total geometry-processing
+medians are:
+
+| Input | Existing cuts | MeshLab repair + cuts | Contour reconstruction |
+| --- | ---: | ---: | ---: |
+| Tutorial cubes | 0.220 s | 0.212 s | 0.465 s |
+| Benchy | 11.613 s | 12.420 s | 60.971 s |
+| Intact hollow tube | 1.169 s | 1.198 s | 13.181 s |
+| Tube with 0.020 mm seam | 1.574 s | 1.170 s | 14.332 s |
+
+The prototype's Benchy color assembly adds a median 26.426 s, versus about
+0.18 s for old-path concatenation. It partitions colors, extrudes the final
+regions again, and runs mandatory float32 checks. The MeshLab prepass itself
+takes only 0.469 s on Benchy. Stage medians need not sum exactly to the total
+median. The plot shows the stage breakdown from each median-total run, with
+the observed total min–max range:
+
+![Controlled repair and layer-creation timings](results/controlled_comparison.png)
+
+The faster times do not represent equivalent geometry quality:
+
+- **Cubes:** all methods pass the common checks.
+- **Benchy:** all eight original parts are positive volumes, including after
+  float32 conversion, with no collapsed triangles or duplicate faces. MeshLab
+  reports them as manifold and produces exactly the same subsequent cut meshes
+  as the cut-only arm. Both old paths nevertheless create 54 non-volume bands
+  and 279,302 float32-collapsed triangles. This is a layer-creation problem that
+  the input prepass does not fix.
+- **Contour Benchy:** all 649 nonempty source-part bands and 349 final material
+  bands pass indexed/float32 volume, collapsed-triangle and duplicate-face
+  checks. The other eight source-part midpoints are legitimately empty. Final
+  triangle count falls from 2,238,388 to 1,466,260, approximately 35% fewer.
+- **Tubes:** the new method preserves the intended cavity and passes the common
+  checks for both inputs. The cut-only damaged tube has 100 non-volume bands;
+  MeshLab closes those openings successfully. Both older paths still produce
+  six float32-collapsed triangles on the repaired/intact tube. These flags alone
+  are not proof that a downstream slicer would reject the output.
+
+The common generic section auditor could not reconstruct 11 native contour
+Benchy profiles. Those failures remain unchanged in the raw benchmark report.
+`controlled_prism_audit.py` regenerates only their affected layers and requires
+exact source-band and native-band geometry hashes to match the timed outputs.
+On those identical meshes, equal top/bottom cap unions plus vertical side
+triangles establish the actual constant footprint directly. All 11 pass this
+additional proof and the original-reference area budget; the maximum cap-area
+symmetric difference is 0.000359 mm². Details and original-input checks are in
+[`results/controlled_prism_audit.json`](results/controlled_prism_audit.json).
+This supplementary run is excluded from every reported time:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/controlled_prism_audit.py \
+  --report experiments/planar_bands/results/controlled_benchmark_runs/12_benchy_0.2_contour_r1.json
+```
+
+The supplementary profiles retain their component counts, but nine of the
+eleven change hole count: 18 microscopic holes disappear, totaling only
+0.00000915 mm² of filled area (largest hole 0.00000271 mm²). All changed filled
+area lies within 0.001 mm of an original reference boundary. A large 1.84 mm
+boundary Hausdorff distance reflects the disappearance of long, extremely
+narrow internal boundaries, not that much movement of filled geometry. Exact
+hole topology is therefore not preserved; the successful check is explicitly
+about bounded filled-area change. These are the rounding/seam topology changes
+already permitted by the prototype's policy.
+
+The current contour prototype therefore trades additional processing time for
+more reliable band geometry. Avoiding its redundant source/final extrusion is
+a concrete optimization candidate. A selective fallback is another candidate,
+but would need checks for float32 degeneracies as well as indexed volume;
+checking volume alone would miss some of the defects seen here. Neither
+optimization is implemented or included in these measurements.

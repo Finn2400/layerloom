@@ -1,0 +1,3948 @@
+{
+  "status": "passed",
+  "passed": true,
+  "case": "benchy",
+  "method": "contour",
+  "source_sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+  "measured_native_parts_sha256": "28b244eb21ea67271664259502cf76e06373e4e8170c7377a7f9ffd2793fa373",
+  "checked_profiles": 11,
+  "matching_geometry_hashes": 11,
+  "records": [
+    {
+      "layer_index": 44,
+      "token": "c",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "1116cc7b53e2f465795acb8c462e603d44c2e92d475e17d0e47b706f8c8132d6",
+      "regenerated_geometry_sha256": "1116cc7b53e2f465795acb8c462e603d44c2e92d475e17d0e47b706f8c8132d6",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00017932137703462195,
+        "max_xy_displacement_mm": 1.0424091095838162e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 2,
+        "quantization_components_after": 2,
+        "quantization_holes_before": 3,
+        "quantization_holes_after": 3,
+        "quantization_boundary_band_area_mm2": 0.002051540380811321,
+        "quantization_buffer_chord_allowance_mm": 7.0683157286210635e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 1,
+        "geometric_point_contacts": true
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 2944,
+        "triangles": 5888
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 2944,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 1,
+          "max_snap_displacement": 7.031605890039217e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 2,
+          "branching_vertices": 3,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.06651880486589054,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 8.899999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 10,
+        "actual_components": 2,
+        "actual_holes": 3,
+        "reference_area_mm2": 219.60736857320938,
+        "actual_area_mm2": 219.6073755621328,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0001854717070292159,
+        "boundary_hausdorff_mm": 1.8368205957031307,
+        "area_budget_mm2": 0.10416101979087428,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0001854717070292159,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 3.769595682519625e-08,
+          "filled_area_mm2": 3.769595682530467e-08,
+          "original_boundary_length_mm": 0.22751207767436146,
+          "area_perimeter_width_proxy_mm": 3.3137543475077004e-07
+        },
+        {
+          "original_hole_area_mm2": 1.2183999994058725e-06,
+          "filled_area_mm2": 1.218399999405222e-06,
+          "original_boundary_length_mm": 0.6669517729311352,
+          "area_perimeter_width_proxy_mm": 3.6536374858146636e-06
+        },
+        {
+          "original_hole_area_mm2": 7.202422172298412e-08,
+          "filled_area_mm2": 7.202422172298412e-08,
+          "original_boundary_length_mm": 0.32362696405508873,
+          "area_perimeter_width_proxy_mm": 4.451064325451197e-07
+        },
+        {
+          "original_hole_area_mm2": 1.163849999982064e-06,
+          "filled_area_mm2": 1.163849999982064e-06,
+          "original_boundary_length_mm": 0.7321843073636662,
+          "area_perimeter_width_proxy_mm": 3.1791175753893756e-06
+        },
+        {
+          "original_hole_area_mm2": 1.9487933058731297e-07,
+          "filled_area_mm2": 1.9487933058774665e-07,
+          "original_boundary_length_mm": 0.4221336424400981,
+          "area_perimeter_width_proxy_mm": 9.233063229020742e-07
+        },
+        {
+          "original_hole_area_mm2": 2.8906500032163662e-06,
+          "filled_area_mm2": 2.450720083473079e-06,
+          "original_boundary_length_mm": 1.8253852484707864,
+          "area_perimeter_width_proxy_mm": 3.1671670466691933e-06
+        },
+        {
+          "original_hole_area_mm2": 2.9550453379545427e-06,
+          "filled_area_mm2": 1.7103029283004273e-06,
+          "original_boundary_length_mm": 1.5031512043627417,
+          "area_perimeter_width_proxy_mm": 3.931800512653454e-06
+        },
+        {
+          "original_hole_area_mm2": 2.800861317930675e-07,
+          "filled_area_mm2": 2.800861317931759e-07,
+          "original_boundary_length_mm": 0.45291093716354985,
+          "area_perimeter_width_proxy_mm": 1.2368265317113598e-06
+        },
+        {
+          "original_hole_area_mm2": 8.407596009778195e-07,
+          "filled_area_mm2": 8.407596009778195e-07,
+          "original_boundary_length_mm": 0.5975717148846567,
+          "area_perimeter_width_proxy_mm": 2.8139203380471346e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 3,
+        "actual_components": 2,
+        "actual_holes": 3,
+        "reference_area_mm2": 219.60737482234984,
+        "actual_area_mm2": 219.6073755621328,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00017932137703462195,
+        "boundary_hausdorff_mm": 9.518274628228954e-06,
+        "area_budget_mm2": 0.09898019166985,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 56,
+      "token": "c",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "9275e88eff98b341c02f6526d3aa225410dcd65c510f11b64903fc963abc4c13",
+      "regenerated_geometry_sha256": "9275e88eff98b341c02f6526d3aa225410dcd65c510f11b64903fc963abc4c13",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00021542658845238353,
+        "max_xy_displacement_mm": 1.0371954631527236e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 1,
+        "quantization_components_after": 1,
+        "quantization_holes_before": 1,
+        "quantization_holes_after": 1,
+        "quantization_boundary_band_area_mm2": 0.0022556755192831646,
+        "quantization_buffer_chord_allowance_mm": 7.0329633185482e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 2024,
+        "triangles": 4048
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 2024,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 1,
+          "max_snap_displacement": 7.039994616746617e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 2,
+          "branching_vertices": 2,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.3638743919706216,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 11.299999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 1,
+        "reference_holes": 2,
+        "actual_components": 1,
+        "actual_holes": 1,
+        "reference_area_mm2": 239.61322679386484,
+        "actual_area_mm2": 239.6132420966169,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0002158608646555571,
+        "boundary_hausdorff_mm": 0.7370880927977913,
+        "area_budget_mm2": 0.10967077779512105,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0002158608646555571,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 3.959000001256331e-07,
+          "filled_area_mm2": 3.959000001267643e-07,
+          "original_boundary_length_mm": 0.4295286739823898,
+          "area_perimeter_width_proxy_mm": 1.8434159305595722e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 1,
+        "reference_holes": 1,
+        "actual_components": 1,
+        "actual_holes": 1,
+        "reference_area_mm2": 239.61322732499977,
+        "actual_area_mm2": 239.6132420966169,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00021542658845238353,
+        "boundary_hausdorff_mm": 1.001450841119636e-05,
+        "area_budget_mm2": 0.10924124803187937,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 64,
+      "token": "c",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "c004336e74cc9fdb20512014c01b71f754d01be3cf7e3cc79be34f165c9bf9ee",
+      "regenerated_geometry_sha256": "c004336e74cc9fdb20512014c01b71f754d01be3cf7e3cc79be34f165c9bf9ee",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00022581003199365846,
+        "max_xy_displacement_mm": 1.0237256280128335e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 1,
+        "quantization_components_after": 1,
+        "quantization_holes_before": 2,
+        "quantization_holes_after": 2,
+        "quantization_boundary_band_area_mm2": 0.0024100572829234266,
+        "quantization_buffer_chord_allowance_mm": 6.941627760061663e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 1,
+        "geometric_point_contacts": true
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 2370,
+        "triangles": 4740
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 2370,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 6.981574996026363e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 1,
+          "branching_vertices": 3,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.18425790322263116,
+          "dangle_length": 0.0057291709697001245,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 12.899999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 1,
+        "reference_holes": 3,
+        "actual_components": 1,
+        "actual_holes": 2,
+        "reference_area_mm2": 221.18350040816304,
+        "actual_area_mm2": 221.1834951408091,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0002270755467982944,
+        "boundary_hausdorff_mm": 0.19976344636628882,
+        "area_budget_mm2": 0.11832149999910362,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0002270755467982944,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 3.0725640701124643e-07,
+          "filled_area_mm2": 3.0725640701125024e-07,
+          "original_boundary_length_mm": 0.3333853170275168,
+          "area_perimeter_width_proxy_mm": 1.8432509850809433e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 1,
+        "reference_holes": 2,
+        "actual_components": 1,
+        "actual_holes": 2,
+        "reference_area_mm2": 221.1835020264499,
+        "actual_area_mm2": 221.1834951408091,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00022581003199365846,
+        "boundary_hausdorff_mm": 9.380038845727794e-06,
+        "area_budget_mm2": 0.11798811429396654,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 68,
+      "token": "c",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "931eb8cfce0e4a7f85c3d71bf9698abd25d1b70114de9faf4f81b7bd073f044d",
+      "regenerated_geometry_sha256": "931eb8cfce0e4a7f85c3d71bf9698abd25d1b70114de9faf4f81b7bd073f044d",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.0002712310540152531,
+        "max_xy_displacement_mm": 1.0192904733390209e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 2,
+        "quantization_components_after": 2,
+        "quantization_holes_before": 43,
+        "quantization_holes_after": 43,
+        "quantization_boundary_band_area_mm2": 0.0026582162457544087,
+        "quantization_buffer_chord_allowance_mm": 6.9115540951873865e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 19,
+        "geometric_point_contacts": true
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3816,
+        "triangles": 7720
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3816,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 42,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 7.027410921396501e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 26,
+          "branching_vertices": 54,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.42830999999995356,
+          "dangle_length": 0.3598400000000197,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 13.699999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 43,
+        "actual_components": 2,
+        "actual_holes": 43,
+        "reference_area_mm2": 212.9145528325517,
+        "actual_area_mm2": 212.91455029827193,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00027123462670393487,
+        "boundary_hausdorff_mm": 9.112974217600177e-06,
+        "area_budget_mm2": 0.13499451844968094,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.00027123462670393487,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 43,
+        "actual_components": 2,
+        "actual_holes": 43,
+        "reference_area_mm2": 212.91455283615005,
+        "actual_area_mm2": 212.91455029827193,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0002712310540152531,
+        "boundary_hausdorff_mm": 9.112974217600177e-06,
+        "area_budget_mm2": 0.1349945039180648,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 104,
+      "token": "m",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "fd1d739df7ce6e77fa6c992154d7b2696932145a04af946db95fdb922e71cfb1",
+      "regenerated_geometry_sha256": "fd1d739df7ce6e77fa6c992154d7b2696932145a04af946db95fdb922e71cfb1",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.0003434490554306822,
+        "max_xy_displacement_mm": 1.024257651608119e-05,
+        "quantization_normalization_passes": 1,
+        "quantization_components_before": 4,
+        "quantization_components_after": 4,
+        "quantization_holes_before": 2,
+        "quantization_holes_after": 1,
+        "quantization_boundary_band_area_mm2": 0.002683808740166962,
+        "quantization_buffer_chord_allowance_mm": 6.945235313514886e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3770,
+        "triangles": 7528
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3770,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 1,
+          "collapsed_segments": 1,
+          "max_snap_displacement": 6.971342700736256e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 1,
+          "branching_vertices": 1,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.005545601860949691,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 20.899999973000003
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 2,
+        "actual_components": 4,
+        "actual_holes": 1,
+        "reference_area_mm2": 138.72131603374987,
+        "actual_area_mm2": 138.72130168767762,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0003456335647752114,
+        "boundary_hausdorff_mm": 0.10476745568530275,
+        "area_budget_mm2": 0.13113940030767168,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0003456335647752114,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 6.049000001920184e-07,
+          "filled_area_mm2": 6.04900000191963e-07,
+          "original_boundary_length_mm": 0.27907405021152737,
+          "area_perimeter_width_proxy_mm": 4.33505013980001e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 2,
+        "actual_components": 4,
+        "actual_holes": 1,
+        "reference_area_mm2": 138.72131311129993,
+        "actual_area_mm2": 138.72130168767762,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0003434490554306822,
+        "boundary_hausdorff_mm": 0.10476745568530275,
+        "area_budget_mm2": 0.13113940030792753,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 115,
+      "token": "y",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "ec26c15c9a7526e91190c0ba36e5fae87d0928fe991ec15c2d45bf1397b5c53c",
+      "regenerated_geometry_sha256": "ec26c15c9a7526e91190c0ba36e5fae87d0928fe991ec15c2d45bf1397b5c53c",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00035875054523435584,
+        "max_xy_displacement_mm": 1.0689688833372848e-05,
+        "quantization_normalization_passes": 1,
+        "quantization_components_before": 7,
+        "quantization_components_after": 7,
+        "quantization_holes_before": 3,
+        "quantization_holes_after": 3,
+        "quantization_boundary_band_area_mm2": 0.002954761679282583,
+        "quantization_buffer_chord_allowance_mm": 7.248410948748991e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3632,
+        "triangles": 7248
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3632,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 1,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 7.027366379327493e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 1,
+          "branching_vertices": 1,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.0023517015116675056,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 23.099999973000003
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 7,
+        "reference_holes": 3,
+        "actual_components": 7,
+        "actual_holes": 3,
+        "reference_area_mm2": 94.28478464683826,
+        "actual_area_mm2": 94.28477351207403,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0003587628495020936,
+        "boundary_hausdorff_mm": 0.13532482892106978,
+        "area_budget_mm2": 0.13839694640438785,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0003587628495020936,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 7,
+        "reference_holes": 3,
+        "actual_components": 7,
+        "actual_holes": 3,
+        "reference_area_mm2": 94.2847846468501,
+        "actual_area_mm2": 94.28477351207403,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00035875054523435584,
+        "boundary_hausdorff_mm": 0.13532482892106978,
+        "area_budget_mm2": 0.13839694467940925,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 122,
+      "token": "m",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "2e3e59e0bae66f08e0572489028c8d28e0b3c61be076064af39ec215a0b61cf7",
+      "regenerated_geometry_sha256": "2e3e59e0bae66f08e0572489028c8d28e0b3c61be076064af39ec215a0b61cf7",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00032207306097405423,
+        "max_xy_displacement_mm": 1.052526901504529e-05,
+        "quantization_normalization_passes": 1,
+        "quantization_components_before": 3,
+        "quantization_components_after": 3,
+        "quantization_holes_before": 3,
+        "quantization_holes_after": 1,
+        "quantization_boundary_band_area_mm2": 0.0025504506411872137,
+        "quantization_buffer_chord_allowance_mm": 7.1369219986704184e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3986,
+        "triangles": 7964
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3986,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 6.976497120127297e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 2,
+          "branching_vertices": 2,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.02222834469541411,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 24.499999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 3,
+        "reference_holes": 3,
+        "actual_components": 3,
+        "actual_holes": 1,
+        "reference_area_mm2": 81.92561483534995,
+        "actual_area_mm2": 81.92562807787908,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00032207306097405803,
+        "boundary_hausdorff_mm": 0.08995138605236778,
+        "area_budget_mm2": 0.12116762990259039,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.00032207306097405803,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 1.429000000453842e-07,
+          "filled_area_mm2": 1.4290000004536871e-07,
+          "original_boundary_length_mm": 0.06593212829929272,
+          "area_perimeter_width_proxy_mm": 4.334760722320476e-06
+        },
+        {
+          "original_hole_area_mm2": 1.0395000003302112e-07,
+          "filled_area_mm2": 1.0395000003302166e-07,
+          "original_boundary_length_mm": 0.04795942829848845,
+          "area_perimeter_width_proxy_mm": 4.334914060528839e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 3,
+        "reference_holes": 3,
+        "actual_components": 3,
+        "actual_holes": 1,
+        "reference_area_mm2": 81.92561483535,
+        "actual_area_mm2": 81.92562807787908,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00032207306097405423,
+        "boundary_hausdorff_mm": 0.08995138605236778,
+        "area_budget_mm2": 0.12116762990259039,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 128,
+      "token": "m",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "cfc23dbe04696bf6883abd98caa0eb1bd0c9f43ba7d5944fad437f9165b948fc",
+      "regenerated_geometry_sha256": "cfc23dbe04696bf6883abd98caa0eb1bd0c9f43ba7d5944fad437f9165b948fc",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.0002788862501784765,
+        "max_xy_displacement_mm": 1.0427174939270525e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 4,
+        "quantization_components_after": 4,
+        "quantization_holes_before": 1,
+        "quantization_holes_after": 1,
+        "quantization_boundary_band_area_mm2": 0.002242980752923691,
+        "quantization_buffer_chord_allowance_mm": 7.070406867977966e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3486,
+        "triangles": 6960
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3486,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 1,
+          "collapsed_segments": 1,
+          "max_snap_displacement": 6.956780747821048e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 1,
+          "branching_vertices": 1,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.023379379803589815,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 25.699999973000004
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 2,
+        "actual_components": 4,
+        "actual_holes": 1,
+        "reference_area_mm2": 78.86095591000002,
+        "actual_area_mm2": 78.86096741829533,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00027923355017858833,
+        "boundary_hausdorff_mm": 0.1457476403366264,
+        "area_budget_mm2": 0.10776260896284622,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.00027923355017858833,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 3.473000001102456e-07,
+          "filled_area_mm2": 3.473000001102457e-07,
+          "original_boundary_length_mm": 0.20902151751799258,
+          "area_perimeter_width_proxy_mm": 3.3231028483022092e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 1,
+        "actual_components": 4,
+        "actual_holes": 1,
+        "reference_area_mm2": 78.86095625730002,
+        "actual_area_mm2": 78.86096741829533,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0002788862501784765,
+        "boundary_hausdorff_mm": 1.0249545828339429e-05,
+        "area_budget_mm2": 0.10755358744532825,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 140,
+      "token": "m",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "714a5f79cc18aad166fbe5b408350dbd7eb502781ba5d9198d9944d438be8d07",
+      "regenerated_geometry_sha256": "714a5f79cc18aad166fbe5b408350dbd7eb502781ba5d9198d9944d438be8d07",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00023573959123707346,
+        "max_xy_displacement_mm": 1.0720607092968518e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 4,
+        "quantization_components_after": 4,
+        "quantization_holes_before": 7,
+        "quantization_holes_after": 7,
+        "quantization_boundary_band_area_mm2": 0.0019424262564636501,
+        "quantization_buffer_chord_allowance_mm": 7.269375838640983e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 1,
+        "geometric_point_contacts": true
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 3090,
+        "triangles": 6188
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 3090,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 5,
+          "collapsed_segments": 3,
+          "max_snap_displacement": 7.033190983491418e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 5,
+          "branching_vertices": 7,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.048626726190454876,
+          "dangle_length": 0.18614218389334772,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 28.099999973000003
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 8,
+        "actual_components": 4,
+        "actual_holes": 7,
+        "reference_area_mm2": 70.45007491267631,
+        "actual_area_mm2": 70.45003729168093,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00025426996317258536,
+        "boundary_hausdorff_mm": 0.026563885677130954,
+        "area_budget_mm2": 0.09132110260366127,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.00025426996317258536,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 2.7160532846105778e-08,
+          "filled_area_mm2": 2.716053284610874e-08,
+          "original_boundary_length_mm": 0.02945624555919276,
+          "area_perimeter_width_proxy_mm": 1.8441272694801709e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 4,
+        "reference_holes": 7,
+        "actual_components": 4,
+        "actual_holes": 7,
+        "reference_area_mm2": 70.45004721585858,
+        "actual_area_mm2": 70.45003729168093,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00023573959123707346,
+        "boundary_hausdorff_mm": 1.0304977075448602e-05,
+        "area_budget_mm2": 0.09121333776850497,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 146,
+      "token": "m",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "48ba43e9bafafe84d9cd163b33fd8484dbe67d8b141f83976677bb24f0ceef5f",
+      "regenerated_geometry_sha256": "48ba43e9bafafe84d9cd163b33fd8484dbe67d8b141f83976677bb24f0ceef5f",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00021087833717569327,
+        "max_xy_displacement_mm": 1.0717096041521523e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 3,
+        "quantization_components_after": 3,
+        "quantization_holes_before": 7,
+        "quantization_holes_after": 7,
+        "quantization_boundary_band_area_mm2": 0.0016799650909826715,
+        "quantization_buffer_chord_allowance_mm": 7.266995075166445e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 1882,
+        "triangles": 3780
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 1882,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 6.968299659140417e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 2,
+          "branching_vertices": 2,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.011279752164606718,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 29.299999973000002
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 3,
+        "reference_holes": 10,
+        "actual_components": 3,
+        "actual_holes": 7,
+        "reference_area_mm2": 66.40310898914551,
+        "actual_area_mm2": 66.40305935082142,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00021167309871705352,
+        "boundary_hausdorff_mm": 0.5225733067559032,
+        "area_budget_mm2": 0.08289039606817476,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.00021167309871705352,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 8.104999568714355e-08,
+          "filled_area_mm2": 8.104999565938797e-08,
+          "original_boundary_length_mm": 3.3740704704555267,
+          "area_perimeter_width_proxy_mm": 4.804285885362741e-08
+        },
+        {
+          "original_hole_area_mm2": 1.2150000050629933e-08,
+          "filled_area_mm2": 1.2150000050630084e-08,
+          "original_boundary_length_mm": 0.0131973616491355,
+          "area_perimeter_width_proxy_mm": 1.8412771239660353e-06
+        },
+        {
+          "original_hole_area_mm2": 6.178392438944968e-07,
+          "filled_area_mm2": 6.178392438935577e-07,
+          "original_boundary_length_mm": 0.5879856885285927,
+          "area_perimeter_width_proxy_mm": 2.1015451768583392e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 3,
+        "reference_holes": 7,
+        "actual_components": 3,
+        "actual_holes": 7,
+        "reference_area_mm2": 66.40310972945015,
+        "actual_area_mm2": 66.40305935082142,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00021087833717569327,
+        "boundary_hausdorff_mm": 1.0438032511032824e-05,
+        "area_budget_mm2": 0.07890318824132686,
+        "within_area_budget": true
+      }
+    },
+    {
+      "layer_index": 162,
+      "token": "c",
+      "status": "passed",
+      "errors": [],
+      "recorded_geometry_sha256": "695d284094af10e35c62d1d145998940e88585857ad856d7273dd811c55c7dd9",
+      "regenerated_geometry_sha256": "695d284094af10e35c62d1d145998940e88585857ad856d7273dd811c55c7dd9",
+      "geometry_hash_matches": true,
+      "extrusion": {
+        "quantization_area_error_mm2": 0.00013521071076366264,
+        "max_xy_displacement_mm": 1.0140703481622072e-05,
+        "quantization_normalization_passes": 0,
+        "quantization_components_before": 2,
+        "quantization_components_after": 2,
+        "quantization_holes_before": 3,
+        "quantization_holes_after": 3,
+        "quantization_boundary_band_area_mm2": 0.0012535975134262693,
+        "quantization_buffer_chord_allowance_mm": 6.8761576731442e-09,
+        "geometric_component_contacts": 0,
+        "triangulator": "constrained_delaunay",
+        "split_vertex_fans": 0,
+        "geometric_point_contacts": false
+      },
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 2914,
+        "triangles": 5832
+      },
+      "generic_profile_recheck": {
+        "ok": false,
+        "status": "branching",
+        "repair_applied": false,
+        "diagnostics": {
+          "status": "branching",
+          "input_segments": 2914,
+          "precision": 1e-05,
+          "max_gap": 0.03,
+          "fill_rule": "even-odd; branching rejected",
+          "duplicate_segments": 2,
+          "collapsed_segments": 0,
+          "max_snap_displacement": 6.91035113279205e-06,
+          "bridges": [],
+          "max_bridge_length": 0.0,
+          "open_endpoints": 2,
+          "branching_vertices": 2,
+          "ambiguous_endpoints": 0,
+          "rejected_bridges": 0,
+          "cut_length": 0.0,
+          "dangle_length": 0.0400931166937295,
+          "invalid_rings": 0,
+          "area": 0.0,
+          "components": 0,
+          "holes": 0,
+          "sample_z": 32.499999973
+        },
+        "area_mm2": 0.0
+      },
+      "original_generic_failure_reproduced": true,
+      "exact_prism_proof_passed": true,
+      "cap_footprint": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 4,
+        "actual_components": 2,
+        "actual_holes": 3,
+        "reference_area_mm2": 67.15531994575002,
+        "actual_area_mm2": 67.15535507455934,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.0001379157607624823,
+        "boundary_hausdorff_mm": 0.323423577226879,
+        "area_budget_mm2": 0.06432309837468086,
+        "within_area_budget": true
+      },
+      "filled_area_change": {
+        "symmetric_difference_mm2": 0.0001379157607624823,
+        "boundary_band_mm": 0.001,
+        "area_outside_reference_boundary_band_mm2": 0.0
+      },
+      "substantially_filled_reference_holes": [
+        {
+          "original_hole_area_mm2": 2.705049998802389e-06,
+          "filled_area_mm2": 2.7050499988301446e-06,
+          "original_boundary_length_mm": 2.4917540284238435,
+          "area_perimeter_width_proxy_mm": 2.1712014652693994e-06
+        }
+      ],
+      "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+      "against_partitioned_intent": {
+        "reference_ok": true,
+        "actual_ok": true,
+        "reference_components": 2,
+        "reference_holes": 3,
+        "actual_components": 2,
+        "actual_holes": 3,
+        "reference_area_mm2": 67.15532265080007,
+        "actual_area_mm2": 67.15535507455934,
+        "expected_nonempty": true,
+        "missing_expected_midpoint": false,
+        "unexpected_midpoint": false,
+        "comparable": true,
+        "symmetric_difference_mm2": 0.00013521071076366264,
+        "boundary_hausdorff_mm": 9.001905503887233e-06,
+        "area_budget_mm2": 0.061831344346257026,
+        "within_area_budget": true
+      }
+    }
+  ],
+  "input_checks": [
+    {
+      "part_index": 0,
+      "label": "object_1__ID_1____PAT_my__",
+      "geometry_sha256": "412f08961fed76205c080bf6f7f35fb5516d6140fb6a94d80fea7d6b1add4b8f",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 14836,
+        "triangles": 29668
+      }
+    },
+    {
+      "part_index": 1,
+      "label": "object_2__ID_2____PAT_cym__",
+      "geometry_sha256": "26e8340c98b75376753d3b3deb1329d07dd500ac62197a1bbdee4abe0450f8bf",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 30039,
+        "triangles": 60074
+      }
+    },
+    {
+      "part_index": 2,
+      "label": "object_3__ID_3____PAT_cym__",
+      "geometry_sha256": "529b4e13f75d891068774da5600efa9061133e237775d4e1970a3f9b63d1ffd6",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 8078,
+        "triangles": 16152
+      }
+    },
+    {
+      "part_index": 3,
+      "label": "object_4__ID_4____PAT_cy__",
+      "geometry_sha256": "140c283751467c4960faa4f303932c833ef24f5d5e34e3ee2a439623e5d48a7e",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 10108,
+        "triangles": 20212
+      }
+    },
+    {
+      "part_index": 4,
+      "label": "object_5__ID_5____PAT_cm__",
+      "geometry_sha256": "c1885b089973d0cd8ee225e38889a7d33c177da32c4d935ddcd749151332af65",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 13588,
+        "triangles": 27172
+      }
+    },
+    {
+      "part_index": 5,
+      "label": "object_6__ID_6____PAT_cy__",
+      "geometry_sha256": "db70e02d20ddd6737957ad435d8741b01a930873ff0474e7e5e5ecd3c8f3eb5a",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 12132,
+        "triangles": 24260
+      }
+    },
+    {
+      "part_index": 6,
+      "label": "object_7__ID_7____PAT_my__",
+      "geometry_sha256": "d279e7443339a7a24b77708c0ec847a2a9039980b1c5cfb23662480929f7e581",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 23510,
+        "triangles": 47012
+      }
+    },
+    {
+      "part_index": 7,
+      "label": "object_8__ID_8____PAT_cm__",
+      "geometry_sha256": "fc28428fbca9ccb1861f1392530e1c282930f5750c825e77d4ff55beddb274c0",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 14315,
+        "triangles": 28626
+      }
+    }
+  ],
+  "created_at_utc": "2026-10-22T19:21:50.540409+00:00",
+  "purpose": "Supplement generic midpoint-audit failures with an exact cap/vertical-side prism check; preserve all original benchmark outcomes",
+  "benchmark_report": {
+    "path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/controlled_benchmark_runs/12_benchy_0.2_contour_r1.json",
+    "sha256": "5c95e884421d2bdb1fa950e33d767f6de2bcdce53b86f00d956f4ab474978426",
+    "status": "geometry_failure",
+    "quality_status": "failed",
+    "common_audit_summary": {
+      "indexed_nonvolume_bands": 0,
+      "float32_nonvolume_bands": 0,
+      "zero_area_triangles": 0,
+      "duplicate_faces": 0,
+      "reference_profile_failures": 0,
+      "output_profile_failures": 0,
+      "reference_audit_repairs": 22,
+      "output_audit_repairs": 9,
+      "expected_nonempty_midpoints": 649,
+      "missing_expected_midpoints": 0,
+      "unexpected_midpoints": 0,
+      "legitimate_empty_midpoints": 8,
+      "footprint_area_failures": 0,
+      "native_indexed_nonvolume_parts": 0,
+      "native_float32_nonvolume_parts": 0,
+      "native_zero_area_triangles": 0,
+      "native_duplicate_faces": 0,
+      "native_missing_expected_midpoints": 11,
+      "native_output_profile_failures": 11,
+      "native_output_audit_repairs": 49,
+      "native_footprint_area_failures": 0,
+      "max_symmetric_difference_mm2": 0.00032327736366770756,
+      "sum_symmetric_difference_mm2": 0.05483243528216448,
+      "max_boundary_hausdorff_mm": 1.5099338853494879e-05,
+      "passes_declared_checks": false
+    }
+  },
+  "source": {
+    "path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
+    "recorded_sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+    "current_sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+    "matches_benchmark": true
+  },
+  "source_parts": [
+    {
+      "part_index": 0,
+      "label": "object_1__ID_1____PAT_my__",
+      "geometry_sha256": "412f08961fed76205c080bf6f7f35fb5516d6140fb6a94d80fea7d6b1add4b8f",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 14836,
+        "triangles": 29668
+      }
+    },
+    {
+      "part_index": 1,
+      "label": "object_2__ID_2____PAT_cym__",
+      "geometry_sha256": "26e8340c98b75376753d3b3deb1329d07dd500ac62197a1bbdee4abe0450f8bf",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 30039,
+        "triangles": 60074
+      }
+    },
+    {
+      "part_index": 2,
+      "label": "object_3__ID_3____PAT_cym__",
+      "geometry_sha256": "529b4e13f75d891068774da5600efa9061133e237775d4e1970a3f9b63d1ffd6",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 8078,
+        "triangles": 16152
+      }
+    },
+    {
+      "part_index": 3,
+      "label": "object_4__ID_4____PAT_cy__",
+      "geometry_sha256": "140c283751467c4960faa4f303932c833ef24f5d5e34e3ee2a439623e5d48a7e",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 10108,
+        "triangles": 20212
+      }
+    },
+    {
+      "part_index": 4,
+      "label": "object_5__ID_5____PAT_cm__",
+      "geometry_sha256": "c1885b089973d0cd8ee225e38889a7d33c177da32c4d935ddcd749151332af65",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 13588,
+        "triangles": 27172
+      }
+    },
+    {
+      "part_index": 5,
+      "label": "object_6__ID_6____PAT_cy__",
+      "geometry_sha256": "db70e02d20ddd6737957ad435d8741b01a930873ff0474e7e5e5ecd3c8f3eb5a",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 12132,
+        "triangles": 24260
+      }
+    },
+    {
+      "part_index": 6,
+      "label": "object_7__ID_7____PAT_my__",
+      "geometry_sha256": "d279e7443339a7a24b77708c0ec847a2a9039980b1c5cfb23662480929f7e581",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 23510,
+        "triangles": 47012
+      }
+    },
+    {
+      "part_index": 7,
+      "label": "object_8__ID_8____PAT_cm__",
+      "geometry_sha256": "fc28428fbca9ccb1861f1392530e1c282930f5750c825e77d4ff55beddb274c0",
+      "indexed_is_volume": true,
+      "float32": {
+        "is_volume": true,
+        "zero_area_triangles": 0,
+        "duplicate_faces": 0,
+        "vertices": 14315,
+        "triangles": 28626
+      }
+    }
+  ],
+  "layers": [
+    {
+      "layer_index": 44,
+      "sample_z_mm": 8.899999973,
+      "source_profiles": [
+        {
+          "part_index": 4,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 70.85977100550004,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "66bea0b19e19b5c0fe345e4b4bb682ec3c9328bd858b728c5d3bfa3bdea7237a",
+          "regenerated_geometry_sha256": "66bea0b19e19b5c0fe345e4b4bb682ec3c9328bd858b728c5d3bfa3bdea7237a",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 5,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 61.50861822469997,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "aa1228d3194452822e7d853aa30d8d60a510d895a95cef0e5e93060237528df0",
+          "regenerated_geometry_sha256": "aa1228d3194452822e7d853aa30d8d60a510d895a95cef0e5e93060237528df0",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 6,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 72.27417947890001,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "f6ab57b5a00ad6527740f16a2cb90493e8c9e548a3ecf936de6dc1e4d18de4a7",
+          "regenerated_geometry_sha256": "f6ab57b5a00ad6527740f16a2cb90493e8c9e548a3ecf936de6dc1e4d18de4a7",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 7,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 87.23898732954991,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "42873ccf477d10550213afe958aa91b9f3a81957c798ffefbf96459eea49b66c",
+          "regenerated_geometry_sha256": "42873ccf477d10550213afe958aa91b9f3a81957c798ffefbf96459eea49b66c",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [
+          {
+            "tokens": [
+              "c",
+              "m"
+            ],
+            "area_mm2": 1.5893109861149558e-05,
+            "resolved": true
+          }
+        ],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 6.2491405862181775e-06,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 10,
+            "holes_after": 3
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 0,
+            "holes_after": 0
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 1.5893109862903746e-05,
+            "set_hausdorff_mm": 8.670565696562036e-06
+          }
+        ],
+        "union_error_mm2": 5.063327521144202e-16,
+        "max_boolean_residual_overlap_mm2": 2.9956060820178893e-15
+      },
+      "targets": [
+        {
+          "layer_index": 44,
+          "token": "c",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "1116cc7b53e2f465795acb8c462e603d44c2e92d475e17d0e47b706f8c8132d6",
+          "regenerated_geometry_sha256": "1116cc7b53e2f465795acb8c462e603d44c2e92d475e17d0e47b706f8c8132d6",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00017932137703462195,
+            "max_xy_displacement_mm": 1.0424091095838162e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 2,
+            "quantization_components_after": 2,
+            "quantization_holes_before": 3,
+            "quantization_holes_after": 3,
+            "quantization_boundary_band_area_mm2": 0.002051540380811321,
+            "quantization_buffer_chord_allowance_mm": 7.0683157286210635e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 1,
+            "geometric_point_contacts": true
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 2944,
+            "triangles": 5888
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 2944,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 1,
+              "max_snap_displacement": 7.031605890039217e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 2,
+              "branching_vertices": 3,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.06651880486589054,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 8.899999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 10,
+            "actual_components": 2,
+            "actual_holes": 3,
+            "reference_area_mm2": 219.60736857320938,
+            "actual_area_mm2": 219.6073755621328,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0001854717070292159,
+            "boundary_hausdorff_mm": 1.8368205957031307,
+            "area_budget_mm2": 0.10416101979087428,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0001854717070292159,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 3.769595682519625e-08,
+              "filled_area_mm2": 3.769595682530467e-08,
+              "original_boundary_length_mm": 0.22751207767436146,
+              "area_perimeter_width_proxy_mm": 3.3137543475077004e-07
+            },
+            {
+              "original_hole_area_mm2": 1.2183999994058725e-06,
+              "filled_area_mm2": 1.218399999405222e-06,
+              "original_boundary_length_mm": 0.6669517729311352,
+              "area_perimeter_width_proxy_mm": 3.6536374858146636e-06
+            },
+            {
+              "original_hole_area_mm2": 7.202422172298412e-08,
+              "filled_area_mm2": 7.202422172298412e-08,
+              "original_boundary_length_mm": 0.32362696405508873,
+              "area_perimeter_width_proxy_mm": 4.451064325451197e-07
+            },
+            {
+              "original_hole_area_mm2": 1.163849999982064e-06,
+              "filled_area_mm2": 1.163849999982064e-06,
+              "original_boundary_length_mm": 0.7321843073636662,
+              "area_perimeter_width_proxy_mm": 3.1791175753893756e-06
+            },
+            {
+              "original_hole_area_mm2": 1.9487933058731297e-07,
+              "filled_area_mm2": 1.9487933058774665e-07,
+              "original_boundary_length_mm": 0.4221336424400981,
+              "area_perimeter_width_proxy_mm": 9.233063229020742e-07
+            },
+            {
+              "original_hole_area_mm2": 2.8906500032163662e-06,
+              "filled_area_mm2": 2.450720083473079e-06,
+              "original_boundary_length_mm": 1.8253852484707864,
+              "area_perimeter_width_proxy_mm": 3.1671670466691933e-06
+            },
+            {
+              "original_hole_area_mm2": 2.9550453379545427e-06,
+              "filled_area_mm2": 1.7103029283004273e-06,
+              "original_boundary_length_mm": 1.5031512043627417,
+              "area_perimeter_width_proxy_mm": 3.931800512653454e-06
+            },
+            {
+              "original_hole_area_mm2": 2.800861317930675e-07,
+              "filled_area_mm2": 2.800861317931759e-07,
+              "original_boundary_length_mm": 0.45291093716354985,
+              "area_perimeter_width_proxy_mm": 1.2368265317113598e-06
+            },
+            {
+              "original_hole_area_mm2": 8.407596009778195e-07,
+              "filled_area_mm2": 8.407596009778195e-07,
+              "original_boundary_length_mm": 0.5975717148846567,
+              "area_perimeter_width_proxy_mm": 2.8139203380471346e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 3,
+            "actual_components": 2,
+            "actual_holes": 3,
+            "reference_area_mm2": 219.60737482234984,
+            "actual_area_mm2": 219.6073755621328,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00017932137703462195,
+            "boundary_hausdorff_mm": 9.518274628228954e-06,
+            "area_budget_mm2": 0.09898019166985,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 56,
+      "sample_z_mm": 11.299999973,
+      "source_profiles": [
+        {
+          "part_index": 4,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 76.27914042980001,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "1558dd743e7824b9d9f8fb032f26919fb0808bfcc4ebf46bf6f79bc07caa84f7",
+          "regenerated_geometry_sha256": "1558dd743e7824b9d9f8fb032f26919fb0808bfcc4ebf46bf6f79bc07caa84f7",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 5,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 105.07578136374998,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "29a9509e3610628f682231f00555b3a868a7915749f5a185d2ddbcec37160c73",
+          "regenerated_geometry_sha256": "29a9509e3610628f682231f00555b3a868a7915749f5a185d2ddbcec37160c73",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 6,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 38.67382892374998,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "0ce39978b5d6a2e9950d9aec8bab967e716596f47e653053b4295ba79206288a",
+          "regenerated_geometry_sha256": "0ce39978b5d6a2e9950d9aec8bab967e716596f47e653053b4295ba79206288a",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 7,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 58.25831391835006,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "a73c0d3fe1e8582d0c9135b0509fdbd185db8ada0743345703c4b13ae0fba36f",
+          "regenerated_geometry_sha256": "a73c0d3fe1e8582d0c9135b0509fdbd185db8ada0743345703c4b13ae0fba36f",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [
+          {
+            "tokens": [
+              "c",
+              "m"
+            ],
+            "area_mm2": 2.198500000697915e-07,
+            "resolved": true
+          }
+        ],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 5.311351320493065e-07,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 2,
+            "holes_after": 1
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 0,
+            "holes_after": 0
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 2.198500000697915e-07,
+            "set_hausdorff_mm": 4.983152371581444e-06
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 56,
+          "token": "c",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "9275e88eff98b341c02f6526d3aa225410dcd65c510f11b64903fc963abc4c13",
+          "regenerated_geometry_sha256": "9275e88eff98b341c02f6526d3aa225410dcd65c510f11b64903fc963abc4c13",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00021542658845238353,
+            "max_xy_displacement_mm": 1.0371954631527236e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 1,
+            "quantization_components_after": 1,
+            "quantization_holes_before": 1,
+            "quantization_holes_after": 1,
+            "quantization_boundary_band_area_mm2": 0.0022556755192831646,
+            "quantization_buffer_chord_allowance_mm": 7.0329633185482e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 2024,
+            "triangles": 4048
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 2024,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 1,
+              "max_snap_displacement": 7.039994616746617e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 2,
+              "branching_vertices": 2,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.3638743919706216,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 11.299999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 1,
+            "reference_holes": 2,
+            "actual_components": 1,
+            "actual_holes": 1,
+            "reference_area_mm2": 239.61322679386484,
+            "actual_area_mm2": 239.6132420966169,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0002158608646555571,
+            "boundary_hausdorff_mm": 0.7370880927977913,
+            "area_budget_mm2": 0.10967077779512105,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0002158608646555571,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 3.959000001256331e-07,
+              "filled_area_mm2": 3.959000001267643e-07,
+              "original_boundary_length_mm": 0.4295286739823898,
+              "area_perimeter_width_proxy_mm": 1.8434159305595722e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 1,
+            "reference_holes": 1,
+            "actual_components": 1,
+            "actual_holes": 1,
+            "reference_area_mm2": 239.61322732499977,
+            "actual_area_mm2": 239.6132420966169,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00021542658845238353,
+            "boundary_hausdorff_mm": 1.001450841119636e-05,
+            "area_budget_mm2": 0.10924124803187937,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 64,
+      "sample_z_mm": 12.899999973,
+      "source_profiles": [
+        {
+          "part_index": 4,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 75.44894491260004,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "e9f6ea87e699c55ed247419935e95bbfdccfb8f885c03ecb1e1799139485b9dd",
+          "regenerated_geometry_sha256": "e9f6ea87e699c55ed247419935e95bbfdccfb8f885c03ecb1e1799139485b9dd",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 5,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 108.01951354999993,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "c9b8945eb5771a5d1fc4cc2c79e1bf66a12f98c37a9bae601ee4f5edfb60beb6",
+          "regenerated_geometry_sha256": "c9b8945eb5771a5d1fc4cc2c79e1bf66a12f98c37a9bae601ee4f5edfb60beb6",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 6,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 21.490041120499953,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "a7e6ac683689261b4dcbfba321fc1770393d4afaa5ed41b5152a88160a93c5ff",
+          "regenerated_geometry_sha256": "a7e6ac683689261b4dcbfba321fc1770393d4afaa5ed41b5152a88160a93c5ff",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 7,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 37.71505098849994,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "74195b6bb27f4f7adcbd0207f6098ed6c90180939e1634a6a676b868accefb57",
+          "regenerated_geometry_sha256": "74195b6bb27f4f7adcbd0207f6098ed6c90180939e1634a6a676b868accefb57",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 1.6312173447496563e-06,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 3,
+            "holes_after": 2
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 0,
+            "holes_after": 0
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 64,
+          "token": "c",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "c004336e74cc9fdb20512014c01b71f754d01be3cf7e3cc79be34f165c9bf9ee",
+          "regenerated_geometry_sha256": "c004336e74cc9fdb20512014c01b71f754d01be3cf7e3cc79be34f165c9bf9ee",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00022581003199365846,
+            "max_xy_displacement_mm": 1.0237256280128335e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 1,
+            "quantization_components_after": 1,
+            "quantization_holes_before": 2,
+            "quantization_holes_after": 2,
+            "quantization_boundary_band_area_mm2": 0.0024100572829234266,
+            "quantization_buffer_chord_allowance_mm": 6.941627760061663e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 1,
+            "geometric_point_contacts": true
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 2370,
+            "triangles": 4740
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 2370,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 6.981574996026363e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 1,
+              "branching_vertices": 3,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.18425790322263116,
+              "dangle_length": 0.0057291709697001245,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 12.899999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 1,
+            "reference_holes": 3,
+            "actual_components": 1,
+            "actual_holes": 2,
+            "reference_area_mm2": 221.18350040816304,
+            "actual_area_mm2": 221.1834951408091,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0002270755467982944,
+            "boundary_hausdorff_mm": 0.19976344636628882,
+            "area_budget_mm2": 0.11832149999910362,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0002270755467982944,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 3.0725640701124643e-07,
+              "filled_area_mm2": 3.0725640701125024e-07,
+              "original_boundary_length_mm": 0.3333853170275168,
+              "area_perimeter_width_proxy_mm": 1.8432509850809433e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 1,
+            "reference_holes": 2,
+            "actual_components": 1,
+            "actual_holes": 2,
+            "reference_area_mm2": 221.1835020264499,
+            "actual_area_mm2": 221.1834951408091,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00022581003199365846,
+            "boundary_hausdorff_mm": 9.380038845727794e-06,
+            "area_budget_mm2": 0.11798811429396654,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 68,
+      "sample_z_mm": 13.699999973,
+      "source_profiles": [
+        {
+          "part_index": 4,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 80.27554169545002,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "44f72efb5187f145557c436af2e670408ad8e35c9e4f95da04b81ef39639df54",
+          "regenerated_geometry_sha256": "44f72efb5187f145557c436af2e670408ad8e35c9e4f95da04b81ef39639df54",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 5,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 100.51178677809999,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "24f47442ec8a0b1ecebc3a0650f5ae4ed62d1e5d27b1d32bc8453c7a9430acc7",
+          "regenerated_geometry_sha256": "24f47442ec8a0b1ecebc3a0650f5ae4ed62d1e5d27b1d32bc8453c7a9430acc7",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 6,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 17.877522046550002,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "393840b7a5262fdeb8cc545df1e07cd9c2f49ffa99d76b52a4f1090f9bfee288",
+          "regenerated_geometry_sha256": "393840b7a5262fdeb8cc545df1e07cd9c2f49ffa99d76b52a4f1090f9bfee288",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 7,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 32.127225121399974,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "a59d4a5bb3888d826826c65118bb7a381ca9eea7f8af02b1953bd9a309246d2a",
+          "regenerated_geometry_sha256": "a59d4a5bb3888d826826c65118bb7a381ca9eea7f8af02b1953bd9a309246d2a",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 3.5983412581628666e-09,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 43,
+            "holes_after": 43
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 0,
+            "holes_after": 0
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 68,
+          "token": "c",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "931eb8cfce0e4a7f85c3d71bf9698abd25d1b70114de9faf4f81b7bd073f044d",
+          "regenerated_geometry_sha256": "931eb8cfce0e4a7f85c3d71bf9698abd25d1b70114de9faf4f81b7bd073f044d",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.0002712310540152531,
+            "max_xy_displacement_mm": 1.0192904733390209e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 2,
+            "quantization_components_after": 2,
+            "quantization_holes_before": 43,
+            "quantization_holes_after": 43,
+            "quantization_boundary_band_area_mm2": 0.0026582162457544087,
+            "quantization_buffer_chord_allowance_mm": 6.9115540951873865e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 19,
+            "geometric_point_contacts": true
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3816,
+            "triangles": 7720
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3816,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 42,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 7.027410921396501e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 26,
+              "branching_vertices": 54,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.42830999999995356,
+              "dangle_length": 0.3598400000000197,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 13.699999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 43,
+            "actual_components": 2,
+            "actual_holes": 43,
+            "reference_area_mm2": 212.9145528325517,
+            "actual_area_mm2": 212.91455029827193,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00027123462670393487,
+            "boundary_hausdorff_mm": 9.112974217600177e-06,
+            "area_budget_mm2": 0.13499451844968094,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.00027123462670393487,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 43,
+            "actual_components": 2,
+            "actual_holes": 43,
+            "reference_area_mm2": 212.91455283615005,
+            "actual_area_mm2": 212.91455029827193,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0002712310540152531,
+            "boundary_hausdorff_mm": 9.112974217600177e-06,
+            "area_budget_mm2": 0.1349945039180648,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 104,
+      "sample_z_mm": 20.899999973000003,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 39.31854218519997,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "5bba2955e2ddb2b0adf0277deec2830e33552fca6c77fbe2d80b8f0891590d66",
+          "regenerated_geometry_sha256": "5bba2955e2ddb2b0adf0277deec2830e33552fca6c77fbe2d80b8f0891590d66",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 90.0089478818,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "e78fd81a25190ef42fd99b20685ade51b7ab381331cb42824f8e441b3aa77a6e",
+          "regenerated_geometry_sha256": "e78fd81a25190ef42fd99b20685ade51b7ab381331cb42824f8e441b3aa77a6e",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 9.393826205849965,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "686637fbd84afc54e40ec4e13efa0a717562f702236a5fcf8ae0e6d017596d7c",
+          "regenerated_geometry_sha256": "686637fbd84afc54e40ec4e13efa0a717562f702236a5fcf8ae0e6d017596d7c",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 8.298692859399997,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "f539e6418f1da1e4b02327281182e35d77edd1fd65dbf1736242035c7d3714f9",
+          "regenerated_geometry_sha256": "f539e6418f1da1e4b02327281182e35d77edd1fd65dbf1736242035c7d3714f9",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [
+          {
+            "tokens": [
+              "c",
+              "m"
+            ],
+            "area_mm2": 2.9224500009276373e-06,
+            "resolved": true
+          }
+        ],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 0,
+            "holes_after": 0
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 4,
+            "components_after": 4,
+            "holes_before": 2,
+            "holes_after": 2
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 2.9224500009276373e-06,
+            "set_hausdorff_mm": 8.669969087057684e-06
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 104,
+          "token": "m",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "fd1d739df7ce6e77fa6c992154d7b2696932145a04af946db95fdb922e71cfb1",
+          "regenerated_geometry_sha256": "fd1d739df7ce6e77fa6c992154d7b2696932145a04af946db95fdb922e71cfb1",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.0003434490554306822,
+            "max_xy_displacement_mm": 1.024257651608119e-05,
+            "quantization_normalization_passes": 1,
+            "quantization_components_before": 4,
+            "quantization_components_after": 4,
+            "quantization_holes_before": 2,
+            "quantization_holes_after": 1,
+            "quantization_boundary_band_area_mm2": 0.002683808740166962,
+            "quantization_buffer_chord_allowance_mm": 6.945235313514886e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3770,
+            "triangles": 7528
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3770,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 1,
+              "collapsed_segments": 1,
+              "max_snap_displacement": 6.971342700736256e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 1,
+              "branching_vertices": 1,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.005545601860949691,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 20.899999973000003
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 2,
+            "actual_components": 4,
+            "actual_holes": 1,
+            "reference_area_mm2": 138.72131603374987,
+            "actual_area_mm2": 138.72130168767762,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0003456335647752114,
+            "boundary_hausdorff_mm": 0.10476745568530275,
+            "area_budget_mm2": 0.13113940030767168,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0003456335647752114,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 6.049000001920184e-07,
+              "filled_area_mm2": 6.04900000191963e-07,
+              "original_boundary_length_mm": 0.27907405021152737,
+              "area_perimeter_width_proxy_mm": 4.33505013980001e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 2,
+            "actual_components": 4,
+            "actual_holes": 1,
+            "reference_area_mm2": 138.72131311129993,
+            "actual_area_mm2": 138.72130168767762,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0003434490554306822,
+            "boundary_hausdorff_mm": 0.10476745568530275,
+            "area_budget_mm2": 0.13113940030792753,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 115,
+      "sample_z_mm": 23.099999973000003,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "y",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 17.813579214650048,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "b4f2cfb91e706d3cbccaed626fe1493724fc2986bf62e452339f1a70e7f41d30",
+          "regenerated_geometry_sha256": "b4f2cfb91e706d3cbccaed626fe1493724fc2986bf62e452339f1a70e7f41d30",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "y",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 54.54570261545005,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "5adc3aa69c6219460e63193ef289552aceebc12c7e29ca0a2a5847841e894153",
+          "regenerated_geometry_sha256": "5adc3aa69c6219460e63193ef289552aceebc12c7e29ca0a2a5847841e894153",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "y",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 14.417311909649971,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "a5c9bf27136418ceeee17f80fa0f0b75c9c6cd59e3a6eb0acf903522cd003729",
+          "regenerated_geometry_sha256": "a5c9bf27136418ceeee17f80fa0f0b75c9c6cd59e3a6eb0acf903522cd003729",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "y",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 7.5081945837999795,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "1a064e87c9bda0e34c0a70641cbec67f33acef7f6ccb4aa1a2a3e825c456262d",
+          "regenerated_geometry_sha256": "1a064e87c9bda0e34c0a70641cbec67f33acef7f6ccb4aa1a2a3e825c456262d",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "y",
+            "changed_area_mm2": 1.6978595693542076e-08,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 7,
+            "components_after": 7,
+            "holes_before": 3,
+            "holes_after": 3
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "y",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 115,
+          "token": "y",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "ec26c15c9a7526e91190c0ba36e5fae87d0928fe991ec15c2d45bf1397b5c53c",
+          "regenerated_geometry_sha256": "ec26c15c9a7526e91190c0ba36e5fae87d0928fe991ec15c2d45bf1397b5c53c",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00035875054523435584,
+            "max_xy_displacement_mm": 1.0689688833372848e-05,
+            "quantization_normalization_passes": 1,
+            "quantization_components_before": 7,
+            "quantization_components_after": 7,
+            "quantization_holes_before": 3,
+            "quantization_holes_after": 3,
+            "quantization_boundary_band_area_mm2": 0.002954761679282583,
+            "quantization_buffer_chord_allowance_mm": 7.248410948748991e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3632,
+            "triangles": 7248
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3632,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 1,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 7.027366379327493e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 1,
+              "branching_vertices": 1,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.0023517015116675056,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 23.099999973000003
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 7,
+            "reference_holes": 3,
+            "actual_components": 7,
+            "actual_holes": 3,
+            "reference_area_mm2": 94.28478464683826,
+            "actual_area_mm2": 94.28477351207403,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0003587628495020936,
+            "boundary_hausdorff_mm": 0.13532482892106978,
+            "area_budget_mm2": 0.13839694640438785,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0003587628495020936,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 7,
+            "reference_holes": 3,
+            "actual_components": 7,
+            "actual_holes": 3,
+            "reference_area_mm2": 94.2847846468501,
+            "actual_area_mm2": 94.28477351207403,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00035875054523435584,
+            "boundary_hausdorff_mm": 0.13532482892106978,
+            "area_budget_mm2": 0.13839694467940925,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 122,
+      "sample_z_mm": 24.499999973,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 15.164496604449994,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "23d9bdbb6ee9318009540a465e166c049e180f55287fdef27393b74bae6f169d",
+          "regenerated_geometry_sha256": "23d9bdbb6ee9318009540a465e166c049e180f55287fdef27393b74bae6f169d",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 38.93874641994991,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "324257aa232016ed2b98dfbca0379e3b49edf71163db24a0b0dcf6993f91c49c",
+          "regenerated_geometry_sha256": "324257aa232016ed2b98dfbca0379e3b49edf71163db24a0b0dcf6993f91c49c",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 27.82237184255003,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "c0033a3a95fe1348c9659fb57e0a6379ea606e3a8ecab63996e7e64d5f48e33c",
+          "regenerated_geometry_sha256": "c0033a3a95fe1348c9659fb57e0a6379ea606e3a8ecab63996e7e64d5f48e33c",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 8.993006631900009,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "e66974d6b064de4fe407810f667eb65b86cd16d06362f9c3768ad89266c598c8",
+          "regenerated_geometry_sha256": "e66974d6b064de4fe407810f667eb65b86cd16d06362f9c3768ad89266c598c8",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 0,
+            "holes_after": 0
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 3,
+            "components_after": 3,
+            "holes_before": 3,
+            "holes_after": 3
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 122,
+          "token": "m",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "2e3e59e0bae66f08e0572489028c8d28e0b3c61be076064af39ec215a0b61cf7",
+          "regenerated_geometry_sha256": "2e3e59e0bae66f08e0572489028c8d28e0b3c61be076064af39ec215a0b61cf7",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00032207306097405423,
+            "max_xy_displacement_mm": 1.052526901504529e-05,
+            "quantization_normalization_passes": 1,
+            "quantization_components_before": 3,
+            "quantization_components_after": 3,
+            "quantization_holes_before": 3,
+            "quantization_holes_after": 1,
+            "quantization_boundary_band_area_mm2": 0.0025504506411872137,
+            "quantization_buffer_chord_allowance_mm": 7.1369219986704184e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3986,
+            "triangles": 7964
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3986,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 6.976497120127297e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 2,
+              "branching_vertices": 2,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.02222834469541411,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 24.499999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 3,
+            "reference_holes": 3,
+            "actual_components": 3,
+            "actual_holes": 1,
+            "reference_area_mm2": 81.92561483534995,
+            "actual_area_mm2": 81.92562807787908,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00032207306097405803,
+            "boundary_hausdorff_mm": 0.08995138605236778,
+            "area_budget_mm2": 0.12116762990259039,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.00032207306097405803,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 1.429000000453842e-07,
+              "filled_area_mm2": 1.4290000004536871e-07,
+              "original_boundary_length_mm": 0.06593212829929272,
+              "area_perimeter_width_proxy_mm": 4.334760722320476e-06
+            },
+            {
+              "original_hole_area_mm2": 1.0395000003302112e-07,
+              "filled_area_mm2": 1.0395000003302166e-07,
+              "original_boundary_length_mm": 0.04795942829848845,
+              "area_perimeter_width_proxy_mm": 4.334914060528839e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 3,
+            "reference_holes": 3,
+            "actual_components": 3,
+            "actual_holes": 1,
+            "reference_area_mm2": 81.92561483535,
+            "actual_area_mm2": 81.92562807787908,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00032207306097405423,
+            "boundary_hausdorff_mm": 0.08995138605236778,
+            "area_budget_mm2": 0.12116762990259039,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 128,
+      "sample_z_mm": 25.699999973000004,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 11.924782188699972,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "257ba55f5620620aa9fd04ec7828ff6f945170f104368d58e7293555a2c79b95",
+          "regenerated_geometry_sha256": "257ba55f5620620aa9fd04ec7828ff6f945170f104368d58e7293555a2c79b95",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 32.65488135154999,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "5db8751137475b580e2fdb7596c1eaff2e839a84fe6d1c8277d8ce43ebd422eb",
+          "regenerated_geometry_sha256": "5db8751137475b580e2fdb7596c1eaff2e839a84fe6d1c8277d8ce43ebd422eb",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 34.28129242830007,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "0be780b6ea7ed186954448809a0d7a6a7af3f27db68ca6d12d529807aa3a804b",
+          "regenerated_geometry_sha256": "0be780b6ea7ed186954448809a0d7a6a7af3f27db68ca6d12d529807aa3a804b",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 14.158652890050037,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "68d2d09b355a0ee3935bc4eb2732cf881952c44294d39d8819c83b4f0a3a13a7",
+          "regenerated_geometry_sha256": "68d2d09b355a0ee3935bc4eb2732cf881952c44294d39d8819c83b4f0a3a13a7",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 0,
+            "holes_after": 0
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 3.473000001102457e-07,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 4,
+            "components_after": 4,
+            "holes_before": 2,
+            "holes_after": 1
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 128,
+          "token": "m",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "cfc23dbe04696bf6883abd98caa0eb1bd0c9f43ba7d5944fad437f9165b948fc",
+          "regenerated_geometry_sha256": "cfc23dbe04696bf6883abd98caa0eb1bd0c9f43ba7d5944fad437f9165b948fc",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.0002788862501784765,
+            "max_xy_displacement_mm": 1.0427174939270525e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 4,
+            "quantization_components_after": 4,
+            "quantization_holes_before": 1,
+            "quantization_holes_after": 1,
+            "quantization_boundary_band_area_mm2": 0.002242980752923691,
+            "quantization_buffer_chord_allowance_mm": 7.070406867977966e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3486,
+            "triangles": 6960
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3486,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 1,
+              "collapsed_segments": 1,
+              "max_snap_displacement": 6.956780747821048e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 1,
+              "branching_vertices": 1,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.023379379803589815,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 25.699999973000004
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 2,
+            "actual_components": 4,
+            "actual_holes": 1,
+            "reference_area_mm2": 78.86095591000002,
+            "actual_area_mm2": 78.86096741829533,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00027923355017858833,
+            "boundary_hausdorff_mm": 0.1457476403366264,
+            "area_budget_mm2": 0.10776260896284622,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.00027923355017858833,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 3.473000001102456e-07,
+              "filled_area_mm2": 3.473000001102457e-07,
+              "original_boundary_length_mm": 0.20902151751799258,
+              "area_perimeter_width_proxy_mm": 3.3231028483022092e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 1,
+            "actual_components": 4,
+            "actual_holes": 1,
+            "reference_area_mm2": 78.86095625730002,
+            "actual_area_mm2": 78.86096741829533,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0002788862501784765,
+            "boundary_hausdorff_mm": 1.0249545828339429e-05,
+            "area_budget_mm2": 0.10755358744532825,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 140,
+      "sample_z_mm": 28.099999973000003,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 5.308851133999987,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "bf85fa64c5c06f97cc794d18b66468e43f5e2a1a47b2504c119e4f3183f06bc6",
+          "regenerated_geometry_sha256": "bf85fa64c5c06f97cc794d18b66468e43f5e2a1a47b2504c119e4f3183f06bc6",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 28.48107062925,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "8a653fbbdeaea827d7cc73fb55a54f9fde2746abe46cea863263563fea7cba97",
+          "regenerated_geometry_sha256": "8a653fbbdeaea827d7cc73fb55a54f9fde2746abe46cea863263563fea7cba97",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 36.66016363165005,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "2c1cdf2b30aae7a5e6ed21ab1ad33b38277fdd7410ea1afda4fdb22ffb8bfcdc",
+          "regenerated_geometry_sha256": "2c1cdf2b30aae7a5e6ed21ab1ad33b38277fdd7410ea1afda4fdb22ffb8bfcdc",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 22.002584656599993,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "1645007666eb2a7f56a244dfb30a1aa743b36ea370783cc35f28f2ab207a73e0",
+          "regenerated_geometry_sha256": "1645007666eb2a7f56a244dfb30a1aa743b36ea370783cc35f28f2ab207a73e0",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [
+          {
+            "tokens": [
+              "c",
+              "m"
+            ],
+            "area_mm2": 2.786354140657722e-05,
+            "resolved": true
+          }
+        ],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 0,
+            "holes_after": 0
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 9.1280932613924e-07,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 4,
+            "components_after": 4,
+            "holes_before": 8,
+            "holes_after": 7
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 2.7863541408166303e-05,
+            "set_hausdorff_mm": 1.6731392068901345e-05
+          }
+        ],
+        "union_error_mm2": 4.877601405481343e-16,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 140,
+          "token": "m",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "714a5f79cc18aad166fbe5b408350dbd7eb502781ba5d9198d9944d438be8d07",
+          "regenerated_geometry_sha256": "714a5f79cc18aad166fbe5b408350dbd7eb502781ba5d9198d9944d438be8d07",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00023573959123707346,
+            "max_xy_displacement_mm": 1.0720607092968518e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 4,
+            "quantization_components_after": 4,
+            "quantization_holes_before": 7,
+            "quantization_holes_after": 7,
+            "quantization_boundary_band_area_mm2": 0.0019424262564636501,
+            "quantization_buffer_chord_allowance_mm": 7.269375838640983e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 1,
+            "geometric_point_contacts": true
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 3090,
+            "triangles": 6188
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 3090,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 5,
+              "collapsed_segments": 3,
+              "max_snap_displacement": 7.033190983491418e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 5,
+              "branching_vertices": 7,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.048626726190454876,
+              "dangle_length": 0.18614218389334772,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 28.099999973000003
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 8,
+            "actual_components": 4,
+            "actual_holes": 7,
+            "reference_area_mm2": 70.45007491267631,
+            "actual_area_mm2": 70.45003729168093,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00025426996317258536,
+            "boundary_hausdorff_mm": 0.026563885677130954,
+            "area_budget_mm2": 0.09132110260366127,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.00025426996317258536,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 2.7160532846105778e-08,
+              "filled_area_mm2": 2.716053284610874e-08,
+              "original_boundary_length_mm": 0.02945624555919276,
+              "area_perimeter_width_proxy_mm": 1.8441272694801709e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 4,
+            "reference_holes": 7,
+            "actual_components": 4,
+            "actual_holes": 7,
+            "reference_area_mm2": 70.45004721585858,
+            "actual_area_mm2": 70.45003729168093,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00023573959123707346,
+            "boundary_hausdorff_mm": 1.0304977075448602e-05,
+            "area_budget_mm2": 0.09121333776850497,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 146,
+      "sample_z_mm": 29.299999973000002,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 9.571426822849974,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "b49bf4e32da061e47f8b7512a2ac4429ced72aba35c5a5233ff5d656309ab234",
+          "regenerated_geometry_sha256": "b49bf4e32da061e47f8b7512a2ac4429ced72aba35c5a5233ff5d656309ab234",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 17.509913110850036,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "d6dc3ac9c535ca59304b50839e731c975f213e6340ee85e2f25f804bc0f683a8",
+          "regenerated_geometry_sha256": "d6dc3ac9c535ca59304b50839e731c975f213e6340ee85e2f25f804bc0f683a8",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 39.32177050265015,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "9425774302ea760e9d0baba0450c7d9f619a18a1f304dd5acb87cf9e4540b9f4",
+          "regenerated_geometry_sha256": "9425774302ea760e9d0baba0450c7d9f619a18a1f304dd5acb87cf9e4540b9f4",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 31.00933708039989,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "7f7bbb67986f698f5a020fd471e95b4efc3f4dd58f65521005f378007801eb8a",
+          "regenerated_geometry_sha256": "7f7bbb67986f698f5a020fd471e95b4efc3f4dd58f65521005f378007801eb8a",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 0,
+            "holes_after": 0
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 9.310899988766106e-07,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 3,
+            "components_after": 3,
+            "holes_before": 10,
+            "holes_after": 7
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 146,
+          "token": "m",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "48ba43e9bafafe84d9cd163b33fd8484dbe67d8b141f83976677bb24f0ceef5f",
+          "regenerated_geometry_sha256": "48ba43e9bafafe84d9cd163b33fd8484dbe67d8b141f83976677bb24f0ceef5f",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00021087833717569327,
+            "max_xy_displacement_mm": 1.0717096041521523e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 3,
+            "quantization_components_after": 3,
+            "quantization_holes_before": 7,
+            "quantization_holes_after": 7,
+            "quantization_boundary_band_area_mm2": 0.0016799650909826715,
+            "quantization_buffer_chord_allowance_mm": 7.266995075166445e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 1882,
+            "triangles": 3780
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 1882,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 6.968299659140417e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 2,
+              "branching_vertices": 2,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.011279752164606718,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 29.299999973000002
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 3,
+            "reference_holes": 10,
+            "actual_components": 3,
+            "actual_holes": 7,
+            "reference_area_mm2": 66.40310898914551,
+            "actual_area_mm2": 66.40305935082142,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00021167309871705352,
+            "boundary_hausdorff_mm": 0.5225733067559032,
+            "area_budget_mm2": 0.08289039606817476,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.00021167309871705352,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 8.104999568714355e-08,
+              "filled_area_mm2": 8.104999565938797e-08,
+              "original_boundary_length_mm": 3.3740704704555267,
+              "area_perimeter_width_proxy_mm": 4.804285885362741e-08
+            },
+            {
+              "original_hole_area_mm2": 1.2150000050629933e-08,
+              "filled_area_mm2": 1.2150000050630084e-08,
+              "original_boundary_length_mm": 0.0131973616491355,
+              "area_perimeter_width_proxy_mm": 1.8412771239660353e-06
+            },
+            {
+              "original_hole_area_mm2": 6.178392438944968e-07,
+              "filled_area_mm2": 6.178392438935577e-07,
+              "original_boundary_length_mm": 0.5879856885285927,
+              "area_perimeter_width_proxy_mm": 2.1015451768583392e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 3,
+            "reference_holes": 7,
+            "actual_components": 3,
+            "actual_holes": 7,
+            "reference_area_mm2": 66.40310972945015,
+            "actual_area_mm2": 66.40305935082142,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00021087833717569327,
+            "boundary_hausdorff_mm": 1.0438032511032824e-05,
+            "area_budget_mm2": 0.07890318824132686,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    },
+    {
+      "layer_index": 162,
+      "sample_z_mm": 32.499999973,
+      "source_profiles": [
+        {
+          "part_index": 0,
+          "token": "m",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 4.429766883449979,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "6a2ddec7d894ad1add6c8efce03a8ce6606182e8775e03fc0309cf704d1ca292",
+          "regenerated_geometry_sha256": "6a2ddec7d894ad1add6c8efce03a8ce6606182e8775e03fc0309cf704d1ca292",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 1,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 48.29711945725007,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "57c51bda9a168ddd3818cb595a735f29b5dd897206ae220a451f860a41a3f55a",
+          "regenerated_geometry_sha256": "57c51bda9a168ddd3818cb595a735f29b5dd897206ae220a451f860a41a3f55a",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 2,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 5.790783095499971,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "7961518405f43515bcd5e7e73b46787211225f44192292b33f26924c86d19701",
+          "regenerated_geometry_sha256": "7961518405f43515bcd5e7e73b46787211225f44192292b33f26924c86d19701",
+          "geometry_hash_matches": true
+        },
+        {
+          "part_index": 3,
+          "token": "c",
+          "ok": true,
+          "status": "ok",
+          "area_mm2": 13.067417393000028,
+          "repair_applied": false,
+          "recorded_geometry_sha256": "2a6094d9fad8fa02e98c3a37614b010d04b6126352c8562b3083d142ad5e4d00",
+          "regenerated_geometry_sha256": "2a6094d9fad8fa02e98c3a37614b010d04b6126352c8562b3083d142ad5e4d00",
+          "geometry_hash_matches": true
+        }
+      ],
+      "partition_errors": [],
+      "partition": {
+        "precision_mm": 1e-05,
+        "seam_tolerance_mm": 0.001,
+        "ownership": "alphabetical token priority for bounded seam overlaps only",
+        "overlaps": [],
+        "input_grid_adjustments": [
+          {
+            "token": "c",
+            "changed_area_mm2": 2.705049998816267e-06,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 2,
+            "components_after": 2,
+            "holes_before": 4,
+            "holes_after": 3
+          },
+          {
+            "token": "m",
+            "changed_area_mm2": 0.0,
+            "outside_grid_budget_mm2": 0.0,
+            "components_before": 1,
+            "components_after": 1,
+            "holes_before": 0,
+            "holes_after": 0
+          }
+        ],
+        "material_changes": [
+          {
+            "token": "c",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          },
+          {
+            "token": "m",
+            "reassigned_area_mm2": 0.0,
+            "set_hausdorff_mm": 0.0
+          }
+        ],
+        "union_error_mm2": 0.0,
+        "max_boolean_residual_overlap_mm2": 0.0
+      },
+      "targets": [
+        {
+          "layer_index": 162,
+          "token": "c",
+          "status": "passed",
+          "errors": [],
+          "recorded_geometry_sha256": "695d284094af10e35c62d1d145998940e88585857ad856d7273dd811c55c7dd9",
+          "regenerated_geometry_sha256": "695d284094af10e35c62d1d145998940e88585857ad856d7273dd811c55c7dd9",
+          "geometry_hash_matches": true,
+          "extrusion": {
+            "quantization_area_error_mm2": 0.00013521071076366264,
+            "max_xy_displacement_mm": 1.0140703481622072e-05,
+            "quantization_normalization_passes": 0,
+            "quantization_components_before": 2,
+            "quantization_components_after": 2,
+            "quantization_holes_before": 3,
+            "quantization_holes_after": 3,
+            "quantization_boundary_band_area_mm2": 0.0012535975134262693,
+            "quantization_buffer_chord_allowance_mm": 6.8761576731442e-09,
+            "geometric_component_contacts": 0,
+            "triangulator": "constrained_delaunay",
+            "split_vertex_fans": 0,
+            "geometric_point_contacts": false
+          },
+          "indexed_is_volume": true,
+          "float32": {
+            "is_volume": true,
+            "zero_area_triangles": 0,
+            "duplicate_faces": 0,
+            "vertices": 2914,
+            "triangles": 5832
+          },
+          "generic_profile_recheck": {
+            "ok": false,
+            "status": "branching",
+            "repair_applied": false,
+            "diagnostics": {
+              "status": "branching",
+              "input_segments": 2914,
+              "precision": 1e-05,
+              "max_gap": 0.03,
+              "fill_rule": "even-odd; branching rejected",
+              "duplicate_segments": 2,
+              "collapsed_segments": 0,
+              "max_snap_displacement": 6.91035113279205e-06,
+              "bridges": [],
+              "max_bridge_length": 0.0,
+              "open_endpoints": 2,
+              "branching_vertices": 2,
+              "ambiguous_endpoints": 0,
+              "rejected_bridges": 0,
+              "cut_length": 0.0,
+              "dangle_length": 0.0400931166937295,
+              "invalid_rings": 0,
+              "area": 0.0,
+              "components": 0,
+              "holes": 0,
+              "sample_z": 32.499999973
+            },
+            "area_mm2": 0.0
+          },
+          "original_generic_failure_reproduced": true,
+          "exact_prism_proof_passed": true,
+          "cap_footprint": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 4,
+            "actual_components": 2,
+            "actual_holes": 3,
+            "reference_area_mm2": 67.15531994575002,
+            "actual_area_mm2": 67.15535507455934,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.0001379157607624823,
+            "boundary_hausdorff_mm": 0.323423577226879,
+            "area_budget_mm2": 0.06432309837468086,
+            "within_area_budget": true
+          },
+          "filled_area_change": {
+            "symmetric_difference_mm2": 0.0001379157607624823,
+            "boundary_band_mm": 0.001,
+            "area_outside_reference_boundary_band_mm2": 0.0
+          },
+          "substantially_filled_reference_holes": [
+            {
+              "original_hole_area_mm2": 2.705049998802389e-06,
+              "filled_area_mm2": 2.7050499988301446e-06,
+              "original_boundary_length_mm": 2.4917540284238435,
+              "area_perimeter_width_proxy_mm": 2.1712014652693994e-06
+            }
+          ],
+          "hole_width_note": "2*area/perimeter is a width proxy for long narrow slits, not a maximum-width bound",
+          "against_partitioned_intent": {
+            "reference_ok": true,
+            "actual_ok": true,
+            "reference_components": 2,
+            "reference_holes": 3,
+            "actual_components": 2,
+            "actual_holes": 3,
+            "reference_area_mm2": 67.15532265080007,
+            "actual_area_mm2": 67.15535507455934,
+            "expected_nonempty": true,
+            "missing_expected_midpoint": false,
+            "unexpected_midpoint": false,
+            "comparable": true,
+            "symmetric_difference_mm2": 0.00013521071076366264,
+            "boundary_hausdorff_mm": 9.001905503887233e-06,
+            "area_budget_mm2": 0.061831344346257026,
+            "within_area_budget": true
+          }
+        }
+      ],
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "checks": {
+    "hash_identity": "Exact original native geometry SHA256 required before interpreting supplemental checks",
+    "prism_proof": "Float32/9-decimal coordinates; top and bottom cap unions exactly equal; every side triangle vertical",
+    "reference": "Original source-part midpoint profiles, unioned by assigned token before material partition",
+    "footprint_budget": "0.001 mm * original/reference boundary length + 1e-12 mm2 arithmetic slack",
+    "scope": "Only the failed generic native profiles; no assertion of continuous source-surface equivalence or print validation"
+  },
+  "settings": {
+    "height_mm": 0.2,
+    "z0_mm": -2.7e-08,
+    "z_gap_mm": 0.001,
+    "precision": 1e-05,
+    "max_gap": 0.03,
+    "contour_tolerance": 0.001,
+    "seam_tolerance": 0.001
+  },
+  "target_count": 11,
+  "affected_layer_count": 11,
+  "summary": {
+    "targets": 11,
+    "native_hashes_matching": 11,
+    "exact_prism_checks_passing": 11,
+    "supplementary_checks_passing": 11,
+    "generic_failures_reproduced": 11,
+    "max_cap_symmetric_difference_mm2": 0.0003587628495020936,
+    "max_cap_boundary_hausdorff_mm": 1.8368205957031307,
+    "source_parts": 8,
+    "source_indexed_nonvolume_parts": 0,
+    "source_float32_nonvolume_parts": 0,
+    "source_float32_zero_area_triangles": 0,
+    "source_float32_duplicate_faces": 0
+  },
+  "benchmark_report_unchanged": true,
+  "elapsed_s_not_a_benchmark": 26.237984166946262
+}
