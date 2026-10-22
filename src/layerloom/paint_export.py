@@ -33,19 +33,6 @@ def _hex(rgb: np.ndarray) -> str:
     return "#" + "".join(f"{int(c):02X}" for c in rgb[:3])
 
 
-def export_native_painted_3mf(document: Any, path: str | Path, *,
-                              center_on_plate: bool = True,
-                              progress: Callable[[int, int], None] | None = None) -> dict[str, Any]:
-    """Export exact surface facets and RGB filament paint using slicer metadata.
-
-    This explicit route preserves the source exterior and facet paint. The
-    slicer determines color-region depth; no layered material geometry is made.
-    Closed input geometry is required, and no repair is performed implicitly.
-    """
-    from layerloom.paint_native import export_native_painted_3mf as native_export
-    return native_export(document, path, center_on_plate=center_on_plate, progress=progress)
-
-
 def _material_order(materials) -> list[str]:
     present = set(materials)
     return [token for token in ALL_TOKENS if token in present] + sorted(present.difference(ALL_TOKENS))
@@ -147,7 +134,8 @@ def _as_manifold(mesh: trimesh.Trimesh, label: str) -> mf.Manifold:
     return solid
 
 
-def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]):
+def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]], *,
+                     component_details: list | None = None):
     surfaces, solids, recipes = [], [], []
     source_rows = []
     for item in document.meshes:
@@ -186,11 +174,34 @@ def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]
         surfaces.append(mesh)
         solids.append(_as_manifold(mesh, label))
         recipes.extend(str(assignments[_hex(rgb)]["token"]) for rgb in rgba)
+        # Surface-connected shells include negative cavity walls. They are
+        # retained in the source solid, but are not disconnected positive
+        # objects that a layer-midpoint preservation check should reject.
+        groups = trimesh.graph.connected_components(mesh.face_adjacency,
+                    nodes=np.arange(len(mesh.faces)), min_len=1)
+        shell_rows = []
+        for component_index, face_ids in enumerate(groups):
+            part = mesh.submesh([face_ids], append=True, repair=False)
+            local = np.asarray(part.triangles) - np.asarray(part.bounds).mean(axis=0)
+            signed_volume = float(np.einsum("ij,ij->i", local[:, 0],
+                                  np.cross(local[:, 1], local[:, 2])).sum() / 6)
+            shell_rows.append({"component": component_index,
+                               "signed_volume_mm3": signed_volume,
+                               "bounds_mm": part.bounds.tolist()})
+            if component_details is not None and signed_volume > 0:
+                component_details.append({"key": str(item.key), "name": label,
+                    "component": component_index, "mesh": part,
+                    "signed_volume_mm3": signed_volume,
+                    "recipes": sorted({str(assignments[_hex(rgb)]["token"]) for rgb in rgba[face_ids]})})
         source_rows.append({"key": str(item.key), "name": label,
                             "triangles": int(len(mesh.faces)),
-                            "components": int(mesh.body_count),
-                            "component_z_bounds_mm": [part.bounds[:, 2].tolist()
-                                                      for part in mesh.split(only_watertight=False)],
+                            "components": len(groups),
+                            "positive_components": sum(row["signed_volume_mm3"] > 0 for row in shell_rows),
+                            "negative_cavity_shells": sum(row["signed_volume_mm3"] < 0 for row in shell_rows),
+                            "zero_volume_shells": sum(row["signed_volume_mm3"] == 0 for row in shell_rows),
+                            "component_z_bounds_mm": [[row["bounds_mm"][0][2], row["bounds_mm"][1][2]]
+                                                      for row in shell_rows if row["signed_volume_mm3"] > 0],
+                            "surface_shells": shell_rows,
                             "welded_vertices": int(vertex_count - len(mesh.vertices)),
                             "volume_mm3": float(mesh.volume)})
     if not surfaces:
@@ -337,6 +348,192 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
     return regions, len(pieces), coverage, overlap, interior_gap, float(united.area)
 
 
+def _solid_component_count(solid: mf.Manifold) -> int:
+    """Count indexed connected shells without materializing individual solids."""
+    faces = np.asarray(solid.to_mesh().tri_verts, dtype=np.int64)
+    if not len(faces):
+        return 0
+    edges = np.concatenate((faces[:, [0, 1]], faces[:, [1, 2]]))
+    labels = trimesh.graph.connected_component_labels(edges)
+    return int(labels.max()) + 1
+
+
+def _interior_sample(mesh: trimesh.Trimesh) -> np.ndarray:
+    """Find a strictly interior sample without rounding a microscopic shell.
+
+    Work in normalized coordinates and verify the oriented solid angle. This
+    avoids a Boolean constructor deleting tiny, nearly coplanar components.
+    """
+    center = np.asarray(mesh.bounds).mean(axis=0)
+    scale = float(np.max(mesh.extents))
+    triangles = (np.asarray(mesh.triangles) - center) / scale
+    cross = np.cross(triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0])
+    normals = cross / np.maximum(np.linalg.norm(cross, axis=1)[:, None], 1e-300)
+    candidates = [triangles.mean(axis=(0, 1))]
+    for epsilon in (1e-5, 1e-7, 1e-9, 1e-11, 1e-13):
+        candidates.extend(triangles.mean(axis=1) - normals * epsilon)
+    for point in candidates:
+        vectors = triangles - point
+        lengths = np.linalg.norm(vectors, axis=2)
+        numerator = np.einsum("ij,ij->i", vectors[:, 0], np.cross(vectors[:, 1], vectors[:, 2]))
+        denominator = (np.prod(lengths, axis=1) +
+            np.einsum("ij,ij->i", vectors[:, 0], vectors[:, 1]) * lengths[:, 2] +
+            np.einsum("ij,ij->i", vectors[:, 1], vectors[:, 2]) * lengths[:, 0] +
+            np.einsum("ij,ij->i", vectors[:, 2], vectors[:, 0]) * lengths[:, 1])
+        winding = float(np.arctan2(numerator, denominator).sum() / (2 * np.pi))
+        if abs(winding - 1) < 1e-5:
+            return point * scale + center
+    raise ValueError("Could not find a verified interior sample for a sub-layer component")
+
+
+def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_height, mode):
+    """Retain missed positive components as physical mesh geometry.
+
+    Each clipped piece is smaller than the declared layer spacing. Its material
+    is sampled once, as for a clipped XY paint cell; the exact exterior remains.
+    """
+    retained = []
+    for detail in details:
+        mesh = detail["mesh"]
+        lower, upper = np.asarray(mesh.bounds)[:, 2]
+        if np.any((midpoints > lower) & (midpoints < upper)):
+            continue
+        first = max(0, int(math.floor((lower - z0) / layer_height)))
+        last = min(len(midpoints) - 1, int(math.ceil((upper - z0) / layer_height)) - 1)
+        for layer in range(first, last + 1):
+            low, high = z0 + layer * layer_height, min(zmax, z0 + (layer + 1) * layer_height)
+            part = mesh
+            if lower < low or upper > high:
+                # Clipping is only needed if a missed object crosses a layer
+                # boundary. Normalize first so the engine's scale tolerance
+                # cannot erase an otherwise printable small positive object.
+                center = np.asarray(mesh.bounds).mean(axis=0)
+                scale = float(np.max(mesh.extents))
+                solid = mf.Manifold(mf.Mesh64(np.ascontiguousarray((mesh.vertices-center)/scale),
+                                              np.ascontiguousarray(mesh.faces, dtype=np.uint64)))
+                solid = solid.trim_by_plane((0, 0, 1), (low-center[2])/scale)
+                solid = solid.trim_by_plane((0, 0, -1), -(high-center[2])/scale)
+                data = solid.to_mesh64()
+                if solid.status() != mf.Error.NoError or solid.num_tri() == 0:
+                    raise ValueError("Could not retain a sub-layer component across a layer boundary")
+                part = trimesh.Trimesh(np.asarray(data.vert_properties)[:, :3]*scale+center,
+                                       np.asarray(data.tri_verts), process=False)
+            sample = _interior_sample(part)
+            face = int(_nearest_faces(surface, sample[None, :])[0])
+            recipe = str(face_recipes[face])
+            token = recipe if mode == "source" else recipe[layer % len(recipe)]
+            retained.append({"mesh": part, "token": token, "audit": {
+                "source_key": detail["key"], "source_component": detail["component"],
+                "source_recipes": detail["recipes"], "sample_xyz_mm": sample.tolist(),
+                "sampled_global_source_face": face, "sampled_recipe": recipe,
+                "layer_index": layer, "filament": token,
+                "original_triangles": len(part.faces), "original_bounds_mm": part.bounds.tolist(),
+                "policy": "Exact sub-layer exterior; one verified interior nearest-surface paint sample at global layer phase"}})
+    return retained
+
+
+def _correct_filament_vertices(mesh: trimesh.Trimesh, maximum: float):
+    """Correct only measured float32 collisions, preserving indexed topology."""
+    from layerloom.paint_repair import _precision_regularize
+    from layerloom.paint_sub_layer import _encoded_checks
+    baseline = np.asarray(mesh.vertices).copy()
+    faces = np.asarray(mesh.faces).copy()
+    result = mesh.copy()
+    repairs = []
+    for attempt in range(6):
+        center, encoded, placed, defects, placed_defects, volume, placed_volume = _encoded_checks(result)
+        if not any(defects.values()) and not any(placed_defects.values()):
+            break
+        fixed, detail = _precision_regularize(encoded.vertices, faces,
+            [np.zeros(3), center + (128, 128, 0)], maximum)
+        result.vertices = fixed + center
+        repairs.append(detail)
+        if np.linalg.norm(result.vertices-baseline, axis=1).max(initial=0) > maximum:
+            raise ValueError("Local filament correction exceeds its displacement limit")
+    else:
+        raise ValueError("Local filament correction did not survive decimal XML serialization")
+    displacement = float(np.linalg.norm(result.vertices-baseline, axis=1).max(initial=0))
+    placed_displacement = float(np.linalg.norm(placed-baseline-(128, 128, 0), axis=1).max(initial=0))
+    if max(displacement, placed_displacement) > maximum:
+        raise ValueError("Encoded filament correction exceeds its displacement limit")
+    if not np.array_equal(result.faces, faces):
+        raise AssertionError("Local filament correction changed face topology")
+    return result, {"policy": "Correct only vertices implicated in float32 collisions or zero-area faces; no global expansion",
+        "topology_and_face_count_preserved": True,
+        "coordinate_encoding": "Nine-decimal XML vertices and transform, then local and placed float32",
+        "maximum_vertex_displacement_mm": displacement,
+        "maximum_placed_float32_displacement_mm": placed_displacement,
+        "displacement_limit_mm": maximum,
+        "source_volume_mm3": float(mesh.volume), "output_volume_mm3": float(result.volume),
+        "encoded_defects": defects, "placed_defects": placed_defects, "repairs": repairs}
+
+
+def _finalize_filament(solid: mf.Manifold, token: str, precision: float):
+    """Validate one physical filament, retaining every disconnected region."""
+    if solid.status() != mf.Error.NoError or solid.num_tri() == 0:
+        raise ValueError(f"Could not union printable {token} regions")
+    original_solid = solid
+    original_components = _solid_component_count(original_solid)
+    placed_extrema = np.asarray(solid.bounding_box(), dtype=float).reshape(2, 3) + (128, 128, 0)
+    placed_ulp = float(np.max(np.abs(np.spacing(placed_extrema.astype(np.float32)))))
+    cleanup_limit = max(precision / 2, placed_ulp * 4)
+    cleanup_candidates = sorted({0.0, precision / 10, precision / 2,
+                                 placed_ulp, placed_ulp * 2, cleanup_limit})
+    numerical_tolerance = 0.0
+    for numerical_tolerance in cleanup_candidates:
+        if numerical_tolerance:
+            # Boolean triangulation can leave a nearly collinear triangle
+            # that collapses in a slicer's float32 coordinates. Manifold's
+            # bounded simplification retains a subset of original vertices;
+            # it moves surfaces by less than this declared numerical bound.
+            # A fine XY grid can be smaller than the float32 spacing at the
+            # slicer plate position, so include a measured 1–4 ULP bound.
+            # Never accept simplification that removes a positive component.
+            # All geometry and inter-material checks are repeated below.
+            solid = original_solid.simplify(numerical_tolerance)
+            if _solid_component_count(solid) != original_components:
+                continue
+        data = solid.to_mesh()
+        mesh = trimesh.Trimesh(np.asarray(data.vert_properties)[:, :3],
+                              np.asarray(data.tri_verts), process=False)
+        from layerloom.paint_sub_layer import _encoded_checks
+        _, _, _, defects, placed_defects, _, _ = _encoded_checks(mesh)
+        if not any(defects.values()) and not any(placed_defects.values()):
+            break
+        if not (defects["zero_area_triangles"] or placed_defects["zero_area_triangles"]):
+            break
+    vertex_correction = None
+    if any(defects.values()) or any(placed_defects.values()):
+        # A point-contact collision can require moving one implicated vertex;
+        # simplifying further may delete a disconnected material region. Use
+        # bounded local correction of the original indexed geometry instead.
+        original_data = original_solid.to_mesh64()
+        original_mesh = trimesh.Trimesh(np.asarray(original_data.vert_properties)[:, :3],
+                                       np.asarray(original_data.tri_verts), process=False)
+        try:
+            mesh, vertex_correction = _correct_filament_vertices(original_mesh,
+                                                max(cleanup_limit, placed_ulp * 16))
+        except ValueError as error:
+            raise ValueError(f"Filament {token} could not pass bounded float32 correction: {error}") from error
+        if int(mesh.body_count) != original_components:
+            raise ValueError(f"Filament {token}: local correction changed the number of components")
+        solid = mf.Manifold(mf.Mesh64(np.ascontiguousarray(mesh.vertices),
+                                      np.ascontiguousarray(mesh.faces, dtype=np.uint64)))
+        numerical_tolerance = 0.0
+        defects = vertex_correction["encoded_defects"]
+        placed_defects = vertex_correction["placed_defects"]
+    audit = {"triangles": int(len(mesh.faces)), "volume_mm3": float(mesh.volume),
+             "components": int(mesh.body_count), "defects": defects,
+             "numerical_simplification_tolerance_mm": numerical_tolerance,
+             "numerical_simplification_limit_mm": cleanup_limit,
+             "placed_float32_ulp_mm": placed_ulp,
+             "components_before_numerical_cleanup": original_components,
+             "components_after_numerical_cleanup": int(mesh.body_count),
+             "placed_float32_defects": placed_defects,
+             "local_vertex_correction": vertex_correction}
+    return mesh, solid, audit
+
+
 def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float = 0.2,
                        pitch: float = 0.5, palette_name: str = "Normal", mode: str = "woven",
                        recipe_overrides: Mapping[str, str] | None = None,
@@ -363,17 +560,16 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         raise ValueError("max_cells must be positive")
     output = Path(path).expanduser().resolve()
     assignments = assign_palette(document, palette_name, mode=mode, recipe_overrides=recipe_overrides)
-    surface, source, face_recipes, source_rows = _source_geometry(document, assignments)
+    component_details = []
+    surface, source, face_recipes, source_rows = _source_geometry(
+        document, assignments, component_details=component_details)
     bounds = np.asarray(surface.bounds)
     z0, zmax = bounds[:, 2]
     layers = int(math.ceil((zmax - z0) / layer_height))
     midpoints = (z0 + np.arange(layers) * layer_height +
                  np.minimum(zmax, z0 + (np.arange(layers) + 1) * layer_height)) / 2
-    for row in source_rows:
-        for low, high in row["component_z_bounds_mm"]:
-            if not np.any((midpoints > low) & (midpoints < high)):
-                raise ValueError(f"{row['name']}: a disconnected component falls between layer midpoints. "
-                                 "Reduce layer_height to retain every component.")
+    retained = _sub_layer_parts(surface, face_recipes, component_details, midpoints,
+                                z0, zmax, layer_height, mode)
     estimated = layers * int(np.prod(np.ceil((bounds[1, :2] - bounds[0, :2]) / pitch) + 2))
     if estimated > max_cells:
         raise ValueError(f"Export would inspect approximately {estimated:,} grid cells; limit is {max_cells:,}. "
@@ -409,51 +605,53 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
                 by_filament[token].append(part)
         if progress is not None:
             progress(layer + 1, layers)
-    if not by_filament:
+    if not by_filament and not retained:
         raise ValueError("No printable layers were generated")
 
     items, material_rows, final_solids = [], [], []
-    used_tokens = _material_order(by_filament)
+    used_tokens = _material_order(set(by_filament) | {part["token"] for part in retained})
     extruders = {token: i + 1 for i, token in enumerate(used_tokens)}
     for token in used_tokens:
+        if not by_filament[token]:
+            material_rows.append({"token": token, "extruder": extruders[token], "hex": _material_hex(token),
+                "triangles": 0, "volume_mm3": 0.0, "components": 0, "defects": {},
+                "numerical_simplification_tolerance_mm": 0.0, "placed_float32_defects": {}})
+            continue
         solid = mf.Manifold.batch_boolean(by_filament[token], mf.OpType.Add).translate(translation)
-        if solid.status() != mf.Error.NoError or solid.num_tri() == 0:
-            raise ValueError(f"Could not union printable {token} regions")
-        original_solid = solid
-        numerical_tolerance = 0.0
-        for numerical_tolerance in (0.0, precision / 10, precision / 2):
-            if numerical_tolerance:
-                # Boolean triangulation can leave a nearly collinear triangle
-                # that collapses in a slicer's float32 coordinates. Manifold's
-                # bounded simplification retains a subset of original vertices;
-                # it moves surfaces by less than this declared sub-grid bound.
-                # It is only attempted for measured collapsed triangles, and
-                # all geometry and inter-material checks are repeated below.
-                solid = original_solid.simplify(numerical_tolerance)
-            data = solid.to_mesh()
-            mesh = trimesh.Trimesh(np.asarray(data.vert_properties)[:, :3],
-                                  np.asarray(data.tri_verts), process=False)
-            center = np.asarray(mesh.bounds).mean(axis=0)
-            encoded = mesh.copy()
-            encoded.vertices = (np.asarray(mesh.vertices) - center).astype(np.float32).astype(np.float64)
-            defects = mesh_defects(encoded)
-            placed_defects = mesh_defects(encoded, center + (128, 128, 0))
-            if not any(defects.values()) and not any(placed_defects.values()):
-                break
-            if not (defects["zero_area_triangles"] or placed_defects["zero_area_triangles"]):
-                break
-        if any(defects.values()) or any(placed_defects.values()):
-            raise ValueError(f"Filament {token} fails exported geometry checks: {defects}; "
-                             f"placed float32: {placed_defects}. Try a coarser paint pitch/layer height.")
+        mesh, solid, material_audit = _finalize_filament(solid, token, precision)
         metadata = {"source_hex": _material_hex(token), "stack_token": token,
                     "filament": token, "paint_policy": "nearest_surface_full_depth"}
         items.append(LeafMeshSpec(_material_label(token), mesh, metadata))
         final_solids.append(solid)
-        material_rows.append({"token": token, "extruder": extruders[token], "hex": _material_hex(token),
-                              "triangles": int(len(mesh.faces)), "volume_mm3": float(mesh.volume),
-                              "components": int(mesh.body_count), "defects": defects,
-                              "numerical_simplification_tolerance_mm": numerical_tolerance,
-                              "placed_float32_defects": placed_defects})
+        material_rows.append({"token": token, "extruder": extruders[token],
+                              "hex": _material_hex(token), **material_audit})
+    layer_sampled_volume = sampled_volume
+    retained_volume = 0.0
+    retained_rows = []
+    if retained:
+        from layerloom.paint_sub_layer import prepare_sub_layer_mesh
+        rows_by_token = {row["token"]: row for row in material_rows}
+        for index, extra in enumerate(retained):
+            mesh, audit = prepare_sub_layer_mesh(extra["mesh"], translation)
+            token = extra["token"]
+            # Separate parts preserve microscopic positive shells which a
+            # Boolean union at the whole-model scale can silently remove.
+            items.append(LeafMeshSpec(f"{_material_label(token)}_sub_layer_{index + 1}", mesh,
+                {"source_hex": _material_hex(token), "stack_token": token,
+                 "filament": token, "paint_policy": "sub_layer_interior_sample"}))
+            row = rows_by_token[token]
+            volume = float(audit["encoded_centered_signed_volume_mm3"])
+            row["triangles"] += len(mesh.faces)
+            row["volume_mm3"] += volume
+            row["components"] += 1
+            row["retained_sub_layer_parts"] = row.get("retained_sub_layer_parts", 0) + 1
+            retained_volume += volume
+            retained_rows.append({**extra["audit"], **audit, "extruder": extruders[token]})
+            # This is only the overlap calculation; emitted geometry above is
+            # never taken back from a Boolean that might erase a tiny shell.
+            final_solids.append(mf.Manifold(mf.Mesh64(np.ascontiguousarray(mesh.vertices),
+                                    np.ascontiguousarray(mesh.faces, dtype=np.uint64))))
+    sampled_volume += retained_volume
     final_union = mf.Manifold.batch_boolean(final_solids, mf.OpType.Add)
     output_volume = sum(row["volume_mm3"] for row in material_rows)
     union_volume = float(final_union.volume())
@@ -478,7 +676,10 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         "shared_translation_mm": translation.tolist(), "slicer_plate_translation_mm": [128, 128, 0],
         "source_volume_mm3": source_volume, "sampled_volume_mm3": sampled_volume,
         "midpoint_source_volume_mm3": midpoint_source_volume,
-        "boundary_snap_volume_change_mm3": sampled_volume - midpoint_source_volume,
+        "layer_sampled_volume_mm3": layer_sampled_volume,
+        "retained_sub_layer_volume_mm3": retained_volume,
+        "retained_sub_layer_parts": retained_rows,
+        "boundary_snap_volume_change_mm3": layer_sampled_volume - midpoint_source_volume,
         "output_volume_mm3": output_volume,
         "relative_volume_change": (output_volume - source_volume) / source_volume,
         "maximum_layer_coverage_error_mm2": max_coverage, "maximum_layer_overlap_mm2": max_overlap,
@@ -491,7 +692,8 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             "Full-depth nearest-surface paint; no shell/core thickness control.",
             "Paint boundaries are limited by source triangles and XY pitch.",
             "Material interfaces use the reported tiny priority offset to avoid point/edge contacts.",
-            "Features thinner than a layer can be missed by midpoint sampling.",
+            "Positive objects missed by midpoint sampling are retained separately, with one interior paint sample per layer piece.",
+            "Thin features within a larger connected object still follow midpoint sampling.",
             "Use this layer height for first and subsequent slicer layers; disable adaptive layers.",
             "Geometry validation only; slicer preview and physical color proof remain necessary.",
         ],

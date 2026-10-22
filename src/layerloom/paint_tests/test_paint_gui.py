@@ -275,7 +275,7 @@ def test_area_selection_shift_add_ctrl_remove_and_clear_do_not_paint(window):
     np.testing.assert_array_equal(window._polys[0].cell_data["paint_rgba"], original)
 
 
-def test_embedded_panel_defaults_surface_selection_and_original_color_mode(app):
+def test_embedded_panel_defaults_surface_selection_and_woven_color_mode(app):
     from layerloom.paint_examples import example_document
     host = QtWidgets.QMainWindow()
     tabs = QtWidgets.QTabWidget()
@@ -288,9 +288,10 @@ def test_embedded_panel_defaults_surface_selection_and_original_color_mode(app):
     app.processEvents()
     assert not panel.editor.isWindow()
     assert panel.editor.tool == "Surface select"
-    assert panel.editor.mapping_mode_combo.currentData() == "source"
+    assert panel.editor.mapping_mode_combo.currentData() == "woven"
     QtTest.QTest.mouseClick(panel.editor.map_button, QtCore.Qt.LeftButton)
-    assert all(key == entry["hex"] == entry["token"] for key, entry in panel.editor._mapping.items())
+    assert panel.editor._mapping
+    assert all(not entry["token"].startswith("#") for entry in panel.editor._mapping.values())
     before = panel.document
     tabs.setCurrentIndex(1)
     tabs.setCurrentIndex(0)
@@ -300,3 +301,35 @@ def test_embedded_panel_defaults_surface_selection_and_original_color_mode(app):
     panel.shutdown()
     host.close()
     app.processEvents()
+
+
+@pytest.mark.parametrize("color_mode", ["woven", "direct", "source"])
+def test_export_action_offers_only_material_geometry_for_every_color_mode(window, monkeypatch, tmp_path, color_mode):
+    assert window.mapping_mode_combo.currentData() == "woven"
+    assert window.export_action.text() == "Export geometry 3MF…"
+    assert not hasattr(window, "surface_export_action")
+    assert not hasattr(window, "export_surface_dialog")
+    captured = {}
+    def choose_mode(dialog):
+        assert dialog.windowTitle() == "Export geometry 3MF"
+        combos = dialog.findChildren(QtWidgets.QComboBox)
+        assert len(combos) == 1, "There must be no painted-output representation selector"
+        mode = combos[0]
+        assert [mode.itemData(i) for i in range(mode.count())] == ["woven", "direct", "source"]
+        assert all(spin.isEnabled() for spin in dialog.findChildren(QtWidgets.QDoubleSpinBox))
+        assert any("no surface paint" in label.text() for label in dialog.findChildren(QtWidgets.QLabel))
+        mode.setCurrentIndex(mode.findData(color_mode))
+        return QtWidgets.QDialog.Accepted
+    def capture_export(output, **settings):
+        captured.update(output=output, settings=settings)
+        return True
+    monkeypatch.setattr(QtWidgets.QDialog, "exec_", choose_mode)
+    output = tmp_path / f"{color_mode}_geometry.3mf"
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(output), ""))
+    monkeypatch.setattr(window, "start_export", capture_export)
+    click_toolbar(window, window.export_action)
+    assert captured["output"] == str(output)
+    assert captured["settings"] == {"mode": color_mode, "layer_height": .2, "pitch": .5, "palette_name": "Normal"}
+    assert window.document.metadata["paint_mapping_mode"] == color_mode
+    if color_mode == "source":
+        assert all(key == entry["hex"] == entry["token"] for key, entry in window._mapping.items())

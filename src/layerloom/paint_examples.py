@@ -8,13 +8,50 @@ from __future__ import annotations
 
 import argparse
 import json
+import zipfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
 import trimesh
 
 from layerloom.paint_model import PaintDocument, PaintMesh
-from layerloom.paint_io import load_paint_document, save_paint_document
+from layerloom.paint_io import (load_paint_document, save_paint_document,
+                               CORE, MAT, REL, _rgba_hex, _atomic_write)
+
+
+def _write_source_color_fixture_3mf(document: PaintDocument, path: str | Path) -> None:
+    """Internal test/example input fixture, never a printable product export."""
+    document.validate()
+    ET.register_namespace("", CORE)
+    ET.register_namespace("m", MAT)
+    root = ET.Element(f"{{{CORE}}}model", {"unit": "millimeter", "requiredextensions": "m"})
+    resources = ET.SubElement(root, f"{{{CORE}}}resources")
+    build = ET.SubElement(root, f"{{{CORE}}}build")
+    for i, mesh in enumerate(document.meshes):
+        oid, pid = 2 * i + 1, 2 * i + 2
+        colors, indices = np.unique(mesh.face_rgba, axis=0, return_inverse=True)
+        group = ET.SubElement(resources, f"{{{MAT}}}colorgroup", {"id": str(pid)})
+        for rgba in colors:
+            ET.SubElement(group, f"{{{MAT}}}color", {"color": _rgba_hex(rgba)})
+        obj = ET.SubElement(resources, f"{{{CORE}}}object", {"id": str(oid), "type": "model", "name": mesh.name})
+        geo = ET.SubElement(obj, f"{{{CORE}}}mesh")
+        verts = ET.SubElement(geo, f"{{{CORE}}}vertices")
+        tris = ET.SubElement(geo, f"{{{CORE}}}triangles")
+        for v in mesh.vertices:
+            ET.SubElement(verts, f"{{{CORE}}}vertex", dict(zip(("x", "y", "z"), (format(x, ".17g") for x in v))))
+        for face, ci in zip(mesh.faces, indices):
+            ET.SubElement(tris, f"{{{CORE}}}triangle", {"v1": str(face[0]), "v2": str(face[1]), "v3": str(face[2]),
+                          "pid": str(pid), "p1": str(ci), "p2": str(ci), "p3": str(ci)})
+        ET.SubElement(build, f"{{{CORE}}}item", {"objectid": str(oid)})
+    xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+
+    def write(tmp):
+        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
+            z.writestr("[Content_Types].xml", '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>')
+            z.writestr("_rels/.rels", f'<Relationships xmlns="{REL}"><Relationship Id="r1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="/3D/3dmodel.model"/></Relationships>')
+            z.writestr("3D/3dmodel.model", xml)
+    _atomic_write(Path(path), write)
 
 
 def example_document(shape: str, size: float = 20.0) -> PaintDocument:
@@ -57,7 +94,7 @@ def build_examples(output: Path, *, size: float = 20, export: bool = True,
     for shape in ("cube", "sphere"):
         doc = example_document(shape, size)
         source = output / f"{shape}_source.3mf"
-        save_paint_document(doc, source)
+        _write_source_color_fixture_3mf(doc, source)
         imported = load_paint_document(source)
         assert_roundtrip(doc, imported, originals=False)
         project = output / f"{shape}.llpaint"

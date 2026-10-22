@@ -3224,7 +3224,10 @@ class AssignColorsApp(tk.Tk):
         if not out:
             return
         try:
-            plan = self._materialize_current_model(out, include_assignments=True)
+            with tempfile.TemporaryDirectory(prefix="layerloom_geometry_save_") as work_dir:
+                staged = os.path.join(work_dir, "assigned.3mf")
+                plan = self._materialize_current_model(staged, include_assignments=True)
+                write_transformed_3mf(staged, out, np.eye(4), geometry_only=True)
             self._last_transform_plan = plan
             self._applied_transform_signature = self._get_transform_values() or self._applied_transform_signature
             self.transform_dirty = False
@@ -5273,7 +5276,10 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         if not out:
             return
         try:
-            plan = self._materialize_current_model(out, include_assignments=True)
+            with tempfile.TemporaryDirectory(prefix="layerloom_geometry_save_") as work_dir:
+                staged = os.path.join(work_dir, "assigned.3mf")
+                plan = self._materialize_current_model(staged, include_assignments=True)
+                write_transformed_3mf(staged, out, np.eye(4), geometry_only=True)
             self._last_transform_plan = plan
             self.transform_dirty = False
             self._refresh_transform_readout(plan)

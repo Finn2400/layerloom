@@ -78,16 +78,12 @@ def _atomic_write(path: Path, writer) -> None:
 
 
 def save_paint_document(document: PaintDocument, path: str | os.PathLike) -> None:
-    """Save .llpaint losslessly, or export current colors to standard .3mf.
+    """Save an editable .llpaint project, retaining original colors for erase.
 
-    .llpaint retains original colors for erasing. A standard 3MF carries current
-    source surface colors, not the printable filament volumes from paint_export.
+    Printable 3MF output is generated only by paint_export as material geometry.
     """
     document.validate()
     path = Path(path)
-    if path.suffix.lower() == ".3mf":
-        export_source_3mf(document, path)
-        return
     if path.suffix.lower() != ".llpaint":
         raise ValueError("Editable paint projects use the .llpaint extension")
     manifest = {"format": _FORMAT, "version": _VERSION, "units": "millimeter",
@@ -126,39 +122,6 @@ def _load_project(path: Path) -> PaintDocument:
     doc.validate()
     return doc
 
-
-def export_source_3mf(document: PaintDocument, path: str | os.PathLike) -> None:
-    """Export standards-based flat per-face colors without altering geometry."""
-    document.validate()
-    ET.register_namespace("", CORE)
-    ET.register_namespace("m", MAT)
-    root = ET.Element(f"{{{CORE}}}model", {"unit": "millimeter", "requiredextensions": "m"})
-    resources = ET.SubElement(root, f"{{{CORE}}}resources")
-    build = ET.SubElement(root, f"{{{CORE}}}build")
-    for i, mesh in enumerate(document.meshes):
-        oid, pid = 2 * i + 1, 2 * i + 2
-        colors, indices = np.unique(mesh.face_rgba, axis=0, return_inverse=True)
-        group = ET.SubElement(resources, f"{{{MAT}}}colorgroup", {"id": str(pid)})
-        for rgba in colors:
-            ET.SubElement(group, f"{{{MAT}}}color", {"color": _rgba_hex(rgba)})
-        obj = ET.SubElement(resources, f"{{{CORE}}}object", {"id": str(oid), "type": "model", "name": mesh.name})
-        geo = ET.SubElement(obj, f"{{{CORE}}}mesh")
-        verts = ET.SubElement(geo, f"{{{CORE}}}vertices")
-        tris = ET.SubElement(geo, f"{{{CORE}}}triangles")
-        for v in mesh.vertices:
-            ET.SubElement(verts, f"{{{CORE}}}vertex", dict(zip(("x", "y", "z"), (format(x, ".17g") for x in v))))
-        for face, ci in zip(mesh.faces, indices):
-            ET.SubElement(tris, f"{{{CORE}}}triangle", {"v1": str(face[0]), "v2": str(face[1]), "v3": str(face[2]),
-                          "pid": str(pid), "p1": str(ci), "p2": str(ci), "p3": str(ci)})
-        ET.SubElement(build, f"{{{CORE}}}item", {"objectid": str(oid)})
-    xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
-
-    def write(tmp):
-        with zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as z:
-            z.writestr("[Content_Types].xml", '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="model" ContentType="application/vnd.ms-package.3dmanufacturing-3dmodel+xml"/></Types>')
-            z.writestr("_rels/.rels", f'<Relationships xmlns="{REL}"><Relationship Id="r1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel" Target="/3D/3dmodel.model"/></Relationships>')
-            z.writestr("3D/3dmodel.model", xml)
-    _atomic_write(Path(path), write)
 
 
 def _package_member(base: str, target: str) -> str:

@@ -130,19 +130,11 @@ class ExportWorker(QtCore.QObject):
     @QtCore.Slot()
     def run(self):
         try:
-            settings = dict(self.settings)
-            export_format = settings.pop("export_format", "volumes")
-            if export_format == "native":
-                if settings.get("mode", "source") != "source":
-                    raise ValueError("Native painted export requires original paint colors")
-                from .paint_export import export_native_painted_3mf
-                report = export_native_painted_3mf(self.document, self.output, progress=self.progress.emit)
-            else:
-                from .paint_export import export_painted_3mf
-                report = export_painted_3mf(
-                    self.document, self.output, progress=self.progress.emit, **settings
-                )
-            report["export_format"] = export_format
+            from .paint_export import export_painted_3mf
+            report = export_painted_3mf(
+                self.document, self.output, progress=self.progress.emit, **self.settings
+            )
+            report["export_format"] = "volumes"
             self.succeeded.emit(report)
         except Exception as exc:
             traceback.print_exc()
@@ -172,7 +164,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self._undo = []
         self._redo = []
         self._mapping = {}
-        self._mapping_mode = "source"
+        self._mapping_mode = "woven"
         self._export_thread = None
         self._export_worker = None
         self.last_export_report = None
@@ -194,14 +186,14 @@ class PaintWindow(QtWidgets.QMainWindow):
         file_menu = self.menuBar().addMenu("File")
         file_menu.addAction(self.open_action)
         file_menu.addAction(self.save_action)
-        self.surface_export_action = file_menu.addAction("Export surface colors as 3MF…", self.export_surface_dialog)
         toolbar.addSeparator()
         self.undo_action = toolbar.addAction("Undo", self.undo)
         self.undo_action.setShortcut(QtGui.QKeySequence.Undo)
         self.redo_action = toolbar.addAction("Redo", self.redo)
         self.redo_action.setShortcut(QtGui.QKeySequence.Redo)
         toolbar.addSeparator()
-        self.export_action = toolbar.addAction("Export printable 3MF…", self.export_dialog)
+        self.export_action = toolbar.addAction("Export geometry 3MF…", self.export_dialog)
+        file_menu.addAction(self.export_action)
         toolbar.addSeparator()
         toolbar.addAction("Fit view", self.fit_view)
         toolbar.addAction("Top", lambda: self.view("top"))
@@ -291,9 +283,9 @@ class PaintWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.palette_combo)
         self.mapping_mode_combo = QtWidgets.QComboBox()
         self.mapping_mode_combo.setObjectName("paintMappingMode")
-        self.mapping_mode_combo.addItem("Paint colors — one filament each", "source")
         self.mapping_mode_combo.addItem("Woven apparent colors", "woven")
         self.mapping_mode_combo.addItem("Direct physical filament colors", "direct")
+        self.mapping_mode_combo.addItem("Exact colors — one material each", "source")
         self.mapping_mode_combo.currentIndexChanged.connect(self._palette_changed)
         layout.addWidget(self.mapping_mode_combo)
         self.map_button = QtWidgets.QPushButton("Assign colors to palette")
@@ -437,7 +429,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             blocker = QtCore.QSignalBlocker(self.palette_combo)
             self.palette_combo.setCurrentText(palette)
             del blocker
-        mode = document.metadata.get("paint_mapping_mode", "source")
+        mode = document.metadata.get("paint_mapping_mode", "woven")
         blocker = QtCore.QSignalBlocker(self.mapping_mode_combo)
         self.mapping_mode_combo.setCurrentIndex(max(0, self.mapping_mode_combo.findData(mode)))
         del blocker
@@ -650,7 +642,7 @@ class PaintWindow(QtWidgets.QMainWindow):
     def _sync_mapping_controls(self):
         source = self.mapping_mode_combo.currentData() == "source"
         self.palette_combo.setEnabled(not source)
-        self.map_button.setText("Use paint colors exactly" if source else "Assign colors to palette")
+        self.map_button.setText("Assign each color to a material" if source else "Assign colors to palette")
         self.preview_mapping.setEnabled(not source)
 
     def _restore_saved_mapping(self):
@@ -698,7 +690,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         recipes = len({entry["token"] for entry in self._mapping.values()})
         if source_mode:
             self.mapping_label.setText(f"{len(items):,} paint colors → {len(items):,} filament slots. "
-                                      "Each paint color is preserved in the file. Click a row to reuse it.")
+                                      "Each color becomes separate material geometry. Click a row to reuse it.")
             return
         filaments = sorted({token for entry in self._mapping.values() for token in entry["token"]})
         mode = "woven recipes" if self._mapping_mode == "woven" else "physical filaments"
@@ -763,37 +755,18 @@ class PaintWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Save failed", str(exc))
             return False
 
-    def export_surface_dialog(self):
-        if self.document is None:
-            return
-        self.end_stroke()
-        default = str(Path(self.project_path or self.document.source_path or "painted_model").with_suffix("")) + "_surface_colors.3mf"
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Export surface colors", default, "3MF (*.3mf)")
-        if not path:
-            return
-        if not path.lower().endswith(".3mf"):
-            path += ".3mf"
-        try:
-            save_paint_document(self.document, path)
-            self.statusBar().showMessage(f"Surface-colored 3MF saved: {path}")
-        except Exception as exc:
-            QtWidgets.QMessageBox.critical(self, "Surface color export failed", str(exc))
-
     def export_dialog(self):
         if self.document is None or self._export_thread is not None:
             return
         dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle("Export painted model for printing")
+        dialog.setWindowTitle("Export geometry 3MF")
         layout = QtWidgets.QFormLayout(dialog)
         mode = QtWidgets.QComboBox()
-        mode.addItem("Paint colors — one filament each", "source")
+        mode.setObjectName("geometryExportMode")
         mode.addItem("Woven apparent colors", "woven")
         mode.addItem("Direct physical filament colors", "direct")
+        mode.addItem("Exact colors — one material each", "source")
         mode.setCurrentIndex(max(0, mode.findData(self.mapping_mode_combo.currentData())))
-        export_format = QtWidgets.QComboBox()
-        export_format.addItem("Native painted 3MF", "native")
-        export_format.addItem("Material volumes", "volumes")
-        export_format.setCurrentIndex(0 if mode.currentData() == "source" else 1)
         layer = QtWidgets.QDoubleSpinBox()
         layer.setDecimals(3)
         layer.setRange(0.04, 2.0)
@@ -807,35 +780,19 @@ class PaintWindow(QtWidgets.QMainWindow):
         pitch.setValue(0.5)
         pitch.setSuffix(" mm")
         layout.addRow("Color mode", mode)
-        layout.addRow("3MF representation", export_format)
         layout.addRow("Layer height", layer)
         layout.addRow("XY sampling size", pitch)
-        note = QtWidgets.QLabel()
+        note = QtWidgets.QLabel(
+            "Exports separate material geometry with no surface paint. Paint guides the "
+            "material assignment through the full volume from the nearest surface; there is no "
+            "shell-depth control. The exported exterior follows discrete layer steps. "
+            "Smaller sampling sizes retain more detail and take longer. Use the chosen "
+            "layer height in your slicer. Closed solids are required. The assembly is "
+            "centered and grounded. Save a .llpaint project to keep editable paint."
+        )
         note.setWordWrap(True)
         note.setMaximumWidth(440)
         layout.addRow(note)
-        def update_export_options():
-            native_available = mode.currentData() == "source"
-            export_format.model().item(0).setEnabled(native_available)
-            if not native_available:
-                export_format.setCurrentIndex(1)
-            native = export_format.currentData() == "native"
-            layer.setEnabled(not native)
-            pitch.setEnabled(not native)
-            note.setText(
-                "Preserves mesh detail and current face paint using slicer-native color assignments. "
-                "Each source color receives its own filament slot. Closed solids are required; "
-                "the assembly is centered and grounded."
-                if native else
-                "Paint extends through the full volume from the nearest surface; there is no "
-                "shell-depth control. The exported exterior follows discrete layer steps. "
-                "Smaller sampling sizes retain more detail and take longer. Use the chosen "
-                "layer height in your slicer. Closed solids are required. The assembly is "
-                "centered and grounded."
-            )
-        mode.currentIndexChanged.connect(update_export_options)
-        export_format.currentIndexChanged.connect(update_export_options)
-        update_export_options()
         buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
@@ -846,14 +803,14 @@ class PaintWindow(QtWidgets.QMainWindow):
         if not self._mapping and not self.assign_colors():
             return
         self.preview_mapping.setChecked(mode.currentData() != "source")
-        default = str(Path(self.project_path or self.document.source_path or "painted_model").with_suffix("")) + "_painted_print.3mf"
-        output, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save printable model", default, "3MF (*.3mf)")
+        default = str(Path(self.project_path or self.document.source_path or "painted_model").with_suffix("")) + "_geometry.3mf"
+        output, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save geometry 3MF", default, "3MF (*.3mf)")
         if not output:
             return
         if not output.lower().endswith(".3mf"):
             output += ".3mf"
         self.start_export(output, mode=mode.currentData(), layer_height=layer.value(), pitch=pitch.value(),
-                          palette_name=self.palette_combo.currentText(), export_format=export_format.currentData())
+                          palette_name=self.palette_combo.currentText())
 
     def start_export(self, output, **settings):
         """Export a snapshot; editing may continue while conversion runs."""
@@ -879,7 +836,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.progress.setRange(0, 0)
         self.progress.show()
         self.export_action.setEnabled(False)
-        self.statusBar().showMessage("Converting a snapshot of the painted model…")
+        self.statusBar().showMessage("Converting paint assignments into material geometry…")
         thread.start()
         return True
 
@@ -892,10 +849,11 @@ class PaintWindow(QtWidgets.QMainWindow):
     def _export_success(self, report):
         self.last_export_report = report
         path = report.get("output_path", report.get("output_3mf", ""))
-        self.statusBar().showMessage(f"Printable export complete. {path}")
-        advice = ("Inspect the assigned colors in your slicer." if report.get("export_format") == "native"
-                  else "Inspect it in your slicer using the selected layer height.")
-        QtWidgets.QMessageBox.information(self, "Export complete", f"Printable 3MF written.\n{path}\n\n{advice}")
+        self.statusBar().showMessage(f"Geometry export complete. {path}")
+        QtWidgets.QMessageBox.information(
+            self, "Export complete", f"Geometry 3MF written.\n{path}\n\n"
+            "Inspect the material parts in your slicer using the selected layer height."
+        )
 
     @QtCore.Slot(str)
     def _export_failure(self, message):
@@ -912,7 +870,6 @@ class PaintWindow(QtWidgets.QMainWindow):
     def _update_actions(self):
         loaded = self.document is not None
         self.save_action.setEnabled(loaded)
-        self.surface_export_action.setEnabled(loaded)
         self.export_action.setEnabled(loaded and self._export_thread is None)
         self.undo_action.setEnabled(bool(self._undo))
         self.redo_action.setEnabled(bool(self._redo))

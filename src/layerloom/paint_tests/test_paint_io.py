@@ -9,6 +9,7 @@ import pytest
 import trimesh
 
 from layerloom.paint_model import PaintDocument, PaintMesh
+from layerloom.paint_examples import _write_source_color_fixture_3mf
 from layerloom.paint_io import (CORE, MAT, decode_paint_annotation,
                                load_paint_document, save_paint_document)
 
@@ -38,6 +39,13 @@ def test_editable_project_preserves_paint_and_erase_source(tmp_path, shape):
     assert not np.array_equal(copied.meshes[0].face_rgba, loaded.meshes[0].face_rgba)
 
 
+def test_editable_save_rejects_surface_only_3mf_output(tmp_path):
+    path = tmp_path / "not_a_printable_export.3mf"
+    with pytest.raises(ValueError, match=".llpaint extension"):
+        save_paint_document(_doc(trimesh.creation.box()), path)
+    assert not path.exists()
+
+
 def test_standard_3mf_retains_per_face_colors_and_disconnected_objects(tmp_path):
     doc = _doc(trimesh.creation.box())
     sphere = _doc(trimesh.creation.icosphere(subdivisions=1)).meshes[0]
@@ -45,7 +53,7 @@ def test_standard_3mf_retains_per_face_colors_and_disconnected_objects(tmp_path)
     sphere.vertices += [10., 20., 30.]
     doc.meshes.append(sphere)
     path = tmp_path / "two_objects.3mf"
-    save_paint_document(doc, path)
+    _write_source_color_fixture_3mf(doc, path)
     loaded = load_paint_document(path)
     assert len(loaded.meshes) == 2
     for before, after in zip(doc.meshes, loaded.meshes):
@@ -57,7 +65,7 @@ def test_standard_3mf_retains_per_face_colors_and_disconnected_objects(tmp_path)
 def _native_file(tmp_path, *, paint="481", attribute="paint_color", colors=None):
     doc = _doc(trimesh.creation.box())
     path = tmp_path / "native.3mf"
-    save_paint_document(doc, path)
+    _write_source_color_fixture_3mf(doc, path)
     with zipfile.ZipFile(path) as z:
         files = {n: z.read(n) for n in z.namelist()}
     root = ET.fromstring(files["3D/3dmodel.model"])

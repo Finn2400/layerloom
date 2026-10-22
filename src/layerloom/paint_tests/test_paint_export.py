@@ -142,8 +142,15 @@ def test_tiny_disconnected_component_cannot_silently_disappear(tmp_path):
     main = trimesh.creation.box((2, 2, 2))
     tiny = trimesh.creation.box((0.1, 0.1, 0.1))
     tiny.apply_translation((3, 0, 0))
-    with pytest.raises(ValueError, match="disconnected component falls between"):
-        export_painted_3mf(document(main, tiny), tmp_path / "missing.3mf", layer_height=1)
+    doc = document(main, tiny)
+    for item in doc.meshes:
+        item.face_rgba[:] = [0, 255, 255, 255]
+    report = export_painted_3mf(doc, tmp_path / "retained.3mf", layer_height=1)
+    assert_clean_report(report)
+    assert len(report["retained_sub_layer_parts"]) == 2
+    assert report["retained_sub_layer_volume_mm3"] == pytest.approx(0.001, rel=1e-5)
+    assert report["output_volume_mm3"] == pytest.approx(8.001, rel=1e-5)
+    assert all(row["topology_and_face_count_preserved"] for row in report["retained_sub_layer_parts"])
 
 
 def test_xy_precision_cannot_silently_remove_a_tall_disconnected_component(tmp_path):
@@ -216,3 +223,114 @@ def test_source_preflight_welds_only_exact_coordinate_duplicates():
     assert len(surface.vertices) == 8
     assert surface.is_volume
     assert solid.volume() == pytest.approx(4e-9, rel=1e-6)
+
+
+def test_negative_cavity_shell_between_midpoints_is_not_a_dropped_object(tmp_path):
+    outer = trimesh.creation.box((4, 4, 4))
+    cavity = trimesh.creation.box((0.2, 0.2, 0.1))
+    cavity.invert()
+    joined = trimesh.util.concatenate([outer, cavity])
+    doc = document(joined)
+    report = export_painted_3mf(doc, tmp_path / "cavity.3mf", pitch=1, layer_height=1)
+    assert_clean_report(report)
+    row = report["source_meshes"][0]
+    assert row["positive_components"] == 1
+    assert row["negative_cavity_shells"] == 1
+    assert len(row["component_z_bounds_mm"]) == 1
+    assert report["output_volume_mm3"] == pytest.approx(64)
+
+
+def test_printable_export_contains_geometry_and_slots_without_triangle_paint(tmp_path):
+    path = tmp_path / "geometry_only.3mf"
+    export_painted_3mf(document(trimesh.creation.box((2, 2, 2))), path, pitch=1, layer_height=1)
+    forbidden = {"paint_color", "mmu_segmentation", "pid", "p1", "p2", "p3"}
+    with zipfile.ZipFile(path) as archive:
+        for name in archive.namelist():
+            if name.endswith(".model"):
+                root = ET.fromstring(archive.read(name))
+                for node in root.iter():
+                    if node.tag.rsplit("}", 1)[-1] == "triangle":
+                        assert not forbidden.intersection(key.rsplit("}", 1)[-1] for key in node.attrib)
+
+
+def test_sub_layer_retention_uses_saved_recipe_global_phase(tmp_path):
+    main = trimesh.creation.box((2, 2, 2))
+    tiny = trimesh.creation.box((0.1, 0.1, 0.1))
+    tiny.apply_translation((3, 0, 0.2))
+    doc = document(main, tiny)
+    for item in doc.meshes:
+        item.face_rgba[:] = [0, 255, 255, 255]
+    report = export_painted_3mf(doc, tmp_path / "tiny_phase.3mf", layer_height=1,
+                               palette_name="CMY", recipe_overrides={"#00FFFF": "cm"})
+    assert_clean_report(report)
+    retained = report["retained_sub_layer_parts"]
+    assert len(retained) == 1
+    assert retained[0]["layer_index"] == 1
+    assert retained[0]["filament"] == "m"
+    assert retained[0]["sampled_recipe"] == "cm"
+    assert retained[0]["source_recipes"] == ["cm"]
+
+
+def test_fine_grid_cleanup_uses_placed_float32_spacing_without_losing_components(tmp_path):
+    import manifold3d as mf
+    # The tiny inward notch is representable near the source origin, but falls
+    # between adjacent float32 values after placement near X=128 mm. Its nearly
+    # collinear boundary triangles must be cleaned within the declared ULP bound.
+    polygon = np.array([[0, 0], [2, 0], [2, 2], [0, 2], [0.000003, 1]], dtype=float)
+    solid = mf.CrossSection([polygon]).extrude(2)
+    data = solid.to_mesh64()
+    mesh = trimesh.Trimesh(data.vert_properties, data.tri_verts, process=False)
+    doc = document(mesh)
+    doc.meshes[0].face_rgba[:] = [0, 255, 255, 255]
+    report = export_painted_3mf(doc, tmp_path / "fine_grid.3mf", layer_height=1, pitch=0.5,
+                               precision=1e-7, interface_offset=0)
+    assert_clean_report(report)
+    part = report["filaments"][0]
+    assert part["numerical_simplification_tolerance_mm"] > report["geometry_precision_mm"] / 2
+    assert part["numerical_simplification_tolerance_mm"] <= part["placed_float32_ulp_mm"] * 4
+    assert part["components_before_numerical_cleanup"] == part["components_after_numerical_cleanup"] == 1
+
+
+def test_all_positive_objects_can_be_retained_between_midpoints(tmp_path):
+    first = trimesh.creation.box((1, 1, 0.01))
+    first.apply_translation((0, 0, 0.005))
+    second = first.copy()
+    second.apply_translation((2, 0, 0.19))
+    doc = document(first, second)
+    for mesh in doc.meshes:
+        mesh.face_rgba[:] = [0, 255, 255, 255]
+    report = export_painted_3mf(doc, tmp_path / "all_retained.3mf", layer_height=0.2)
+    assert_clean_report(report)
+    assert report["nonempty_layers"] == 0
+    assert len(report["retained_sub_layer_parts"]) == 2
+    assert report["retained_sub_layer_volume_mm3"] == pytest.approx(0.02, rel=1e-5)
+    assert report["output_volume_mm3"] == pytest.approx(0.02, rel=1e-5)
+
+
+def test_component_count_does_not_materialize_disconnected_solids():
+    import manifold3d as mf
+    from layerloom.paint_export import _solid_component_count
+    first = mf.Manifold.cube((1, 1, 1))
+    second = first.translate((3, 0, 0))
+    solid = mf.Manifold.batch_boolean([first, second], mf.OpType.Add)
+    assert _solid_component_count(solid) == len(solid.decompose()) == 2
+    hollow = mf.Manifold.cube((4, 4, 4), center=True) - mf.Manifold.cube((2, 2, 2), center=True)
+    assert _solid_component_count(hollow) == len(hollow.decompose())
+    assert _solid_component_count(mf.Manifold()) == 0
+
+
+def test_placed_vertex_collision_is_corrected_without_dropping_a_material_component():
+    import manifold3d as mf
+    from layerloom.paint_export import _finalize_filament
+    first = mf.Manifold.cube((2, 2, 2), center=True)
+    second = first.translate((2.000003, 0, 0))
+    solid = mf.Manifold.batch_boolean([first, second], mf.OpType.Add).translate((-1.0000015, 0, 1))
+    mesh, _, row = _finalize_filament(solid, "c", 1e-7)
+    assert row["components_before_numerical_cleanup"] == row["components_after_numerical_cleanup"] == 2
+    assert not any(row["defects"].values())
+    assert not any(row["placed_float32_defects"].values())
+    correction = row["local_vertex_correction"]
+    assert correction is not None
+    assert correction["topology_and_face_count_preserved"]
+    assert correction["maximum_vertex_displacement_mm"] <= correction["displacement_limit_mm"]
+    assert mesh.is_volume

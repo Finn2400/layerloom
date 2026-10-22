@@ -1457,7 +1457,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.paint_panel = PaintPanel(parent=tabs)
         tabs.addTab(self.paint_panel, "Paint surfaces")
         tabs.addTab(arrange, "Arrange & weave")
-        tabs.setTabToolTip(0, "Select or brush-paint model surfaces, preserve source colors, and export colored 3MFs.")
+        tabs.setTabToolTip(0, "Select or brush-paint model surfaces, then export separate filament geometry as 3MF.")
         tabs.setTabToolTip(1, "Existing whole-part placement and palette weaving workspace.")
         self.setCentralWidget(tabs)
         tabs.currentChanged.connect(self._workspace_changed)
@@ -1479,7 +1479,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         labels = {"Open 3MF…": "Open model or paint project…",
                   "Open GLB…": "Open another model…",
                   "Save Labeled 3MF…": "Save paint project…",
-                  "Weave": "Export printable painted 3MF…", "Preview 3D": "Fit paint model"}
+                  "Weave": "Export geometry 3MF…", "Preview 3D": "Fit paint model"}
         for action, original in self._workspace_action_labels:
             action.setText(labels.get(original, original) if paint else original)
         if hasattr(self, "_paint_action"):

@@ -11,6 +11,11 @@ Use the normal `layerloom-gui` launcher. File/Open, File/Save and Tools/Export
 follow the selected workspace, and closing the main window protects unsaved
 paint or an active export.
 
+**Printable exports contain geometry only.** Imported and edited paint guides
+the conversion into separate meshes for physical filaments. Exported 3MFs use
+part-level filament assignments and contain no per-face paint annotations.
+Editable `.llpaint` projects retain paint for future editing.
+
 The editor can also be launched directly:
 
 ```sh
@@ -31,25 +36,24 @@ python -m layerloom.paint_gui /path/to/model.3mf
    whole stroke or applied selection. Alt+left-drag rotates the camera;
    middle-drag pans and right-drag zooms. Navigate mode allows ordinary camera
    control without painting.
-4. **Paint colors — one filament each** assigns one physical filament slot to
-   each exact current paint color, including your edits. It is the default for
-   new documents. **Woven apparent colors**
-   and **Direct physical filament colors** instead map to a LayerLoom palette.
+4. **Woven apparent colors** is the default for new documents and maps paint
+   to LayerLoom recipes. **Direct physical filament colors** maps paint to
+   individual palette filaments. **Exact colors — one material each** instead
+   assigns one physical filament slot to each exact current paint color.
    Mapping preview never overwrites source paint. The table and status show the
    recipes and required physical filaments.
 5. **Save paint…** writes an editable `.llpaint` project. It includes geometry,
    current colors, original colors for erase, and palette metadata. Use Open to
    reopen it.
-6. **Export printable 3MF…** offers **Native painted 3MF** for original colors.
-   This retains the exact exterior and face paint using Orca/Bambu-compatible
-   filament assignments. **Material volumes** provides the sampled physical
-   parts needed for palette weaving. Native export requires closed valid solids;
-   it does not silently repair source geometry.
+6. **Export geometry 3MF…** converts the painted solid into separate material
+   meshes. Woven mode assigns each layer according to the recipe; the other
+   modes make geometry for their physical colors. All modes export geometry,
+   with no surface-paint annotations. Closed valid source solids are required;
+   ordinary export does not silently repair source geometry.
 
-The standalone editor also exposes a standard surface-color 3MF export under
-File. Slicers vary in their support for standard 3MF color properties; use
-Native painted 3MF for the tested Orca/Bambu paint representation. Import all
-parts of material-volume exports together, retaining their common alignment.
+Import all exported parts together, retaining their common alignment. There is
+no native painted-3MF or standard surface-color export option. Colored 3MF
+writers used to generate import-test fixtures are internal development helpers.
 
 ## Material-volume conversion
 
@@ -57,10 +61,13 @@ For material-volume exports, paint extends through the source solid from the nea
 is no adjustable colored-shell depth in this prototype. The converter samples
 horizontal cross-sections at layer midpoints, partitions them by paint, applies
 the palette recipe at the global layer index, and unions each physical material.
+Disconnected positive shells missed by all midpoints are retained as separate
+geometry parts, with one verified interior paint sample per layer piece. Thin
+features within a larger connected solid still follow midpoint sampling.
 
 The exterior is layer-stepped. XY material detail is limited by source triangles
-and the selected sampling pitch. The export audit records 0.001 mm coordinate
-snapping and interface priority, any bounded numerical simplification, volume
+and the selected sampling pitch. The export audit records coordinate snapping
+(0.001 mm by default) and interface priority, bounded numerical cleanup, volume
 change, layer coverage, and float32 geometry checks. It rejects open or
 overlapping source solids, transparent colors, and invalid material geometry.
 
@@ -152,8 +159,6 @@ instance. Import retains those defects. The requested repair is stored
 separately under `outputs/paint_main_ui_2026_10_22/repair/`:
 
 - `baby_repaired.llpaint`: editable repaired geometry and paint.
-- `baby_repaired_native_painted.3mf`: native painted print export using the
-  original purple, black, white and yellow as four physical filament slots.
 - `repair-audit.json`: component, hole, precision, geometry and color audits.
 
 Repair retains all 39 positive-volume source components per instance and unites
@@ -168,28 +173,58 @@ repair is applied during ordinary paint import or export.
 
 The repair API requires Manifold's Mesh64 and face-provenance APIs; it was
 validated with `manifold3d 3.5.2` and reports an upgrade error if those APIs are
-missing. Exported geometry and face colors read back exactly. The maximum
+missing. Repaired project geometry and face colors read back exactly. The maximum
 measured final vertex deviation from the exact union exterior is 0.00006321 mm.
 
-Bambu Studio sliced the repaired native-paint export into 302 fixed 0.2 mm
-layers, with both objects, all four physical colors depositing model material,
-and zero mesh repairs. The sliced project retains all 1,548,226 face colors and
-triangle topology. A nearest-surface toolpath-color heuristic flags 8 of 8,686
-near-exterior samples, all near the base at Z 0.5–1.5 mm. Native slicer paint
-projection is not defined by that heuristic, so this is an unresolved boundary
-check rather than proof of paint loss. Reducing bottom shells from five to one
-did not change the result; the baseline profile remains the reference. Physical
-printed-color accuracy has not been tested.
+The repaired woven project is
+`outputs/paint_main_ui_2026_10_22/woven/baby_repaired_woven.llpaint`.
+It retains both repaired instances and the saved Normal weave recipes:
+purple `cmwmwm`, black `k`, yellow `y`, and white `w`. These require five physical
+filaments (C, M, Y, K, W). The printable file is
+`outputs/paint_main_ui_2026_10_22/woven/baby_repaired_woven_geometry.3mf`.
+It contains 41 aligned geometry parts assigned to those five filament slots,
+with 303 layers at 0.2 mm. The earlier native-painted 3MF was a superseded
+development artifact; it is not the woven output and is no longer an
+application export path.
 
-The branch's source was validated separately from unrelated working-tree
-changes: 72 backend tests and 15 native GUI tests passed. Main-window pointer
-tests select and paint an entire cube face, exercise undo/redo and tab switching,
-and verify exact save/reopen. The repaired baby dragon is open in the main Paint
-surfaces workspace with the exact four-color mapping. Its saved UI project and
-screenshots are under `outputs/paint_main_ui_2026_10_22/gui/`; screenshot records
-identify the native Qt chrome and same-instant VTK framebuffer capture method.
+The woven volume differs from the repaired source by +0.00264%, primarily from
+layer-midpoint sampling. Its measured material overlap is 0.12636 mm³ (about
+1.13 ppm of model volume), within the declared numerical tolerance. The largest
+placed coordinate correction is 0.0000944 mm. All connected material regions
+remain. The 36 microscopic positive shells missed by layer-midpoint sampling
+are retained as separate geometry parts; their retention does not imply that a
+0.2 mm layer/nozzle can physically deposit them. The export report and slicer
+audits record these limits.
+
+Independent readback verifies all 41 original parts at local and placed float32
+coordinates, with no surface-paint properties. Bambu Studio slices the original
+file successfully: 303 fixed 0.2 mm layers, zero reported mesh repairs, matching
+physical filament use on every layer, and unchanged part alignment. This checks
+actual extrusion and layer phase, not every XY material boundary or physical
+printed color.
+
+Use the original `baby_repaired_woven_geometry.3mf` as the deliverable. Bambu's
+separately re-saved sliced project rounds transforms by up to 0.000000049 mm;
+its local float32 vertices and ordered triangles remain identical, but those
+transform changes introduce placed-float32 degeneracies in three parts. The
+saved-project checks are recorded as failures, separately from the valid
+original geometry and successful G-code audit. See
+`slicer/baby_woven_geometry/independent-woven-validation.json` and
+`independent-transform-reserialization-audit.json` under the same slicer folder.
+
+The full-size dragon proof uses 0.2 mm layers, a 0.4 mm paint-sampling pitch, and
+0.00001 mm coordinate precision. Its local development driver uses a validated
+exact triangle-search accelerator, parallel layer checkpoints, and an explicitly
+increased cell budget. The ordinary GUI converter still has a two-million-cell
+guard; large-model performance and advanced export controls remain prototype
+work. The accelerator and reproduction commands are retained beside the output.
+
+Main-window pointer tests select and paint an entire cube face, exercise
+undo/redo and tab switching, and verify exact save/reopen. GUI evidence is under
+`outputs/paint_main_ui_2026_10_22/gui/`; screenshot records identify the native Qt
+chrome and same-instant VTK framebuffer capture method.
 
 Earlier validation artifacts are in `outputs/paint_prototype_2026_10_22/`;
-the main-UI, selection, repair and native-color evidence is in
+the main-UI, selection, repair and woven-geometry evidence is in
 `outputs/paint_main_ui_2026_10_22/`.
 They are local development evidence, not redistributed model fixtures.
