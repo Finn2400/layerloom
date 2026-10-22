@@ -7,6 +7,21 @@ import shapely
 from shapely.geometry import Polygon
 
 
+def _set_hausdorff(first, second):
+    """Keep the discrete diagnostic, avoiding its quadratic identical-set case.
+
+    Exact normalized equality proves that every boundary vertex and edge has
+    an identical counterpart, so the discrete distance is exactly zero. Merely
+    equal area or topological equality would be a weaker condition: changed
+    holes or differently sampled boundaries still take the original path.
+    """
+    # Explicit normalization also supports Shapely 2.0, whose equals_exact
+    # does not yet accept the normalize keyword.
+    if shapely.equals_exact(shapely.normalize(first), shapely.normalize(second), tolerance=0):
+        return 0.0
+    return float(shapely.hausdorff_distance(first, second))
+
+
 def partition_materials(token_regions, *, precision=1e-5, seam_tolerance=0.001):
     """Return material regions, diagnostics, and any blocking errors.
 
@@ -80,7 +95,7 @@ def partition_materials(token_regions, *, precision=1e-5, seam_tolerance=0.001):
             errors.append(f"material {token} changes beyond its seam tolerance")
         diagnostics["material_changes"].append(dict(token=token,
             reassigned_area_mm2=float(changed.area),
-            set_hausdorff_mm=float(shapely.hausdorff_distance(region, piece)) if not piece.is_empty else None))
+            set_hausdorff_mm=_set_hausdorff(region, piece) if not piece.is_empty else None))
         if not piece.is_empty:
             result[token] = piece
             claimed = shapely.union_all([claimed, piece], grid_size=0)

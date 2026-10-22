@@ -12,3 +12,8 @@ results/*
 !results/optimized_benchmark.json
 !results/optimized_comparison.png
 !results/optimization_validation.json
+!results/contour_profile_before.json
+!results/contour_profile_after.json
+!results/profiled_benchmark.json
+!results/profiled_comparison.png
+!results/profiled_validation.json

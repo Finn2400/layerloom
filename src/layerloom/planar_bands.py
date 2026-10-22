@@ -65,13 +65,13 @@ class BandResult:
 
 def _segments(geometry):
     """Flatten noded linework to elementary segments, retaining intersection nodes."""
-    result = []
-    for line in shapely.get_parts(geometry):
-        if line.geom_type != "LineString":
-            continue
-        coords = np.asarray(line.coords, dtype=float)[:, :2]
-        result.extend(np.stack((coords[:-1], coords[1:]), axis=1))
-    return np.asarray(result, dtype=float).reshape(-1, 2, 2)
+    parts = shapely.get_parts(geometry)
+    lines = parts[shapely.get_type_id(parts) == 1]  # LineString, as before.
+    coordinates, indices = shapely.get_coordinates(lines, return_index=True)
+    # Adjacent coordinates from different lines must never create a connector.
+    # Bulk extraction retains both line order and every intersection node.
+    adjacent = indices[:-1] == indices[1:]
+    return np.stack((coordinates[:-1][adjacent], coordinates[1:][adjacent]), axis=1)
 
 
 def _graph(segments):
@@ -82,7 +82,7 @@ def _graph(segments):
 
 
 def _node(segments, precision):
-    return shapely.union_all([LineString(s) for s in segments], grid_size=precision)
+    return shapely.union_all(shapely.linestrings(segments), grid_size=precision)
 
 
 def _odd_crossings(point, segments):
@@ -396,7 +396,21 @@ def prepare_export_region(region):
     }
 
 
-def _split_cap_vertex_fans(vertices, faces):
+def _cap_edge_topology(faces):
+    """Group directed cap edges while retaining their original output order."""
+    edges = np.concatenate((faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]))
+    canonical = np.sort(edges, axis=1)
+    order = np.lexsort((canonical[:, 1], canonical[:, 0]))
+    ordered = canonical[order]
+    shared = np.all(ordered[1:] == ordered[:-1], axis=1)
+    starts = np.r_[0, np.flatnonzero(~shared) + 1, len(edges)]
+    counts = np.diff(starts)
+    incidence = np.empty(len(edges), dtype=np.intp)
+    incidence[order] = np.repeat(counts, counts)
+    return edges, order, shared, incidence
+
+
+def _split_cap_vertex_fans(vertices, faces, *, _topology=None):
     """Give disconnected triangle fans distinct indices at a geometric contact.
 
     A valid planar polygon can have a hole touching its shell at one point.
@@ -404,12 +418,57 @@ def _split_cap_vertex_fans(vertices, faces):
     edge. Splitting their indices preserves the footprint but does not remove
     the geometric contact; callers receive an explicit contact count.
     """
+    if not len(faces):
+        return np.asarray(vertices, dtype=float).copy(), faces.copy(), 0
+    # Sparse graph setup costs more than the original traversal on tiny caps.
+    # Measured crossover is between 16 and 32 triangles; keep that traversal
+    # below the crossover without changing its contact handling.
+    if len(faces) <= 16:
+        return _split_cap_contacts(vertices, faces)
+
+    from scipy.sparse import coo_matrix
+    from scipy.sparse.csgraph import connected_components
+
+    edges, order, shared, _ = (_cap_edge_topology(faces)
+                               if _topology is None else _topology)
+    # Each triangle corner is a node. Across every shared cap edge, connect
+    # the corners belonging to the same endpoint. Components are therefore
+    # triangle fans at one vertex, including interior or nonmanifold fans;
+    # no assumption about boundary degree or geometric separation is needed.
+    corners = np.arange(faces.size).reshape(-1, 3)
+    edge_corners = np.concatenate((corners[:, [0, 1]], corners[:, [1, 2]],
+                                   corners[:, [2, 0]]))
+    reversed_edges = edges[:, 0] > edges[:, 1]
+    edge_corners[reversed_edges] = edge_corners[reversed_edges, ::-1]
+    left = edge_corners[order[:-1][shared]].ravel()
+    right = edge_corners[order[1:][shared]].ravel()
+    graph = coo_matrix((np.ones(len(left), dtype=np.int8), (left, right)),
+                       shape=(faces.size, faces.size))
+    _, labels = connected_components(graph, directed=False)
+    smallest = np.full(len(vertices), faces.size, dtype=np.intp)
+    largest = np.full(len(vertices), -1, dtype=np.intp)
+    np.minimum.at(smallest, faces.ravel(), labels)
+    np.maximum.at(largest, faces.ravel(), labels)
+    candidates = (largest >= 0) & (smallest != largest)
+    if not np.any(candidates):
+        return np.asarray(vertices, dtype=float).copy(), faces.copy(), 0
+
+    return _split_cap_contacts(vertices, faces, candidates)
+
+
+def _split_cap_contacts(vertices, faces, candidates=None):
+    """Apply the original index-preserving traversal to selected vertices."""
     from collections import defaultdict
 
+    # Preserve the original first-appearance order and component traversal for
+    # actual contacts, so both indices and triangle order remain unchanged.
     incident = defaultdict(list)
-    for face_index, face in enumerate(faces):
-        for vertex in face:
-            incident[int(vertex)].append(face_index)
+    selected = (range(len(faces)) if candidates is None
+                else np.flatnonzero(np.any(candidates[faces], axis=1)))
+    for face_index in selected:
+        for vertex in faces[face_index]:
+            if candidates is None or candidates[vertex]:
+                incident[int(vertex)].append(int(face_index))
     points, faces = vertices.tolist(), faces.copy()
     splits = 0
     for vertex, face_indices in incident.items():
@@ -450,14 +509,15 @@ def _extrude_indexed_cap(vertices, faces, low, high):
         raise ValueError("triangulator produced a collapsed cap triangle")
     faces = faces.copy()
     faces[cross < 0] = faces[cross < 0, ::-1]
-    vertices, faces, splits = _split_cap_vertex_fans(vertices, faces)
+    topology = _cap_edge_topology(faces)
+    vertices, faces, splits = _split_cap_vertex_fans(vertices, faces, _topology=topology)
     count = len(vertices)
-    edges = np.concatenate((faces[:, [0, 1]], faces[:, [1, 2]], faces[:, [2, 0]]))
-    _, inverse, incidence = np.unique(np.sort(edges, axis=1), axis=0,
-                                      return_inverse=True, return_counts=True)
+    # Most caps have one fan at every vertex. Reuse their edge groups; a
+    # contact split changes indices and requires a fresh grouping.
+    edges, _, _, incidence = _cap_edge_topology(faces) if splits else topology
     if np.any(incidence > 2):
         raise ValueError("triangulated cap has a nonmanifold edge")
-    boundary = edges[incidence[inverse] == 1]
+    boundary = edges[incidence == 1]
     left, right = boundary.T
     sides = np.vstack((np.column_stack((left, right, right + count)),
                        np.column_stack((left, right + count, left + count))))

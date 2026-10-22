@@ -649,3 +649,132 @@ range. Full timings, provenance and inherited quality evidence are in
 [`results/optimized_benchmark.json`](results/optimized_benchmark.json).
 The combined contour, CLI, benchmark and G-code-probe regression suite passed
 **189 tests** after the measurements, without competing with the timed workers.
+
+## Profile-guided optimization, 22 October 2026
+
+`profile_contours.py` profiles four intrinsic geometry kernels separately,
+after warmup and outside imports, loading, hashing, export and external audits.
+The before/after reports retain exact source and final geometry fingerprints,
+dependency versions, implementation hashes and function-level statistics.
+Profiler overhead affects these numbers; they identify costs rather than serve
+as performance measurements.
+
+| Benchy kernel | Before, instrumented | After, instrumented |
+| --- | ---: | ---: |
+| Source contour extraction | 21.33 s | 12.16 s |
+| Material partition | 10.52 s | 7.47 s |
+| Final extrusion | 12.49 s | 8.30 s |
+| Native float32 checks | 1.86 s | 1.89 s |
+
+The changes target the measured costs:
+
+- `_node` creates line strings in bulk, and `_segments` extracts coordinates
+  in bulk while preserving segment order and every intersection node. Adjacent
+  coordinates from different lines never create a connector. This removes
+  Python work previously repeated for more than 426,000 Benchy line objects.
+- Cap extrusion computes connected components of triangle corners across
+  shared edges to identify disconnected vertex fans. Only actual contacts need
+  the original Python splitting traversal. That traversal retains exactly the
+  original vertex and triangle order; edge groups are reused only when no split
+  changes the indices. Nonmanifold-edge rejection remains in place.
+  Caps with at most 16 triangles retain the original traversal: measured sparse
+  graph setup costs more for these small cases. Exact-index and contact tests
+  cover both paths and the 16/17-triangle boundary.
+- Material partition returns a zero diagnostic Hausdorff distance when exact
+  normalized coordinates prove identical boundaries. This avoids an expensive
+  distance calculation for 212 of 349 Benchy regions. Equal area or merely
+  topological equality is insufficient to use the shortcut. All partition
+  Booleans, seam, union, erasure and displacement checks still run.
+
+Both profiling runs produced identical source-profile, final-mesh and combined
+hashes. No final geometry checks or representation tolerances were removed or
+relaxed. The remaining measured costs are predominantly geometric operations:
+bounded repair of 22 difficult sections, line noding, material Booleans,
+float32-region normalization, constrained triangulation and volume checks.
+The difficult-section fallback alone takes about 6.9 instrumented seconds,
+including its boundary-distance safeguards.
+
+The follow-up comparison freezes **all three** contour modules from
+`514b61a6` and verifies their hashes against the preceding benchmark. A fresh
+worker imports either those frozen modules or the current modules before
+binding its five geometry entrypoints. Runtime paths and hashes must match the
+expected implementation on every run. Both 2D arms now use one final extrusion;
+the control is the previous optimized method, not the earlier redundant path.
+The two legacy methods, original inputs, settings, balanced four-repeat order,
+external-evidence identity gates and timing exclusions are unchanged.
+
+Reproduce with the existing Python environment:
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1 \
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/profile_contours.py \
+  --output /tmp/contour_profile.json
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/profiled_benchmark.py
+
+PYTHONPATH=src python experiments/planar_bands/optimized_plot.py \
+  experiments/planar_bands/results/profiled_benchmark.json \
+  --output experiments/planar_bands/results/profiled_comparison.png
+```
+
+The full production Benchy export also passed its native mesh, float32,
+export/reimport, cap, whole-layer and seam checks. All 349 named bands,
+1,466,260 triangles and all diagnostic metadata match the previously inspected
+file exactly, including the existing tiny-hole normalization and seam records.
+The new local export is `results/benchy_profiled.3mf`; the original and Orca
+inspection copy were preserved. The compact proof is
+[`results/profiled_validation.json`](results/profiled_validation.json).
+The final targeted regression suite passed **278 tests**, including exact
+old/new topology parity, invalid geometry rejection, the tiny-cap dispatch,
+and frozen-control provenance. Tests and profiling finished before the
+controlled measurements started.
+
+### Profile-guided measurements
+
+All **64 fresh serial runs completed**, with exact final geometry matching
+the archived results and every frozen/current implementation binding verified.
+For each input, source-profile hashes also match across both 2D arms and all
+four repetitions. Recorded implementation hashes and all prior evidence files
+were unchanged at the end of the run. The common external audits were reused
+by exact identity, as before; the separate production-export check is described
+above. No timing observations were removed.
+
+Complete repair/layer creation and final color assembly, seconds:
+**median [minimum–maximum]**. Every column was measured in this same run.
+
+| Input | Existing cuts | Mesh repair + cuts | Previous optimized 2D | Profile-guided 2D |
+| --- | ---: | ---: | ---: | ---: |
+| Tutorial cubes | 0.200 [0.198–0.210] | 0.204 [0.202–0.209] | 0.306 [0.290–0.320] | **0.277 [0.273–0.279]** |
+| Benchy | 11.876 [11.281–13.204] | 12.291 [11.597–13.663] | 39.841 [39.665–40.749] | **28.949 [28.813–29.359]** |
+| Intact hollow tube | 1.136 [1.124–1.198] | 1.140 [1.123–1.176] | 7.530 [7.453–7.671] | **4.536 [4.504–4.613]** |
+| Tube with 0.020 mm seam | 1.488 [1.470–1.558] | 1.172 [1.129–1.228] | 9.631 [9.326–10.191] | **5.821 [5.565–6.103]** |
+
+Median reductions are **9.6%, 27.3%, 39.8% and 39.6%**, respectively. Benchy's
+source stage falls from 17.255 to 11.974 s and final color assembly from 22.607
+to 17.047 s. Stage medians need not sum to the median total. Relative to the
+old mesh-repair-and-cut path, Benchy's runtime gap falls from **3.24× to 2.36×**;
+the new method remains slower. The old methods reproduce their prior defects,
+while the 2D outputs retain their repaired geometry, color assignments, cavity
+handling and successful final checks.
+
+The final instrumented profile attributes the remaining Benchy time roughly
+as **41% source contours, 25% material partition, 28% extrusion and 6% native
+float32 checks**. These percentages include profiler overhead and should not
+be applied as exact fractions of the uninstrumented 28.949 s runtime. The
+largest remaining individual costs include boundary safeguards for difficult
+sections, exact polygon Booleans, export-lattice normalization and constrained
+triangulation. They are still executed; this change does not trade accuracy or
+validation for speed.
+
+![Profile-guided repair and layer-creation timings](results/profiled_comparison.png)
+
+Evidence: [`profiled_benchmark.json`](results/profiled_benchmark.json),
+[`contour_profile_before.json`](results/contour_profile_before.json),
+[`contour_profile_after.json`](results/contour_profile_after.json), and
+[`profiled_validation.json`](results/profiled_validation.json). These are local
+desktop measurements with four observations per cell, unchanged thread limits
+and no CPU pinning or isolation from background applications. Ranges show
+observations, not confidence intervals.

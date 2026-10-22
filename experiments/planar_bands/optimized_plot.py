@@ -23,6 +23,7 @@ STAGES = (("repair_s", "Mesh repair", "#94a3b8"),
 
 
 def plot(report, output):
+    labels = report["protocol"].get("plot_labels", LABELS)
     cells = [(case, height) for height in report["protocol"]["heights_mm"]
              for case in report["protocol"]["cases"]]
     rows = math.ceil(len(cells) / 2)
@@ -67,7 +68,7 @@ def plot(report, output):
         suffix = f"  ·  {speed:.2f}× faster 2D" if speed else ""
         ax.set_title(f"{CASES[case]}{suffix}", loc="left", fontsize=12, weight="bold", pad=14)
         ax.set_xlim(0, maximum * 1.25)
-        ax.set_yticks(range(len(METHODS)), [LABELS[m] for m in METHODS], fontsize=10)
+        ax.set_yticks(range(len(METHODS)), [labels[m] for m in METHODS], fontsize=10)
         ax.invert_yaxis()
         ax.set_xlabel(f"Complete geometry processing (seconds) · {height:g} mm layers", fontsize=9)
         ax.grid(axis="x", color="#cbd5e1", linewidth=.5)
@@ -77,11 +78,13 @@ def plot(report, output):
         ax.tick_params(axis="y", length=0)
     for ax in list(axes.flat)[len(cells):]:
         ax.set_visible(False)
-    fig.suptitle("One extrusion per final region: faster 2D repair, identical geometry",
+    fig.suptitle(report["protocol"].get("plot_title", "One extrusion per final region: faster 2D repair, identical geometry"),
                  fontsize=17, weight="bold", x=.045, ha="left", y=.98)
     fig.text(.045, .932, f"{report['protocol']['repetitions']} fresh serial runs per case/method; balanced order; "
-             "original 2D implementation frozen. Panel scales differ.", fontsize=10, color="#475569")
-    fig.legend(handles=[Patch(facecolor=color, label=label) for _, label, color in STAGES],
+             "prior 2D implementation frozen. Panel scales differ.", fontsize=10, color="#475569")
+    fig.legend(handles=[Patch(facecolor=color, label=("Source bands / contours (2D)"
+                           if name == "layers_s" and "previous" in report["protocol"] else label))
+                        for name, label, color in STAGES],
                loc="lower center", bbox_to_anchor=(.5, .087), ncol=3, frameon=False, fontsize=9)
     fig.text(.045, .025,
              "Bars: median total, central-run stage breakdown. Whiskers: observed min–max. Hatching: known geometry defects remain.\n"

@@ -1,0 +1,3741 @@
+{
+  "description": "One cProfile-instrumented run; cumulative rows overlap. Wall totals include profiler overhead, not comparable benchmark timings.",
+  "excluded": [
+    "imports",
+    "input loading",
+    "warmup",
+    "fingerprints",
+    "posthoc audit",
+    "export"
+  ],
+  "scope": "Profile wrappers cover source profiles, material partition, final extrusion, and mandatory native float32 checks; worker scheduling overhead remains only in worker timings.",
+  "case": "benchy",
+  "height_mm": 0.2,
+  "method": "contour_optimized",
+  "git_head": "514b61a6a9a42f1b4f990bca4e99096596be447a",
+  "source_sha256": {
+    "experiments/planar_bands/profile_contours.py": "dbcca12169ba01cfe351134fe13529b683ace955d5eba4ce07a3e33e46aaa288",
+    "experiments/planar_bands/controlled_worker.py": "fea9e00d2dd78d942ad684cfcf391bf902b5003ad05703bafba7951e17d3e5fc",
+    "src/layerloom/planar_bands.py": "859dfecd5e4de4542a79f2130b2d03d5cb8dc2f97bd4424e326842e00f9c3480",
+    "src/layerloom/planar_materials.py": "4c0786a802cf8aa1b58d683ac2026f302f370ed04b56b9684f53fded269ca6c8",
+    "src/layerloom/contour_repair.py": "625395aba25658cf6127190f33c9bda763ce8fbf6808f77b2077b9bb8f4d2237"
+  },
+  "thread_environment": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1"
+  },
+  "machine": "macOS-14.6.1-arm64-arm-64bit",
+  "versions": {
+    "python": "3.12.0rc3",
+    "numpy": "2.4.6",
+    "trimesh": "4.11.5",
+    "shapely": "2.1.2",
+    "geos": "3.13.1",
+    "pymeshlab": "2025.7.post1",
+    "manifold3d": "3.5.2",
+    "scipy": "1.17.1"
+  },
+  "source": {
+    "synthetic": false,
+    "path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
+    "sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e"
+  },
+  "settings": {
+    "z0_mm": -2.7e-08,
+    "z_gap_mm": 0.001,
+    "precision": 1e-05,
+    "max_gap": 0.03,
+    "contour_tolerance": 0.001,
+    "seam_tolerance": 0.001,
+    "grid": "original input part bounds, original global z0; same nominal intervals for every method",
+    "gap_policy": "both ends of every nominal band trimmed by 0.0005 mm, including outer boundaries",
+    "assembly": "contour_optimized: profile-only source stage, partition_materials, one final extrusion with native intrinsic checks"
+  },
+  "counts": {
+    "source_parts": 8,
+    "source_triangles": 253176,
+    "source_vertices": 126606,
+    "nominal_bands": 657,
+    "produced_bands": 0,
+    "produced_source_meshes": 0,
+    "missing_bands": 0,
+    "source_profiles": 657,
+    "nonempty_source_profiles": 649,
+    "empty_source_profiles": 8,
+    "failed_source_profiles": 0,
+    "deferred_source_extrusions": 649,
+    "exceptions": 0,
+    "failed_bands": 0,
+    "output_triangles": 0,
+    "native_parts": 349,
+    "native_triangles": 1466260
+  },
+  "fingerprints": {
+    "part_bands_sha256": null,
+    "native_parts_sha256": "28b244eb21ea67271664259502cf76e06373e4e8170c7377a7f9ffd2793fa373",
+    "source_profiles_sha256": "c89175908b71f9481c9492c92b9de6c53b424a240d8e30aacef6a0e33df4e90e",
+    "combined_sha256": "dcb9e790c3ca58d27d424640f64199ffa787bddc93f5a9d8bcf5af0692b36bdc"
+  },
+  "status": "ok",
+  "errors": [],
+  "worker_timings_instrumented": {
+    "warmup_s": 0.013502500019967556,
+    "repair_s": 0.0,
+    "repair_cpu_s": 0.0,
+    "layers_s": 12.157918749959208,
+    "layers_cpu_s": 12.017516,
+    "assembly_s": 17.666384999989532,
+    "assembly_cpu_s": 17.383022,
+    "matched_part_bands_s": null,
+    "core_s": 29.82430374994874,
+    "core_cpu_s": 29.400538,
+    "audit_s": 0.0
+  },
+  "groups": {
+    "source_profiles": {
+      "calls": 8,
+      "wall_s": 12.155898999772035,
+      "profile_total_s": 12.155438665000005,
+      "top_cumulative": [
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 598,
+          "function": "reconstruct_layer_profiles",
+          "primitive_calls": 8,
+          "calls": 8,
+          "own_s": 0.002450072,
+          "cumulative_s": 12.155340374000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 300,
+          "function": "section_profile",
+          "primitive_calls": 657,
+          "calls": 657,
+          "own_s": 0.063154212,
+          "cumulative_s": 12.147266794
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20035,
+          "calls": 20057,
+          "own_s": 0.066934304,
+          "cumulative_s": 9.214082228
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 171,
+          "function": "wrapper",
+          "primitive_calls": 6321,
+          "calls": 6655,
+          "own_s": 0.00564871,
+          "cumulative_s": 7.418903614
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 192,
+          "function": "_closed_mesh_profile",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.002542632,
+          "cumulative_s": 6.824044212
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 182,
+          "function": "_boundaries_within_tolerance",
+          "primitive_calls": 64,
+          "calls": 64,
+          "own_s": 0.0007409960000000001,
+          "cumulative_s": 4.576233582
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 98,
+          "function": "recover_profile",
+          "primitive_calls": 657,
+          "calls": 657,
+          "own_s": 0.149673879,
+          "cumulative_s": 4.467220196
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 462,
+          "function": "buffer",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 0.000690615,
+          "cumulative_s": 4.40829246
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 4.404781912000001,
+          "cumulative_s": 4.405519126000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 463,
+          "function": "union_all",
+          "primitive_calls": 1276,
+          "calls": 1276,
+          "own_s": 2.571880615,
+          "cumulative_s": 2.573668885
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 84,
+          "function": "_node",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.046492947,
+          "cumulative_s": 2.5226007000000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 199,
+          "function": "hausdorff_distance",
+          "primitive_calls": 65,
+          "calls": 65,
+          "own_s": 1.7157849580000002,
+          "cumulative_s": 1.7157849580000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 17,
+          "function": "mesh_plane",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.27152343,
+          "cumulative_s": 0.825847113
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 145,
+          "function": "unique",
+          "primitive_calls": 2115,
+          "calls": 2115,
+          "own_s": 0.012898762000000001,
+          "cumulative_s": 0.721808247
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 2115,
+          "calls": 2115,
+          "own_s": 0.044763968,
+          "cumulative_s": 0.653187041
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 950,
+          "function": "polygonize_full",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.5516344870000001,
+          "cumulative_s": 0.5516344870000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1377,
+          "calls": 1377,
+          "own_s": 0.41529673500000003,
+          "cumulative_s": 0.41529673500000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 54,
+          "function": "triangle_cases",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.154853776,
+          "cumulative_s": 0.305715673
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1428,
+          "function": "split",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.000127254,
+          "cumulative_s": 0.285759042
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 348,
+          "function": "split",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.00031649600000000004,
+          "cumulative_s": 0.285631788
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 2259,
+          "calls": 2259,
+          "own_s": 0.265254622,
+          "cumulative_s": 0.265254622
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 77,
+          "function": "_graph",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.0043372210000000005,
+          "cumulative_s": 0.24906366300000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 3245,
+          "calls": 3245,
+          "own_s": 0.153406027,
+          "cumulative_s": 0.230827524
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 135,
+          "function": "handle_basic",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.044096645000000004,
+          "cumulative_s": 0.193057209
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 768,
+          "function": "covered_by",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 0.000165202,
+          "cumulative_s": 0.167059961
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 663,
+          "function": "covered_by",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 0.165907832,
+          "cumulative_s": 0.165907832
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 66,
+          "function": "_segments",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.020702572000000002,
+          "cumulative_s": 0.16209416000000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+          "line": 939,
+          "function": "sort",
+          "primitive_calls": 1414,
+          "calls": 1414,
+          "own_s": 0.0013815090000000002,
+          "cumulative_s": 0.157463655
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 2917,
+          "function": "submesh",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.000323001,
+          "cumulative_s": 0.14772216800000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+          "line": 1557,
+          "function": "submesh",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.025137272000000002,
+          "cumulative_s": 0.147399167
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 293,
+          "function": "plane_lines",
+          "primitive_calls": 1388,
+          "calls": 1388,
+          "own_s": 0.058402858,
+          "cumulative_s": 0.11039615900000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 2311,
+          "function": "section",
+          "primitive_calls": 37,
+          "calls": 37,
+          "own_s": 0.000342916,
+          "cumulative_s": 0.09578062500000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 121,
+          "function": "get_cached",
+          "primitive_calls": 88,
+          "calls": 256,
+          "own_s": 0.000340002,
+          "cumulative_s": 0.08979016100000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 364,
+          "function": "verify",
+          "primitive_calls": 339,
+          "calls": 339,
+          "own_s": 0.00026692,
+          "cumulative_s": 0.080290043
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 402,
+          "function": "connected_components",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.018217194000000003,
+          "cumulative_s": 0.077975457
+        }
+      ],
+      "top_own": [
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 4.404781912000001,
+          "cumulative_s": 4.405519126000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 463,
+          "function": "union_all",
+          "primitive_calls": 1276,
+          "calls": 1276,
+          "own_s": 2.571880615,
+          "cumulative_s": 2.573668885
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 199,
+          "function": "hausdorff_distance",
+          "primitive_calls": 65,
+          "calls": 65,
+          "own_s": 1.7157849580000002,
+          "cumulative_s": 1.7157849580000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 950,
+          "function": "polygonize_full",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.5516344870000001,
+          "cumulative_s": 0.5516344870000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1377,
+          "calls": 1377,
+          "own_s": 0.41529673500000003,
+          "cumulative_s": 0.41529673500000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 17,
+          "function": "mesh_plane",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.27152343,
+          "cumulative_s": 0.825847113
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 2259,
+          "calls": 2259,
+          "own_s": 0.265254622,
+          "cumulative_s": 0.265254622
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 663,
+          "function": "covered_by",
+          "primitive_calls": 128,
+          "calls": 128,
+          "own_s": 0.165907832,
+          "cumulative_s": 0.165907832
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 54,
+          "function": "triangle_cases",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.154853776,
+          "cumulative_s": 0.305715673
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 3245,
+          "calls": 3245,
+          "own_s": 0.153406027,
+          "cumulative_s": 0.230827524
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 98,
+          "function": "recover_profile",
+          "primitive_calls": 657,
+          "calls": 657,
+          "own_s": 0.149673879,
+          "cumulative_s": 4.467220196
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 48,
+          "function": "hash_fallback",
+          "primitive_calls": 543,
+          "calls": 543,
+          "own_s": 0.071255025,
+          "cumulative_s": 0.071579407
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/creation.py",
+          "line": 140,
+          "function": "linestrings",
+          "primitive_calls": 671,
+          "calls": 671,
+          "own_s": 0.07104262700000001,
+          "cumulative_s": 0.0713541
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20035,
+          "calls": 20057,
+          "own_s": 0.066934304,
+          "cumulative_s": 9.214082228
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 300,
+          "function": "section_profile",
+          "primitive_calls": 657,
+          "calls": 657,
+          "own_s": 0.063154212,
+          "cumulative_s": 12.147266794
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 293,
+          "function": "plane_lines",
+          "primitive_calls": 1388,
+          "calls": 1388,
+          "own_s": 0.058402858,
+          "cumulative_s": 0.11039615900000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method numpy._core._multiarray_umath._unique_hash>",
+          "primitive_calls": 790,
+          "calls": 790,
+          "own_s": 0.057950182,
+          "cumulative_s": 0.057950182
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 12035,
+          "calls": 12035,
+          "own_s": 0.048043877000000006,
+          "cumulative_s": 0.048408613
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 84,
+          "function": "_node",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.046492947,
+          "cumulative_s": 2.5226007000000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 2115,
+          "calls": 2115,
+          "own_s": 0.044763968,
+          "cumulative_s": 0.653187041
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+          "line": 135,
+          "function": "handle_basic",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.044096645000000004,
+          "cumulative_s": 0.193057209
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 679,
+          "function": "make_valid",
+          "primitive_calls": 12,
+          "calls": 12,
+          "own_s": 0.0420125,
+          "cumulative_s": 0.042023458
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 245,
+          "function": "symmetric_difference",
+          "primitive_calls": 85,
+          "calls": 85,
+          "own_s": 0.037114246000000004,
+          "cumulative_s": 0.037114246000000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+          "line": 84,
+          "function": "unitize",
+          "primitive_calls": 2816,
+          "calls": 2816,
+          "own_s": 0.027697658,
+          "cumulative_s": 0.041441389
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method shapely.lib.get_coordinates>",
+          "primitive_calls": 733,
+          "calls": 733,
+          "own_s": 0.025935788,
+          "cumulative_s": 0.025935788
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+          "line": 1557,
+          "function": "submesh",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.025137272000000002,
+          "cumulative_s": 0.147399167
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 492,
+          "function": "unique_value_in_row",
+          "primitive_calls": 694,
+          "calls": 694,
+          "own_s": 0.021152718,
+          "cumulative_s": 0.033612004
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 66,
+          "function": "_segments",
+          "primitive_calls": 649,
+          "calls": 649,
+          "own_s": 0.020702572000000002,
+          "cumulative_s": 0.16209416000000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 429,
+          "function": "is_valid",
+          "primitive_calls": 861,
+          "calls": 861,
+          "own_s": 0.020272443,
+          "cumulative_s": 0.025697124000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 402,
+          "function": "connected_components",
+          "primitive_calls": 22,
+          "calls": 22,
+          "own_s": 0.018217194000000003,
+          "cumulative_s": 0.077975457
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 632,
+          "function": "__dtype_from_pep3118",
+          "primitive_calls": 3245,
+          "calls": 3245,
+          "own_s": 0.018116462,
+          "cumulative_s": 0.035720096
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 1128,
+          "function": "simplify",
+          "primitive_calls": 43,
+          "calls": 43,
+          "own_s": 0.016734416000000002,
+          "cumulative_s": 0.016734416000000002
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 88,
+          "function": "_odd_crossings",
+          "primitive_calls": 1049,
+          "calls": 1049,
+          "own_s": 0.016648679,
+          "cumulative_s": 0.023261171
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1230,
+          "function": "roll",
+          "primitive_calls": 1388,
+          "calls": 1388,
+          "own_s": 0.015649177,
+          "cumulative_s": 0.019893289
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 789,
+          "function": "get_num_geometries",
+          "primitive_calls": 3245,
+          "calls": 3245,
+          "own_s": 0.015160880000000002,
+          "cumulative_s": 0.054545089000000005
+        }
+      ]
+    },
+    "material_partition": {
+      "calls": 182,
+      "wall_s": 7.467959666391835,
+      "profile_total_s": 7.4524713359999994,
+      "top_cumulative": [
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 25,
+          "function": "partition_materials",
+          "primitive_calls": 182,
+          "calls": 182,
+          "own_s": 0.02266353,
+          "cumulative_s": 7.44628784
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20142,
+          "calls": 20142,
+          "own_s": 0.034088793,
+          "cumulative_s": 7.358516301000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 171,
+          "function": "wrapper",
+          "primitive_calls": 6424,
+          "calls": 9694,
+          "own_s": 0.00720328,
+          "cumulative_s": 5.00001988
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 684,
+          "function": "symmetric_difference",
+          "primitive_calls": 880,
+          "calls": 880,
+          "own_s": 0.000674351,
+          "cumulative_s": 2.1372979450000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 245,
+          "function": "symmetric_difference",
+          "primitive_calls": 880,
+          "calls": 880,
+          "own_s": 2.1325866700000002,
+          "cumulative_s": 2.1325866700000002
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 10,
+          "function": "_set_hausdorff",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.001167119,
+          "cumulative_s": 2.064007671
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 199,
+          "function": "hausdorff_distance",
+          "primitive_calls": 137,
+          "calls": 137,
+          "own_s": 2.0476611730000003,
+          "cumulative_s": 2.0476611730000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 112,
+          "function": "intersection",
+          "primitive_calls": 1224,
+          "calls": 1224,
+          "own_s": 0.9645146320000001,
+          "cumulative_s": 0.9646280410000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 39,
+          "function": "difference",
+          "primitive_calls": 1022,
+          "calls": 1022,
+          "own_s": 0.8618873880000001,
+          "cumulative_s": 0.861999642
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 668,
+          "function": "intersection",
+          "primitive_calls": 1044,
+          "calls": 1044,
+          "own_s": 0.000557066,
+          "cumulative_s": 0.843584674
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 652,
+          "function": "difference",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.00045368100000000005,
+          "cumulative_s": 0.7299752420000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.any>",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.000532414,
+          "cumulative_s": 0.7216863320000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 63,
+          "function": "<genexpr>",
+          "primitive_calls": 1213,
+          "calls": 1213,
+          "own_s": 0.001924661,
+          "cumulative_s": 0.7211539180000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 463,
+          "function": "union_all",
+          "primitive_calls": 880,
+          "calls": 880,
+          "own_s": 0.502296372,
+          "cumulative_s": 0.504466089
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 462,
+          "function": "buffer",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.002635586,
+          "cumulative_s": 0.45689301000000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.44184073900000004,
+          "cumulative_s": 0.44502970900000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 867,
+          "function": "set_precision",
+          "primitive_calls": 1347,
+          "calls": 1347,
+          "own_s": 0.29705185500000003,
+          "cumulative_s": 0.298935544
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.019633261000000003,
+          "cumulative_s": 0.057526014
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 789,
+          "function": "get_num_geometries",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.006973161,
+          "cumulative_s": 0.026847896000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 627,
+          "function": "_dtype_from_pep3118",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.001696381,
+          "cumulative_s": 0.019874735
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.sum>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.0008316020000000001,
+          "cumulative_s": 0.019720789000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 632,
+          "function": "__dtype_from_pep3118",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.009218021,
+          "cumulative_s": 0.017955046000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 338,
+          "function": "area",
+          "primitive_calls": 3585,
+          "calls": 3585,
+          "own_s": 0.002268346,
+          "cumulative_s": 0.017165346
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 721,
+          "function": "is_empty",
+          "primitive_calls": 3473,
+          "calls": 3473,
+          "own_s": 0.001577344,
+          "cumulative_s": 0.012507011
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/polygon.py",
+          "line": 256,
+          "function": "interiors",
+          "primitive_calls": 1728,
+          "calls": 1728,
+          "own_s": 0.001102274,
+          "cumulative_s": 0.011557896000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 804,
+          "function": "normalize",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.010949839000000001,
+          "cumulative_s": 0.010949839000000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 57,
+          "function": "<genexpr>",
+          "primitive_calls": 1213,
+          "calls": 1213,
+          "own_s": 0.001374456,
+          "cumulative_s": 0.01066155
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 23,
+          "function": "area",
+          "primitive_calls": 3585,
+          "calls": 3585,
+          "own_s": 0.009087543,
+          "cumulative_s": 0.009087543
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 58,
+          "function": "<genexpr>",
+          "primitive_calls": 1213,
+          "calls": 1213,
+          "own_s": 0.000799978,
+          "cumulative_s": 0.008227637000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 22590,
+          "calls": 22590,
+          "own_s": 0.002283928,
+          "cumulative_s": 0.006879334000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 2418,
+          "calls": 2418,
+          "own_s": 0.006581526000000001,
+          "cumulative_s": 0.006581526000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 182,
+          "calls": 182,
+          "own_s": 0.006183496,
+          "cumulative_s": 0.006183496
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 181,
+          "function": "is_empty",
+          "primitive_calls": 3473,
+          "calls": 3473,
+          "own_s": 0.006012716,
+          "cumulative_s": 0.006012716
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 364,
+          "function": "boundary",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.00040664600000000004,
+          "cumulative_s": 0.005639942
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/polygon.py",
+          "line": 145,
+          "function": "__init__",
+          "primitive_calls": 1728,
+          "calls": 1728,
+          "own_s": 0.000691036,
+          "cumulative_s": 0.005398926
+        }
+      ],
+      "top_own": [
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 245,
+          "function": "symmetric_difference",
+          "primitive_calls": 880,
+          "calls": 880,
+          "own_s": 2.1325866700000002,
+          "cumulative_s": 2.1325866700000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 199,
+          "function": "hausdorff_distance",
+          "primitive_calls": 137,
+          "calls": 137,
+          "own_s": 2.0476611730000003,
+          "cumulative_s": 2.0476611730000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 112,
+          "function": "intersection",
+          "primitive_calls": 1224,
+          "calls": 1224,
+          "own_s": 0.9645146320000001,
+          "cumulative_s": 0.9646280410000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 39,
+          "function": "difference",
+          "primitive_calls": 1022,
+          "calls": 1022,
+          "own_s": 0.8618873880000001,
+          "cumulative_s": 0.861999642
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 463,
+          "function": "union_all",
+          "primitive_calls": 880,
+          "calls": 880,
+          "own_s": 0.502296372,
+          "cumulative_s": 0.504466089
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.44184073900000004,
+          "cumulative_s": 0.44502970900000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 867,
+          "function": "set_precision",
+          "primitive_calls": 1347,
+          "calls": 1347,
+          "own_s": 0.29705185500000003,
+          "cumulative_s": 0.298935544
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20142,
+          "calls": 20142,
+          "own_s": 0.034088793,
+          "cumulative_s": 7.358516301000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 25,
+          "function": "partition_materials",
+          "primitive_calls": 182,
+          "calls": 182,
+          "own_s": 0.02266353,
+          "cumulative_s": 7.44628784
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.019633261000000003,
+          "cumulative_s": 0.057526014
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 804,
+          "function": "normalize",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.010949839000000001,
+          "cumulative_s": 0.010949839000000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 632,
+          "function": "__dtype_from_pep3118",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.009218021,
+          "cumulative_s": 0.017955046000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 23,
+          "function": "area",
+          "primitive_calls": 3585,
+          "calls": 3585,
+          "own_s": 0.009087543,
+          "cumulative_s": 0.009087543
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 171,
+          "function": "wrapper",
+          "primitive_calls": 6424,
+          "calls": 9694,
+          "own_s": 0.00720328,
+          "cumulative_s": 5.00001988
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 789,
+          "function": "get_num_geometries",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.006973161,
+          "cumulative_s": 0.026847896000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 2418,
+          "calls": 2418,
+          "own_s": 0.006581526000000001,
+          "cumulative_s": 0.006581526000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 182,
+          "calls": 182,
+          "own_s": 0.006183496,
+          "cumulative_s": 0.006183496
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 181,
+          "function": "is_empty",
+          "primitive_calls": 3473,
+          "calls": 3473,
+          "own_s": 0.006012716,
+          "cumulative_s": 0.006012716
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.isinstance>",
+          "primitive_calls": 41143,
+          "calls": 41143,
+          "own_s": 0.004779832,
+          "cumulative_s": 0.004779832
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 90,
+          "function": "boundary",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.0038956040000000004,
+          "cumulative_s": 0.0038956040000000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/io.py",
+          "line": 264,
+          "function": "from_wkt",
+          "primitive_calls": 182,
+          "calls": 182,
+          "own_s": 0.003133128,
+          "cumulative_s": 0.0037158290000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method numpy.asarray>",
+          "primitive_calls": 2625,
+          "calls": 2625,
+          "own_s": 0.002868166,
+          "cumulative_s": 0.002868166
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'items' of 'dict' objects>",
+          "primitive_calls": 20506,
+          "calls": 20506,
+          "own_s": 0.0026374740000000003,
+          "cumulative_s": 0.0026374740000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 462,
+          "function": "buffer",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.002635586,
+          "cumulative_s": 0.45689301000000004
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 22590,
+          "calls": 22590,
+          "own_s": 0.002283928,
+          "cumulative_s": 0.006879334000000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 338,
+          "function": "area",
+          "primitive_calls": 3585,
+          "calls": 3585,
+          "own_s": 0.002268346,
+          "cumulative_s": 0.017165346
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_enum.py",
+          "line": 12,
+          "function": "get_value",
+          "primitive_calls": 2875,
+          "calls": 2875,
+          "own_s": 0.001931982,
+          "cumulative_s": 0.004120505
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+          "line": 63,
+          "function": "<genexpr>",
+          "primitive_calls": 1213,
+          "calls": 1213,
+          "own_s": 0.001924661,
+          "cumulative_s": 0.7211539180000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 135,
+          "function": "get_coordinate_dimension",
+          "primitive_calls": 1728,
+          "calls": 1728,
+          "own_s": 0.0018867290000000002,
+          "cumulative_s": 0.0018867290000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 551,
+          "function": "get_num_interior_rings",
+          "primitive_calls": 1728,
+          "calls": 1728,
+          "own_s": 0.00183643,
+          "cumulative_s": 0.00183643
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 1037,
+          "function": "equals_exact",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.0018269550000000001,
+          "cumulative_s": 0.0018269550000000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1975,
+          "function": "isscalar",
+          "primitive_calls": 4956,
+          "calls": 4956,
+          "own_s": 0.001769027,
+          "cumulative_s": 0.0021660100000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'all' of 'numpy.generic' objects>",
+          "primitive_calls": 673,
+          "calls": 673,
+          "own_s": 0.0017656500000000001,
+          "cumulative_s": 0.005004413
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 627,
+          "function": "_dtype_from_pep3118",
+          "primitive_calls": 1745,
+          "calls": 1745,
+          "own_s": 0.001696381,
+          "cumulative_s": 0.019874735
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 601,
+          "function": "consume",
+          "primitive_calls": 6980,
+          "calls": 6980,
+          "own_s": 0.0015901600000000002,
+          "cumulative_s": 0.002043496
+        }
+      ]
+    },
+    "final_extrusion": {
+      "calls": 349,
+      "wall_s": 8.301055556163192,
+      "profile_total_s": 8.267569594000005,
+      "top_cumulative": [
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 552,
+          "function": "extrude_profile",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.19118474800000002,
+          "cumulative_s": 8.257101749
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20468,
+          "calls": 20468,
+          "own_s": 0.036574637,
+          "cumulative_s": 5.392303736000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 316,
+          "function": "prepare_export_region",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.016389498000000002,
+          "cumulative_s": 3.212389626
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 171,
+          "function": "wrapper",
+          "primitive_calls": 5414,
+          "calls": 7327,
+          "own_s": 0.0064077430000000005,
+          "cumulative_s": 3.171986961
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 544,
+          "function": "constrained_delaunay_triangles",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 2.217013236,
+          "cumulative_s": 2.217013236
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 652,
+          "function": "difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.000302523,
+          "cumulative_s": 1.737172994
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 39,
+          "function": "difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 1.734701834,
+          "cumulative_s": 1.734701834
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 121,
+          "function": "get_cached",
+          "primitive_calls": 1732,
+          "calls": 10392,
+          "own_s": 0.012113931000000001,
+          "cumulative_s": 1.008490009
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1746,
+          "function": "is_volume",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.0031108750000000004,
+          "cumulative_s": 0.9316383460000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 503,
+          "function": "_extrude_indexed_cap",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.06145835,
+          "cumulative_s": 0.7263939570000001
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 531,
+          "function": "_cdt_cap_arrays",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.017076630000000002,
+          "cumulative_s": 0.6327882840000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.any>",
+          "primitive_calls": 11017,
+          "calls": 11017,
+          "own_s": 0.0057536950000000005,
+          "cumulative_s": 0.530984619
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 684,
+          "function": "symmetric_difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.00019194400000000002,
+          "cumulative_s": 0.515851114
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 245,
+          "function": "symmetric_difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.514372123,
+          "cumulative_s": 0.514372123
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 646,
+          "function": "center_mass",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.000525886,
+          "cumulative_s": 0.50123617
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 2828,
+          "function": "mass_properties",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.0033536860000000003,
+          "cumulative_s": 0.495495628
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 365,
+          "function": "<genexpr>",
+          "primitive_calls": 1215,
+          "calls": 1215,
+          "own_s": 0.0010990280000000002,
+          "cumulative_s": 0.46124724800000005
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1732,
+          "calls": 1732,
+          "own_s": 0.46075604400000003,
+          "cumulative_s": 0.46075604400000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 668,
+          "function": "intersection",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.00043981300000000005,
+          "cumulative_s": 0.45552862800000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 112,
+          "function": "intersection",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.45189374800000004,
+          "cumulative_s": 0.45189374800000004
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 413,
+          "function": "_split_cap_vertex_fans",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.07466363200000001,
+          "cumulative_s": 0.447386074
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1727,
+          "function": "is_watertight",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.003061654,
+          "cumulative_s": 0.40813809
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 145,
+          "function": "unique",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.008216487,
+          "cumulative_s": 0.39670132700000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.024646192,
+          "cumulative_s": 0.35655670300000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 217,
+          "function": "mass_properties",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.32674487300000005,
+          "cumulative_s": 0.354364915
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 875,
+          "function": "is_watertight",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.04211469,
+          "cumulative_s": 0.297528854
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 547,
+          "function": "group_rows",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.042166225,
+          "cumulative_s": 0.252588254
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+          "line": 462,
+          "function": "buffer",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.001323972,
+          "cumulative_s": 0.227140004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.220074981,
+          "cumulative_s": 0.222015711
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 364,
+          "function": "verify",
+          "primitive_calls": 14786,
+          "calls": 14786,
+          "own_s": 0.004918189,
+          "cumulative_s": 0.201322619
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 679,
+          "function": "__hash__",
+          "primitive_calls": 14786,
+          "calls": 14786,
+          "own_s": 0.023713932,
+          "cumulative_s": 0.19629927500000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 1913,
+          "calls": 1913,
+          "own_s": 0.11879412700000001,
+          "cumulative_s": 0.18375537900000002
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 399,
+          "function": "_cap_edge_topology",
+          "primitive_calls": 870,
+          "calls": 870,
+          "own_s": 0.09538228900000001,
+          "cumulative_s": 0.151998783
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+          "line": 1421,
+          "function": "concatenate",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.006294005,
+          "cumulative_s": 0.149237837
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 28630,
+          "calls": 28630,
+          "own_s": 0.0103195,
+          "cumulative_s": 0.141374297
+        }
+      ],
+      "top_own": [
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 544,
+          "function": "constrained_delaunay_triangles",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 2.217013236,
+          "cumulative_s": 2.217013236
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 39,
+          "function": "difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 1.734701834,
+          "cumulative_s": 1.734701834
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 245,
+          "function": "symmetric_difference",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.514372123,
+          "cumulative_s": 0.514372123
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1732,
+          "calls": 1732,
+          "own_s": 0.46075604400000003,
+          "cumulative_s": 0.46075604400000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+          "line": 112,
+          "function": "intersection",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.45189374800000004,
+          "cumulative_s": 0.45189374800000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 217,
+          "function": "mass_properties",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.32674487300000005,
+          "cumulative_s": 0.354364915
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 136,
+          "function": "buffer",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.220074981,
+          "cumulative_s": 0.222015711
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 552,
+          "function": "extrude_profile",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.19118474800000002,
+          "cumulative_s": 8.257101749
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 48,
+          "function": "hash_fallback",
+          "primitive_calls": 18436,
+          "calls": 18436,
+          "own_s": 0.12525080600000002,
+          "cumulative_s": 0.132560793
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+          "line": 645,
+          "function": "get_parts",
+          "primitive_calls": 1913,
+          "calls": 1913,
+          "own_s": 0.11879412700000001,
+          "cumulative_s": 0.18375537900000002
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 399,
+          "function": "_cap_edge_topology",
+          "primitive_calls": 870,
+          "calls": 870,
+          "own_s": 0.09538228900000001,
+          "cumulative_s": 0.151998783
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'at' of 'numpy.ufunc' objects>",
+          "primitive_calls": 1650,
+          "calls": 1650,
+          "own_s": 0.089772474,
+          "cumulative_s": 0.089772474
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 413,
+          "function": "_split_cap_vertex_fans",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.07466363200000001,
+          "cumulative_s": 0.447386074
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 31045,
+          "calls": 31045,
+          "own_s": 0.074240309,
+          "cumulative_s": 0.074240309
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+          "line": 679,
+          "function": "make_valid",
+          "primitive_calls": 12,
+          "calls": 12,
+          "own_s": 0.065221081,
+          "cumulative_s": 0.065237749
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 503,
+          "function": "_extrude_indexed_cap",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.06145835,
+          "cumulative_s": 0.7263939570000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 547,
+          "function": "group_rows",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.042166225,
+          "cumulative_s": 0.252588254
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 875,
+          "function": "is_watertight",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.04211469,
+          "cumulative_s": 0.297528854
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1736,
+          "calls": 1736,
+          "own_s": 0.041837968,
+          "cumulative_s": 0.041837968
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method shapely.lib.get_coordinates>",
+          "primitive_calls": 1576,
+          "calls": 1576,
+          "own_s": 0.041136013000000006,
+          "cumulative_s": 0.041136013000000006
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 887,
+          "function": "triangles",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.037530398,
+          "cumulative_s": 0.038438292000000006
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+          "line": 73,
+          "function": "wrapped",
+          "primitive_calls": 20468,
+          "calls": 20468,
+          "own_s": 0.036574637,
+          "cumulative_s": 5.392303736000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1567,
+          "function": "cross",
+          "primitive_calls": 1732,
+          "calls": 1732,
+          "own_s": 0.036219599000000005,
+          "cumulative_s": 0.09387572300000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+          "line": 429,
+          "function": "is_valid",
+          "primitive_calls": 1059,
+          "calls": 1059,
+          "own_s": 0.032517386,
+          "cumulative_s": 0.038600652
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/scipy/sparse/_sputils.py",
+          "line": 264,
+          "function": "get_index_dtype",
+          "primitive_calls": 7425,
+          "calls": 7425,
+          "own_s": 0.032162935000000004,
+          "cumulative_s": 0.058082131
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'astype' of 'numpy.ndarray' objects>",
+          "primitive_calls": 13642,
+          "calls": 13642,
+          "own_s": 0.02970623,
+          "cumulative_s": 0.02970623
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 22,
+          "function": "cross",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.024796859,
+          "cumulative_s": 0.080484449
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.024646192,
+          "cumulative_s": 0.35655670300000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 679,
+          "function": "__hash__",
+          "primitive_calls": 14786,
+          "calls": 14786,
+          "own_s": 0.023713932,
+          "cumulative_s": 0.19629927500000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 170,
+          "function": "hashable_rows",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.022681481,
+          "cumulative_s": 0.033978673
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reshape' of 'numpy.ndarray' objects>",
+          "primitive_calls": 14368,
+          "calls": 14368,
+          "own_s": 0.022312713,
+          "cumulative_s": 0.022312713
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1431,
+          "function": "normalize_axis_tuple",
+          "primitive_calls": 13856,
+          "calls": 13856,
+          "own_s": 0.019898239,
+          "cumulative_s": 0.030365957000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+          "line": 23,
+          "function": "area",
+          "primitive_calls": 4175,
+          "calls": 4175,
+          "own_s": 0.018565269000000002,
+          "cumulative_s": 0.018565269000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 234802,
+          "calls": 234895,
+          "own_s": 0.0182468,
+          "cumulative_s": 0.022825718000000002
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+          "line": 531,
+          "function": "_cdt_cap_arrays",
+          "primitive_calls": 866,
+          "calls": 866,
+          "own_s": 0.017076630000000002,
+          "cumulative_s": 0.6327882840000001
+        }
+      ]
+    },
+    "native_float32_checks": {
+      "calls": 349,
+      "wall_s": 1.8919098811456934,
+      "profile_total_s": 1.8769337539999997,
+      "top_cumulative": [
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/contour_repair.py",
+          "line": 109,
+          "function": "_float32_mesh_checks",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.088252563,
+          "cumulative_s": 1.86616504
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 121,
+          "function": "get_cached",
+          "primitive_calls": 349,
+          "calls": 3839,
+          "own_s": 0.005048413000000001,
+          "cumulative_s": 0.858127378
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 145,
+          "function": "unique",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.006142744,
+          "cumulative_s": 0.8557340680000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.045596626,
+          "cumulative_s": 0.828650294
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1746,
+          "function": "is_volume",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.001415215,
+          "cumulative_s": 0.793249787
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1047,
+          "calls": 1047,
+          "own_s": 0.5317180060000001,
+          "cumulative_s": 0.5317180060000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 646,
+          "function": "center_mass",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.00022116,
+          "cumulative_s": 0.435707031
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 2828,
+          "function": "mass_properties",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.0014220530000000002,
+          "cumulative_s": 0.433339501
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.40732036400000005,
+          "cumulative_s": 0.40732036400000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1727,
+          "function": "is_watertight",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.001561974,
+          "cumulative_s": 0.34770724000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 217,
+          "function": "mass_properties",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.30271125800000004,
+          "cumulative_s": 0.32160883500000004
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 875,
+          "function": "is_watertight",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.041423797000000005,
+          "cumulative_s": 0.269065539
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 547,
+          "function": "group_rows",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.033941781000000004,
+          "cumulative_s": 0.22596908000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 364,
+          "function": "verify",
+          "primitive_calls": 4537,
+          "calls": 4537,
+          "own_s": 0.001429935,
+          "cumulative_s": 0.086913163
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 679,
+          "function": "__hash__",
+          "primitive_calls": 4537,
+          "calls": 4537,
+          "own_s": 0.007427502000000001,
+          "cumulative_s": 0.085442263
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 9074,
+          "calls": 9074,
+          "own_s": 0.0033063880000000004,
+          "cumulative_s": 0.06707349
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1567,
+          "function": "cross",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.028535867000000003,
+          "cumulative_s": 0.06468883
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 926,
+          "function": "triangles_cross",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.000829581,
+          "cumulative_s": 0.06468525500000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 48,
+          "function": "hash_fallback",
+          "primitive_calls": 5235,
+          "calls": 5235,
+          "own_s": 0.061981382,
+          "cumulative_s": 0.064018183
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 207,
+          "function": "__hash__",
+          "primitive_calls": 9074,
+          "calls": 9074,
+          "own_s": 0.002469591,
+          "cumulative_s": 0.063767102
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 22,
+          "function": "cross",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.023155963,
+          "cumulative_s": 0.062169593
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+          "line": 939,
+          "function": "sort",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.000630212,
+          "cumulative_s": 0.046976051000000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 887,
+          "function": "triangles",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.039914983,
+          "cumulative_s": 0.040264661
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 1017,
+          "function": "edges_sorted",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.00045558700000000003,
+          "cumulative_s": 0.035762217
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 939,
+          "function": "edges",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.0007282180000000001,
+          "cumulative_s": 0.031342065
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 170,
+          "function": "hashable_rows",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.019922084,
+          "cumulative_s": 0.030636081000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/geometry.py",
+          "line": 92,
+          "function": "faces_to_edges",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.008241521,
+          "cumulative_s": 0.027556622000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'astype' of 'numpy.ndarray' objects>",
+          "primitive_calls": 2443,
+          "calls": 2443,
+          "own_s": 0.026147002000000003,
+          "cumulative_s": 0.026147002000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1493,
+          "function": "moveaxis",
+          "primitive_calls": 3490,
+          "calls": 3490,
+          "own_s": 0.007077449,
+          "cumulative_s": 0.025768577
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 5235,
+          "calls": 5235,
+          "own_s": 0.023030401000000002,
+          "cumulative_s": 0.023030401000000002
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'flatten' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.017066375,
+          "cumulative_s": 0.017066375
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reshape' of 'numpy.ndarray' objects>",
+          "primitive_calls": 4188,
+          "calls": 4188,
+          "own_s": 0.015585227,
+          "cumulative_s": 0.015585227
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1431,
+          "function": "normalize_axis_tuple",
+          "primitive_calls": 6980,
+          "calls": 6980,
+          "own_s": 0.010611926,
+          "cumulative_s": 0.015401276
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+          "line": 48,
+          "function": "_wrapfunc",
+          "primitive_calls": 1396,
+          "calls": 1396,
+          "own_s": 0.0009633080000000001,
+          "cumulative_s": 0.011732820000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.010768714,
+          "cumulative_s": 0.010768714
+        }
+      ],
+      "top_own": [
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'sort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 1047,
+          "calls": 1047,
+          "own_s": 0.5317180060000001,
+          "cumulative_s": 0.5317180060000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.40732036400000005,
+          "cumulative_s": 0.40732036400000005
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 217,
+          "function": "mass_properties",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.30271125800000004,
+          "cumulative_s": 0.32160883500000004
+        },
+        {
+          "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/contour_repair.py",
+          "line": 109,
+          "function": "_float32_mesh_checks",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.088252563,
+          "cumulative_s": 1.86616504
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 48,
+          "function": "hash_fallback",
+          "primitive_calls": 5235,
+          "calls": 5235,
+          "own_s": 0.061981382,
+          "cumulative_s": 0.064018183
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 350,
+          "function": "_unique1d",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.045596626,
+          "cumulative_s": 0.828650294
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+          "line": 875,
+          "function": "is_watertight",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.041423797000000005,
+          "cumulative_s": 0.269065539
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+          "line": 887,
+          "function": "triangles",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.039914983,
+          "cumulative_s": 0.040264661
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 547,
+          "function": "group_rows",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.033941781000000004,
+          "cumulative_s": 0.22596908000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1567,
+          "function": "cross",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.028535867000000003,
+          "cumulative_s": 0.06468883
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'astype' of 'numpy.ndarray' objects>",
+          "primitive_calls": 2443,
+          "calls": 2443,
+          "own_s": 0.026147002000000003,
+          "cumulative_s": 0.026147002000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+          "line": 22,
+          "function": "cross",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.023155963,
+          "cumulative_s": 0.062169593
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+          "primitive_calls": 5235,
+          "calls": 5235,
+          "own_s": 0.023030401000000002,
+          "cumulative_s": 0.023030401000000002
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+          "line": 170,
+          "function": "hashable_rows",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.019922084,
+          "cumulative_s": 0.030636081000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'flatten' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.017066375,
+          "cumulative_s": 0.017066375
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'reshape' of 'numpy.ndarray' objects>",
+          "primitive_calls": 4188,
+          "calls": 4188,
+          "own_s": 0.015585227,
+          "cumulative_s": 0.015585227
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.010768714,
+          "cumulative_s": 0.010768714
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1431,
+          "function": "normalize_axis_tuple",
+          "primitive_calls": 6980,
+          "calls": 6980,
+          "own_s": 0.010611926,
+          "cumulative_s": 0.015401276
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/geometry.py",
+          "line": 92,
+          "function": "faces_to_edges",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.008241521,
+          "cumulative_s": 0.027556622000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method numpy.zeros>",
+          "primitive_calls": 1047,
+          "calls": 1047,
+          "own_s": 0.007474556,
+          "cumulative_s": 0.007474556
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 679,
+          "function": "__hash__",
+          "primitive_calls": 4537,
+          "calls": 4537,
+          "own_s": 0.007427502000000001,
+          "cumulative_s": 0.085442263
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+          "line": 1493,
+          "function": "moveaxis",
+          "primitive_calls": 3490,
+          "calls": 3490,
+          "own_s": 0.007077449,
+          "cumulative_s": 0.025768577
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+          "line": 145,
+          "function": "unique",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.006142744,
+          "cumulative_s": 0.8557340680000001
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_function_base_impl.py",
+          "line": 1402,
+          "function": "diff",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.005944209000000001,
+          "cumulative_s": 0.006322355
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+          "line": 121,
+          "function": "get_cached",
+          "primitive_calls": 349,
+          "calls": 3839,
+          "own_s": 0.005048413000000001,
+          "cumulative_s": 0.858127378
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'nonzero' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.004813707,
+          "cumulative_s": 0.004813707
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'copy' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.004508594,
+          "cumulative_s": 0.004508594
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+          "line": 410,
+          "function": "_promote_fields",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.003961306,
+          "cumulative_s": 0.004749078
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_shape_base_impl.py",
+          "line": 1199,
+          "function": "tile",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.003957401,
+          "cumulative_s": 0.009179347000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.len>",
+          "primitive_calls": 44323,
+          "calls": 44323,
+          "own_s": 0.0033601990000000003,
+          "cumulative_s": 0.0033601990000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'repeat' of 'numpy.ndarray' objects>",
+          "primitive_calls": 698,
+          "calls": 698,
+          "own_s": 0.0033465770000000003,
+          "cumulative_s": 0.0033465770000000003
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hash>",
+          "primitive_calls": 9074,
+          "calls": 9074,
+          "own_s": 0.0033063880000000004,
+          "cumulative_s": 0.06707349
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<built-in method builtins.hasattr>",
+          "primitive_calls": 26873,
+          "calls": 26873,
+          "own_s": 0.0032756390000000003,
+          "cumulative_s": 0.0032756390000000003
+        },
+        {
+          "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+          "line": 66,
+          "function": "_wrapreduction",
+          "primitive_calls": 2094,
+          "calls": 2094,
+          "own_s": 0.003266288,
+          "cumulative_s": 0.007946654000000001
+        },
+        {
+          "file": "~",
+          "line": 0,
+          "function": "<method 'cumsum' of 'numpy.ndarray' objects>",
+          "primitive_calls": 349,
+          "calls": 349,
+          "own_s": 0.003256043,
+          "cumulative_s": 0.003256043
+        }
+      ]
+    }
+  },
+  "total_profile_s": 29.75241334900001,
+  "top_cumulative": [
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+      "line": 73,
+      "function": "wrapped",
+      "primitive_calls": 60645,
+      "calls": 60667,
+      "own_s": 0.137597734,
+      "cumulative_s": 21.964902265000003
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+      "line": 171,
+      "function": "wrapper",
+      "primitive_calls": 18159,
+      "calls": 23676,
+      "own_s": 0.019259733,
+      "cumulative_s": 15.590910455
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 598,
+      "function": "reconstruct_layer_profiles",
+      "primitive_calls": 8,
+      "calls": 8,
+      "own_s": 0.002450072,
+      "cumulative_s": 12.155340374000001
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 300,
+      "function": "section_profile",
+      "primitive_calls": 657,
+      "calls": 657,
+      "own_s": 0.063154212,
+      "cumulative_s": 12.147266794
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 552,
+      "function": "extrude_profile",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.19118474800000002,
+      "cumulative_s": 8.257101749
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+      "line": 25,
+      "function": "partition_materials",
+      "primitive_calls": 182,
+      "calls": 182,
+      "own_s": 0.02266353,
+      "cumulative_s": 7.44628784
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 192,
+      "function": "_closed_mesh_profile",
+      "primitive_calls": 22,
+      "calls": 22,
+      "own_s": 0.002542632,
+      "cumulative_s": 6.824044212
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+      "line": 462,
+      "function": "buffer",
+      "primitive_calls": 1150,
+      "calls": 1150,
+      "own_s": 0.0046501730000000005,
+      "cumulative_s": 5.092325474
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 136,
+      "function": "buffer",
+      "primitive_calls": 1150,
+      "calls": 1150,
+      "own_s": 5.066697632,
+      "cumulative_s": 5.072564546000001
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 182,
+      "function": "_boundaries_within_tolerance",
+      "primitive_calls": 64,
+      "calls": 64,
+      "own_s": 0.0007409960000000001,
+      "cumulative_s": 4.576233582
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 98,
+      "function": "recover_profile",
+      "primitive_calls": 657,
+      "calls": 657,
+      "own_s": 0.149673879,
+      "cumulative_s": 4.467220196
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+      "line": 199,
+      "function": "hausdorff_distance",
+      "primitive_calls": 202,
+      "calls": 202,
+      "own_s": 3.7634461310000002,
+      "cumulative_s": 3.7634461310000002
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 316,
+      "function": "prepare_export_region",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.016389498000000002,
+      "cumulative_s": 3.212389626
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 463,
+      "function": "union_all",
+      "primitive_calls": 2168,
+      "calls": 2168,
+      "own_s": 3.078250863,
+      "cumulative_s": 3.0822493100000004
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+      "line": 684,
+      "function": "symmetric_difference",
+      "primitive_calls": 1314,
+      "calls": 1314,
+      "own_s": 0.00092617,
+      "cumulative_s": 2.6907302330000005
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 245,
+      "function": "symmetric_difference",
+      "primitive_calls": 1314,
+      "calls": 1314,
+      "own_s": 2.6840730390000003,
+      "cumulative_s": 2.6840730390000003
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 39,
+      "function": "difference",
+      "primitive_calls": 1371,
+      "calls": 1371,
+      "own_s": 2.596589222,
+      "cumulative_s": 2.596701476
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 84,
+      "function": "_node",
+      "primitive_calls": 649,
+      "calls": 649,
+      "own_s": 0.046492947,
+      "cumulative_s": 2.5226007000000004
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+      "line": 652,
+      "function": "difference",
+      "primitive_calls": 1022,
+      "calls": 1022,
+      "own_s": 0.0007562040000000001,
+      "cumulative_s": 2.467148236
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 544,
+      "function": "constrained_delaunay_triangles",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 2.217013236,
+      "cumulative_s": 2.217013236
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+      "line": 10,
+      "function": "_set_hausdorff",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.001167119,
+      "cumulative_s": 2.064007671
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+      "line": 145,
+      "function": "unique",
+      "primitive_calls": 3679,
+      "calls": 3679,
+      "own_s": 0.027257993,
+      "cumulative_s": 1.9742436420000002
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 121,
+      "function": "get_cached",
+      "primitive_calls": 2169,
+      "calls": 14487,
+      "own_s": 0.017502346000000002,
+      "cumulative_s": 1.956407548
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/contour_repair.py",
+      "line": 109,
+      "function": "_float32_mesh_checks",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.088252563,
+      "cumulative_s": 1.86616504
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+      "line": 350,
+      "function": "_unique1d",
+      "primitive_calls": 3679,
+      "calls": 3679,
+      "own_s": 0.115006786,
+      "cumulative_s": 1.8383940380000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 1746,
+      "function": "is_volume",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.00452609,
+      "cumulative_s": 1.724888133
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 112,
+      "function": "intersection",
+      "primitive_calls": 2146,
+      "calls": 2146,
+      "own_s": 1.416958128,
+      "cumulative_s": 1.4170715370000002
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+      "line": 668,
+      "function": "intersection",
+      "primitive_calls": 1966,
+      "calls": 1966,
+      "own_s": 0.0010170910000000001,
+      "cumulative_s": 1.299817306
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+      "primitive_calls": 3807,
+      "calls": 3807,
+      "own_s": 1.2833731430000002,
+      "cumulative_s": 1.2833731430000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.any>",
+      "primitive_calls": 12110,
+      "calls": 12110,
+      "own_s": 0.0066308040000000006,
+      "cumulative_s": 1.2536754300000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 646,
+      "function": "center_mass",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.000747046,
+      "cumulative_s": 0.9369432010000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 2828,
+      "function": "mass_properties",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.004775739,
+      "cumulative_s": 0.9288351290000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'sort' of 'numpy.ndarray' objects>",
+      "primitive_calls": 5042,
+      "calls": 5042,
+      "own_s": 0.8388105960000001,
+      "cumulative_s": 0.8388105960000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 17,
+      "function": "mesh_plane",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.27152343,
+      "cumulative_s": 0.825847113
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 1727,
+      "function": "is_watertight",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.004623628,
+      "cumulative_s": 0.7558453300000001
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 503,
+      "function": "_extrude_indexed_cap",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 0.06145835,
+      "cumulative_s": 0.7263939570000001
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+      "line": 63,
+      "function": "<genexpr>",
+      "primitive_calls": 1213,
+      "calls": 1213,
+      "own_s": 0.001924661,
+      "cumulative_s": 0.7211539180000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+      "line": 217,
+      "function": "mass_properties",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.6294561310000001,
+      "cumulative_s": 0.67597375
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 531,
+      "function": "_cdt_cap_arrays",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 0.017076630000000002,
+      "cumulative_s": 0.6327882840000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+      "line": 875,
+      "function": "is_watertight",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.08353848700000001,
+      "cumulative_s": 0.566594393
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 950,
+      "function": "polygonize_full",
+      "primitive_calls": 649,
+      "calls": 649,
+      "own_s": 0.5516344870000001,
+      "cumulative_s": 0.5516344870000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+      "line": 547,
+      "function": "group_rows",
+      "primitive_calls": 1218,
+      "calls": 1218,
+      "own_s": 0.078292333,
+      "cumulative_s": 0.492821458
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+      "line": 645,
+      "function": "get_parts",
+      "primitive_calls": 6903,
+      "calls": 6903,
+      "own_s": 0.29183341500000004,
+      "cumulative_s": 0.472108917
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 365,
+      "function": "<genexpr>",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.0010990280000000002,
+      "cumulative_s": 0.46124724800000005
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 413,
+      "function": "_split_cap_vertex_fans",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 0.07466363200000001,
+      "cumulative_s": 0.447386074
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 364,
+      "function": "verify",
+      "primitive_calls": 19662,
+      "calls": 19662,
+      "own_s": 0.0066150440000000005,
+      "cumulative_s": 0.368525825
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 679,
+      "function": "__hash__",
+      "primitive_calls": 19454,
+      "calls": 19454,
+      "own_s": 0.031533265000000005,
+      "cumulative_s": 0.355888211
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+      "line": 867,
+      "function": "set_precision",
+      "primitive_calls": 1696,
+      "calls": 1696,
+      "own_s": 0.30358561500000003,
+      "cumulative_s": 0.306445216
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 54,
+      "function": "triangle_cases",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.154853776,
+      "cumulative_s": 0.305715673
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 1428,
+      "function": "split",
+      "primitive_calls": 22,
+      "calls": 22,
+      "own_s": 0.000127254,
+      "cumulative_s": 0.285759042
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+      "line": 348,
+      "function": "split",
+      "primitive_calls": 22,
+      "calls": 22,
+      "own_s": 0.00031649600000000004,
+      "cumulative_s": 0.285631788
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.hash>",
+      "primitive_calls": 38030,
+      "calls": 38030,
+      "own_s": 0.013851019000000001,
+      "cumulative_s": 0.281511752
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 207,
+      "function": "__hash__",
+      "primitive_calls": 37349,
+      "calls": 37349,
+      "own_s": 0.011410489999999999,
+      "cumulative_s": 0.26979498
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 48,
+      "function": "hash_fallback",
+      "primitive_calls": 24214,
+      "calls": 24214,
+      "own_s": 0.258487213,
+      "cumulative_s": 0.268158383
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py",
+      "line": 939,
+      "function": "sort",
+      "primitive_calls": 3848,
+      "calls": 3848,
+      "own_s": 0.003615544,
+      "cumulative_s": 0.251177258
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 77,
+      "function": "_graph",
+      "primitive_calls": 649,
+      "calls": 649,
+      "own_s": 0.0043372210000000005,
+      "cumulative_s": 0.24906366300000002
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 135,
+      "function": "handle_basic",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.044096645000000004,
+      "cumulative_s": 0.193057209
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/geometry/base.py",
+      "line": 768,
+      "function": "covered_by",
+      "primitive_calls": 128,
+      "calls": 128,
+      "own_s": 0.000165202,
+      "cumulative_s": 0.167059961
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+      "line": 663,
+      "function": "covered_by",
+      "primitive_calls": 128,
+      "calls": 128,
+      "own_s": 0.165907832,
+      "cumulative_s": 0.165907832
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/scipy/sparse/csgraph/_validation.py",
+      "line": 12,
+      "function": "validate_graph",
+      "primitive_calls": 889,
+      "calls": 889,
+      "own_s": 0.004692159,
+      "cumulative_s": 0.162211609
+    }
+  ],
+  "top_own": [
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 136,
+      "function": "buffer",
+      "primitive_calls": 1150,
+      "calls": 1150,
+      "own_s": 5.066697632,
+      "cumulative_s": 5.072564546000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+      "line": 199,
+      "function": "hausdorff_distance",
+      "primitive_calls": 202,
+      "calls": 202,
+      "own_s": 3.7634461310000002,
+      "cumulative_s": 3.7634461310000002
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 463,
+      "function": "union_all",
+      "primitive_calls": 2168,
+      "calls": 2168,
+      "own_s": 3.078250863,
+      "cumulative_s": 3.0822493100000004
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 245,
+      "function": "symmetric_difference",
+      "primitive_calls": 1314,
+      "calls": 1314,
+      "own_s": 2.6840730390000003,
+      "cumulative_s": 2.6840730390000003
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 39,
+      "function": "difference",
+      "primitive_calls": 1371,
+      "calls": 1371,
+      "own_s": 2.596589222,
+      "cumulative_s": 2.596701476
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 544,
+      "function": "constrained_delaunay_triangles",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 2.217013236,
+      "cumulative_s": 2.217013236
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/set_operations.py",
+      "line": 112,
+      "function": "intersection",
+      "primitive_calls": 2146,
+      "calls": 2146,
+      "own_s": 1.416958128,
+      "cumulative_s": 1.4170715370000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'argsort' of 'numpy.ndarray' objects>",
+      "primitive_calls": 3807,
+      "calls": 3807,
+      "own_s": 1.2833731430000002,
+      "cumulative_s": 1.2833731430000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'sort' of 'numpy.ndarray' objects>",
+      "primitive_calls": 5042,
+      "calls": 5042,
+      "own_s": 0.8388105960000001,
+      "cumulative_s": 0.8388105960000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+      "line": 217,
+      "function": "mass_properties",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.6294561310000001,
+      "cumulative_s": 0.67597375
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 950,
+      "function": "polygonize_full",
+      "primitive_calls": 649,
+      "calls": 649,
+      "own_s": 0.5516344870000001,
+      "cumulative_s": 0.5516344870000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+      "line": 867,
+      "function": "set_precision",
+      "primitive_calls": 1696,
+      "calls": 1696,
+      "own_s": 0.30358561500000003,
+      "cumulative_s": 0.306445216
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+      "line": 645,
+      "function": "get_parts",
+      "primitive_calls": 6903,
+      "calls": 6903,
+      "own_s": 0.29183341500000004,
+      "cumulative_s": 0.472108917
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 17,
+      "function": "mesh_plane",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.27152343,
+      "cumulative_s": 0.825847113
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 48,
+      "function": "hash_fallback",
+      "primitive_calls": 24214,
+      "calls": 24214,
+      "own_s": 0.258487213,
+      "cumulative_s": 0.268158383
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 552,
+      "function": "extrude_profile",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.19118474800000002,
+      "cumulative_s": 8.257101749
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+      "line": 663,
+      "function": "covered_by",
+      "primitive_calls": 128,
+      "calls": 128,
+      "own_s": 0.165907832,
+      "cumulative_s": 0.165907832
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 54,
+      "function": "triangle_cases",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.154853776,
+      "cumulative_s": 0.305715673
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'reduce' of 'numpy.ufunc' objects>",
+      "primitive_calls": 50733,
+      "calls": 50733,
+      "own_s": 0.151896113,
+      "cumulative_s": 0.15226084900000003
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 98,
+      "function": "recover_profile",
+      "primitive_calls": 657,
+      "calls": 657,
+      "own_s": 0.149673879,
+      "cumulative_s": 4.467220196
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/decorators.py",
+      "line": 73,
+      "function": "wrapped",
+      "primitive_calls": 60645,
+      "calls": 60667,
+      "own_s": 0.137597734,
+      "cumulative_s": 21.964902265000003
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+      "line": 350,
+      "function": "_unique1d",
+      "primitive_calls": 3679,
+      "calls": 3679,
+      "own_s": 0.115006786,
+      "cumulative_s": 1.8383940380000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/constructive.py",
+      "line": 679,
+      "function": "make_valid",
+      "primitive_calls": 24,
+      "calls": 24,
+      "own_s": 0.107233581,
+      "cumulative_s": 0.107261207
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 399,
+      "function": "_cap_edge_topology",
+      "primitive_calls": 870,
+      "calls": 870,
+      "own_s": 0.09538228900000001,
+      "cumulative_s": 0.151998783
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'at' of 'numpy.ufunc' objects>",
+      "primitive_calls": 1650,
+      "calls": 1650,
+      "own_s": 0.089772474,
+      "cumulative_s": 0.089772474
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/contour_repair.py",
+      "line": 109,
+      "function": "_float32_mesh_checks",
+      "primitive_calls": 349,
+      "calls": 349,
+      "own_s": 0.088252563,
+      "cumulative_s": 1.86616504
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/graph.py",
+      "line": 875,
+      "function": "is_watertight",
+      "primitive_calls": 1215,
+      "calls": 1215,
+      "own_s": 0.08353848700000001,
+      "cumulative_s": 0.566594393
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/base.py",
+      "line": 887,
+      "function": "triangles",
+      "primitive_calls": 1218,
+      "calls": 1218,
+      "own_s": 0.080462588,
+      "cumulative_s": 0.081723078
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+      "line": 547,
+      "function": "group_rows",
+      "primitive_calls": 1218,
+      "calls": 1218,
+      "own_s": 0.078292333,
+      "cumulative_s": 0.492821458
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 413,
+      "function": "_split_cap_vertex_fans",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 0.07466363200000001,
+      "cumulative_s": 0.447386074
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/creation.py",
+      "line": 140,
+      "function": "linestrings",
+      "primitive_calls": 671,
+      "calls": 671,
+      "own_s": 0.07104262700000001,
+      "cumulative_s": 0.0713541
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method shapely.lib.get_coordinates>",
+      "primitive_calls": 2309,
+      "calls": 2309,
+      "own_s": 0.06707180100000001,
+      "cumulative_s": 0.06707180100000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+      "line": 1567,
+      "function": "cross",
+      "primitive_calls": 2470,
+      "calls": 2470,
+      "own_s": 0.06588729700000001,
+      "cumulative_s": 0.162077674
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 300,
+      "function": "section_profile",
+      "primitive_calls": 657,
+      "calls": 657,
+      "own_s": 0.063154212,
+      "cumulative_s": 12.147266794
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 503,
+      "function": "_extrude_indexed_cap",
+      "primitive_calls": 866,
+      "calls": 866,
+      "own_s": 0.06145835,
+      "cumulative_s": 0.7263939570000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'astype' of 'numpy.ndarray' objects>",
+      "primitive_calls": 16687,
+      "calls": 16687,
+      "own_s": 0.058602175000000006,
+      "cumulative_s": 0.058602175000000006
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 293,
+      "function": "plane_lines",
+      "primitive_calls": 1388,
+      "calls": 1388,
+      "own_s": 0.058402858,
+      "cumulative_s": 0.11039615900000001
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method numpy._core._multiarray_umath._unique_hash>",
+      "primitive_calls": 790,
+      "calls": 790,
+      "own_s": 0.057950182,
+      "cumulative_s": 0.057950182
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/predicates.py",
+      "line": 429,
+      "function": "is_valid",
+      "primitive_calls": 1920,
+      "calls": 1920,
+      "own_s": 0.052789829,
+      "cumulative_s": 0.064297776
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/triangles.py",
+      "line": 22,
+      "function": "cross",
+      "primitive_calls": 1255,
+      "calls": 1255,
+      "own_s": 0.049957118,
+      "cumulative_s": 0.14817650100000002
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'reshape' of 'numpy.ndarray' objects>",
+      "primitive_calls": 38928,
+      "calls": 38928,
+      "own_s": 0.047732735000000005,
+      "cumulative_s": 0.04872898900000001
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_bands.py",
+      "line": 84,
+      "function": "_node",
+      "primitive_calls": 649,
+      "calls": 649,
+      "own_s": 0.046492947,
+      "cumulative_s": 2.5226007000000004
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+      "line": 1431,
+      "function": "normalize_axis_tuple",
+      "primitive_calls": 30252,
+      "calls": 30252,
+      "own_s": 0.04419943700000001,
+      "cumulative_s": 0.066441052
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+      "line": 170,
+      "function": "hashable_rows",
+      "primitive_calls": 1244,
+      "calls": 1244,
+      "own_s": 0.044198615999999996,
+      "cumulative_s": 0.067710633
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/intersections.py",
+      "line": 135,
+      "function": "handle_basic",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.044096645000000004,
+      "cumulative_s": 0.193057209
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/_internal.py",
+      "line": 632,
+      "function": "__dtype_from_pep3118",
+      "primitive_calls": 6903,
+      "calls": 6903,
+      "own_s": 0.042551802,
+      "cumulative_s": 0.082014575
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'flatten' of 'numpy.ndarray' objects>",
+      "primitive_calls": 3679,
+      "calls": 3679,
+      "own_s": 0.039855631,
+      "cumulative_s": 0.039855631
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/_geometry.py",
+      "line": 789,
+      "function": "get_num_geometries",
+      "primitive_calls": 6933,
+      "calls": 6933,
+      "own_s": 0.037027080000000004,
+      "cumulative_s": 0.12770932100000001
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/scipy/sparse/_sputils.py",
+      "line": 264,
+      "function": "get_index_dtype",
+      "primitive_calls": 7969,
+      "calls": 7969,
+      "own_s": 0.034538687000000005,
+      "cumulative_s": 0.062484683
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/caching.py",
+      "line": 679,
+      "function": "__hash__",
+      "primitive_calls": 19454,
+      "calls": 19454,
+      "own_s": 0.031533265000000005,
+      "cumulative_s": 0.355888211
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.len>",
+      "primitive_calls": 387994,
+      "calls": 388087,
+      "own_s": 0.03103654,
+      "cumulative_s": 0.043129116
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/_core/numeric.py",
+      "line": 1493,
+      "function": "moveaxis",
+      "primitive_calls": 14432,
+      "calls": 14432,
+      "own_s": 0.030835294000000003,
+      "cumulative_s": 0.108693141
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<built-in method builtins.isinstance>",
+      "primitive_calls": 254683,
+      "calls": 254683,
+      "own_s": 0.029885909000000006,
+      "cumulative_s": 0.033301646000000004
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/shapely/measurement.py",
+      "line": 23,
+      "function": "area",
+      "primitive_calls": 8606,
+      "calls": 8606,
+      "own_s": 0.029809546000000003,
+      "cumulative_s": 0.029809546000000003
+    },
+    {
+      "file": "~",
+      "line": 0,
+      "function": "<method 'disable' of '_lsprof.Profiler' objects>",
+      "primitive_calls": 888,
+      "calls": 888,
+      "own_s": 0.028022291,
+      "cumulative_s": 0.028022291
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+      "line": 84,
+      "function": "unitize",
+      "primitive_calls": 2816,
+      "calls": 2816,
+      "own_s": 0.027697658,
+      "cumulative_s": 0.041441389
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/numpy/lib/_arraysetops_impl.py",
+      "line": 145,
+      "function": "unique",
+      "primitive_calls": 3679,
+      "calls": 3679,
+      "own_s": 0.027257993,
+      "cumulative_s": 1.9742436420000002
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/util.py",
+      "line": 1557,
+      "function": "submesh",
+      "primitive_calls": 22,
+      "calls": 22,
+      "own_s": 0.025137272000000002,
+      "cumulative_s": 0.147399167
+    },
+    {
+      "file": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/src/layerloom/planar_materials.py",
+      "line": 25,
+      "function": "partition_materials",
+      "primitive_calls": 182,
+      "calls": 182,
+      "own_s": 0.02266353,
+      "cumulative_s": 7.44628784
+    },
+    {
+      "file": "/Users/finn/Documents/layerloom/.venv/lib/python3.12/site-packages/trimesh/grouping.py",
+      "line": 492,
+      "function": "unique_value_in_row",
+      "primitive_calls": 694,
+      "calls": 694,
+      "own_s": 0.021152718,
+      "cumulative_s": 0.033612004
+    }
+  ],
+  "raw_pstats": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/contour_profile_after.pstats"
+}

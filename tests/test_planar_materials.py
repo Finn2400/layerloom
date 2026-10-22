@@ -56,3 +56,65 @@ def test_equal_color_internal_seam_is_removed_before_grid_rounding():
     regions, _, errors = partition_materials({"c": [left, right]}, precision=.01)
     assert not errors
     assert regions["c"].symmetric_difference(box(0, 0, 1, 1)).area == 0
+
+
+def test_unchanged_material_distance_skips_quadratic_comparison(monkeypatch):
+    import layerloom.planar_materials as materials
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("identical boundaries do not need Hausdorff evaluation")
+
+    monkeypatch.setattr(materials.shapely, "hausdorff_distance", unexpected)
+    donut = box(0, 0, 5, 5).difference(box(1, 1, 4, 4))
+    _, diagnostics, errors = materials.partition_materials({"c": [donut]})
+    assert not errors
+    assert diagnostics["material_changes"] == [
+        {"token": "c", "reassigned_area_mm2": 0.0, "set_hausdorff_mm": 0.0}]
+
+
+def test_changed_material_keeps_original_distance_diagnostic(monkeypatch):
+    import layerloom.planar_materials as materials
+
+    inputs = {"m": [box(0.9995, 0, 2, 1)], "c": [box(0, 0, 1, 1)]}
+    actual, diagnostics, errors = materials.partition_materials(inputs)
+    original = materials.shapely.hausdorff_distance
+    monkeypatch.setattr(materials, "_set_hausdorff", lambda a, b: float(original(a, b)))
+    reference, reference_diagnostics, reference_errors = materials.partition_materials(inputs)
+    assert errors == reference_errors == []
+    assert diagnostics == reference_diagnostics
+    assert diagnostics["material_changes"][1]["set_hausdorff_mm"] > 0
+    assert {k: p.wkb for k, p in actual.items()} == {k: p.wkb for k, p in reference.items()}
+
+
+def test_equal_area_does_not_shortcut_changed_holes_or_boundary_samples():
+    import shapely
+    from shapely.geometry import Polygon
+    from layerloom.planar_materials import _set_hausdorff
+
+    a = box(0, 0, 5, 5).difference(box(1, 1, 2, 2))
+    b = box(0, 0, 5, 5).difference(box(3, 3, 4, 4))
+    assert a.area == b.area
+    assert _set_hausdorff(a, b) == shapely.hausdorff_distance(a, b) > 0
+    plain = box(0, 0, 1, 1)
+    sampled = Polygon([(0, 0), (.5, 0), (1, 0), (1, 1), (0, 1)])
+    assert plain.equals(sampled)
+    assert _set_hausdorff(plain, sampled) == shapely.hausdorff_distance(plain, sampled)
+
+
+def test_reordered_exact_rings_and_components_keep_zero_distance(monkeypatch):
+    import shapely
+    from shapely.geometry import MultiPolygon, Polygon
+    import layerloom.planar_materials as materials
+
+    shell = [(0, 0), (10, 0), (10, 10), (0, 10)]
+    holes = [list(box(1, 1, 2, 2).exterior.coords), list(box(3, 3, 4, 4).exterior.coords)]
+    a = MultiPolygon([Polygon(shell, holes), box(11, 0, 12, 1)])
+    b = MultiPolygon([shapely.reverse(box(11, 0, 12, 1)),
+                      Polygon(shell[2:] + shell[:2], [ring[::-1] for ring in holes[::-1]])])
+    assert shapely.hausdorff_distance(a, b) == 0
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("ring/component order does not require Hausdorff evaluation")
+
+    monkeypatch.setattr(materials.shapely, "hausdorff_distance", unexpected)
+    assert materials._set_hausdorff(a, b) == 0
