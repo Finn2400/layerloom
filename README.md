@@ -319,8 +319,9 @@ they are stored in pytest's temporary directory. Use a fresh artifact directory
 for each run. Qt widget captures cannot reliably include native VTK surfaces, so
 the test saves the rendered viewport separately from the controls.
 
-CI runs this workflow on Windows, macOS, and Linux with Python 3.12; Linux uses
-Xvfb and software OpenGL. Every run uploads GUI evidence, including on failure.
+CI runs this workflow on Windows, macOS, and Linux with Python 3.12. Linux uses
+Xvfb and software OpenGL; Windows uses Mesa software OpenGL on the hosted runner.
+Every run uploads GUI evidence, including on failure.
 The full rendering test is opt-in locally because a missing graphics display can
 abort Qt/VTK. Do not use Qt's `offscreen` platform for the full VTK workflow on
 macOS. These tests exercise the source application, not a packaged installer.

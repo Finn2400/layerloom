@@ -39,7 +39,9 @@ def test_gui_workflow(tmp_path):
     log_path = artifact_dir / "gui-workflow.log"
     with log_path.open("w", encoding="utf-8") as output:
         try:
-            result = subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, timeout=300)
+            # Hosted software renderers can be much slower than a local GPU;
+            # this is a correctness test, not a rendering speed benchmark.
+            result = subprocess.run(command, env=env, stdout=output, stderr=subprocess.STDOUT, timeout=600)
         except subprocess.TimeoutExpired:
             pytest.fail(f"GUI workflow timed out; artifacts: {artifact_dir}")
     log = log_path.read_text(encoding="utf-8", errors="replace")
@@ -136,7 +138,15 @@ def _run_workflow(artifact_dir):
             # borrowed context current on Windows. This still tests the actual
             # model pixels below, including a hidden-geometry control frame.
             frame = plotter.grabFramebuffer().convertToFormat(QtGui.QImage.Format_RGB888)
-            assert not frame.isNull(), "Qt viewport framebuffer is unavailable"
+            context = plotter.context()
+            report["qt_opengl"] = {
+                "widget_valid": plotter.isValid(),
+                "context_valid": context is not None and context.isValid(),
+                "version": ([context.format().majorVersion(), context.format().minorVersion()]
+                            if context is not None else None),
+                "opengl_es": context.isOpenGLES() if context is not None else None,
+            }
+            assert not frame.isNull(), f"Qt viewport framebuffer is unavailable: {report['qt_opengl']}"
             assert frame.save(viewport_path)
             rows = np.frombuffer(frame.bits().asstring(frame.byteCount()), dtype=np.uint8)
             pixels = rows.reshape(frame.height(), frame.bytesPerLine())[:, :frame.width() * 3]
@@ -291,6 +301,9 @@ def _run_workflow(artifact_dir):
                     # could disguise a blocked event loop by delivering a timer.
                     weave = toolbar_action(window, "Weave")
                     weave.trigger()
+                    # This notification expires after five seconds. Capture it
+                    # before another event-loop turn or slow output validation.
+                    completion_message = window.status_bar.currentMessage()
                 finally:
                     heartbeat_timer.stop()
             report["weave_event_loop_heartbeats"] = len(heartbeats)
@@ -316,7 +329,8 @@ def _run_workflow(artifact_dir):
             np.testing.assert_allclose(distance_to_layer, 0.0005, atol=1e-5)
             report["woven_assignments"] = {str(k): v.get("token") for k, v in window.assignments.items()}
             assert set(report["woven_assignments"].values()) == set("cmy")
-            assert "Weave complete" in window.status_bar.currentMessage()
+            report["weave_completion_message"] = completion_message
+            assert "Weave complete" in completion_message
             screenshot(window, "cubes-woven")
             step("real weave subprocess exports and reloads colored cube bands")
 

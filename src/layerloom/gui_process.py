@@ -25,6 +25,17 @@ def run_gui_process(
         def closeEvent(self, event):
             event.ignore()
 
+    class ParentCloseGuard(QtCore.QObject):
+        def eventFilter(self, watched, event):
+            # A programmatic close or Close All Windows can bypass modality.
+            # The owner's closeEvent must not delete files used by the writer.
+            if event.type() == QtCore.QEvent.Close:
+                event.ignore()
+                return True
+            return False
+
+    owner = parent.window() if parent is not None else None
+    close_guard = ParentCloseGuard()
     dialog = BusyDialog(parent)
     dialog.setWindowTitle(label)
     dialog.setWindowModality(QtCore.Qt.ApplicationModal)
@@ -64,6 +75,8 @@ def run_gui_process(
     process.finished.connect(loop.quit)
     process.errorOccurred.connect(failed)
     try:
+        if owner is not None:
+            owner.installEventFilter(close_guard)
         dialog.show()
         process.start(str(command[0]), [str(arg) for arg in command[1:]])
         if process.state() != QtCore.QProcess.NotRunning:
@@ -85,5 +98,7 @@ def run_gui_process(
             errors.decode("utf-8", errors="replace"),
         )
     finally:
+        if owner is not None:
+            owner.removeEventFilter(close_guard)
         dialog.done(0)
         dialog.deleteLater()

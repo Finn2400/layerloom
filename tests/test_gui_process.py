@@ -69,3 +69,68 @@ assert not any(w.isVisible() for w in app.topLevelWidgets())
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Destroyed while process" not in result.stderr
+
+
+@pytest.mark.gui
+def test_gui_process_protects_owner_workspace_until_writer_finishes(tmp_path):
+    pytest.importorskip("qtpy")
+    script = r'''
+import shutil
+import sys
+from pathlib import Path
+from qtpy import QtCore, QtWidgets
+from layerloom.gui_process import run_gui_process
+
+app = QtWidgets.QApplication([])
+app.setQuitOnLastWindowClosed(False)
+class Owner(QtWidgets.QWidget):
+    def __init__(self, workspace):
+        super().__init__()
+        self.workspace = workspace
+        self.close_count = 0
+        workspace.mkdir()
+        (workspace / "input.txt").write_text("model", encoding="utf-8")
+
+    def closeEvent(self, event):
+        self.close_count += 1
+        shutil.rmtree(self.workspace)
+        super().closeEvent(event)
+
+for index in range(2):
+    owner = Owner(Path(sys.argv[1]) / str(index))
+    owner.show()
+    close_request = owner.close if index == 0 else app.closeAllWindows
+    QtCore.QTimer.singleShot(50, close_request)
+    writer = "import pathlib,sys,time; time.sleep(.20); p=pathlib.Path(sys.argv[1]); assert (p/'input.txt').is_file(); (p/'output.txt').write_text('finished',encoding='utf-8')"
+    result = run_gui_process(
+        owner, [sys.executable, "-c", writer, str(owner.workspace)],
+        label="Close during export", temp_dir=str(owner.workspace),
+    )
+    assert result.returncode == 0, result
+    assert owner.close_count == 0, owner.close_count
+    assert (owner.workspace / "output.txt").read_text(encoding="utf-8") == "finished"
+    assert owner.isVisible()
+    owner.close()
+    assert owner.close_count == 1
+    assert not owner.workspace.exists()
+
+# Failed starts must also release the close guard.
+owner = Owner(Path(sys.argv[1]) / "failed-start")
+owner.show()
+try:
+    run_gui_process(owner, [str(owner.workspace / "missing-executable")], label="Missing")
+except OSError:
+    pass
+else:
+    raise AssertionError("Missing executable was reported as successful")
+owner.close()
+assert owner.close_count == 1
+assert not owner.workspace.exists()
+'''
+    env = dict(os.environ, QT_QPA_PLATFORM="offscreen", PYTHONIOENCODING="utf-8")
+    result = subprocess.run(
+        [sys.executable, "-c", script, str(tmp_path)],
+        env=env, capture_output=True, text=True, encoding="utf-8", timeout=30,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Destroyed while process" not in result.stderr
