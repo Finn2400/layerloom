@@ -1,11 +1,20 @@
 # LayerLoom paint prototype
 
-The `codex/paint-main-ui` branch opens **Paint surfaces** by default inside the
-main LayerLoom window. **Arrange & weave** retains the existing whole-part
-workflow. Switching tabs keeps each workspace's edits. The Paint surfaces
-button in Arrange & weave opens the original source, preserving paint that the
-legacy normalizer does not understand. Placement and whole-part assignments in
-Arrange & weave are separate from the paint document.
+The `codex/paint-main-ui` branch includes **Paint** as a mode in the main
+LayerLoom toolbar, active by default. Turn Paint off to use the existing
+arrange-and-weave controls, then turn it on to return to painting. Both modes
+retain their edits and views. Entering Paint from an imported arrange model
+opens the original source, preserving paint that the legacy normalizer does
+not understand. Placement and whole-part assignments in Arrange remain
+separate from the paint document.
+
+The compact side panel keeps the tool, paint color, selection and **Apply
+paint** visible. **Settings…** opens a small contextual popover for brush
+radius or surface-selection angles; Escape or an outside click dismisses it
+without painting. **Color mapping** expands the palette and recipe controls.
+There is no separate editor window or visible workspace tab bar. Open, Save,
+Export, Undo and Redo use the main toolbar; export progress stays in the main
+footer even when switching modes.
 
 Use the normal `layerloom-gui` launcher. File/Open, File/Save and Tools/Export
 follow the selected workspace, and closing the main window protects unsaved
@@ -25,18 +34,21 @@ python -m layerloom.paint_gui /path/to/model.3mf
 ## Working with paint
 
 1. Open a painted 3MF, GLB/GLTF, STL, OBJ, PLY, or `.llpaint` project.
-2. **Surface select** picks a whole connected patch. The crease-angle limit
+2. **Surface select** picks a whole connected patch. Open **Settings…** to
+   adjust its edge angle and surface span. The crease-angle limit
    stops at sharp edges; the surface-span limit prevents selection from wrapping
    around a curved object. **Area select** brushes a selection within a radius
    in mm. **Color region select** follows a connected region of the current
-   color. Shift adds and Ctrl removes regions. The highlight is only a preview;
+   color. Area and brush radius are also under **Settings…**. Shift adds and
+   Ctrl removes regions. The highlight is only a preview;
    choose a color and click **Apply paint** to change the selected faces.
 3. Brush, Connected fill, Object fill, and Erase also work directly. Edges follow
    the source triangles. Erase restores imported colors. Undo/redo operates on a
    whole stroke or applied selection. Alt+left-drag rotates the camera;
    middle-drag pans and right-drag zooms. Navigate mode allows ordinary camera
    control without painting.
-4. **Woven apparent colors** is the default for new documents and maps paint
+4. Expand **Color mapping** to choose the print palette and conversion mode.
+   **Woven apparent colors** is the default for new documents and maps paint
    to LayerLoom recipes. **Direct physical filament colors** maps paint to
    individual palette filaments. **Exact colors — one material each** instead
    assigns one physical filament slot to each exact current paint color.
@@ -220,9 +232,14 @@ guard; large-model performance and advanced export controls remain prototype
 work. The accelerator and reproduction commands are retained beside the output.
 
 Main-window pointer tests select and paint an entire cube face, exercise
-undo/redo and tab switching, and verify exact save/reopen. GUI evidence is under
+undo/redo and mode switching, and verify exact save/reopen. GUI evidence is under
 `outputs/paint_main_ui_2026_10_22/gui/`; screenshot records identify the native Qt
 chrome and same-instant VTK framebuffer capture method.
+
+The compact toolbar-and-panel revision is recorded under
+`outputs/paint_compact_ui_2026_10_22/`. Native checks cover contextual settings,
+Escape and outside-click dismissal, selection preservation, compact layout,
+mode switching, toolbar routing and export progress.
 
 Earlier validation artifacts are in `outputs/paint_prototype_2026_10_22/`;
 the main-UI, selection, repair and woven-geometry evidence is in

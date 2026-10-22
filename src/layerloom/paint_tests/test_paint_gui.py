@@ -289,6 +289,8 @@ def test_embedded_panel_defaults_surface_selection_and_woven_color_mode(app):
     assert not panel.editor.isWindow()
     assert panel.editor.tool == "Surface select"
     assert panel.editor.mapping_mode_combo.currentData() == "woven"
+    QtTest.QTest.mouseClick(panel.editor.mapping_toggle, QtCore.Qt.LeftButton)
+    app.processEvents()
     QtTest.QTest.mouseClick(panel.editor.map_button, QtCore.Qt.LeftButton)
     assert panel.editor._mapping
     assert all(not entry["token"].startswith("#") for entry in panel.editor._mapping.values())
@@ -333,3 +335,143 @@ def test_export_action_offers_only_material_geometry_for_every_color_mode(window
     assert window.document.metadata["paint_mapping_mode"] == color_mode
     if color_mode == "source":
         assert all(key == entry["hex"] == entry["token"] for key, entry in window._mapping.items())
+
+
+def open_tool_settings(window):
+    assert window.tool_settings_button.isVisible() and window.tool_settings_button.isEnabled()
+    QtTest.QTest.mouseClick(window.tool_settings_button, QtCore.Qt.LeftButton)
+    QtWidgets.QApplication.processEvents()
+    assert window.tool_settings_menu.isVisible()
+
+
+def close_tool_settings(window):
+    QtTest.QTest.keyClick(window.tool_settings_menu, QtCore.Qt.Key_Escape)
+    QtWidgets.QApplication.processEvents()
+    assert not window.tool_settings_menu.isVisible()
+
+
+def test_tool_settings_show_context_and_keep_values_between_tools(window):
+    assert window.tool == "Navigate"
+    assert not window.tool_settings_button.isEnabled()
+    assert not window.settings_summary.isVisible()
+
+    window.tool_combo.setCurrentText("Surface select")
+    open_tool_settings(window)
+    assert window._surface_settings.isVisible() and not window._radius_settings.isVisible()
+    window.edge_angle_spin.setValue(37)
+    window.seed_angle_spin.setValue(55)
+    assert "37" in window.settings_summary.text() and "55" in window.settings_summary.text()
+    close_tool_settings(window)
+
+    window.tool_combo.setCurrentText("Brush")
+    open_tool_settings(window)
+    assert window._radius_settings.isVisible() and not window._surface_settings.isVisible()
+    window.radius_spin.setValue(2.75)
+    assert "2.75" in window.settings_summary.text() and "mm" in window.settings_summary.text()
+    close_tool_settings(window)
+
+    window.tool_combo.setCurrentText("Area select")
+    open_tool_settings(window)
+    assert window._radius_settings.isVisible() and not window._surface_settings.isVisible()
+    assert window.radius_spin.value() == pytest.approx(2.75)
+    close_tool_settings(window)
+
+    window.tool_combo.setCurrentText("Surface select")
+    open_tool_settings(window)
+    assert window.edge_angle_spin.value() == 37 and window.seed_angle_spin.value() == 55
+    close_tool_settings(window)
+    window.tool_combo.setCurrentText("Object fill")
+    assert not window.tool_settings_button.isEnabled()
+    assert not window.tool_settings_menu.isVisible()
+
+
+def test_settings_escape_preserves_selection_and_returns_keyboard_focus(window):
+    window.tool_combo.setCurrentText("Surface select")
+    click_surface(window)
+    before_selection = {index: mask.copy() for index, mask in window._selection.items()}
+    before_paint = window.document.meshes[0].face_rgba.copy()
+    open_tool_settings(window)
+    window.edge_angle_spin.setFocus()
+    window.edge_angle_spin.selectAll()
+    QtTest.QTest.keyClicks(window.edge_angle_spin, "42")
+    QtTest.QTest.keyClick(window.edge_angle_spin, QtCore.Qt.Key_Tab)
+    assert window.edge_angle_spin.value() == 42
+    close_tool_settings(window)
+    focus = QtWidgets.QApplication.focusWidget()
+    assert focus is not None and focus.window() is window
+    assert not window.tool_settings_menu.isAncestorOf(focus)
+    assert window.edge_angle_spin.value() == 42
+    assert not window.dirty and not window._undo
+    np.testing.assert_array_equal(window.document.meshes[0].face_rgba, before_paint)
+    for index, mask in before_selection.items():
+        np.testing.assert_array_equal(window._selection[index], mask)
+    window.tool_combo.setCurrentText("Navigate")
+    assert window.apply_selection_button.isEnabled() and window.clear_selection_button.isEnabled()
+    QtTest.QTest.mouseClick(window.clear_selection_button, QtCore.Qt.LeftButton)
+    assert not window._selection
+
+
+def test_dismissing_settings_on_model_does_not_paint_through(window):
+    window.tool_combo.setCurrentText("Brush")
+    window.radius_spin.setValue(3)
+    window.set_paint_color("#EE6922")
+    before = window.document.meshes[0].face_rgba.copy()
+    pos = viewport_point(window, (1, 0, 5))
+    assert window.pick_at(pos) is not None
+    open_tool_settings(window)
+    global_pos = window.plotter.mapToGlobal(pos)
+    assert not window.tool_settings_menu.geometry().contains(global_pos)
+    # Send through the host QWindow, so Qt's active-popup mouse routing and
+    # possible outside-click replay are exercised before the model sees it.
+    QtTest.QTest.mouseClick(window.windowHandle(), QtCore.Qt.LeftButton,
+                           pos=window.mapFromGlobal(global_pos))
+    QtWidgets.QApplication.processEvents()
+    assert not window.tool_settings_menu.isVisible()
+    np.testing.assert_array_equal(window.document.meshes[0].face_rgba, before)
+    assert not window._undo and not window._stroke
+    assert not window.plotter._painting and not window.plotter._selecting
+    click_surface(window)
+    assert np.any(window.document.meshes[0].face_rgba != before)
+    assert len(window._undo) == 1
+
+
+def test_compact_panel_keeps_paint_controls_and_mapping_summary_visible(app):
+    from layerloom.paint_examples import example_document
+    host = QtWidgets.QMainWindow()
+    panel = PaintPanel(document=example_document("cube", 8), compact=True)
+    host.setCentralWidget(panel)
+    host.resize(1000, 650)
+    host.show()
+    app.processEvents()
+    editor = panel.editor
+    try:
+        assert not editor.isWindow()
+        assert not editor.project_toolbar.isVisible()
+        assert not editor.menuBar().isVisible() and not editor.statusBar().isVisible()
+        assert editor.controls_scroll.isVisible()
+        assert editor.controls_scroll.width() < host.width() * .42
+        assert editor.plotter.width() > host.width() * .5
+        viewport = editor.controls_scroll.viewport()
+        for control in [editor.tool_combo, editor.color_button, editor.apply_selection_button,
+                        editor.clear_selection_button, editor.mapping_toggle, editor.mapping_label]:
+            assert control.isVisible()
+            assert viewport.rect().contains(control.mapTo(viewport, control.rect().center())), control.objectName()
+        assert not editor.mapping_toggle.isChecked()
+        assert not editor.mapping_section.isVisible()
+        QtTest.QTest.mouseClick(editor.mapping_toggle, QtCore.Qt.LeftButton)
+        app.processEvents()
+        assert editor.mapping_section.isVisible() and editor.mapping_table.isVisible()
+        QtTest.QTest.mouseClick(editor.map_button, QtCore.Qt.LeftButton)
+        assert editor._mapping
+        summary = editor.mapping_label.text()
+        assert "filament" in summary.lower()
+        QtTest.QTest.mouseClick(editor.mapping_toggle, QtCore.Qt.LeftButton)
+        app.processEvents()
+        assert not editor.mapping_section.isVisible()
+        assert editor.mapping_label.isVisible() and editor.mapping_label.text() == summary
+        assert viewport.rect().contains(editor.mapping_label.mapTo(viewport, editor.mapping_label.rect().center()))
+    finally:
+        editor.dirty = False
+        panel.shutdown()
+        host.close()
+        app.processEvents()

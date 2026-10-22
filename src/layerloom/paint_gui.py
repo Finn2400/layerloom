@@ -34,6 +34,21 @@ def _rgb(hx: str) -> np.ndarray:
     return np.array([int(hx[i:i + 2], 16) for i in (1, 3, 5)], dtype=np.uint8)
 
 
+class ToolSettingsMenu(QtWidgets.QMenu):
+    """Dismiss outside clicks without replaying them onto the model."""
+
+    def mousePressEvent(self, event):
+        if not self.rect().contains(event.pos()):
+            # QMenu's default outside-press handling can reset NoMouseReplay
+            # before closing. Accept the dismissal here so the native viewport
+            # never receives a queued copy of this press after the popup hides.
+            self.setAttribute(QtCore.Qt.WA_NoMouseReplay, True)
+            self.close()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+
 class PaintInteractor(QtInteractor):
     """Consume painting gestures while retaining right/middle camera gestures."""
 
@@ -43,8 +58,17 @@ class PaintInteractor(QtInteractor):
         self._painting = False
         self._selecting = False
         self._orbit_last = None
+        self._dismissed_settings_press = False
 
     def mousePressEvent(self, event):
+        if self._dismissed_settings_press:
+            event.accept()
+            return
+        if self.owner.tool_settings_menu.isVisible():
+            self.owner.tool_settings_menu.close()
+            self._dismissed_settings_press = True
+            event.accept()
+            return
         if event.button() == QtCore.Qt.LeftButton and event.modifiers() & QtCore.Qt.AltModifier:
             self._orbit_last = event.pos()
             event.accept()
@@ -65,6 +89,9 @@ class PaintInteractor(QtInteractor):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        if self._dismissed_settings_press:
+            event.accept()
+            return
         if self._orbit_last is not None:
             self._orbit_to(event.pos())
             event.accept()
@@ -94,6 +121,10 @@ class PaintInteractor(QtInteractor):
         self.render()
 
     def mouseReleaseEvent(self, event):
+        if self._dismissed_settings_press:
+            self._dismissed_settings_press = False
+            event.accept()
+            return
         if event.button() == QtCore.Qt.LeftButton and self._orbit_last is not None:
             self._orbit_to(event.pos())
             self._orbit_last = None
@@ -180,6 +211,7 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     def _build_ui(self):
         toolbar = self.addToolBar("Paint project")
+        self.project_toolbar = toolbar
         toolbar.setMovable(False)
         self.open_action = toolbar.addAction("Open…", self.open_dialog)
         self.save_action = toolbar.addAction("Save paint…", self.save_dialog)
@@ -201,117 +233,157 @@ class PaintWindow(QtWidgets.QMainWindow):
         toolbar.addAction("Isometric", lambda: self.view("iso"))
 
         split = QtWidgets.QSplitter()
+        split.setChildrenCollapsible(False)
         self.setCentralWidget(split)
-        side = QtWidgets.QWidget()
-        layout = QtWidgets.QVBoxLayout(side)
-        title = QtWidgets.QLabel("Surface paint")
-        title.setStyleSheet("font-size: 20px; font-weight: 600;")
+        self.controls_scroll = QtWidgets.QScrollArea()
+        self.controls_scroll.setObjectName("paintControlsScroll")
+        self.controls_scroll.setWidgetResizable(True)
+        self.controls_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
+        self.controls_scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.controls_scroll.setMinimumWidth(280)
+        self.controls_scroll.setMaximumWidth(330)
+        self.controls_panel = QtWidgets.QWidget()
+        self.controls_panel.setObjectName("paintControls")
+        layout = QtWidgets.QVBoxLayout(self.controls_panel)
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(9)
+        self.controls_scroll.setWidget(self.controls_panel)
+        title = QtWidgets.QLabel("Paint")
+        title.setStyleSheet("font-size: 18px; font-weight: 600;")
         layout.addWidget(title)
         self.model_label = QtWidgets.QLabel("Open a model to begin.")
         self.model_label.setWordWrap(True)
+        self.model_label.setStyleSheet("font-size: 12px;")
         layout.addWidget(self.model_label)
+
+        layout.addWidget(QtWidgets.QLabel("Tool"))
+        tool_row = QtWidgets.QHBoxLayout()
         self.tool_combo = QtWidgets.QComboBox()
         self.tool_combo.setObjectName("paintTool")
+        self.tool_combo.setAccessibleName("Paint tool")
         self.tool_combo.addItems(["Navigate", "Surface select", "Area select", "Color region select",
                                   "Brush", "Connected fill", "Object fill", "Erase"])
+        self.tool_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.tool_combo.setMinimumContentsLength(14)
         self.tool_combo.currentTextChanged.connect(self._set_tool)
-        layout.addWidget(self.tool_combo)
-        form = QtWidgets.QFormLayout()
-        self.radius_spin = QtWidgets.QDoubleSpinBox()
-        self.radius_spin.setObjectName("paintRadius")
-        self.radius_spin.setRange(0.001, 100000)
-        self.radius_spin.setDecimals(3)
-        self.radius_spin.setValue(2.0)
-        self.radius_spin.setSuffix(" mm")
-        form.addRow("Brush radius", self.radius_spin)
+        tool_row.addWidget(self.tool_combo, 1)
+        self.tool_settings_button = QtWidgets.QToolButton()
+        self.tool_settings_button.setObjectName("paintToolSettings")
+        self.tool_settings_button.setText("Settings…")
+        self.tool_settings_button.setToolTip("Adjust the selected tool")
+        self.tool_settings_button.setAccessibleName("Paint tool settings")
+        self.tool_settings_button.clicked.connect(self._show_tool_settings)
+        tool_row.addWidget(self.tool_settings_button)
+        layout.addLayout(tool_row)
+        self.settings_summary = QtWidgets.QLabel()
+        self.settings_summary.setWordWrap(True)
+        self.settings_summary.setStyleSheet("font-size: 12px;")
+        layout.addWidget(self.settings_summary)
+        self._build_tool_settings()
+
+        layout.addWidget(QtWidgets.QLabel("Paint color"))
         self.color_button = QtWidgets.QPushButton()
         self.color_button.setObjectName("paintColor")
+        self.color_button.setAccessibleName("Choose paint color")
         self.color_button.clicked.connect(self.choose_color)
-        form.addRow("Paint color", self.color_button)
-        self.edge_angle_spin = QtWidgets.QDoubleSpinBox()
-        self.edge_angle_spin.setObjectName("surfaceEdgeAngle")
-        self.edge_angle_spin.setRange(0, 180)
-        self.edge_angle_spin.setValue(35)
-        self.edge_angle_spin.setSuffix("°")
-        self.edge_angle_spin.setToolTip("Stop surface selection at a crease greater than this angle. Click again after changing it.")
-        form.addRow("Surface edge angle", self.edge_angle_spin)
-        self.seed_angle_spin = QtWidgets.QDoubleSpinBox()
-        self.seed_angle_spin.setObjectName("surfaceNormalSpan")
-        self.seed_angle_spin.setRange(0, 89)
-        self.seed_angle_spin.setValue(60)
-        self.seed_angle_spin.setSuffix("°")
-        self.seed_angle_spin.setToolTip("Maximum normal change from the picked face. Limits spread around curved objects; always below90°.")
-        form.addRow("Surface span", self.seed_angle_spin)
-        layout.addLayout(form)
-        selection_row = QtWidgets.QHBoxLayout()
-        self.apply_selection_button = QtWidgets.QPushButton("Apply paint")
-        self.apply_selection_button.setObjectName("applySelectedPaint")
-        self.apply_selection_button.clicked.connect(self.paint_selection)
-        self.clear_selection_button = QtWidgets.QPushButton("Clear selection")
-        self.clear_selection_button.setObjectName("clearPaintSelection")
-        self.clear_selection_button.clicked.connect(self.clear_selection)
-        selection_row.addWidget(self.apply_selection_button)
-        selection_row.addWidget(self.clear_selection_button)
-        layout.addLayout(selection_row)
-        self.selection_label = QtWidgets.QLabel("No faces selected")
-        layout.addWidget(self.selection_label)
+        layout.addWidget(self.color_button)
         quick = QtWidgets.QHBoxLayout()
-        for color in ["#00FFFF", "#FF00FF", "#FFFF00", "#FFFFFF", "#202020", "#FF4040"]:
+        for name, color in [("Cyan", "#00FFFF"), ("Magenta", "#FF00FF"), ("Yellow", "#FFFF00"),
+                            ("White", "#FFFFFF"), ("Black", "#202020"), ("Red", "#FF4040")]:
             button = QtWidgets.QPushButton()
-            button.setFixedSize(32, 26)
-            button.setToolTip(color)
+            button.setFixedSize(30, 25)
+            button.setToolTip(f"{name} · {color}")
+            button.setAccessibleName(f"Paint {name.lower()}")
             button.setStyleSheet(f"background: {color}; border: 1px solid #777;")
             button.clicked.connect(lambda _checked=False, hx=color: self.set_paint_color(hx))
             quick.addWidget(button)
         quick.addStretch()
         layout.addLayout(quick)
-        hint = QtWidgets.QLabel(
-            "Click a surface or drag an area, then Apply paint. Shift adds; Ctrl removes. "
-            "Alt+left rotates; middle pans; right zooms. Color region follows connected "
-            "paint, including hidden faces. Erase restores imported colors."
-        )
-        hint.setWordWrap(True)
-        hint.setStyleSheet("color: #888; font-size: 12px;")
-        layout.addWidget(hint)
-        layout.addSpacing(16)
-        layout.addWidget(QtWidgets.QLabel("Printable color mapping"))
+
+        self.selection_label = QtWidgets.QLabel("No faces selected")
+        self.selection_label.setWordWrap(True)
+        layout.addWidget(self.selection_label)
+        selection_row = QtWidgets.QHBoxLayout()
+        self.apply_selection_button = QtWidgets.QPushButton("Apply paint")
+        self.apply_selection_button.setObjectName("applySelectedPaint")
+        self.apply_selection_button.clicked.connect(self.paint_selection)
+        self.clear_selection_button = QtWidgets.QPushButton("Clear")
+        self.clear_selection_button.setObjectName("clearPaintSelection")
+        self.clear_selection_button.setAccessibleName("Clear paint selection")
+        self.clear_selection_button.setToolTip("Clear the highlighted selection")
+        self.clear_selection_button.clicked.connect(self.clear_selection)
+        selection_row.addWidget(self.apply_selection_button, 1)
+        selection_row.addWidget(self.clear_selection_button)
+        layout.addLayout(selection_row)
+        self.tool_hint = QtWidgets.QLabel()
+        self.tool_hint.setWordWrap(True)
+        self.tool_hint.setStyleSheet("font-size: 12px;")
+        layout.addWidget(self.tool_hint)
+        camera_hint = QtWidgets.QLabel("Alt+drag rotates · middle pans · right zooms")
+        camera_hint.setWordWrap(True)
+        camera_hint.setStyleSheet("font-size: 12px;")
+        layout.addWidget(camera_hint)
+
+        self.mapping_toggle = QtWidgets.QToolButton()
+        self.mapping_toggle.setObjectName("paintMappingToggle")
+        self.mapping_toggle.setText("Color mapping")
+        self.mapping_toggle.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        self.mapping_toggle.setArrowType(QtCore.Qt.RightArrow)
+        self.mapping_toggle.setCheckable(True)
+        self.mapping_toggle.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        self.mapping_toggle.toggled.connect(self._set_mapping_expanded)
+        layout.addSpacing(6)
+        layout.addWidget(self.mapping_toggle)
+        self.mapping_label = QtWidgets.QLabel("Woven colors · assign a palette before export.")
+        self.mapping_label.setWordWrap(True)
+        self.mapping_label.setStyleSheet("font-size: 12px;")
+        layout.addWidget(self.mapping_label)
+        self.mapping_section = QtWidgets.QWidget()
+        mapping_layout = QtWidgets.QVBoxLayout(self.mapping_section)
+        mapping_layout.setContentsMargins(0, 0, 0, 0)
         self.palette_combo = QtWidgets.QComboBox()
         self.palette_combo.setObjectName("paintPalette")
+        self.palette_combo.setAccessibleName("Print palette")
         self.palette_combo.addItems(list(PALETTE_FILES))
         self.palette_combo.setCurrentText("Normal")
         self.palette_combo.currentTextChanged.connect(self._palette_changed)
-        layout.addWidget(self.palette_combo)
+        mapping_layout.addWidget(self.palette_combo)
         self.mapping_mode_combo = QtWidgets.QComboBox()
         self.mapping_mode_combo.setObjectName("paintMappingMode")
+        self.mapping_mode_combo.setAccessibleName("Printable color mode")
         self.mapping_mode_combo.addItem("Woven apparent colors", "woven")
         self.mapping_mode_combo.addItem("Direct physical filament colors", "direct")
         self.mapping_mode_combo.addItem("Exact colors — one material each", "source")
+        self.mapping_mode_combo.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToMinimumContentsLengthWithIcon)
+        self.mapping_mode_combo.setMinimumContentsLength(18)
         self.mapping_mode_combo.currentIndexChanged.connect(self._palette_changed)
-        layout.addWidget(self.mapping_mode_combo)
+        mapping_layout.addWidget(self.mapping_mode_combo)
         self.map_button = QtWidgets.QPushButton("Assign colors to palette")
         self.map_button.setObjectName("assignPaintPalette")
         self.map_button.clicked.connect(self.assign_colors)
-        layout.addWidget(self.map_button)
+        mapping_layout.addWidget(self.map_button)
         self.preview_mapping = QtWidgets.QCheckBox("Preview mapped colors")
         self.preview_mapping.toggled.connect(self._mapping_preview_changed)
-        layout.addWidget(self.preview_mapping)
+        mapping_layout.addWidget(self.preview_mapping)
         self.mapping_table = QtWidgets.QTableWidget(0, 3)
         self.mapping_table.setHorizontalHeaderLabels(["Paint", "Mapped", "Recipe"])
         self.mapping_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.mapping_table.verticalHeader().hide()
         self.mapping_table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.mapping_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.mapping_table.setMinimumHeight(140)
+        self.mapping_table.setMaximumHeight(190)
         self.mapping_table.cellClicked.connect(self._mapping_color_clicked)
-        layout.addWidget(self.mapping_table, 1)
-        self.mapping_label = QtWidgets.QLabel("Assign colors before woven export.")
-        self.mapping_label.setWordWrap(True)
-        layout.addWidget(self.mapping_label)
-        split.addWidget(side)
+        mapping_layout.addWidget(self.mapping_table)
+        layout.addWidget(self.mapping_section)
+        self.mapping_section.hide()
+        layout.addStretch(1)
+
+        split.addWidget(self.controls_scroll)
         self.plotter = PaintInteractor(self, split)
         self.plotter.setObjectName("paintViewport")
         split.addWidget(self.plotter)
-        split.setSizes([325, 925])
-        side.setMinimumWidth(300)
-        side.setMaximumWidth(450)
+        split.setSizes([300, 950])
         self.plotter.set_background("#222831")
         self.plotter.show_axes()
         self.progress = QtWidgets.QProgressBar()
@@ -321,15 +393,119 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage("Open a painted model or a mesh to begin.")
         self.set_paint_color(_hex(self.paint_rgba))
         self._sync_mapping_controls()
+        self._set_tool(self.tool_combo.currentText())
         self._update_actions()
+
+    def _build_tool_settings(self):
+        self.tool_settings_menu = ToolSettingsMenu(self)
+        self.tool_settings_menu.setObjectName("paintToolSettingsPopover")
+        self.tool_settings_menu.setAttribute(QtCore.Qt.WA_NoMouseReplay, True)
+        content = QtWidgets.QWidget()
+        content.setMinimumWidth(275)
+        layout = QtWidgets.QVBoxLayout(content)
+        layout.setContentsMargins(12, 10, 12, 10)
+        self.settings_title = QtWidgets.QLabel("Tool settings")
+        self.settings_title.setStyleSheet("font-weight: 600;")
+        layout.addWidget(self.settings_title)
+        self._radius_settings = QtWidgets.QWidget()
+        radius_form = QtWidgets.QFormLayout(self._radius_settings)
+        radius_form.setContentsMargins(0, 0, 0, 0)
+        self.radius_spin = QtWidgets.QDoubleSpinBox()
+        self.radius_spin.setObjectName("paintRadius")
+        self.radius_spin.setAccessibleName("Brush radius")
+        self.radius_spin.setRange(0.001, 100000)
+        self.radius_spin.setDecimals(3)
+        self.radius_spin.setValue(2.0)
+        self.radius_spin.setSuffix(" mm")
+        self.radius_spin.valueChanged.connect(self._update_tool_settings)
+        radius_form.addRow("Radius", self.radius_spin)
+        layout.addWidget(self._radius_settings)
+        self._surface_settings = QtWidgets.QWidget()
+        surface_form = QtWidgets.QFormLayout(self._surface_settings)
+        surface_form.setContentsMargins(0, 0, 0, 0)
+        self.edge_angle_spin = QtWidgets.QDoubleSpinBox()
+        self.edge_angle_spin.setObjectName("surfaceEdgeAngle")
+        self.edge_angle_spin.setAccessibleName("Surface edge angle")
+        self.edge_angle_spin.setRange(0, 180)
+        self.edge_angle_spin.setValue(35)
+        self.edge_angle_spin.setSuffix("°")
+        self.edge_angle_spin.setToolTip("Stop at a crease greater than this angle. Select the surface again after changing it.")
+        self.edge_angle_spin.valueChanged.connect(self._update_tool_settings)
+        surface_form.addRow("Edge angle", self.edge_angle_spin)
+        self.seed_angle_spin = QtWidgets.QDoubleSpinBox()
+        self.seed_angle_spin.setObjectName("surfaceNormalSpan")
+        self.seed_angle_spin.setAccessibleName("Surface span")
+        self.seed_angle_spin.setRange(0, 89)
+        self.seed_angle_spin.setValue(60)
+        self.seed_angle_spin.setSuffix("°")
+        self.seed_angle_spin.setToolTip("Limit how far selection follows a curved surface away from the picked face.")
+        self.seed_angle_spin.valueChanged.connect(self._update_tool_settings)
+        surface_form.addRow("Surface span", self.seed_angle_spin)
+        layout.addWidget(self._surface_settings)
+        note = QtWidgets.QLabel("Select again to use changed settings. Esc closes this panel.")
+        note.setWordWrap(True)
+        note.setMaximumWidth(280)
+        layout.addWidget(note)
+        action = QtWidgets.QWidgetAction(self.tool_settings_menu)
+        action.setDefaultWidget(content)
+        self.tool_settings_menu.addAction(action)
+        self.tool_settings_menu.aboutToHide.connect(self._tool_settings_hidden)
+
+    def _tool_settings_hidden(self):
+        self.tool_settings_button.setFocus(QtCore.Qt.PopupFocusReason)
+
+    def _show_tool_settings(self):
+        if not self.tool_settings_button.isEnabled():
+            return
+        self._update_tool_settings()
+        self.tool_settings_menu.popup(self.tool_settings_button.mapToGlobal(
+            QtCore.QPoint(0, self.tool_settings_button.height())))
+        spin = self.edge_angle_spin if self.tool == "Surface select" else self.radius_spin
+        spin.setFocus(QtCore.Qt.PopupFocusReason)
+
+    def _update_tool_settings(self, *_args):
+        # Signals can fire while the controls themselves are being constructed.
+        if not hasattr(self, "seed_angle_spin"):
+            return
+        radius = self.tool in {"Brush", "Erase", "Area select"}
+        surface = self.tool == "Surface select"
+        self._radius_settings.setVisible(radius)
+        self._surface_settings.setVisible(surface)
+        self.radius_spin.setEnabled(radius)
+        self.edge_angle_spin.setEnabled(surface)
+        self.seed_angle_spin.setEnabled(surface)
+        self.tool_settings_button.setEnabled(radius or surface)
+        self.settings_title.setText(f"{self.tool} settings")
+        if surface:
+            text = f"Edges {self.edge_angle_spin.value():g}° · span {self.seed_angle_spin.value():g}°"
+        elif radius:
+            text = f"Radius {self.radius_spin.value():g} mm"
+        else:
+            text = ""
+            self.tool_settings_menu.close()
+        self.settings_summary.setText(text)
+        self.settings_summary.setVisible(bool(text))
+
+    def _set_mapping_expanded(self, expanded):
+        self.mapping_section.setVisible(expanded)
+        self.mapping_toggle.setArrowType(QtCore.Qt.DownArrow if expanded else QtCore.Qt.RightArrow)
 
     def _set_tool(self, tool):
         self.end_stroke()
         self.tool = tool
         self.plotter.setCursor(QtCore.Qt.ArrowCursor if tool == "Navigate" else QtCore.Qt.CrossCursor)
-        self.edge_angle_spin.setEnabled(tool == "Surface select")
-        self.seed_angle_spin.setEnabled(tool == "Surface select")
-        self.radius_spin.setEnabled(tool in {"Brush", "Erase", "Area select"})
+        self._update_tool_settings()
+        hints = {
+            "Navigate": "Drag to orbit the model without changing paint.",
+            "Surface select": "Click a surface, then Apply paint. Shift adds; Ctrl removes.",
+            "Area select": "Drag an area, then Apply paint. Shift adds; Ctrl removes.",
+            "Color region select": "Select a connected color region, including hidden faces, then Apply paint.",
+            "Brush": "Drag to paint inside the brush radius.",
+            "Connected fill": "Click to repaint a connected color region, including hidden faces.",
+            "Object fill": "Click to repaint the entire object.",
+            "Erase": "Drag to restore imported colors inside the brush radius.",
+        }
+        self.tool_hint.setText(hints[tool])
         self.statusBar().showMessage(f"{tool} · Alt+left rotates, middle pans, right zooms")
 
     def set_paint_color(self, hx):
@@ -907,7 +1083,7 @@ class PaintPanel(QtWidgets.QWidget):
     the close is accepted. Tab switching does not dispose or reload its state.
     """
 
-    def __init__(self, parent=None, path=None, *, document=None):
+    def __init__(self, parent=None, path=None, *, document=None, compact=False):
         super().__init__(parent)
         self._disposed = False
         self.editor = PaintWindow(path, document=document, parent=self)
@@ -915,10 +1091,17 @@ class PaintPanel(QtWidgets.QWidget):
         self.editor.setAttribute(QtCore.Qt.WA_DeleteOnClose, False)
         self.editor.menuBar().setNativeMenuBar(False)
         self.editor.menuBar().hide()
+        if compact:
+            self.editor.project_toolbar.hide()
+            self.editor.statusBar().hide()
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.editor)
         self.editor.tool_combo.setCurrentText("Surface select")
+
+    def hideEvent(self, event):
+        self.editor.tool_settings_menu.close()
+        super().hideEvent(event)
 
     @property
     def document(self):

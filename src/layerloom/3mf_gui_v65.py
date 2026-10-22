@@ -1443,25 +1443,46 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self._install_paint_workspace()
 
     def _install_paint_workspace(self):
-        """Keep painting in the main window, with both workspaces retained."""
+        """Use the main toolbar to switch modes without discarding either view."""
         from layerloom.paint_gui import PaintPanel
         self._arrange_toolbars = list(self.findChildren(_V58.QtWidgets.QToolBar))
+        self._arrange_window_title = self.windowTitle()
         self._workspace_action_labels = [
             (action, action.text()) for action in self.findChildren(_V58.QtWidgets.QAction)
-            if action.text() in {"Open 3MF…", "Open GLB…", "Save Labeled 3MF…", "Weave", "Preview 3D"}
+            if action.text() in {"Open 3MF…", "Open GLB…", "Save Labeled 3MF…",
+                                 "Open 3MF", "Open GLB", "Save Labeled 3MF", "Weave", "Preview 3D"}
+        ]
+        self._arrange_action_enabled = {action: action.isEnabled() for action, _ in self._workspace_action_labels}
+        self._arrange_toolbar_visibility = {
+            action: action.isVisible() for toolbar in self._arrange_toolbars for action in toolbar.actions()
+        }
+        self._arrange_only_toolbar_actions = [
+            action for action in self._arrange_toolbar_visibility
+            if isinstance(action, _V58.QtWidgets.QWidgetAction) or action.isSeparator()
+            or action.text() in {"Open GLB", "Load Example"}
         ]
         arrange = self.takeCentralWidget()
         tabs = _V58.QtWidgets.QTabWidget(self)
         tabs.setObjectName("layerloomWorkspaces")
         self.workspace_tabs = tabs
-        self.paint_panel = PaintPanel(parent=tabs)
+        self.paint_panel = PaintPanel(parent=tabs, compact=True)
         tabs.addTab(self.paint_panel, "Paint surfaces")
         tabs.addTab(arrange, "Arrange & weave")
-        tabs.setTabToolTip(0, "Select or brush-paint model surfaces, then export separate filament geometry as 3MF.")
-        tabs.setTabToolTip(1, "Existing whole-part placement and palette weaving workspace.")
+        tabs.tabBar().hide()
         self.setCentralWidget(tabs)
         tabs.currentChanged.connect(self._workspace_changed)
-        self.paint_panel.editor.windowTitleChanged.connect(self._paint_title_changed)
+        editor = self.paint_panel.editor
+        editor.windowTitleChanged.connect(self._paint_title_changed)
+        editor.statusBar().messageChanged.connect(self._paint_status_changed)
+        editor.statusBar().removeWidget(editor.progress)
+        self.status_bar.addPermanentWidget(editor.progress)
+        editor.progress.hide()
+        self._paint_history_actions = [editor.undo_action, editor.redo_action]
+        self._paint_shortcuts = {action: action.shortcut() for action in self._paint_history_actions}
+        for action in self._paint_history_actions:
+            self._main_toolbar.addAction(action)
+        editor.export_action.changed.connect(self._sync_paint_host_actions)
+        editor.save_action.changed.connect(self._sync_paint_host_actions)
         self._workspace_changed(0)
 
     def _paint_active(self):
@@ -1472,21 +1493,43 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         if self._paint_active():
             self.setWindowTitle(title + " — main UI prototype")
 
+    def _paint_status_changed(self, message):
+        if self._paint_active():
+            self.status_bar.showMessage(message)
+
+    def _sync_paint_host_actions(self):
+        paint = self._paint_active()
+        editor = self.paint_panel.editor
+        for action, original in self._workspace_action_labels:
+            if original == "Weave":
+                action.setEnabled(editor.export_action.isEnabled() if paint else self._arrange_action_enabled[action])
+            elif original.startswith("Save Labeled 3MF"):
+                action.setEnabled(editor.save_action.isEnabled() if paint else self._arrange_action_enabled[action])
+
     def _workspace_changed(self, index):
         paint = self._paint_active()
         for toolbar in self._arrange_toolbars:
-            toolbar.setVisible(not paint)
+            toolbar.show()
+        for action in self._arrange_only_toolbar_actions:
+            action.setVisible(False if paint else self._arrange_toolbar_visibility[action])
         labels = {"Open 3MF…": "Open model or paint project…",
                   "Open GLB…": "Open another model…",
                   "Save Labeled 3MF…": "Save paint project…",
-                  "Weave": "Export geometry 3MF…", "Preview 3D": "Fit paint model"}
+                  "Open 3MF": "Open…", "Open GLB": "Open model…",
+                  "Save Labeled 3MF": "Save paint…",
+                  "Weave": "Export geometry 3MF…", "Preview 3D": "Fit view"}
         for action, original in self._workspace_action_labels:
             action.setText(labels.get(original, original) if paint else original)
+        for action in self._paint_history_actions:
+            action.setVisible(paint)
+            action.setShortcut(self._paint_shortcuts[action] if paint else _V58.QtGui.QKeySequence())
+        self._sync_paint_host_actions()
         if hasattr(self, "_paint_action"):
             self._paint_action.setChecked(paint)
         if paint:
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
-            self.status_bar.showMessage("Paint surfaces · select an area, choose a color, then Apply paint")
+            message = self.paint_panel.editor.statusBar().currentMessage()
+            self.status_bar.showMessage(message or "Paint · select an area, choose a color, then Apply paint")
             pending = self._paint_pending_source
             if pending:
                 if not self.paint_panel.can_close():
@@ -1494,8 +1537,15 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                     return
                 if self.paint_panel.open_path(pending):
                     self._paint_pending_source = None
+            self.paint_panel.editor.plotter.setFocus(_V58.QtCore.Qt.OtherFocusReason)
         else:
+            menu = getattr(self.paint_panel.editor, "tool_settings_menu", None)
+            if menu is not None:
+                menu.hide()
+            self.setWindowTitle(self._arrange_window_title)
             self._refresh_status_summary()
+            plotter = getattr(self.viewer, "plotter", None)
+            (plotter if plotter is not None else self.viewer_host).setFocus(_V58.QtCore.Qt.OtherFocusReason)
 
     def open_paint_path(self, path):
         """Public main-window entry point for models and saved paint projects."""
@@ -1560,21 +1610,29 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         super()._build_toolbar()
         toolbar = next(iter(self.findChildren(_V58.QtWidgets.QToolBar)), None)
         if toolbar is not None:
-            action = _V58.QtWidgets.QAction("Paint surfaces", self)
+            self._main_toolbar = toolbar
+            action = _V58.QtWidgets.QAction("Paint", self)
+            action.setObjectName("paintMode")
             action.setCheckable(True)
-            action.setToolTip("Switch to surface painting in this window. Original source geometry and paint are retained separately from arrange-and-weave edits.")
-            action.triggered.connect(self._open_paint_editor)
+            action.setToolTip("Toggle surface painting. Turn off to arrange and weave whole parts; both modes retain their edits.")
+            action.triggered.connect(self._set_paint_mode)
             toolbar.insertAction(toolbar.actions()[0] if toolbar.actions() else None, action)
             self._paint_action = action
+
+    def _set_paint_mode(self, enabled):
+        if enabled:
+            self._open_paint_editor()
+        elif self.workspace_tabs is not None:
+            self.workspace_tabs.setCurrentIndex(1)
 
     def _open_paint_editor(self):
         if self.paint_panel is not None:
             source = getattr(self, "source_file_path", None) or getattr(self, "base_file", None)
             if self.paint_panel.editor.document is None and source and os.path.exists(source):
                 self._paint_pending_source = source
+            already_active = self._paint_active()
             self.workspace_tabs.setCurrentWidget(self.paint_panel)
-            # Also handle invoking Paint while its tab is already selected.
-            if self._paint_pending_source:
+            if already_active and self._paint_pending_source:
                 self._workspace_changed(0)
 
     def _copy_xy(self, value):

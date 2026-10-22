@@ -50,11 +50,14 @@ def point(window, xyz):
 
 
 def action_button(window, action):
-    for toolbar in window.findChildren(QtWidgets.QToolBar):
-        if action in toolbar.actions():
-            widget = toolbar.widgetForAction(action)
-            if widget:
-                return widget
+    for toolbar in window.window().findChildren(QtWidgets.QToolBar):
+        if not toolbar.isVisible():
+            continue
+        for candidate in toolbar.actions():
+            if candidate is action or candidate.text() == action.text():
+                widget = toolbar.widgetForAction(candidate)
+                if widget and widget.isVisible():
+                    return widget
     raise AssertionError(f"No visible toolbar button for {action.text()}")
 
 
@@ -70,7 +73,12 @@ def save_via_ui(window, output):
 
 
 def screenshot(window, output, *, host=None):
-    settle(window)
+    popup = window.tool_settings_menu if window.tool_settings_menu.isVisible() else None
+    if popup is None:
+        settle(window)
+    else:
+        window.plotter.render()
+        QtWidgets.QApplication.processEvents()
     host = host or window
     # macOS QWidget.grab omits VTK's native OpenGL child. Capture that same
     # render window's framebuffer separately, and place its unaltered pixels at
@@ -84,15 +92,28 @@ def screenshot(window, output, *, host=None):
     painter = QtGui.QPainter(result)
     origin = window.plotter.mapTo(host, QtCore.QPoint(0, 0))
     painter.drawImage(QtCore.QRect(origin, window.plotter.size()), frame)
+    popup_record = {}
+    if popup is not None:
+        # QMenu is a separate native window. Capture its actual pixels and
+        # position, just as for VTK, instead of omitting it from the host grab.
+        popup_path = output.with_name(output.stem + "_popover.png")
+        popup_pixels = popup.grab()
+        assert popup_pixels.save(str(popup_path))
+        popup_origin = host.mapFromGlobal(popup.mapToGlobal(QtCore.QPoint(0, 0)))
+        painter.drawPixmap(popup_origin, popup_pixels)
+        popup_record = {"raw_popover": str(popup_path), "raw_popover_sha256": digest(popup_path),
+                        "popover_origin": [popup_origin.x(), popup_origin.y()]}
     painter.end()
     assert result.save(str(output))
     return {"path": str(output), "sha256": digest(output),
-            "method": "Native Qt QWidget.grab chrome with same-instant VTK framebuffer at exact viewport rectangle",
+            "method": ("Native Qt QWidget.grab chrome with same-instant VTK framebuffer at exact viewport rectangle"
+                       + (" and native QMenu pixels at its actual position" if popup is not None else "")),
             "mapped_preview_enabled": window.preview_mapping.isChecked(),
             "viewport_colors": "mapped palette colors" if window.preview_mapping.isChecked() else "document surface paint colors",
             "mapping_table": {"palette": window.palette_combo.currentText(), "mode": window._mapping_mode,
                               "rows": window.mapping_table.rowCount()},
-            "raw_viewport": str(viewport_path), "raw_viewport_sha256": digest(viewport_path)}
+            "raw_viewport": str(viewport_path), "raw_viewport_sha256": digest(viewport_path),
+            **popup_record}
 
 
 def close(window):
@@ -140,6 +161,7 @@ def edit_example(shape, source, gui_dir):
     click_action(window, window.redo_action)
     for before, after in zip(edited.meshes, window.document.meshes):
         np.testing.assert_array_equal(before.face_rgba, after.face_rgba)
+    QtTest.QTest.mouseClick(window.mapping_toggle, QtCore.Qt.LeftButton)
     QtTest.QTest.mouseClick(window.map_button, QtCore.Qt.LeftButton)
     assert len(window._mapping) == 3
     output = gui_dir / f"{shape}_brush_edited.llpaint"
@@ -165,7 +187,7 @@ def edit_example(shape, source, gui_dir):
                        "undo_toolbar_click": 1, "redo_toolbar_click": 1,
                        "assign_palette_button_click": 1, "save_toolbar_click": 1},
             "undo_redo_exact": True, "project_roundtrip_exact": True,
-            "saved_mapping_visible_after_reopen": True, "original_colors_preserved": True,
+            "saved_mapping_restored_after_reopen": True, "original_colors_preserved": True,
             "meshes": rows, "screenshot": image}
 
 
@@ -178,6 +200,7 @@ def baby_proof(project, dragon_dir, gui_dir):
     settle(window)
     window.palette_combo.setCurrentText("Normal")
     start = time.perf_counter()
+    QtTest.QTest.mouseClick(window.mapping_toggle, QtCore.Qt.LeftButton)
     QtTest.QTest.mouseClick(window.map_button, QtCore.Qt.LeftButton)
     elapsed = time.perf_counter() - start
     assert window.mapping_table.rowCount() == 4
@@ -204,7 +227,7 @@ def baby_proof(project, dragon_dir, gui_dir):
             "assigned_project": str(output), "assigned_project_sha256": digest(output),
             "palette": "Normal", "mapping": mapping, "assignment_seconds": elapsed,
             "paint_modified": False, "all_build_instances_preserved": True,
-            "project_roundtrip_exact": True, "saved_mapping_visible_after_reopen": True,
+            "project_roundtrip_exact": True, "saved_mapping_restored_after_reopen": True,
             "events": {"assign_palette_button_click": 1, "save_toolbar_click": 1},
             "meshes": rows, "screenshot": image}
 
@@ -216,11 +239,11 @@ def main_integration(source, gui_dir):
     main.show()
     QtWidgets.QApplication.processEvents()
     assert main._paint_active()
-    assert main._paint_action.text() == "Paint surfaces"
+    assert main._paint_action.text() == "Paint"
     # The production loaded-source field must win over a normalized temp file.
     main.source_file_path = str(source)
     main.base_file = "/deliberately-not-the-original-normalized-model.3mf"
-    main.workspace_tabs.setCurrentIndex(1)
+    click_action(main, main._paint_action)
     QtWidgets.QApplication.processEvents()
     QtTest.QTest.mouseClick(action_button(main, main._paint_action), QtCore.Qt.LeftButton)
     QtWidgets.QApplication.processEvents()

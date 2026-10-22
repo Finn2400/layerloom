@@ -28,7 +28,7 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     main_window = _load_current_gui_module().QtAssignColorsApp()
-    main_window.resize(1450, 1050)
+    main_window.resize(1150, 800)
     main_window.show()
     main_window.raise_()
     main_window.activateWindow()
@@ -61,12 +61,13 @@ def main():
     click_action(editor, editor.redo_action)
     np.testing.assert_array_equal(mesh.face_rgba, painted)
     editor.mapping_mode_combo.setCurrentIndex(editor.mapping_mode_combo.findData("source"))
+    QtTest.QTest.mouseClick(editor.mapping_toggle, QtCore.Qt.LeftButton)
     QtTest.QTest.mouseClick(editor.map_button, QtCore.Qt.LeftButton)
     cube_project = output / "cube_surface_painted.llpaint"
     save_via_ui(editor, cube_project)
     saved = editor.document.copy()
-    main_window.workspace_tabs.setCurrentIndex(1)
-    main_window.workspace_tabs.setCurrentIndex(0)
+    click_action(editor, main_window._paint_action)
+    click_action(editor, main_window._paint_action)
     assert_roundtrip(saved, editor.document)
     assert main_window.open_paint_path(str(cube_project))
     assert_roundtrip(saved, editor.document)
@@ -75,8 +76,9 @@ def main():
 
     assert main_window.open_paint_path(str(args.baby_project.resolve()))
     before = editor.document.copy()
-    editor.mapping_mode_combo.setCurrentIndex(editor.mapping_mode_combo.findData("source"))
-    QtTest.QTest.mouseClick(editor.map_button, QtCore.Qt.LeftButton)
+    # Keep the project's saved woven recipes; only assign if none were saved.
+    if not editor._mapping:
+        QtTest.QTest.mouseClick(editor.map_button, QtCore.Qt.LeftButton)
     assert editor.mapping_table.rowCount() == 4
     baby_project = output / "baby_repaired_main_ui.llpaint"
     save_via_ui(editor, baby_project)
@@ -86,6 +88,11 @@ def main():
     for left, right in zip(before.meshes, editor.document.meshes):
         for field in ("vertices", "faces", "face_rgba", "source_rgba"):
             np.testing.assert_array_equal(getattr(left, field), getattr(right, field))
+    if before.metadata.get("paint_mapping"):
+        assert editor._mapping == before.metadata["paint_mapping"]
+        assert editor._mapping_mode == before.metadata["paint_mapping_mode"]
+    QtTest.QTest.mouseClick(editor.mapping_toggle, QtCore.Qt.LeftButton)
+    assert not editor.mapping_section.isVisible()
     # Frame the painted face from the eye-region side; only the camera changes.
     vertices = np.concatenate([m.vertices for m in editor.document.meshes])
     lo, hi = vertices.min(axis=0), vertices.max(axis=0)
@@ -106,18 +113,28 @@ def main():
         editor.plotter.reset_camera_clipping_range()
         editor.plotter.render()
     baby_image = screenshot(editor, output / "baby_repaired_main_ui.png", host=main_window)
+    QtTest.QTest.mouseClick(editor.tool_settings_button, QtCore.Qt.LeftButton)
+    app.processEvents()
+    assert editor.tool_settings_menu.isVisible()
+    settings_image = screenshot(editor, output / "baby_surface_settings.png", host=main_window)
+    QtTest.QTest.keyClick(editor.tool_settings_menu, QtCore.Qt.Key_Escape)
+    app.processEvents()
+    assert not editor.tool_settings_menu.isVisible()
     report = {
         "default_paint_workspace": True, "embedded_editor": not editor.isWindow(),
         "cube": {"selected_top_face_triangles": int(len(top)), "selection_did_not_change_paint": True,
                  "only_selected_surface_painted": True, "undo_redo_exact": True,
-                 "tab_switch_preserved_edits": True, "save_reopen_exact": True,
+                 "mode_switch_preserved_edits": True, "save_reopen_exact": True,
                  "project": str(cube_project), "project_sha256": digest(cube_project),
                  "selection_image": selection_image, "painted_image": painted_image},
         "baby": {"input_project": str(args.baby_project.resolve()), "input_sha256": digest(args.baby_project),
                  "project": str(baby_project), "project_sha256": digest(baby_project),
                  "save_reopen_exact": True, "geometry_and_paint_unchanged": True,
-                 "physical_color_slots": 4, "mapping": editor._mapping,
-                 "meshes": model_rows(editor.document), "screenshot": baby_image},
+                 "mapping_mode": editor._mapping_mode, "mapping": editor._mapping,
+                 "physical_color_slots": (len(editor._mapping) if editor._mapping_mode == "source"
+                     else len({token for entry in editor._mapping.values() for token in entry["token"]})),
+                 "meshes": model_rows(editor.document), "screenshot": baby_image,
+                 "settings_screenshot": settings_image},
     }
     target = output / "main-ui-proof.json"
     target.write_text(json.dumps(report, indent=2) + "\n")
