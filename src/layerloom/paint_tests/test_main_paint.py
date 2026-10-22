@@ -363,9 +363,11 @@ def test_host_export_state_progress_status_and_tool_popup_follow_mode(main_windo
     assert all(not action.isEnabled() for action in export_actions)
     editor.statusBar().showMessage("Geometry conversion in progress")
     assert main_window.status_bar.currentMessage() == "Geometry conversion in progress"
-    editor.progress.show()
-    assert editor.progress.parentWidget() is main_window.status_bar
-    assert editor.progress.isVisible()
+    export_controls = (editor.progress, editor.export_cancel_button)
+    for control in export_controls:
+        control.show()
+        assert control.parentWidget() is main_window.status_bar
+        assert control.isVisible()
     menu = editor.tool_settings_menu
     menu.popup(editor.plotter.mapToGlobal(QtCore.QPoint(20, 20)))
     QtWidgets.QApplication.processEvents()
@@ -374,7 +376,9 @@ def test_host_export_state_progress_status_and_tool_popup_follow_mode(main_windo
     main_window._set_paint_mode(False)
     QtWidgets.QApplication.processEvents()
     assert not menu.isVisible()
-    assert editor.progress.isVisible(), "Export progress must remain visible across modes"
+    assert all(control.isVisible() for control in export_controls), (
+        "Export progress and cancellation must remain visible across modes"
+    )
     assert all(not action.isEnabled() for action in export_actions)
     editor.statusBar().showMessage("Hidden paint status")
     assert main_window.status_bar.currentMessage() == "Hidden paint status"
@@ -382,7 +386,8 @@ def test_host_export_state_progress_status_and_tool_popup_follow_mode(main_windo
     assert all(not action.isEnabled() for action in export_actions)
     editor.export_action.setEnabled(True)
     assert all(action.isEnabled() for action in export_actions)
-    editor.progress.hide()
+    for control in export_controls:
+        control.hide()
 
 
 def test_return_to_arrange_focuses_viewport_so_escape_cancels_tool(main_window, monkeypatch, tmp_path):

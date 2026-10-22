@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import sys
+import threading
 import traceback
 
 import numpy as np
@@ -18,6 +19,7 @@ from qtpy import QtCore, QtGui, QtWidgets
 import vtk
 
 from .paint_model import PaintDocument
+from .paint_export_control import DEFAULT_MEMORY_BUDGET_BYTES, ExportCancelled, estimate_export_resources
 from .paint_io import load_paint_document, save_paint_document
 from .palette_assignment import PALETTE_FILES, load_palette_entries
 from .paint_selection import build_topology, select_area, select_color_region, select_surface
@@ -166,28 +168,35 @@ class PaintInteractor(QtInteractor):
 
 class ExportWorker(QtCore.QObject):
     progress = QtCore.Signal(int, int)
+    stage = QtCore.Signal(str)
     succeeded = QtCore.Signal(object)
+    cancelled = QtCore.Signal()
     failed = QtCore.Signal(str)
     finished = QtCore.Signal()
 
-    def __init__(self, document, output, settings):
+    def __init__(self, document, output, settings, cancel_event=None):
         super().__init__()
         self.document = document
         self.output = output
         self.settings = settings
+        self.cancel_event = cancel_event if cancel_event is not None else threading.Event()
 
     @QtCore.Slot()
     def run(self):
         try:
             from .paint_export import export_painted_3mf
             report = export_painted_3mf(
-                self.document, self.output, progress=self.progress.emit, **self.settings
+                self.document, self.output, progress=self.progress.emit, stage=self.stage.emit,
+                cancel_requested=self.cancel_event.is_set, **self.settings
             )
             report["export_format"] = "volumes"
             self.succeeded.emit(report)
+        except ExportCancelled:
+            self.cancelled.emit()
         except Exception as exc:
             traceback.print_exc()
-            self.failed.emit(str(exc))
+            self.failed.emit(str(exc) or ("Not enough memory to finish this export. Increase sampling size or reduce model complexity."
+                                         if isinstance(exc, MemoryError) else "The export failed unexpectedly."))
         finally:
             self.finished.emit()
 
@@ -221,6 +230,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self._mapping_mode = "woven"
         self._export_thread = None
         self._export_worker = None
+        self._export_cancel_event = None
         self.last_export_report = None
         self._build_ui()
         self.picker = vtk.vtkCellPicker()
@@ -413,6 +423,12 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.progress.setMaximumWidth(240)
         self.progress.hide()
         self.statusBar().addPermanentWidget(self.progress)
+        self.export_cancel_button = QtWidgets.QPushButton("Cancel export")
+        self.export_cancel_button.setObjectName("cancelGeometryExport")
+        self.export_cancel_button.setToolTip("Stop at the next safe point; a running geometry operation may take time.")
+        self.export_cancel_button.clicked.connect(self.cancel_export)
+        self.export_cancel_button.hide()
+        self.statusBar().addPermanentWidget(self.export_cancel_button)
         self.statusBar().showMessage("Open a painted model or a mesh to begin.")
         self.set_paint_color(_hex(self.paint_rgba))
         self._sync_mapping_controls()
@@ -1097,9 +1113,22 @@ class PaintWindow(QtWidgets.QMainWindow):
         pitch.setSingleStep(0.1)
         pitch.setValue(0.5)
         pitch.setSuffix(" mm")
+        memory = QtWidgets.QSpinBox()
+        memory.setObjectName("geometryExportMemoryBudget")
+        memory.setRange(64, 65536)
+        memory.setSingleStep(256)
+        memory.setValue(DEFAULT_MEMORY_BUDGET_BYTES // (1024 ** 2))
+        memory.setSuffix(" MiB")
+        memory.setToolTip("Budget for estimated additional export memory. Leave room for the model, application and other programs.")
         layout.addRow("Color mode", mode)
         layout.addRow("Layer height", layer)
         layout.addRow("XY sampling size", pitch)
+        layout.addRow("Export memory budget", memory)
+        estimate_label = QtWidgets.QLabel()
+        estimate_label.setObjectName("geometryExportEstimate")
+        estimate_label.setWordWrap(True)
+        estimate_label.setMaximumWidth(440)
+        layout.addRow(estimate_label)
         note = QtWidgets.QLabel(
             "Exports separate material geometry with no surface paint. Paint guides the "
             "material assignment through the full volume from the nearest surface; there is no "
@@ -1115,6 +1144,24 @@ class PaintWindow(QtWidgets.QMainWindow):
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addRow(buttons)
+
+        def update_estimate():
+            try:
+                estimate = estimate_export_resources(self.document, layer_height=layer.value(), pitch=pitch.value())
+                estimate.check_budget(memory.value() * 1024 ** 2)
+                estimate_label.setText(
+                    f"Estimated additional memory: {estimate.estimated_peak_bytes / 1024 ** 2:,.0f} MiB. "
+                    f"{estimate.layers:,} layers; approximately {estimate.estimated_cells:,} sampling cells. "
+                    "This is a planning estimate, not a hard limit on total application memory."
+                )
+                buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
+            except (ValueError, OverflowError) as exc:
+                estimate_label.setText(str(exc))
+                buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
+
+        for control in (layer, pitch, memory):
+            control.valueChanged.connect(update_estimate)
+        update_estimate()
         if dialog.exec_() != QtWidgets.QDialog.Accepted:
             return
         self.mapping_mode_combo.setCurrentIndex(self.mapping_mode_combo.findData(mode.currentData()))
@@ -1128,7 +1175,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         if not output.lower().endswith(".3mf"):
             output += ".3mf"
         self.start_export(output, mode=mode.currentData(), layer_height=layer.value(), pitch=pitch.value(),
-                          palette_name=self.palette_combo.currentText())
+                          palette_name=self.palette_combo.currentText(), memory_budget_bytes=memory.value() * 1024 ** 2)
 
     def start_export(self, output, **settings):
         """Export a snapshot; editing may continue while conversion runs."""
@@ -1136,6 +1183,19 @@ class PaintWindow(QtWidgets.QMainWindow):
             return False
         self.end_stroke()
         self.last_export_report = None
+        # Refuse expensive settings before duplicating the editable arrays or
+        # creating a thread. The snapshot stays on the UI thread so an Arrange
+        # transform or paint stroke cannot race with its construction.
+        try:
+            settings.setdefault("memory_budget_bytes", DEFAULT_MEMORY_BUDGET_BYTES)
+            estimate = estimate_export_resources(
+                self.document, layer_height=settings.get("layer_height", .2),
+                pitch=settings.get("pitch", .5), max_cells=settings.get("max_cells", 2_000_000))
+            estimate.check_budget(settings["memory_budget_bytes"])
+            snapshot = self.document.copy(include_metadata=False)
+        except Exception as exc:
+            self._export_failure(str(exc) or "There was not enough memory to prepare the export snapshot.")
+            return False
         if (self._mapping and self._mapping_mode != "source" and settings.get("mode", "woven") == self._mapping_mode
                 and settings.get("palette_name", "Normal") == self.palette_combo.currentText()):
             settings.setdefault("recipe_overrides", {key: entry["token"] for key, entry in self._mapping.items()})
@@ -1143,23 +1203,50 @@ class PaintWindow(QtWidgets.QMainWindow):
             settings.setdefault("recipe_overrides", self._preferred_recipe_overrides(
                 mode=settings.get("mode", "woven"), palette_name=settings.get("palette_name", "Normal")))
         thread = QtCore.QThread(self)
-        worker = ExportWorker(self.document.copy(), str(output), settings)
+        cancel_event = threading.Event()
+        worker = ExportWorker(snapshot, str(output), settings, cancel_event)
         worker.moveToThread(thread)
         thread.started.connect(worker.run)
         worker.progress.connect(self._export_progress)
+        worker.stage.connect(self._export_stage)
         worker.succeeded.connect(self._export_success)
+        worker.cancelled.connect(self._export_cancelled)
         worker.failed.connect(self._export_failure)
         worker.finished.connect(thread.quit)
         worker.finished.connect(worker.deleteLater)
         thread.finished.connect(self._export_finished)
         thread.finished.connect(thread.deleteLater)
         self._export_thread, self._export_worker = thread, worker
+        self._export_cancel_event = cancel_event
         self.progress.setRange(0, 0)
         self.progress.show()
+        self.export_cancel_button.setText("Cancel export")
+        self.export_cancel_button.setEnabled(True)
+        self.export_cancel_button.show()
         self.export_action.setEnabled(False)
         self.statusBar().showMessage("Converting paint assignments into material geometry…")
         thread.start()
         return True
+
+    def cancel_export(self):
+        """Signal directly: queued worker slots cannot run during conversion."""
+        if self._export_cancel_event is None or self._export_cancel_event.is_set():
+            return False
+        self._export_cancel_event.set()
+        self.export_cancel_button.setText("Cancelling…")
+        self.export_cancel_button.setEnabled(False)
+        self.statusBar().showMessage("Cancelling export after the current geometry operation…")
+        return True
+
+    @QtCore.Slot(str)
+    def _export_stage(self, message):
+        if self._export_cancel_event is not None and not self._export_cancel_event.is_set():
+            self.progress.setRange(0, 0)
+            self.statusBar().showMessage(message)
+
+    @QtCore.Slot()
+    def _export_cancelled(self):
+        self.statusBar().showMessage("Export cancelled. Existing output files and your paint project are unchanged.")
 
     @QtCore.Slot(int, int)
     def _export_progress(self, current, total):
@@ -1187,7 +1274,9 @@ class PaintWindow(QtWidgets.QMainWindow):
     def _export_finished(self):
         self._export_thread = None
         self._export_worker = None
+        self._export_cancel_event = None
         self.progress.hide()
+        self.export_cancel_button.hide()
         self._update_actions()
 
     def _update_actions(self):
@@ -1206,7 +1295,10 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     def can_close(self):
         if self._export_thread is not None:
-            QtWidgets.QMessageBox.information(self, "Export in progress", "Wait for the current printable export to finish before closing.")
+            QtWidgets.QMessageBox.information(
+                self, "Export in progress",
+                "Use Cancel export in the footer to stop the conversion, then close again once it finishes. "
+                "A running geometry operation may take time to stop.")
             return False
         return self._confirm_discard()
 

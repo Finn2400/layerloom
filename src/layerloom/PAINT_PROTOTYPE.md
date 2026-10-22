@@ -12,14 +12,40 @@ paint** visible. **Settings…** opens a small contextual popover for brush
 radius or surface-selection angles; Escape or an outside click dismisses it
 without painting. **Color mapping** expands the palette and recipe controls.
 There is no separate editor window or visible workspace tab bar. Open, Save,
-Export, Undo and Redo use the main toolbar; export progress stays in the main
-footer even when switching modes.
+Export, Undo and Redo use the main toolbar; export progress and **Cancel export**
+stay in the main footer even when switching modes.
 
 Use the normal `layerloom-gui` launcher. File/Open, File/Save and Tools/Export
 operate on this shared model in either mode: Open loads a model or paint
 project, Save writes an editable `.llpaint` project, and Export writes material
 geometry. Undo and Redo remain available in both modes. Closing the main window
 protects unsaved paint or placement changes and an active export.
+
+The export dialog shows estimated additional memory, layer count and sampling
+work before conversion. Its memory budget defaults to **2,048 MiB** and can be
+adjusted. Work or memory estimates beyond the selected limits disable export;
+increase sampling size/layer height or reduce the model first. Leave memory for
+the loaded model, application and other programs. This is an allocation estimate,
+not a hard operating-system limit on application RAM. Runtime checks also track
+generated geometry, nearest-surface candidates and serialization. Export snapshots
+omit unused project metadata and are checked before copying the model.
+
+**Cancel export** stops at the next safe checkpoint and leaves existing output
+files intact. Native geometry operations must finish before cancellation is
+observed. Closing waits for the worker to finish; cancel in the footer, then close
+again. The completed 3MF is published with an atomic replacement; a cancellation
+arriving after that replacement is reported as a successful export. The optional
+audit report is handled separately. The paint project remains editable during
+conversion, and export uses the snapshot from when it started.
+
+The Qt-free `paint_export_control.py` owns resource estimates and cooperative
+cancellation. `export_painted_3mf` accepts `memory_budget_bytes`,
+`cancel_requested` (a callback such as `threading.Event.is_set`), and a `stage`
+callback. Reports include the preflight estimate and peak runtime estimate;
+neither is a measured RAM value. `paint_main_ui.py` now holds the Paint workspace
+adapter and action routing independently of the versioned Arrange GUI modules.
+The older Arrange inheritance chain remains; this extraction is a contained
+first step toward simplifying it.
 
 **Printable exports contain geometry only.** Imported and edited paint guides
 the conversion into separate meshes for physical filaments. Exported 3MFs use

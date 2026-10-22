@@ -89,6 +89,7 @@ class PaintDocument:
                 raise ValueError(f"Duplicate paint mesh key: {mesh.key}")
             keys.add(mesh.key)
 
-    def copy(self) -> PaintDocument:
+    def copy(self, *, include_metadata: bool = True) -> PaintDocument:
+        """Copy editable arrays; geometry export can omit unused project data."""
         return PaintDocument([m.copy() for m in self.meshes], self.source_path,
-                             deepcopy(self.metadata))
+                             deepcopy(self.metadata) if include_metadata else {})

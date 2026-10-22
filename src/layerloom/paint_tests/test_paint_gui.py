@@ -331,7 +331,8 @@ def test_export_action_offers_only_material_geometry_for_every_color_mode(window
     monkeypatch.setattr(window, "start_export", capture_export)
     click_toolbar(window, window.export_action)
     assert captured["output"] == str(output)
-    assert captured["settings"] == {"mode": color_mode, "layer_height": .2, "pitch": .5, "palette_name": "Normal"}
+    assert captured["settings"] == {"mode": color_mode, "layer_height": .2, "pitch": .5, "palette_name": "Normal",
+                                    "memory_budget_bytes": 2 * 1024 ** 3}
     assert window.document.metadata["paint_mapping_mode"] == color_mode
     if color_mode == "source":
         assert all(key == entry["hex"] == entry["token"] for key, entry in window._mapping.items())
@@ -698,3 +699,114 @@ def test_export_report_warning_is_visible_without_claiming_geometry_failure(wind
     assert "Geometry export complete" in window.statusBar().currentMessage()
     assert "audit report warning" in window.statusBar().currentMessage()
     assert "Geometry saved; audit report is locked." in notices[0][2]
+
+
+def test_memory_preflight_rejects_before_snapshot_or_thread(window, monkeypatch, tmp_path):
+    errors = []
+    output = tmp_path / "existing.3mf"
+    output.write_bytes(b"keep previous output")
+    monkeypatch.setattr(window.document, "copy", lambda **kwargs: pytest.fail("Budget must be checked before snapshot"))
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    assert not window.start_export(output, memory_budget_bytes=1)
+    assert errors and "memory" in errors[0].lower()
+    assert window._export_thread is None and window._export_worker is None
+    assert window._export_cancel_event is None and window.export_action.isEnabled()
+    assert window.export_cancel_button.isHidden() and window.progress.isHidden()
+    assert output.read_bytes() == b"keep previous output"
+
+
+def test_snapshot_allocation_failure_does_not_leave_running_job(window, monkeypatch, tmp_path):
+    errors = []
+    def out_of_memory(**kwargs):
+        raise MemoryError()
+    monkeypatch.setattr(window.document, "copy", out_of_memory)
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    assert not window.start_export(tmp_path / "print.3mf")
+    assert errors and "memory" in errors[0].lower()
+    assert window._export_thread is None and window._export_worker is None
+    assert window.export_action.isEnabled() and window.export_cancel_button.isHidden()
+
+
+def test_cancel_worker_keeps_window_alive_until_finished_then_allows_restart(window, monkeypatch, tmp_path):
+    import threading
+    from layerloom import paint_export
+    from layerloom.paint_export_control import ExportCancelled
+    started, observed_cancel, release = threading.Event(), threading.Event(), threading.Event()
+    errors, notices = [], []
+    def cancellable_export(document, output, *, cancel_requested, progress, stage, **settings):
+        stage("Sampling layers…")
+        progress(1, 5)
+        started.set()
+        for _ in range(1000):
+            if cancel_requested():
+                observed_cancel.set()
+                release.wait(5)
+                raise ExportCancelled()
+            release.wait(.01)
+        raise RuntimeError("Test never received cancellation")
+    monkeypatch.setattr(paint_export, "export_painted_3mf", cancellable_export)
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args: notices.append(args[-1]))
+    assert window.start_export(tmp_path / "cancelled.3mf")
+    try:
+        for _ in range(200):
+            QtTest.QTest.qWait(10)
+            if started.is_set():
+                break
+        assert started.is_set() and window.export_cancel_button.isVisible()
+        assert not window.export_action.isEnabled()
+        QtTest.QTest.mouseClick(window.export_cancel_button, QtCore.Qt.LeftButton)
+        assert window._export_cancel_event.is_set()
+        assert not window.export_cancel_button.isEnabled() and not window.cancel_export()
+        assert not window.can_close() and notices
+        assert not window.start_export(tmp_path / "too-soon.3mf")
+        window._export_stage("Late queued progress")
+        assert "Cancelling" in window.statusBar().currentMessage()
+    finally:
+        window.cancel_export()
+        release.set()
+        for _ in range(500):
+            QtTest.QTest.qWait(10)
+            if window._export_thread is None:
+                break
+    assert observed_cancel.is_set() and window._export_thread is None
+    assert window.last_export_report is None and not errors
+    assert "cancelled" in window.statusBar().currentMessage()
+    assert window.export_cancel_button.isHidden() and window.progress.isHidden()
+    assert window.export_action.isEnabled() and window.can_close()
+    monkeypatch.setattr(paint_export, "export_painted_3mf", lambda *a, **k: {"ok": True})
+    assert window.start_export(tmp_path / "retry.3mf")
+    for _ in range(500):
+        QtTest.QTest.qWait(10)
+        if window._export_thread is None:
+            break
+    assert window._export_thread is None and window.last_export_report["ok"]
+    assert window._export_cancel_event is None and not errors
+
+
+def test_export_dialog_recomputes_estimate_and_blocks_excess_work(window, monkeypatch):
+    from layerloom.paint_export_control import estimate_export_resources
+    observed = []
+    def inspect_dialog(dialog):
+        memory = dialog.findChild(QtWidgets.QSpinBox, "geometryExportMemoryBudget")
+        label = dialog.findChild(QtWidgets.QLabel, "geometryExportEstimate")
+        buttons = dialog.findChild(QtWidgets.QDialogButtonBox)
+        ok = buttons.button(QtWidgets.QDialogButtonBox.Ok)
+        assert memory.value() == 2048 and ok.isEnabled()
+        assert "additional memory" in label.text() and "planning estimate" in label.text()
+        layer, pitch = dialog.findChildren(QtWidgets.QDoubleSpinBox)
+        pitch.setValue(.05)
+        layer.setValue(.04)
+        assert not ok.isEnabled() and "cells" in label.text()
+        pitch.setValue(2)
+        layer.setValue(.5)
+        assert ok.isEnabled()
+        expected = estimate_export_resources(window.document, pitch=2, layer_height=.5)
+        assert f"{expected.estimated_cells:,}" in label.text()
+        memory.setValue(4096)
+        assert ok.isEnabled()
+        observed.append(True)
+        return QtWidgets.QDialog.Rejected
+    monkeypatch.setattr(QtWidgets.QDialog, "exec_", inspect_dialog)
+    window.export_dialog()
+    assert observed and window._export_thread is None

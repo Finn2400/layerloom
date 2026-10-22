@@ -25,6 +25,10 @@ import trimesh
 
 from layerloom.export import LeafMeshSpec, write_orca_multipart_3mf
 from layerloom.palette_assignment import load_palette_entries, nearest_palette_entry
+from layerloom.paint_export_control import (
+    DEFAULT_MEMORY_BUDGET_BYTES, ExportCancelled, ExportControl,
+    ExportMemoryBudgetExceeded, estimate_export_resources,
+)
 from layerloom.surface_field_weave import mesh_defects, planar_region, polygons
 from layerloom.tokens import ALL_TOKENS, COLOR_OBJECT_LABELS, TOKEN_HEX, token_is_valid
 
@@ -46,7 +50,7 @@ def _material_label(token: str) -> str:
     return f"source_{token[1:].upper()}" if token.startswith("#") else COLOR_OBJECT_LABELS[token]
 
 
-def _brand_geometry_archive(path: Path, tokens: list[str]) -> None:
+def _brand_geometry_archive(path: Path, tokens: list[str], *, control: ExportControl | None = None) -> None:
     """Identify this as geometry with part assignments, without printer presets.
 
     Advertising a Bambu project version without project_settings.config makes
@@ -57,6 +61,8 @@ def _brand_geometry_archive(path: Path, tokens: list[str]) -> None:
     rewritten = path.with_suffix(".branded.3mf")
     with zipfile.ZipFile(path) as source, zipfile.ZipFile(rewritten, "w") as target:
         for info in source.infolist():
+            if control is not None:
+                control.check_memory(info.file_size * 8, stage="3MF metadata serialization")
             content = source.read(info.filename)
             if info.filename == "3D/3dmodel.model":
                 root = ET.fromstring(content)
@@ -135,10 +141,12 @@ def _as_manifold(mesh: trimesh.Trimesh, label: str) -> mf.Manifold:
 
 
 def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]], *,
-                     component_details: list | None = None):
+                     component_details: list | None = None, control: ExportControl | None = None):
     surfaces, solids, recipes = [], [], []
     source_rows = []
     for item in document.meshes:
+        if control is not None:
+            control.checkpoint()
         vertices = np.asarray(item.vertices, dtype=np.float64)
         faces = np.asarray(item.faces, dtype=np.int64)
         rgba = np.asarray(item.face_rgba)
@@ -159,6 +167,8 @@ def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]
         # coordinate matches are merged: decimal rounding can merge distinct
         # vertices that remain separate at a slicer's float32 boundary.
         welded, inverse = np.unique(vertices, axis=0, return_inverse=True)
+        if control is not None:
+            control.checkpoint()
         mesh = trimesh.Trimesh(vertices=welded, faces=inverse[faces], process=False)
         mesh.remove_unreferenced_vertices()
         if not mesh.is_watertight or not mesh.is_winding_consistent:
@@ -168,12 +178,19 @@ def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]
             mesh.invert()
         if not mesh.is_volume:
             raise ValueError(f"{label}: mesh has no positive solid volume")
+        if control is not None:
+            control.checkpoint()
         defects = mesh_defects(mesh)
+        if control is not None:
+            control.checkpoint()
         if any(defects.values()):
             raise ValueError(f"{label}: source fails float32 geometry checks: {defects}")
         surfaces.append(mesh)
         solids.append(_as_manifold(mesh, label))
-        recipes.extend(str(assignments[_hex(rgb)]["token"]) for rgb in rgba)
+        for start in range(0, len(rgba), 65536):
+            if control is not None:
+                control.checkpoint()
+            recipes.extend(str(assignments[_hex(rgb)]["token"]) for rgb in rgba[start:start + 65536])
         # Surface-connected shells include negative cavity walls. They are
         # retained in the source solid, but are not disconnected positive
         # objects that a layer-midpoint preservation check should reject.
@@ -181,6 +198,8 @@ def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]
                     nodes=np.arange(len(mesh.faces)), min_len=1)
         shell_rows = []
         for component_index, face_ids in enumerate(groups):
+            if control is not None:
+                control.checkpoint()
             part = mesh.submesh([face_ids], append=True, repair=False)
             local = np.asarray(part.triangles) - np.asarray(part.bounds).mean(axis=0)
             signed_volume = float(np.einsum("ij,ij->i", local[:, 0],
@@ -207,7 +226,11 @@ def _source_geometry(document: Any, assignments: Mapping[str, Mapping[str, Any]]
     if not surfaces:
         raise ValueError("The paint document contains no solid meshes")
     surface = trimesh.util.concatenate(surfaces)
+    if control is not None:
+        control.checkpoint()
     source = mf.Manifold.batch_boolean(solids, mf.OpType.Add)
+    if control is not None:
+        control.checkpoint()
     if source.status() != mf.Error.NoError or source.num_tri() == 0:
         raise ValueError("Could not combine source solids")
     source_sum = sum(row["volume_mm3"] for row in source_rows)
@@ -229,10 +252,12 @@ def _region_solid(region: Any, low: float, high: float) -> mf.Manifold:
     return mf.CrossSection(contours, mf.FillRule.EvenOdd).extrude(high - low).translate((0, 0, low))
 
 
-def _nearest_faces(surface: trimesh.Trimesh, points: np.ndarray) -> np.ndarray:
+def _nearest_faces(surface: trimesh.Trimesh, points: np.ndarray, *, control: ExportControl | None = None) -> np.ndarray:
     """Nearest triangles with stable lowest-face-ID ties on interior bisectors."""
     candidates = trimesh.proximity.nearby_faces(surface, points)
     sizes = np.asarray([len(group) for group in candidates], dtype=np.int64)
+    if control is not None:
+        control.check_candidates(sum(int(size) for size in sizes))
     starts = np.r_[0, np.cumsum(sizes)[:-1]]
     indices = np.concatenate(candidates)
     queries = np.repeat(points, sizes, axis=0)
@@ -276,7 +301,7 @@ def _layer_domain(cross_section: Any, *, precision: float, layer_index: int):
 def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
                      domain: Any, *, z: float, layer_index: int, pitch: float,
                      origin: np.ndarray, precision: float, interface_offset: float,
-                     source_colors: bool = False):
+                     source_colors: bool = False, control: ExportControl | None = None):
     """Clip a complete grid to the footprint, then color every surviving cell.
 
     Sampling each clipped cell at an interior point retains narrow/disconnected
@@ -285,6 +310,9 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
     xmin, ymin, xmax, ymax = domain.bounds
     lo = np.floor((np.asarray((xmin, ymin)) - origin) / pitch).astype(int)
     hi = np.ceil((np.asarray((xmax, ymax)) - origin) / pitch).astype(int)
+    if control is not None:
+        control.live_layer_bytes = math.prod(int(value) + 1 for value in hi - lo) * 2048
+        control.check_memory(stage="layer grid")
     xs = origin[0] + np.arange(lo[0], hi[0] + 1) * pitch
     ys = origin[1] + np.arange(lo[1], hi[1] + 1) * pitch
     xx, yy = np.meshgrid(xs[:-1], ys[:-1], indexing="xy")
@@ -295,20 +323,28 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
     # A clipped square can contain several disconnected islands. Give each its
     # own sample so a thin component cannot borrow a neighbor's surface color.
     pieces = [polygon for cell in cells for polygon in polygons(cell)]
+    if control is not None:
+        control.live_layer_bytes += len(pieces) * 4096
+        control.check_memory(stage="split layer cells")
     if not pieces:
         raise ValueError("Non-empty layer lost all cells at the selected precision")
     samples = shapely.point_on_surface(pieces)
     xy = shapely.get_coordinates(samples)
     points = np.c_[xy, np.full(len(xy), z)]
     face_indices = []
-    for start in range(0, len(points), 4096):
-        face_indices.append(_nearest_faces(surface, points[start:start + 4096]))
+    batch_size = 4096 if control is None else control.nearest_batch_size(len(surface.faces))
+    for start in range(0, len(points), batch_size):
+        if control is not None:
+            control.checkpoint()
+        face_indices.append(_nearest_faces(surface, points[start:start + batch_size], control=control))
     selected = face_recipes[np.concatenate(face_indices)]
     materials = (selected if source_colors else
                  np.asarray([recipe[layer_index % len(recipe)] for recipe in selected], dtype=object))
     regions = {}
     pieces = np.asarray(pieces, dtype=object)
     for token in sorted(set(materials)):
+        if control is not None:
+            control.checkpoint()
         regions[token] = shapely.union_all(pieces[materials == token], grid_size=precision)
     # A categorical grid can have diagonal point contacts. A fixed, very small
     # interface priority resolves these into an overlap-free partition: earlier
@@ -321,6 +357,8 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
         regularized = {}
         ordered = _material_order(regions)
         for i, token in enumerate(ordered):
+            if control is not None:
+                control.checkpoint()
             if i == len(ordered) - 1:
                 region = remaining
             else:
@@ -358,7 +396,7 @@ def _solid_component_count(solid: mf.Manifold) -> int:
     return int(labels.max()) + 1
 
 
-def _interior_sample(mesh: trimesh.Trimesh) -> np.ndarray:
+def _interior_sample(mesh: trimesh.Trimesh, *, control: ExportControl | None = None) -> np.ndarray:
     """Find a strictly interior sample without rounding a microscopic shell.
 
     Work in normalized coordinates and verify the oriented solid angle. This
@@ -373,6 +411,8 @@ def _interior_sample(mesh: trimesh.Trimesh) -> np.ndarray:
     for epsilon in (1e-5, 1e-7, 1e-9, 1e-11, 1e-13):
         candidates.extend(triangles.mean(axis=1) - normals * epsilon)
     for point in candidates:
+        if control is not None:
+            control.checkpoint()
         vectors = triangles - point
         lengths = np.linalg.norm(vectors, axis=2)
         numerator = np.einsum("ij,ij->i", vectors[:, 0], np.cross(vectors[:, 1], vectors[:, 2]))
@@ -386,7 +426,8 @@ def _interior_sample(mesh: trimesh.Trimesh) -> np.ndarray:
     raise ValueError("Could not find a verified interior sample for a sub-layer component")
 
 
-def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_height, mode):
+def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_height, mode, *,
+                     control: ExportControl | None = None):
     """Retain missed positive components as physical mesh geometry.
 
     Each clipped piece is smaller than the declared layer spacing. Its material
@@ -394,6 +435,8 @@ def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_
     """
     retained = []
     for detail in details:
+        if control is not None:
+            control.checkpoint()
         mesh = detail["mesh"]
         lower, upper = np.asarray(mesh.bounds)[:, 2]
         if np.any((midpoints > lower) & (midpoints < upper)):
@@ -401,6 +444,8 @@ def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_
         first = max(0, int(math.floor((lower - z0) / layer_height)))
         last = min(len(midpoints) - 1, int(math.ceil((upper - z0) / layer_height)) - 1)
         for layer in range(first, last + 1):
+            if control is not None:
+                control.checkpoint()
             low, high = z0 + layer * layer_height, min(zmax, z0 + (layer + 1) * layer_height)
             part = mesh
             if lower < low or upper > high:
@@ -418,8 +463,10 @@ def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_
                     raise ValueError("Could not retain a sub-layer component across a layer boundary")
                 part = trimesh.Trimesh(np.asarray(data.vert_properties)[:, :3]*scale+center,
                                        np.asarray(data.tri_verts), process=False)
-            sample = _interior_sample(part)
-            face = int(_nearest_faces(surface, sample[None, :])[0])
+            sample = _interior_sample(part, control=control)
+            if control is not None:
+                control.nearest_batch_size(len(surface.faces))
+            face = int(_nearest_faces(surface, sample[None, :], control=control)[0])
             recipe = str(face_recipes[face])
             token = recipe if mode == "source" else recipe[layer % len(recipe)]
             retained.append({"mesh": part, "token": token, "audit": {
@@ -432,7 +479,7 @@ def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_
     return retained
 
 
-def _correct_filament_vertices(mesh: trimesh.Trimesh, maximum: float):
+def _correct_filament_vertices(mesh: trimesh.Trimesh, maximum: float, *, control: ExportControl | None = None):
     """Correct only measured float32 collisions, preserving indexed topology."""
     from layerloom.paint_repair import _precision_regularize
     from layerloom.paint_sub_layer import _encoded_checks
@@ -441,6 +488,8 @@ def _correct_filament_vertices(mesh: trimesh.Trimesh, maximum: float):
     result = mesh.copy()
     repairs = []
     for attempt in range(6):
+        if control is not None:
+            control.checkpoint()
         center, encoded, placed, defects, placed_defects, volume, placed_volume = _encoded_checks(result)
         if not any(defects.values()) and not any(placed_defects.values()):
             break
@@ -468,11 +517,13 @@ def _correct_filament_vertices(mesh: trimesh.Trimesh, maximum: float):
         "encoded_defects": defects, "placed_defects": placed_defects, "repairs": repairs}
 
 
-def _finalize_filament(solid: mf.Manifold, token: str, precision: float):
+def _finalize_filament(solid: mf.Manifold, token: str, precision: float, *, control: ExportControl | None = None):
     """Validate one physical filament, retaining every disconnected region."""
     if solid.status() != mf.Error.NoError or solid.num_tri() == 0:
         raise ValueError(f"Could not union printable {token} regions")
     original_solid = solid
+    if control is not None:
+        control.check_memory(int(solid.num_tri()) * 2048, stage="material geometry validation")
     original_components = _solid_component_count(original_solid)
     placed_extrema = np.asarray(solid.bounding_box(), dtype=float).reshape(2, 3) + (128, 128, 0)
     placed_ulp = float(np.max(np.abs(np.spacing(placed_extrema.astype(np.float32)))))
@@ -481,6 +532,8 @@ def _finalize_filament(solid: mf.Manifold, token: str, precision: float):
                                  placed_ulp, placed_ulp * 2, cleanup_limit})
     numerical_tolerance = 0.0
     for numerical_tolerance in cleanup_candidates:
+        if control is not None:
+            control.checkpoint()
         if numerical_tolerance:
             # Boolean triangulation can leave a nearly collinear triangle
             # that collapses in a slicer's float32 coordinates. Manifold's
@@ -512,7 +565,7 @@ def _finalize_filament(solid: mf.Manifold, token: str, precision: float):
                                        np.asarray(original_data.tri_verts), process=False)
         try:
             mesh, vertex_correction = _correct_filament_vertices(original_mesh,
-                                                max(cleanup_limit, placed_ulp * 16))
+                                                max(cleanup_limit, placed_ulp * 16), control=control)
         except ValueError as error:
             raise ValueError(f"Filament {token} could not pass bounded float32 correction: {error}") from error
         if int(mesh.body_count) != original_components:
@@ -539,7 +592,10 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
                        recipe_overrides: Mapping[str, str] | None = None,
                        progress: Callable[[int, int], None] | None = None,
                        max_cells: int = 2_000_000, precision: float = 0.001,
-                       interface_offset: float = 0.001) -> dict[str, Any]:
+                       interface_offset: float = 0.001,
+                       cancel_requested: Callable[[], bool] | None = None,
+                       memory_budget_bytes: int = DEFAULT_MEMORY_BUDGET_BYTES,
+                       stage: Callable[[str], None] | None = None) -> dict[str, Any]:
     """Export a painted solid as one aligned multipart 3MF; return its audit.
 
     ``pitch`` controls XY material detail, ``layer_height`` controls the stepped
@@ -548,6 +604,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     Parts share one centering/grounding translation. No source mesh is mutated.
     ``progress`` receives completed and total layer counts. A JSON audit is
     written alongside the 3MF. This function does not slice or physically print.
+    Cancellation is cooperative between native geometry calls and raises
+    ``ExportCancelled`` before atomic output publication. The memory budget
+    limits estimated additional export working memory, not process RSS.
     """
     if not callable(getattr(mf.Manifold, "simplify", None)):
         raise RuntimeError("Paint export requires manifold3d 3.2 or newer. "
@@ -559,27 +618,30 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         raise ValueError("precision must be smaller than one tenth of pitch and layer height")
     if not math.isfinite(interface_offset) or not 0 <= interface_offset < min(pitch, layer_height) / 10:
         raise ValueError("interface_offset must be nonnegative and below one tenth of pitch and layer height")
-    if int(max_cells) <= 0:
-        raise ValueError("max_cells must be positive")
+    if cancel_requested is not None and cancel_requested():
+        raise ExportCancelled("Export cancelled; existing output files are unchanged.")
+    estimate = estimate_export_resources(document, layer_height=layer_height,
+                                         pitch=pitch, max_cells=max_cells)
+    control = ExportControl(estimate, memory_budget_bytes, cancel_requested, stage)
+    control.stage("Preparing model")
     output = Path(path).expanduser().resolve()
     assignments = assign_palette(document, palette_name, mode=mode, recipe_overrides=recipe_overrides)
+    control.checkpoint()
     component_details = []
     surface, source, face_recipes, source_rows = _source_geometry(
-        document, assignments, component_details=component_details)
+        document, assignments, component_details=component_details, control=control)
     bounds = np.asarray(surface.bounds)
     z0, zmax = bounds[:, 2]
+    # Preflight includes unreferenced imported vertices. Source preparation may
+    # remove those outliers, so sample only the actual solid's Z range.
     layers = int(math.ceil((zmax - z0) / layer_height))
-    # Bound work before allocating one item per layer. Tiny positive layer
-    # heights must fail predictably instead of exhausting memory in arange.
-    estimated = layers * math.prod(int(math.ceil(extent / pitch)) + 2
-                                  for extent in bounds[1, :2] - bounds[0, :2])
-    if estimated > max_cells:
-        raise ValueError(f"Export would inspect approximately {estimated:,} grid cells; limit is {max_cells:,}. "
-                         "Increase pitch/layer height, reduce model size, or explicitly raise max_cells.")
+    control.checkpoint()
     midpoints = (z0 + np.arange(layers) * layer_height +
                  np.minimum(zmax, z0 + (np.arange(layers) + 1) * layer_height)) / 2
     retained = _sub_layer_parts(surface, face_recipes, component_details, midpoints,
-                                z0, zmax, layer_height, mode)
+                                z0, zmax, layer_height, mode, control=control)
+    control.retained_triangles = sum(len(part["mesh"].faces) for part in retained)
+    control.check_memory(stage="sub-layer geometry")
     translation = np.array((-(bounds[0, 0] + bounds[1, 0]) / 2,
                             -(bounds[0, 1] + bounds[1, 1]) / 2, -z0))
     by_filament = defaultdict(list)
@@ -587,7 +649,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     max_coverage = max_overlap = 0.0
     max_interior_gap = 0.0
     sampled_cells = nonempty_layers = 0
+    control.stage("Sampling layers")
     for layer in range(layers):
+        control.checkpoint()
         low, high = z0 + layer * layer_height, min(zmax, z0 + (layer + 1) * layer_height)
         z = (low + high) / 2
         domain = _layer_domain(source.slice(z), precision=precision, layer_index=layer)
@@ -596,7 +660,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             regions, cells, coverage, overlap, interior_gap, partition_area = _partition_layer(
                 surface, face_recipes, domain, z=z, layer_index=layer, pitch=pitch,
                 origin=bounds[0, :2], precision=precision, interface_offset=interface_offset,
-                source_colors=mode == "source")
+                source_colors=mode == "source", control=control)
             sampled_cells += cells
             if sampled_cells > max_cells:
                 raise ValueError("Export exceeded max_cells after splitting disconnected grid pieces")
@@ -605,26 +669,44 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             max_coverage, max_overlap = max(max_coverage, coverage), max(max_overlap, overlap)
             max_interior_gap = max(max_interior_gap, interior_gap)
             for token, region in regions.items():
+                control.check_memory(int(shapely.get_num_coordinates(region)) * 4096,
+                                     stage="layer extrusion")
                 part = _region_solid(region, low, high)
                 if part.status() != mf.Error.NoError or part.num_tri() == 0:
                     raise ValueError(f"Layer {layer}: could not extrude filament {token}")
                 by_filament[token].append(part)
+                control.retained_triangles += int(part.num_tri())
+                control.check_memory(stage="retained layer geometry")
+        control.live_layer_bytes = 0
         if progress is not None:
             progress(layer + 1, layers)
+        control.checkpoint()
     if not by_filament and not retained:
         raise ValueError("No printable layers were generated")
 
     items, material_rows, final_solids = [], [], []
     used_tokens = _material_order(set(by_filament) | {part["token"] for part in retained})
     extruders = {token: i + 1 for i, token in enumerate(used_tokens)}
+    control.stage("Finalizing material geometry")
     for token in used_tokens:
+        control.checkpoint()
         if not by_filament[token]:
             material_rows.append({"token": token, "extruder": extruders[token], "hex": _material_hex(token),
                 "triangles": 0, "volume_mm3": 0.0, "components": 0, "defects": {},
                 "numerical_simplification_tolerance_mm": 0.0, "placed_float32_defects": {}})
             continue
+        layer_triangles = sum(int(part.num_tri()) for part in by_filament[token])
+        control.check_memory(layer_triangles * 2048, stage="material union")
         solid = mf.Manifold.batch_boolean(by_filament[token], mf.OpType.Add).translate(translation)
-        mesh, solid, material_audit = _finalize_filament(solid, token, precision)
+        # Drop each material's slab objects as soon as its union is available.
+        # Keeping all slabs through XML publication unnecessarily multiplies
+        # the retained native geometry without contributing to validation.
+        by_filament[token].clear()
+        control.retained_triangles -= layer_triangles
+        control.retained_triangles += int(solid.num_tri())
+        mesh, solid, material_audit = _finalize_filament(solid, token, precision, control=control)
+        control.retained_triangles += len(mesh.faces)
+        control.check_memory(stage="final material geometry")
         metadata = {"source_hex": _material_hex(token), "stack_token": token,
                     "filament": token, "paint_policy": "nearest_surface_full_depth"}
         items.append(LeafMeshSpec(_material_label(token), mesh, metadata))
@@ -638,7 +720,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         from layerloom.paint_sub_layer import prepare_sub_layer_mesh
         rows_by_token = {row["token"]: row for row in material_rows}
         for index, extra in enumerate(retained):
+            control.check_memory(len(extra["mesh"].faces) * 2048, stage="sub-layer validation")
             mesh, audit = prepare_sub_layer_mesh(extra["mesh"], translation)
+            control.retained_triangles += len(mesh.faces) * 2
             token = extra["token"]
             # Separate parts preserve microscopic positive shells which a
             # Boolean union at the whole-model scale can silently remove.
@@ -658,7 +742,10 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             final_solids.append(mf.Manifold(mf.Mesh64(np.ascontiguousarray(mesh.vertices),
                                     np.ascontiguousarray(mesh.faces, dtype=np.uint64))))
     sampled_volume += retained_volume
+    control.check_memory(sum(int(solid.num_tri()) for solid in final_solids) * 2048,
+                         stage="final overlap validation")
     final_union = mf.Manifold.batch_boolean(final_solids, mf.OpType.Add)
+    control.checkpoint()
     output_volume = sum(row["volume_mm3"] for row in material_rows)
     union_volume = float(final_union.volume())
     tolerance = max(1e-5, sampled_volume * 1e-5)
@@ -691,6 +778,8 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         "maximum_layer_coverage_error_mm2": max_coverage, "maximum_layer_overlap_mm2": max_overlap,
         "maximum_internal_layer_gap_mm2": max_interior_gap,
         "output_overlap_mm3": max(0.0, output_volume - union_volume),
+        "resources": {**estimate.to_dict(), "memory_budget_bytes": control.budget,
+                      "budget_policy": "Estimated additional export working memory; not a process RSS cap"},
         "assignments": assignments, "filaments": material_rows,
         "validation": "closed solids, float32 triangles, per-layer coverage, final material overlap",
         "limitations": [
@@ -707,17 +796,25 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     report_path = output.with_suffix(".paint-report.json")
     report["report_path"] = str(report_path)
     report["report_written"] = True
+    control.stage("Writing 3MF")
+    control.check_memory(sum(len(item.mesh.faces) for item in items) * 2048,
+                         stage="3MF geometry serialization")
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="layerloom_paint_", dir=output.parent) as temporary:
         staged = Path(temporary) / output.name
         staged_report = Path(temporary) / report_path.name
         write_orca_multipart_3mf(items, str(staged), title=output.stem,
                                  extruder_by_token={token.lower(): slot for token, slot in extruders.items()})
-        _brand_geometry_archive(staged, used_tokens)
+        control.checkpoint()
+        _brand_geometry_archive(staged, used_tokens, control=control)
         # Serialize both files before publishing either. The report is optional
         # after geometry publication: a Windows file lock or permissions race
         # must not make a completed printable export look like a failed export.
+        report["resources"]["peak_estimated_bytes"] = control.peak_estimated_bytes
         staged_report.write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
+        # Publication is the commit point. A cancellation delivered during or
+        # after this atomic replacement is a completed export, not a failure.
+        control.checkpoint()
         os.replace(staged, output)
         try:
             os.replace(staged_report, report_path)
