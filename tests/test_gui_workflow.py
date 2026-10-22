@@ -61,7 +61,7 @@ def _run_workflow(artifact_dir):
     import xml.etree.ElementTree as ET
 
     import numpy as np
-    from PyQt5 import QtCore, QtTest, QtWidgets
+    from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 
     from layerloom import gui_app
     from layerloom.example_assets import find_example_file
@@ -125,9 +125,27 @@ def _run_workflow(artifact_dir):
                          np.max([m.bounds[1] for _, m in parts], axis=0)])
 
     def screenshot(window, label):
-        window.viewer.plotter.render()
+        plotter = window.viewer.plotter
+        plotter.render()
         pump()
-        pixels = np.asarray(window.viewer.plotter.screenshot(str(artifact_dir / f"{label}-viewport.png")))
+        viewport_path = str(artifact_dir / f"{label}-viewport.png")
+        if isinstance(plotter, QtWidgets.QOpenGLWidget):
+            # pyvistaqt >= 0.13 renders into a Qt-owned framebuffer. Capture
+            # that displayed surface through Qt, which owns its GL context;
+            # VTK's standalone-window screenshot API cannot always make this
+            # borrowed context current on Windows. This still tests the actual
+            # model pixels below, including a hidden-geometry control frame.
+            frame = plotter.grabFramebuffer().convertToFormat(QtGui.QImage.Format_RGB888)
+            assert not frame.isNull(), "Qt viewport framebuffer is unavailable"
+            assert frame.save(viewport_path)
+            rows = np.frombuffer(frame.bits().asstring(frame.byteCount()), dtype=np.uint8)
+            pixels = rows.reshape(frame.height(), frame.bytesPerLine())[:, :frame.width() * 3]
+            pixels = pixels.reshape(frame.height(), frame.width(), 3).copy()
+            report["render_capture"] = "Qt framebuffer"
+        else:
+            # Older pyvistaqt owns a native VTK window instead.
+            pixels = np.asarray(plotter.screenshot(viewport_path))
+            report["render_capture"] = "VTK render window"
         assert pixels.ndim == 3 and min(pixels.shape[:2]) > 100
         # QWidget.grab cannot reliably read the native VTK child surface on
         # macOS. Keep framebuffer evidence and Qt control evidence separate.

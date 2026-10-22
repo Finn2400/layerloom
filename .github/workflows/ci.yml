@@ -27,7 +27,11 @@ jobs:
 
       - name: Linux native GUI and repair prerequisites
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libopengl0 libxkbcommon-x11-0 libxcb-xinerama0 libxcb-cursor0 xvfb xauth
+        run: >-
+          sudo apt-get update && sudo apt-get install -y
+          libgl1 libegl1 libopengl0 libxkbcommon-x11-0
+          libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0
+          libxcb-xinerama0 libxcb-cursor0 xvfb xauth
 
       - name: Install LayerLoom
         run: |
@@ -44,6 +48,11 @@ jobs:
         run: |
           python -m pip check
           layerloom-doctor
+
+      - name: Check Linux Qt desktop libraries
+        if: runner.os == 'Linux'
+        run: |
+          python -c "from pathlib import Path; import subprocess; from PyQt5.QtCore import QLibraryInfo; p=Path(QLibraryInfo.location(QLibraryInfo.PluginsPath))/'platforms/libqxcb.so'; r=subprocess.run(['ldd', str(p)], check=True, capture_output=True, text=True); print(r.stdout); assert 'not found' not in r.stdout, 'Missing Qt desktop libraries'"
 
       - name: Run tests
         run: pytest
