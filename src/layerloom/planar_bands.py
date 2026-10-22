@@ -551,6 +551,63 @@ def _cdt_cap_arrays(triangulated):
     return vertices, inverse.reshape(-1, 3)
 
 
+def _conform_earcut_cap(vertices, faces, polygon):
+    """Node exact cap T-junctions before constructing vertical boundary walls.
+
+    Earcut can return a long triangle edge passing through another triangle's
+    vertex when a hole touches its shell. The triangles still cover the right
+    area, but treating their unmatched edges as boundaries invents an internal
+    wall. Split those edges using existing vertices only; no coordinates move.
+    """
+    def boundary_edges(triangles):
+        edges, _, _, incidence = _cap_edge_topology(triangles)
+        return edges[incidence == 1]
+
+    boundary = boundary_edges(faces)
+    linework = shapely.linestrings(vertices[boundary])
+    if shapely.union_all(linework).equals(polygon.boundary):
+        return vertices, faces
+
+    _, first, inverse = np.unique(vertices, axis=0, return_index=True, return_inverse=True)
+    # Ring closing vertices can have different indices at the same coordinate.
+    # The later fan split restores separate indices at true point contacts.
+    faces = first[inverse.reshape(-1)][faces]
+    boundary = boundary_edges(faces)
+    linework = shapely.linestrings(vertices[boundary])
+    used = np.unique(faces)
+    edge_ids, point_ids = shapely.STRtree(shapely.points(vertices[used])).query(
+        linework, predicate="intersects")
+    subdivisions = {}
+    for edge_id, point_id in zip(edge_ids, used[point_ids]):
+        a, b = boundary[edge_id]
+        if point_id != a and point_id != b:
+            subdivisions.setdefault(tuple(sorted((a, b))), []).append(int(point_id))
+
+    output = []
+    for face in faces:
+        children = [face.tolist()]
+        for a, b in zip(face, np.roll(face, -1)):
+            interior = subdivisions.get(tuple(sorted((a, b))))
+            if not interior:
+                continue
+            direction = vertices[b] - vertices[a]
+            interior = sorted(interior, key=lambda point: float(
+                np.dot(vertices[point] - vertices[a], direction)))
+            chain = [int(a), *interior, int(b)]
+            for index, child in enumerate(children):
+                if a in child and b in child:
+                    opposite = next(point for point in child if point != a and point != b)
+                    children[index:index + 1] = [[left, right, opposite]
+                                               for left, right in zip(chain, chain[1:])]
+                    break
+        output.extend(children)
+    faces = np.asarray(output, dtype=np.int64).reshape(-1, 3)
+    boundary = shapely.union_all(shapely.linestrings(vertices[boundary_edges(faces)]))
+    if not boundary.equals(polygon.boundary):
+        raise ValueError("earcut triangulation boundary does not match the polygon")
+    return vertices, faces
+
+
 def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
     """Build closed bands on the output coordinate lattice, retaining holes.
 
@@ -581,6 +638,7 @@ def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
             # Keep basic inputs usable with Shapely 2.0. Validation below still
             # rejects any degenerate triangulation instead of dropping faces.
             vertices, faces = trimesh.creation.triangulate_polygon(polygon, engine="earcut")
+            vertices, faces = _conform_earcut_cap(vertices, faces, polygon)
         mesh, contacts = _extrude_indexed_cap(vertices, faces, low, high)
         if not mesh.is_volume:
             raise ValueError("polygon extrusion did not produce a closed positive volume")

@@ -18,3 +18,4 @@ results/*
 !results/profiled_comparison.png
 !results/profiled_validation.json
 !results/hardening_validation.json
+!results/ci_geometry_validation.json

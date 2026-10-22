@@ -33,6 +33,27 @@ def test_explicit_example_input_is_used_and_fingerprinted(monkeypatch, tmp_path)
     assert source["sha256"] == hashlib.sha256(b"fixture data").hexdigest()
 
 
+def test_legacy_import_failure_allows_successful_retry(monkeypatch, tmp_path):
+    name = "_controlled_legacy_meshlab_repair"
+    # Restore any previously cached real helper when the test finishes.
+    monkeypatch.setitem(worker.sys.modules, name, None)
+    del worker.sys.modules[name]
+    monkeypatch.setattr(worker, "ROOT", tmp_path)
+    helper = tmp_path / "src" / "supporting_scripts" / "3mf_meshlab_repair_3mf.py"
+    helper.parent.mkdir(parents=True)
+    helper.write_text("partial = True\nraise ModuleNotFoundError('test dependency')\n", encoding="utf-8")
+
+    with pytest.raises(ModuleNotFoundError, match="test dependency"):
+        worker._legacy_module()
+    assert name not in worker.sys.modules
+
+    helper.write_text("ready = True\n", encoding="utf-8")
+    module = worker._legacy_module()
+    assert module.ready
+    assert not hasattr(module, "partial")
+    assert worker._legacy_module() is module
+
+
 def box(height=0.4, bottom=0.0, x=0.0):
     mesh = trimesh.creation.box(extents=(1, 1, height))
     mesh.apply_translation((x, 0, bottom + height / 2))
@@ -136,6 +157,8 @@ def test_same_grid_survives_repaired_bounds_change(monkeypatch):
 
 
 def test_actual_legacy_helper_and_common_warmup_are_usable():
+    pytest.importorskip("lib3mf")
+    pytest.importorskip("pymeshlab")
     legacy = worker._legacy_module()
     worker._warmup(legacy)
     source = box()

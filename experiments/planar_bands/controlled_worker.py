@@ -57,7 +57,11 @@ def _legacy_module():
         spec = importlib.util.spec_from_file_location(name, ROOT / "src/supporting_scripts/3mf_meshlab_repair_3mf.py")
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
-        spec.loader.exec_module(module)
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            del sys.modules[name]
+            raise
     return sys.modules[name]
 
 

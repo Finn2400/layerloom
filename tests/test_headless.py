@@ -290,7 +290,7 @@ def test_headless_cli_defaults_and_validation(tmp_path, monkeypatch):
     import layerloom.headless as headless
 
     monkeypatch.setattr(headless, "default_downloads_dir", lambda: str(tmp_path / "Downloads"))
-    assert headless.resolve_output_path("protein.glb").endswith("Downloads/protein_woven.3mf")
+    assert Path(headless.resolve_output_path("protein.glb")) == tmp_path / "Downloads" / "protein_woven.3mf"
 
     parser = headless.build_parser()
     with pytest.raises(SystemExit) as help_exit:

@@ -99,3 +99,4 @@ layerloom = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = ["gui: requires the optional GUI dependencies"]

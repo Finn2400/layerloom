@@ -3,10 +3,10 @@
 import numpy as np
 import pytest
 import shapely
-from shapely.geometry import MultiPolygon, box
+from shapely.geometry import MultiPolygon, Polygon, box
 import trimesh
 
-from layerloom.planar_bands import _graph, extrude_profile
+from layerloom.planar_bands import _graph, extrude_profile, section_profile
 
 
 def assert_export_volume(mesh, expected_volume):
@@ -39,6 +39,60 @@ def test_missing_cdt_falls_back_with_hole_preserved(monkeypatch):
     assert_export_volume(mesh, 2.4)
     section = mesh.section(plane_origin=(0, 0, 0.1), plane_normal=(0, 0, 1))
     assert len(section.discrete) == 2
+
+
+def test_earcut_point_contact_preserves_hole_after_welded_reload(monkeypatch):
+    monkeypatch.delattr(shapely, "constrained_delaunay_triangles", raising=False)
+    profile = Polygon([(0, 0), (2, 0), (2, 2), (0, 2)],
+                      holes=[[(1, 0), (1.5, 0.5), (1, 1), (0.5, 0.5)]])
+    mesh = extrude_profile(profile, 0, 1)
+    assert_export_volume(mesh, profile.area)
+    for welded in (False, True):
+        if welded:
+            mesh.merge_vertices()
+        section = section_profile(mesh, 0.37)
+        assert section.ok, section.diagnostics
+        assert section.region.symmetric_difference(profile).area < 1e-12
+        assert len(section.region.interiors) == 1
+
+
+@pytest.mark.parametrize("cap", ["touching_hole", "three_split_edges"])
+def test_earcut_t_junctions_cannot_create_internal_walls(monkeypatch, cap):
+    monkeypatch.delattr(shapely, "constrained_delaunay_triangles", raising=False)
+    if cap == "touching_hole":
+        profile = Polygon([(0, 0), (2, 0), (2, 2), (0, 2)],
+                          holes=[[(1, 0), (1.5, 0.5), (1, 1), (0.5, 0.5)]])
+        # Earcut 2.1 output: the edge (0,0)--(1,1) skips (0.5,0.5).
+        vertices = np.array([(0, 0), (2, 0), (2, 2), (0, 2), (0, 0),
+                             (1, 0), (1.5, 0.5), (1, 1), (0.5, 0.5), (1, 0)])
+        faces = np.array([(3, 0, 7), (9, 8, 0), (2, 3, 7),
+                          (2, 7, 6), (1, 2, 6), (1, 6, 9)])
+    else:
+        # A central triangle has a T-junction on all three edges. Splitting
+        # one edge must not discard the subdivisions required on the others.
+        vertices = np.array([(0, 0), (4, 0), (0, 4), (2, 0), (2, 2),
+                             (0, 2), (2, -2), (4, 4), (-2, 2)], dtype=float)
+        faces = np.array([(0, 1, 2), (0, 6, 3), (3, 6, 1), (1, 7, 4),
+                          (4, 7, 2), (2, 8, 5), (5, 8, 0)])
+        profile = Polygon(vertices[[0, 6, 1, 7, 2, 8]])
+    monkeypatch.setattr(trimesh.creation, "triangulate_polygon",
+                        lambda *args, **kwargs: (vertices, faces))
+    mesh = extrude_profile(profile, 0, 1)
+    assert_export_volume(mesh, profile.area)
+    assert set(map(tuple, mesh.vertices[:, :2])) <= set(map(tuple, vertices))
+    section = section_profile(mesh, 0.37)
+    assert section.ok, section.diagnostics
+    assert section.region.symmetric_difference(profile).area < 1e-12
+
+
+def test_earcut_equal_area_wrong_boundary_is_rejected(monkeypatch):
+    monkeypatch.delattr(shapely, "constrained_delaunay_triangles", raising=False)
+    vertices = np.array([(10, 0), (11, 0), (11, 1), (10, 1)], dtype=float)
+    faces = np.array([(0, 1, 2), (0, 2, 3)])
+    monkeypatch.setattr(trimesh.creation, "triangulate_polygon",
+                        lambda *args, **kwargs: (vertices, faces))
+    with pytest.raises(ValueError, match="boundary does not match"):
+        extrude_profile(box(0, 0, 1, 1), 0, 0.2)
 
 
 def test_cdt_symbol_with_unsupported_geos_uses_validated_fallback(monkeypatch):

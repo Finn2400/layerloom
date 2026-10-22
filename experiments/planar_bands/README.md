@@ -830,3 +830,37 @@ The new local output is `results/benchy_hardened.3mf`; the proof is
 [`hardening_validation.json`](results/hardening_validation.json). Historical
 timing and geometry evidence has not been rewritten. This pass addresses
 correctness and compatibility; it makes no new speed claim.
+
+### Hosted CI follow-up
+
+The first Windows/Linux CI run exposed a real Earcut 2.1 compatibility issue:
+when a hole touches its shell, a triangulated cap can contain a T-junction.
+Treating its unmatched triangle edges as boundaries creates an internal wall.
+The Earcut path now checks the cap boundary and, only when needed, subdivides
+edges at existing vertices before extrusion. No coordinates move, and a
+remaining mismatch against the exact polygon boundary is rejected. CDT and
+the existing extrusion/float32 safeguards are unchanged. Regressions cover
+point contacts, welded reloads, multiple subdivided edges and an incorrect
+cap with the right area.
+
+Windows tests now compare paths structurally and write fingerprinted source
+fixtures as exact bytes, avoiding path-separator and newline-translation
+assumptions. The legacy benchmark loader removes partially imported modules
+after failures, so retrying can succeed.
+
+The compatibility jobs now install only core dependencies and pytest; they
+exclude the single marked GUI smoke test. The main matrix retains GUI coverage
+on all three operating systems and Python 3.10–3.12, and Python 3.12 jobs also
+install and test the optional legacy-repair dependencies. Publishing tools are
+no longer installed just to run CI. Core geometry dependencies remain because
+they support current functionality and compatibility fallbacks. Windows and
+Linux Python 3.12 jobs additionally run a full Benchy reconstruction, including
+the production export/reimport checks, 349 bands, 182 layers and CMY assignments.
+
+Local verification passed **489 tests, 1 skipped** in the existing environment,
+and **474 tests, 15 skipped, 1 GUI test deselected** in a fresh core-only
+environment with NumPy 1.26.4, Shapely 2.0.7 and Earcut 2.1.0. The latter skips
+CDT-specific comparisons and tests needing optional native repair packages.
+The full local Benchy comparison also passed with exactly the same 349 named
+bands, 1,466,260 triangles, geometry hash and diagnostic metadata as before:
+[`ci_geometry_validation.json`](results/ci_geometry_validation.json).

@@ -148,7 +148,9 @@ def test_worker_loads_all_frozen_modules_before_resolving_entrypoints(monkeypatc
         "contour_repair": "from layerloom.planar_materials import partition_materials\ndef _float32_mesh_checks(): return partition_materials() + ' checks'\n",
     }
     for name, source in sources.items():
-        (frozen / (name + ".py")).write_text(source)
+        # Frozen production sources are copied byte-for-byte; avoid Windows
+        # newline translation changing the bytes whose hash we assert below.
+        (frozen / (name + ".py")).write_bytes(source.encode("utf-8"))
         # Register restoration before the production loader replaces each entry.
         monkeypatch.setitem(sys.modules, "layerloom." + name, None)
     package = ModuleType("layerloom")

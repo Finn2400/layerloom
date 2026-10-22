@@ -4,6 +4,8 @@ import importlib.metadata
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 def test_package_metadata_available():
     assert importlib.metadata.version("layerloom")
@@ -21,6 +23,7 @@ def test_core_modules_import():
     assert layerloom.weave.main
 
 
+@pytest.mark.gui
 def test_current_gui_entrypoint_imports_v65():
     import layerloom.gui_app
 
