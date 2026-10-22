@@ -153,6 +153,84 @@ def test_paint_model_rejects_bad_geometry():
         PaintMesh("bad", "Bad", np.zeros((3, 3)), [[0, 1, 3]], [[0, 0, 0, 255]])
 
 
+@pytest.mark.parametrize("faces", [np.array([[0, 1.9, 2]]),
+                                  np.array([[0, np.nan, 2]]),
+                                  np.array([[0, np.inf, 2]]),
+                                  np.array([["0", "1", "2"]])])
+def test_project_faces_are_validated_before_integer_conversion(faces):
+    with pytest.raises(ValueError, match="finite integers"):
+        PaintMesh("bad", "Bad", np.zeros((3, 3)), faces, [[0, 0, 0, 255]])
+
+
+@pytest.mark.parametrize("colors", [np.array([[-1, 0, 256, 255]]),
+                                   np.array([[np.nan, 0, 0, 255]]),
+                                   np.array([[0.5, 0, 0, 255]]),
+                                   np.array([["0", "0", "0", "255"]])])
+@pytest.mark.parametrize("field", ["face_rgba", "source_rgba"])
+def test_project_colors_cannot_wrap_or_truncate(colors, field):
+    kwargs = {"face_rgba": np.array([[0, 0, 0, 255]]), field: colors}
+    with pytest.raises(ValueError, match="integer colors from 0 to 255"):
+        PaintMesh("bad", "Bad", np.zeros((3, 3)), [[0, 1, 2]], **kwargs)
+
+
+def test_empty_mesh_is_rejected_before_viewer_load():
+    with pytest.raises(ValueError, match="non-empty triangle"):
+        PaintMesh("empty", "Empty", np.empty((0, 3)), np.empty((0, 3)), np.empty((0, 4)))
+
+
+@pytest.mark.parametrize("field,value,message", [("metadata", [], "metadata must be an object"),
+                                                ("source_path", 5, "source_path must be text")])
+def test_invalid_project_manifest_types_are_rejected(tmp_path, field, value, message):
+    path = tmp_path / "bad.llpaint"
+    save_paint_document(_doc(trimesh.creation.box()), path)
+    with zipfile.ZipFile(path) as z:
+        files = {name: z.read(name) for name in z.namelist()}
+    manifest = json.loads(files["manifest.json"])
+    manifest[field] = value
+    files["manifest.json"] = json.dumps(manifest).encode()
+    with zipfile.ZipFile(path, "w") as z:
+        for name, data in files.items():
+            z.writestr(name, data)
+    with pytest.raises(ValueError, match=message):
+        load_paint_document(path)
+
+
+@pytest.mark.parametrize("failure", ["write", "replace"])
+def test_failed_project_save_preserves_existing_file_and_cleans_temp(tmp_path, monkeypatch, failure):
+    from layerloom import paint_io
+    path = tmp_path / "painted dragon – 彩色.llpaint"
+    doc = _doc(trimesh.creation.box())
+    save_paint_document(doc, path)
+    before = path.read_bytes()
+    doc.meshes[0].face_rgba[:] = [255, 255, 255, 255]
+
+    def fail(*args, **kwargs):
+        raise PermissionError("simulated unavailable destination")
+
+    monkeypatch.setattr(paint_io.np if failure == "write" else paint_io.os,
+                        "savez" if failure == "write" else "replace", fail)
+    with pytest.raises(PermissionError, match="unavailable destination"):
+        save_paint_document(doc, path)
+    assert path.read_bytes() == before
+    assert sorted(tmp_path.iterdir()) == [path]
+
+
+@pytest.mark.parametrize("index", [-1, 100])
+def test_3mf_property_indices_cannot_select_wrong_color(tmp_path, index):
+    path = tmp_path / "bad_color.3mf"
+    _write_source_color_fixture_3mf(_doc(trimesh.creation.box()), path)
+    with zipfile.ZipFile(path) as z:
+        files = {name: z.read(name) for name in z.namelist()}
+    root = ET.fromstring(files["3D/3dmodel.model"])
+    root.find(f".//{{{CORE}}}triangle").set("p1", str(index))
+    files["3D/3dmodel.model"] = ET.tostring(root)
+    with zipfile.ZipFile(path, "w") as z:
+        for name, data in files.items():
+            z.writestr(name, data)
+    with pytest.raises(ValueError, match="color property index is invalid"):
+        load_paint_document(path)
+
+
 def _write_glb(path, vertex_color=None, material_color=None, texture=False):
     gl = pytest.importorskip("pygltflib")
     arrays = [np.asarray([[0, 0, 0], [.01, 0, 0], [0, .01, 0]], dtype=np.float32),

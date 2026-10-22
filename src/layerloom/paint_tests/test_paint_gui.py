@@ -13,7 +13,7 @@ if os.environ.get("LAYERLOOM_GUI_TESTS") != "1":
     pytest.skip("Native GUI checks are opt-in: LAYERLOOM_GUI_TESTS=1", allow_module_level=True)
 
 pytest.importorskip("pyvistaqt")
-from qtpy import QtCore, QtWidgets, QtTest
+from qtpy import QtCore, QtGui, QtWidgets, QtTest
 from layerloom.paint_gui import PaintWindow, PaintPanel
 from layerloom.paint_model import PaintDocument, PaintMesh
 from layerloom.paint_io import load_paint_document, save_paint_document
@@ -615,3 +615,86 @@ def test_export_recovers_explicit_recipe_after_paint_undo_clears_mapping(window,
     assert window._export_thread is None
     assert window.last_export_report["ok"] is True
     assert captured["recipe_overrides"] == {color: "c"}
+
+
+def test_unfinished_stroke_cannot_bypass_discard_prompt(window, monkeypatch):
+    original = window.document.meshes[0].face_rgba.copy()
+    window.begin_stroke()
+    window.apply_faces(0, [0, 1])
+    assert not window.dirty and window._stroke
+    prompts = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "question",
+                        lambda *args: prompts.append(args) or QtWidgets.QMessageBox.Cancel)
+    assert not window.can_close()
+    assert len(prompts) == 1 and window.dirty and len(window._undo) == 1
+    assert not window._stroke
+    window.undo()
+    np.testing.assert_array_equal(window.document.meshes[0].face_rgba, original)
+
+
+@pytest.mark.parametrize("event_type", [QtCore.QEvent.FocusOut, QtCore.QEvent.Hide])
+def test_interrupted_pointer_gesture_commits_once_and_stops_painting(window, event_type):
+    window.begin_stroke()
+    window.apply_faces(0, [0])
+    window.plotter._painting = True
+    window.plotter._selecting = True
+    event = QtGui.QFocusEvent(event_type) if event_type == QtCore.QEvent.FocusOut else QtGui.QHideEvent()
+    QtWidgets.QApplication.sendEvent(window.plotter, event)
+    assert window.dirty and len(window._undo) == 1 and not window._stroke
+    assert not window.plotter._painting and not window.plotter._selecting
+    window.begin_stroke()
+    window.apply_faces(0, [1])
+    window.begin_stroke()  # A new press after a missed release preserves the first edit.
+    assert len(window._undo) == 2
+
+
+def test_vtk_preparation_failure_preserves_current_project_and_history(window, monkeypatch):
+    from layerloom import paint_gui
+    from layerloom.paint_examples import example_document
+    window.fill_mesh(0, [40, 50, 60, 255])
+    document, poly = window.document, window._polys[0]
+    history = list(window._undo)
+    window.project_path = "previous.llpaint"
+    monkeypatch.setattr(paint_gui.pv, "PolyData", lambda *a, **k: (_ for _ in ()).throw(ValueError("bad mesh")))
+    with pytest.raises(ValueError, match="bad mesh"):
+        window.set_document(example_document("cube", 8))
+    assert window.document is document and window._polys[0] is poly
+    assert len(window._undo) == len(history) and window._undo[0] is history[0]
+    assert window.project_path == "previous.llpaint" and window.dirty
+
+
+def test_invalid_optional_palette_metadata_uses_defaults(window, tmp_path):
+    document = window.document.copy()
+    document.metadata.update(paint_palette=[], paint_mapping_mode={"invalid": True}, warnings=42)
+    path = tmp_path / "optional_metadata.llpaint"
+    save_paint_document(document, path)
+    assert window.open_path(path)
+    assert window.palette_combo.currentText() == "Normal"
+    assert window.mapping_mode_combo.currentData() == "woven"
+
+
+def test_shared_color_projection_keeps_selection_local_and_handles_pending_rgb(window):
+    assert window.assign_colors()
+    window.preview_mapping.setChecked(True)
+    mesh = window.document.meshes[0]
+    original = mesh.face_rgba.copy()
+    window._selection[0] = np.arange(len(mesh.faces)) == 0
+    arrange = window.display_mesh_colors(0, include_selection=False)
+    paint = window.display_mesh_colors(0)
+    np.testing.assert_array_equal(paint[1:], arrange[1:])
+    assert np.any(paint[0] != arrange[0])
+    np.testing.assert_array_equal(mesh.face_rgba, original)
+    mesh.face_rgba[0] = [1, 2, 3, 255]
+    np.testing.assert_array_equal(window.display_mesh_colors(0, include_selection=False)[0], [1, 2, 3, 255])
+
+
+def test_export_report_warning_is_visible_without_claiming_geometry_failure(window, monkeypatch):
+    notices = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args: notices.append(args))
+    report = {"output_path": "model.3mf", "report_written": False,
+              "warnings": ["Geometry saved; audit report is locked."]}
+    window._export_success(report)
+    assert window.last_export_report is report
+    assert "Geometry export complete" in window.statusBar().currentMessage()
+    assert "audit report warning" in window.statusBar().currentMessage()
+    assert "Geometry saved; audit report is locked." in notices[0][2]

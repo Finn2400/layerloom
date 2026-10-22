@@ -1,6 +1,7 @@
 """Printable surface paint: volume, material boundaries, and shared alignment."""
 
 from types import SimpleNamespace
+from pathlib import Path
 import json
 import zipfile
 from xml.etree import ElementTree as ET
@@ -129,6 +130,81 @@ def test_overlapping_solids_and_unbounded_work_are_rejected(tmp_path):
         export_painted_3mf(document(mesh, mesh.copy()), tmp_path / "overlap.3mf")
     with pytest.raises(ValueError, match="grid cells"):
         export_painted_3mf(document(mesh), tmp_path / "large.3mf", max_cells=1)
+
+
+def test_work_limit_precedes_large_layer_array_allocation(tmp_path, monkeypatch):
+    from layerloom import paint_export
+    arange = np.arange
+
+    def bounded_arange(*args, **kwargs):
+        if args and np.isscalar(args[0]) and args[0] > 10_000_000:
+            pytest.fail("Layer allocation happened before the export work limit")
+        return arange(*args, **kwargs)
+
+    monkeypatch.setattr(paint_export.np, "arange", bounded_arange)
+    path = tmp_path / "too_many_layers.3mf"
+    with pytest.raises(ValueError, match="grid cells"):
+        export_painted_3mf(document(trimesh.creation.box((2, 2, 2))), path,
+                           layer_height=1e-12, precision=1e-15, interface_offset=0)
+    assert not path.exists()
+
+
+def test_old_manifold_dependency_fails_before_geometry_work(tmp_path, monkeypatch):
+    from layerloom import paint_export
+    monkeypatch.setattr(paint_export, "mf", SimpleNamespace(Manifold=object))
+    with pytest.raises(RuntimeError, match="requires manifold3d 3.2"):
+        export_painted_3mf(None, tmp_path / "dependency.3mf")
+
+
+@pytest.mark.parametrize("failure", ["directory", "locked_report"])
+def test_report_publication_failure_keeps_successful_geometry_and_prior_report(tmp_path, monkeypatch, failure):
+    from layerloom import paint_export
+    output = tmp_path / "painted dragon – 彩色.3mf"
+    report_path = output.with_suffix(".paint-report.json")
+    if failure == "directory":
+        report_path.mkdir()
+    else:
+        report_path.write_text("existing report", encoding="utf-8")
+        replace = paint_export.os.replace
+
+        def replace_except_report(source, destination):
+            if Path(destination) == report_path:
+                raise PermissionError("simulated Windows report file lock")
+            return replace(source, destination)
+
+        monkeypatch.setattr(paint_export.os, "replace", replace_except_report)
+    report = export_painted_3mf(document(trimesh.creation.box((2, 2, 2))), output,
+                               pitch=1, layer_height=1)
+    assert zipfile.is_zipfile(output)
+    assert_clean_report(report)
+    assert report["report_written"] is False
+    assert "3MF was exported" in report["warnings"][0]
+    if failure == "directory":
+        assert report_path.is_dir()
+    else:
+        assert report_path.read_text(encoding="utf-8") == "existing report"
+    assert not list(tmp_path.glob("layerloom_paint_*"))
+
+
+def test_report_staging_failure_does_not_replace_existing_geometry(tmp_path, monkeypatch):
+    output = tmp_path / "existing.3mf"
+    output.write_bytes(b"previous geometry")
+    report_path = output.with_suffix(".paint-report.json")
+    report_path.write_text("previous report", encoding="utf-8")
+    write_text = Path.write_text
+
+    def fail_report_write(path, *args, **kwargs):
+        if path.name == report_path.name:
+            raise OSError("simulated full disk while staging report")
+        return write_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", fail_report_write)
+    with pytest.raises(OSError, match="full disk"):
+        export_painted_3mf(document(trimesh.creation.box((2, 2, 2))), output,
+                           pitch=1, layer_height=1)
+    assert output.read_bytes() == b"previous geometry"
+    assert report_path.read_text(encoding="utf-8") == "previous report"
+    assert not list(tmp_path.glob("layerloom_paint_*"))
 
 
 def test_transparency_requires_an_explicit_opaque_choice(tmp_path):

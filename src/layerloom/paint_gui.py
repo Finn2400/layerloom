@@ -60,6 +60,24 @@ class PaintInteractor(QtInteractor):
         self._orbit_last = None
         self._dismissed_settings_press = False
 
+    def finish_gesture(self):
+        """Commit delivered paint when focus/mode changes interrupt a drag."""
+        self._painting = False
+        self._selecting = False
+        self._orbit_last = None
+        self._dismissed_settings_press = False
+        owner = getattr(self, "owner", None)
+        if owner is not None:
+            owner.end_stroke()
+
+    def focusOutEvent(self, event):
+        self.finish_gesture()
+        super().focusOutEvent(event)
+
+    def hideEvent(self, event):
+        self.finish_gesture()
+        super().hideEvent(event)
+
     def mousePressEvent(self, event):
         if self._dismissed_settings_press:
             event.accept()
@@ -525,6 +543,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             self.set_paint_color(color.name())
 
     def _confirm_discard(self):
+        self.end_stroke()
         if not self.dirty:
             return True
         answer = QtWidgets.QMessageBox.question(
@@ -554,6 +573,10 @@ class PaintWindow(QtWidgets.QMainWindow):
             self._update_title()
             self.statusBar().showMessage(f"Opened {Path(path).name}")
             warnings = document.metadata.get("warnings", [])
+            if isinstance(warnings, str):
+                warnings = [warnings]
+            elif not isinstance(warnings, (list, tuple)):
+                warnings = []
             if warnings:
                 self.statusBar().showMessage(" · ".join(str(w) for w in warnings[:3]))
             return True
@@ -566,6 +589,21 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     def set_document(self, document):
         document.validate()
+        # Prepare VTK data before replacing the current project and its history.
+        # Invalid mesh/array input must leave the existing edit session intact.
+        prepared = {}
+        for index, mesh in enumerate(document.meshes):
+            cells = np.column_stack([np.full(len(mesh.faces), 3), mesh.faces]).ravel()
+            poly = pv.PolyData(mesh.vertices.copy(), cells)
+            poly.cell_data["paint_rgba"] = mesh.face_rgba.copy()
+            poly.cell_data["source_face_id"] = np.arange(len(mesh.faces), dtype=np.int64)
+            prepared[index] = poly
+        palette = document.metadata.get("paint_palette", "Normal")
+        if not isinstance(palette, str) or palette not in PALETTE_FILES:
+            palette = "Normal"
+        mode = document.metadata.get("paint_mapping_mode", "woven")
+        if not isinstance(mode, str) or mode not in {"woven", "direct", "source"}:
+            mode = "woven"
         self.document = document
         self.project_path = None
         self.dirty = False
@@ -583,11 +621,8 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.plotter.enable_lightkit()
         self.plotter.show_axes()
         self.picker.InitializePickList()
-        for index, mesh in enumerate(document.meshes):
-            cells = np.column_stack([np.full(len(mesh.faces), 3), mesh.faces]).ravel()
-            poly = pv.PolyData(mesh.vertices.copy(), cells)
-            poly.cell_data["paint_rgba"] = mesh.face_rgba.copy()
-            poly.cell_data["source_face_id"] = np.arange(len(mesh.faces), dtype=np.int64)
+        for index in prepared:
+            poly = prepared[index]
             actor = self.plotter.add_mesh(
                 poly, scalars="paint_rgba", rgba=True, preference="cell", name=f"paint_{index}",
                 show_scalar_bar=False, smooth_shading=False, ambient=0.4, diffuse=0.6,
@@ -598,12 +633,9 @@ class PaintWindow(QtWidgets.QMainWindow):
             self.picker.AddPickList(actor)
         size = self._update_model_label()
         self.radius_spin.setValue(max(float(size.max()) / 30.0, 0.01))
-        palette = document.metadata.get("paint_palette", "Normal")
-        if palette in PALETTE_FILES:
-            blocker = QtCore.QSignalBlocker(self.palette_combo)
-            self.palette_combo.setCurrentText(palette)
-            del blocker
-        mode = document.metadata.get("paint_mapping_mode", "woven")
+        blocker = QtCore.QSignalBlocker(self.palette_combo)
+        self.palette_combo.setCurrentText(palette)
+        del blocker
         blocker = QtCore.QSignalBlocker(self.mapping_mode_combo)
         self.mapping_mode_combo.setCurrentIndex(max(0, self.mapping_mode_combo.findData(mode)))
         del blocker
@@ -790,6 +822,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.statusBar().showMessage(f"Applied paint to {count:,} selected faces.")
 
     def begin_stroke(self):
+        self.end_stroke()
         self._stroke = {}
 
     def paint_at(self, pos):
@@ -840,6 +873,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             self._after_edit()
 
     def redo(self):
+        self.end_stroke()
         if self._redo:
             command = self._redo.pop()
             for index, (ids, _before, after) in command.items():
@@ -861,20 +895,26 @@ class PaintWindow(QtWidgets.QMainWindow):
         self._update_title()
         self.paintChanged.emit()
 
-    def _update_mesh_colors(self, index, *, mapped=None):
+    def display_mesh_colors(self, index, *, mapped=None, include_selection=True):
+        """One color projection for both views; selection tint belongs to Paint."""
         mesh = self.document.meshes[index]
         colors = mesh.face_rgba.copy()
         if mapped is None:
             mapped = self.preview_mapping.isChecked()
         if mapped and self._mapping:
             unique, inverse = np.unique(colors[:, :3], axis=0, return_inverse=True)
-            targets = np.array([_rgb(self._mapping[_hex(rgb)]["hex"]) for rgb in unique])
+            targets = np.array([_rgb(self._mapping[_hex(rgb)]["hex"]) if _hex(rgb) in self._mapping else rgb
+                                for rgb in unique], dtype=np.uint8)
             colors[:, :3] = targets[inverse]
-        selected = self._selection.get(index)
+        selected = self._selection.get(index) if include_selection else None
         if selected is not None and selected.any():
             colors[selected, :3] = (colors[selected, :3].astype(float) * .4
                                     + np.array([255, 215, 50]) * .6).astype(np.uint8)
             colors[selected, 3] = 255
+        return colors
+
+    def _update_mesh_colors(self, index, *, mapped=None):
+        colors = self.display_mesh_colors(index, mapped=mapped)
         self._polys[index].cell_data["paint_rgba"] = colors
         self._polys[index].Modified()
 
@@ -979,6 +1019,7 @@ class PaintWindow(QtWidgets.QMainWindow):
     def assign_colors(self):
         if self.document is None:
             return False
+        self.end_stroke()
         try:
             from .paint_export import assign_palette
             self._mapping_mode = self.mapping_mode_combo.currentData()
@@ -1129,10 +1170,12 @@ class PaintWindow(QtWidgets.QMainWindow):
     def _export_success(self, report):
         self.last_export_report = report
         path = report.get("output_path", report.get("output_3mf", ""))
-        self.statusBar().showMessage(f"Geometry export complete. {path}")
+        warnings = report.get("warnings", [])
+        detail = "\n\n" + "\n".join(warnings) if warnings else ""
+        self.statusBar().showMessage(f"Geometry export complete. {path}" + (" — audit report warning" if warnings else ""))
         QtWidgets.QMessageBox.information(
             self, "Export complete", f"Geometry 3MF written.\n{path}\n\n"
-            "Inspect the material parts in your slicer using the selected layer height."
+            "Inspect the material parts in your slicer using the selected layer height." + detail
         )
 
     @QtCore.Slot(str)

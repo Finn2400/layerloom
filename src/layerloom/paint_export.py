@@ -549,6 +549,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     ``progress`` receives completed and total layer counts. A JSON audit is
     written alongside the 3MF. This function does not slice or physically print.
     """
+    if not callable(getattr(mf.Manifold, "simplify", None)):
+        raise RuntimeError("Paint export requires manifold3d 3.2 or newer. "
+                           "Update LayerLoom's dependencies before exporting.")
     for name, value in (("layer_height", layer_height), ("pitch", pitch), ("precision", precision)):
         if not math.isfinite(value) or value <= 0:
             raise ValueError(f"{name} must be finite and positive")
@@ -566,14 +569,17 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     bounds = np.asarray(surface.bounds)
     z0, zmax = bounds[:, 2]
     layers = int(math.ceil((zmax - z0) / layer_height))
+    # Bound work before allocating one item per layer. Tiny positive layer
+    # heights must fail predictably instead of exhausting memory in arange.
+    estimated = layers * math.prod(int(math.ceil(extent / pitch)) + 2
+                                  for extent in bounds[1, :2] - bounds[0, :2])
+    if estimated > max_cells:
+        raise ValueError(f"Export would inspect approximately {estimated:,} grid cells; limit is {max_cells:,}. "
+                         "Increase pitch/layer height, reduce model size, or explicitly raise max_cells.")
     midpoints = (z0 + np.arange(layers) * layer_height +
                  np.minimum(zmax, z0 + (np.arange(layers) + 1) * layer_height)) / 2
     retained = _sub_layer_parts(surface, face_recipes, component_details, midpoints,
                                 z0, zmax, layer_height, mode)
-    estimated = layers * int(np.prod(np.ceil((bounds[1, :2] - bounds[0, :2]) / pitch) + 2))
-    if estimated > max_cells:
-        raise ValueError(f"Export would inspect approximately {estimated:,} grid cells; limit is {max_cells:,}. "
-                         "Increase pitch/layer height, reduce model size, or explicitly raise max_cells.")
     translation = np.array((-(bounds[0, 0] + bounds[1, 0]) / 2,
                             -(bounds[0, 1] + bounds[1, 1]) / 2, -z0))
     by_filament = defaultdict(list)
@@ -698,14 +704,25 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             "Geometry validation only; slicer preview and physical color proof remain necessary.",
         ],
     }
+    report_path = output.with_suffix(".paint-report.json")
+    report["report_path"] = str(report_path)
+    report["report_written"] = True
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="layerloom_paint_", dir=output.parent) as temporary:
         staged = Path(temporary) / output.name
+        staged_report = Path(temporary) / report_path.name
         write_orca_multipart_3mf(items, str(staged), title=output.stem,
                                  extruder_by_token={token.lower(): slot for token, slot in extruders.items()})
         _brand_geometry_archive(staged, used_tokens)
+        # Serialize both files before publishing either. The report is optional
+        # after geometry publication: a Windows file lock or permissions race
+        # must not make a completed printable export look like a failed export.
+        staged_report.write_text(json.dumps(report, indent=2, allow_nan=False), encoding="utf-8")
         os.replace(staged, output)
-    report_path = output.with_suffix(".paint-report.json")
-    report["report_path"] = str(report_path)
-    report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
+        try:
+            os.replace(staged_report, report_path)
+        except OSError as exc:
+            report["report_written"] = False
+            report["warnings"] = [f"The 3MF was exported, but its audit report could not be saved: {exc}. "
+                                  "Any existing report is unchanged."]
     return report

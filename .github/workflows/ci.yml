@@ -32,8 +32,8 @@ jobs:
       - name: Diagnose install
         run: layerloom-doctor
 
-      - name: Run tests
-        run: pytest
+      - name: Run core and paint tests
+        run: python -m pytest tests src/layerloom/paint_tests
 
       - name: CLI smoke test
         run: |
@@ -42,3 +42,50 @@ jobs:
 
       - name: Build source and wheel distributions
         run: python -m build
+
+  paint-gui:
+    name: Linux native Paint UI / Python 3.10
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LAYERLOOM_GUI_TESTS: "1"
+      QT_API: pyqt5
+      QT_QPA_PLATFORM: xcb
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MPLBACKEND: Agg
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install virtual display and Qt rendering libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes xvfb xauth libgl1 libegl1 libopengl0 libgl1-mesa-dri libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0
+
+      - name: Install LayerLoom
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[gui,dev]"
+
+      - name: Exercise native Paint and Arrange controls
+        run: >-
+          xvfb-run -a -s "-screen 0 1920x1200x24"
+          python -m pytest
+          src/layerloom/paint_tests/test_paint_gui.py
+          src/layerloom/paint_tests/test_main_paint.py
+          --junitxml=paint-gui-results.xml
+
+      - name: Save GUI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paint-gui-results
+          path: paint-gui-results.xml
+          if-no-files-found: ignore

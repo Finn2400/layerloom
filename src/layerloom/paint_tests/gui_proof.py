@@ -22,8 +22,11 @@ from layerloom.paint_examples import assert_roundtrip
 
 
 def digest(path):
+    checksum = hashlib.sha256()
     with open(path, "rb") as stream:
-        return hashlib.file_digest(stream, "sha256").hexdigest()
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            checksum.update(block)
+    return checksum.hexdigest()
 
 
 def array_digest(array):

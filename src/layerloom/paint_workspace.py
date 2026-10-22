@@ -82,7 +82,9 @@ class SharedPaintWorkspace:
             host.parts_table.setHeaderLabels(["Part", "Paint", "Pattern"])
             for index, mesh in enumerate(document.meshes):
                 oid = str(index + 1)
-                name = f"{mesh.name}__ID_{oid}__"
+                # Imported display names can already contain legacy ID markers.
+                # Keep the pick identity independent of that user-controlled text.
+                name = f"paint_part__ID_{oid}__"
                 self.mesh_index_by_oid[oid] = index
                 host.oid_to_name[oid] = name
                 host.oid_to_import_name[oid] = mesh.name
@@ -106,18 +108,6 @@ class SharedPaintWorkspace:
             self.loading = False
         host._workspace_changed(host.workspace_tabs.currentIndex())
 
-    def _display_colors(self, mesh):
-        colors = mesh.face_rgba.copy()
-        if self.editor.preview_mapping.isChecked() and self.editor._mapping:
-            rgb, inverse = np.unique(colors[:, :3], axis=0, return_inverse=True)
-            display = []
-            for value in rgb:
-                key = "#" + bytes(value).hex().upper()
-                entry = self.editor._mapping.get(key)
-                display.append(list(bytes.fromhex(entry["hex"].lstrip("#")))[:3] if entry else value)
-            colors[:, :3] = np.asarray(display, dtype=np.uint8)[inverse]
-        return colors
-
     def rebuild_scene(self, *, reset_camera=False):
         if not self.active:
             return
@@ -133,7 +123,7 @@ class SharedPaintWorkspace:
             mesh = self.model.document.meshes[index]
             cells = np.column_stack([np.full(len(mesh.faces), 3), mesh.faces]).ravel()
             poly = pv.PolyData(mesh.vertices.copy(), cells)
-            poly.cell_data["paint_rgba"] = self._display_colors(mesh)
+            poly.cell_data["paint_rgba"] = self.editor.display_mesh_colors(index, include_selection=False)
             name = host.oid_to_name[oid]
             actor = plotter.add_mesh(
                 poly, name=name, scalars="paint_rgba", rgba=True, preference="cell",
@@ -158,7 +148,7 @@ class SharedPaintWorkspace:
             mesh = self.model.document.meshes[index]
             poly = self.polys.get(index)
             if poly is not None:
-                poly.cell_data["paint_rgba"] = self._display_colors(mesh)
+                poly.cell_data["paint_rgba"] = self.editor.display_mesh_colors(index, include_selection=False)
                 poly.Modified()
             uniform = bool(len(mesh.face_rgba) and np.all(mesh.face_rgba == mesh.face_rgba[0]))
             color = "#" + bytes(mesh.face_rgba[0, :3]).hex().upper() if uniform else "Mixed paint"

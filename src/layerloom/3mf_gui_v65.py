@@ -1440,6 +1440,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.workspace_tabs = None
         self._paint_pending_source = None
         self._shared_paint_workspace = None
+        self._paint_flash_states = {}
         super().__init__()
         self._install_paint_workspace()
 
@@ -2167,13 +2168,25 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         actor = self.viewer.actors_by_name.get(name)
         if actor is None:
             return
-        previous_edges = actor.prop.show_edges
-        previous_color = actor.prop.edge_color
+        states = self._paint_flash_states
+        previous = states.get(name)
+        if previous is not None and previous[0] is actor:
+            previous_edges, previous_color = previous[1:3]
+        else:
+            previous_edges = actor.prop.show_edges
+            previous_color = actor.prop.edge_color
+        # A table selection and its pick callback can both flash this actor.
+        # Keep the original appearance and let only the latest timer restore it.
+        state = (actor, previous_edges, previous_color)
+        states[name] = state
         actor.prop.show_edges = True
         actor.prop.edge_color = "#FFD750"
         self.viewer.plotter.render()
 
         def restore():
+            if states.get(name) is not state:
+                return
+            states.pop(name, None)
             if self.viewer and self.viewer.actors_by_name.get(name) is actor:
                 actor.prop.show_edges = previous_edges
                 actor.prop.edge_color = previous_color

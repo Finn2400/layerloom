@@ -49,6 +49,79 @@ def set_paint_mode(window, enabled):
     assert window._paint_action.isChecked() == enabled
 
 
+@pytest.mark.parametrize("edges", [False, True])
+def test_overlapping_part_flashes_restore_original_edges(main_window, main_module, monkeypatch, edges):
+    editor = main_window.paint_panel.editor
+    editor.set_document(example_document("cube", 8))
+    name = main_window.oid_to_name["1"]
+    actor = main_window.viewer.actors_by_name[name]
+    actor.prop.show_edges = edges
+    actor.prop.edge_color = "#135790"
+    original_color = actor.prop.edge_color
+    callbacks = []
+    monkeypatch.setattr(main_module._V58.QtCore.QTimer, "singleShot",
+                        lambda delay, callback: callbacks.append(callback))
+    # A new 3D pick selects its table row, then explicitly flashes the part.
+    # A second pick also must not capture the temporary yellow appearance.
+    main_window._handle_viewer_pick_event(name)
+    main_window._handle_viewer_pick_event(name)
+    assert len(callbacks) >= 2
+    for callback in callbacks[:-1]:
+        callback()
+        assert actor.prop.show_edges
+    callbacks[-1]()
+    assert actor.prop.show_edges == edges
+    assert actor.prop.edge_color == original_color
+    assert not main_window._paint_flash_states
+
+
+def test_stale_part_flash_timer_does_not_modify_replacement_model(main_window, main_module, monkeypatch):
+    editor = main_window.paint_panel.editor
+    editor.set_document(example_document("cube", 8))
+    name = main_window.oid_to_name["1"]
+    callbacks = []
+    monkeypatch.setattr(main_module._V58.QtCore.QTimer, "singleShot",
+                        lambda delay, callback: callbacks.append(callback))
+    main_window._flash_actor_by_name(name)
+    stale = callbacks[-1]
+    editor.set_document(example_document("sphere", 8))
+    replacement = main_window.viewer.actors_by_name[name]
+    replacement.prop.show_edges = False
+    replacement.prop.edge_color = "#135790"
+    original_color = replacement.prop.edge_color
+    main_window._flash_actor_by_name(name)
+    current = callbacks[-1]
+    stale()
+    assert replacement.prop.show_edges
+    current()
+    assert not replacement.prop.show_edges
+    assert replacement.prop.edge_color == original_color
+    assert not main_window._paint_flash_states
+
+
+def test_imported_part_id_markers_cannot_select_or_paint_another_part(main_window):
+    document = example_document("cube", 8)
+    first = document.meshes[0]
+    first.name = "Body__ID_2____PAT_c__"
+    second = first.copy()
+    second.key = "second"
+    second.name = "Second part"
+    second.vertices += [12.0, 0.0, 0.0]
+    document.meshes.append(second)
+    untouched = second.face_rgba.copy()
+    editor = main_window.paint_panel.editor
+    editor.set_document(document)
+    set_paint_mode(main_window, False)
+    main_window._handle_viewer_pick_event(main_window.oid_to_name["1"])
+    assert main_window._current_selected_oid() == "1"
+    assert main_window._last_picked_oid == "1"
+    main_window._assign_selected({"hex": "#00FFFF", "token": "c"})
+    np.testing.assert_array_equal(first.face_rgba, np.tile([0, 255, 255, 255], (len(first.faces), 1)))
+    np.testing.assert_array_equal(second.face_rgba, untouched)
+    assert first.name == "Body__ID_2____PAT_c__"
+    assert main_window._item_for_oid("1").text(0) == first.name
+
+
 def test_paint_is_default_compact_mode_with_visible_main_toolbar(main_window):
     assert main_window._paint_active()
     assert main_window.workspace_tabs.count() == 2

@@ -106,15 +106,20 @@ def save_paint_document(document: PaintDocument, path: str | os.PathLike) -> Non
 def _load_project(path: Path) -> PaintDocument:
     with zipfile.ZipFile(path) as archive:
         manifest = json.loads(archive.read("manifest.json"))
-        if manifest.get("format") != _FORMAT or manifest.get("version") != _VERSION:
+        if (not isinstance(manifest, dict) or manifest.get("format") != _FORMAT or
+                type(manifest.get("version")) is not int or manifest.get("version") != _VERSION):
             raise ValueError("Unsupported LayerLoom paint project format or version")
         if manifest.get("units") != "millimeter":
             raise ValueError("Paint project coordinates must be millimeters")
+        if not isinstance(manifest.get("meshes"), list):
+            raise ValueError("Paint project meshes must be a list")
         meshes = []
         for i, info in enumerate(manifest["meshes"]):
             member = f"meshes/{i:06d}.npz"
-            if info.get("array_file") != member:
+            if not isinstance(info, dict) or info.get("array_file") != member:
                 raise ValueError("Invalid paint project array member")
+            if not isinstance(info.get("key"), str) or not isinstance(info.get("name"), str):
+                raise ValueError("Paint project mesh key and name must be text")
             with np.load(io.BytesIO(archive.read(member)), allow_pickle=False) as data:
                 meshes.append(PaintMesh(info["key"], info["name"], data["vertices"],
                                         data["faces"], data["face_rgba"], data["source_rgba"]))
@@ -317,6 +322,8 @@ def _load_3mf(path: Path) -> PaintDocument:
                 raise ValueError(f"Missing 3MF color property resource {pid}")
             kind = _tag(resource)
             entries = list(resource)
+            if any(index < 0 or index >= len(entries) for index in indices):
+                raise ValueError("3MF color property index is invalid")
             if kind in ("colorgroup", "basematerials"):
                 try:
                     colors = [_hex_rgba(entries[i].get("color" if kind == "colorgroup" else "displaycolor")) for i in indices]

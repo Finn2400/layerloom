@@ -156,6 +156,19 @@ On macOS the test process needs native WindowServer access; Qt's offscreen
 backend does not support this QtInteractor configuration. On other platforms,
 select a working native Qt platform rather than `cocoa`.
 
+The paint exporter requires Manifold 3.2 or newer and checks its required API
+before conversion. CI runs the paint backend tests in the existing macOS,
+Windows and Linux/Python 3.10–3.12 matrix. A separate Linux Xvfb job exercises
+the native Paint and Arrange controls with software rendering. Adding these
+jobs does not establish a passing result until CI has run on the branch.
+
+Project loading rejects empty meshes, fractional face indices, invalid color
+arrays and malformed manifests before replacing the current edit session.
+Interrupted brush strokes remain undoable and participate in save prompts.
+Project saves use staged files beside the destination; failed replacements
+preserve an existing project. A successful geometry export whose optional
+audit report cannot be published reports that warning separately.
+
 The local proof also uses actual Qt pointer strokes on the cube and sphere,
 undo/redo, saving, reopening, and the main v65 Paint toolbar button. See
 `outputs/paint_prototype_2026_10_22/gui/gui-proof.json` for source hashes and
