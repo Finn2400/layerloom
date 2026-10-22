@@ -136,7 +136,10 @@ def _validated_volume_mesh(mesh: trimesh.Trimesh, *, label: str) -> trimesh.Trim
 
 
 def _add_name_metadata(parent: ET.Element, name: str) -> None:
-    ET.SubElement(parent, M("metadata"), {"name": "Name"}).text = name
+    # Core 3MF already defines object@name. Direct <metadata> children under
+    # <object> are rejected by strict lib3mf readers.
+    parent.set("name", name)
+
 
 
 def _add_metadatagroup(parent: ET.Element, metadata: Dict[str, str]) -> None:
@@ -157,7 +160,7 @@ def _append_mesh_object(resources: ET.Element,
                         object_id: int,
                         name: str,
                         mesh: trimesh.Trimesh,
-                        metadata: Optional[Dict[str, str]] = None) -> None:
+                        metadata: Optional[Dict[str, str]] = None) -> ET.Element:
     obj_el = ET.SubElement(
         resources,
         M("object"),
@@ -181,6 +184,8 @@ def _append_mesh_object(resources: ET.Element,
         f.set("v1", str(int(a)))
         f.set("v2", str(int(b)))
         f.set("v3", str(int(c)))
+    return obj_el
+
 
 
 def _estimate_leaf_xml_bytes(spec: LeafMeshSpec) -> int:
@@ -285,6 +290,247 @@ def write_basic_3mf(
         z.writestr("3D/3dmodel.model", xml_bytes)
 
     print(f"[export] wrote {obj_id - 1} object(s) → {out_path}")
+
+
+def _orca_transform_3mf(x: float, y: float, z: float) -> str:
+    return f"1 0 0 0 1 0 0 0 1 {x:.9f} {y:.9f} {z:.9f}"
+
+
+def _orca_transform_4x4(x: float, y: float, z: float) -> str:
+    return f"1 0 0 {x:.9f} 0 1 0 {y:.9f} 0 0 1 {z:.9f} 0 0 0 1"
+
+
+def write_orca_multipart_3mf(
+    items: Sequence[LeafMeshSpec],
+    out_path: str,
+    *,
+    title: Optional[str] = None,
+    extruder_by_token: Optional[Dict[str, int]] = None,
+) -> None:
+    """Write one Orca/Snapmaker object containing material-assigned mesh parts."""
+    if not items:
+        raise ValueError("No meshes provided to export.")
+
+    token_extruders = {
+        "c": 1,
+        "m": 2,
+        "y": 3,
+        "k": 4,
+        "w": 5,
+        **(extruder_by_token or {}),
+    }
+    specs = [
+        LeafMeshSpec(spec.label, _copy_mesh(spec.mesh), dict(spec.metadata))
+        for spec in items
+        if isinstance(spec.mesh, trimesh.Trimesh) and spec.mesh.faces.size
+    ]
+    if not specs:
+        raise ValueError("No non-empty meshes provided to export.")
+
+    resolved_title = title or os.path.splitext(os.path.basename(out_path))[0]
+    package_name = os.path.basename(out_path)
+    child_path = "/3D/Objects/object_1.model"
+    root_object_id = len(specs) + 1
+    namespace_seed = f"layerloom:{package_name}:{resolved_title}"
+    plate_x = 128.0
+    plate_y = 128.0
+
+    centered_specs: List[Tuple[LeafMeshSpec, np.ndarray]] = []
+    for spec in specs:
+        center = np.asarray(spec.mesh.bounds, dtype=np.float64).mean(axis=0)
+        centered = spec.mesh.copy()
+        centered.apply_translation(-center)
+        centered_specs.append(
+            (LeafMeshSpec(spec.label, centered, dict(spec.metadata)), center)
+        )
+
+    child_model = ET.Element(
+        M("model"),
+        {
+            "unit": "millimeter",
+            f"{{{XML_NS}}}lang": "en-US",
+            "requiredextensions": "p",
+        },
+    )
+    ET.SubElement(child_model, M("metadata"), {"name": "BambuStudio:3mfVersion"}).text = "1"
+    child_resources = ET.SubElement(child_model, M("resources"))
+    for index, (spec, _center) in enumerate(centered_specs, start=1):
+        obj = _append_mesh_object(
+            child_resources,
+            index,
+            spec.label,
+            spec.mesh,
+            spec.metadata,
+        )
+        obj.set(P("UUID"), f"000100{index - 1:02x}-81cb-4c03-9d28-80fed5dfa1dc")
+    ET.SubElement(child_model, M("build"))
+
+    root_model = ET.Element(
+        M("model"),
+        {
+            "unit": "millimeter",
+            f"{{{XML_NS}}}lang": "en-US",
+            "requiredextensions": "p",
+        },
+    )
+    ET.SubElement(root_model, M("metadata"), {"name": "Application"}).text = (
+        "BambuStudio-01.09.05.51"
+    )
+    ET.SubElement(root_model, M("metadata"), {"name": "BambuStudio:3mfVersion"}).text = "1"
+    ET.SubElement(root_model, M("metadata"), {"name": "Title"}).text = resolved_title
+    root_resources = ET.SubElement(root_model, M("resources"))
+    root_object = ET.SubElement(
+        root_resources,
+        M("object"),
+        {
+            "id": str(root_object_id),
+            "type": "model",
+            "name": resolved_title,
+            P("UUID"): "00000001-61cb-4c03-9d28-80fed5dfa1dc",
+        },
+    )
+    components = ET.SubElement(root_object, M("components"))
+    for index, (_spec, center) in enumerate(centered_specs, start=1):
+        ET.SubElement(
+            components,
+            M("component"),
+            {
+                "objectid": str(index),
+                P("path"): child_path,
+                P("UUID"): f"000100{index - 1:02x}-b206-40ff-9872-83e8017abed1",
+                "transform": _orca_transform_3mf(*center),
+            },
+        )
+    root_build = ET.SubElement(
+        root_model,
+        M("build"),
+        {P("UUID"): str(uuid.uuid5(uuid.NAMESPACE_URL, f"{namespace_seed}:build"))},
+    )
+    ET.SubElement(
+        root_build,
+        M("item"),
+        {
+            "objectid": str(root_object_id),
+            P("UUID"): f"{root_object_id:08x}-b1ec-4553-aec9-835e5b724bb4",
+            "transform": _orca_transform_3mf(plate_x, plate_y, 0.0),
+        },
+    )
+
+    model_settings = ET.Element("config")
+    object_config = ET.SubElement(model_settings, "object", {"id": str(root_object_id)})
+    ET.SubElement(
+        object_config,
+        "metadata",
+        {"key": "name", "value": resolved_title},
+    )
+    ET.SubElement(object_config, "metadata", {"key": "extruder", "value": "1"})
+    ET.SubElement(
+        object_config,
+        "metadata",
+        {"face_count": str(sum(len(spec.mesh.faces) for spec, _center in centered_specs))},
+    )
+    for index, (spec, center) in enumerate(centered_specs, start=1):
+        token = str(spec.metadata.get("stack_token", "")).strip().lower()
+        extruder = token_extruders.get(token, 1)
+        part = ET.SubElement(
+            object_config,
+            "part",
+            {"id": str(index), "subtype": "normal_part"},
+        )
+        ET.SubElement(part, "metadata", {"key": "name", "value": spec.label})
+        ET.SubElement(
+            part,
+            "metadata",
+            {"key": "matrix", "value": _orca_transform_4x4(*center)},
+        )
+        ET.SubElement(part, "metadata", {"key": "source_file", "value": package_name})
+        ET.SubElement(part, "metadata", {"key": "source_object_id", "value": str(index - 1)})
+        ET.SubElement(part, "metadata", {"key": "source_volume_id", "value": "0"})
+        ET.SubElement(
+            part,
+            "metadata",
+            {"key": "source_offset_x", "value": f"{center[0] + plate_x:.9f}"},
+        )
+        ET.SubElement(
+            part,
+            "metadata",
+            {"key": "source_offset_y", "value": f"{center[1] + plate_y:.9f}"},
+        )
+        ET.SubElement(part, "metadata", {"key": "source_offset_z", "value": f"{center[2]:.9f}"})
+        ET.SubElement(part, "metadata", {"key": "extruder", "value": str(extruder)})
+        ET.SubElement(
+            part,
+            "mesh_stat",
+            {
+                "face_count": str(len(spec.mesh.faces)),
+                "edges_fixed": "0",
+                "degenerate_facets": "0",
+                "facets_removed": "0",
+                "facets_reversed": "0",
+                "backwards_edges": "0",
+            },
+        )
+
+    plate = ET.SubElement(model_settings, "plate")
+    ET.SubElement(plate, "metadata", {"key": "plater_id", "value": "1"})
+    ET.SubElement(plate, "metadata", {"key": "plater_name", "value": ""})
+    ET.SubElement(plate, "metadata", {"key": "locked", "value": "false"})
+    ET.SubElement(
+        plate,
+        "metadata",
+        {"key": "filament_map_mode", "value": "Auto For Flush"},
+    )
+    instance = ET.SubElement(plate, "model_instance")
+    ET.SubElement(
+        instance,
+        "metadata",
+        {"key": "object_id", "value": str(root_object_id)},
+    )
+    ET.SubElement(instance, "metadata", {"key": "instance_id", "value": "0"})
+    ET.SubElement(instance, "metadata", {"key": "identify_id", "value": "113"})
+    assemble = ET.SubElement(model_settings, "assemble")
+    ET.SubElement(
+        assemble,
+        "assemble_item",
+        {
+            "object_id": str(root_object_id),
+            "instance_id": "0",
+            "transform": _orca_transform_3mf(0.0, 0.0, 0.0),
+            "offset": "0 0 0",
+        },
+    )
+
+    root_relationships = (
+        b'<?xml version="1.0" encoding="UTF-8"?>\n'
+        b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+        b' <Relationship Target="/3D/Objects/object_1.model" Id="rel-1" '
+        b'Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>\n'
+        b"</Relationships>"
+    )
+    slice_info = ET.Element("config")
+    header = ET.SubElement(slice_info, "header")
+    ET.SubElement(header, "header_item", {"key": "X-BBL-Client-Type", "value": "slicer"})
+    ET.SubElement(
+        header,
+        "header_item",
+        {"key": "X-BBL-Client-Version", "value": "01.09.05.51"},
+    )
+
+    with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("[Content_Types].xml", _content_types_xml())
+        zf.writestr("_rels/.rels", _rels_root_xml())
+        zf.writestr("3D/3dmodel.model", _xml_bytes(root_model))
+        zf.writestr("3D/_rels/3dmodel.model.rels", root_relationships)
+        zf.writestr(child_path.lstrip("/"), _xml_bytes(child_model))
+        zf.writestr("Metadata/model_settings.config", _xml_bytes(model_settings))
+        zf.writestr("Metadata/slice_info.config", _xml_bytes(slice_info))
+        zf.writestr(
+            "Metadata/filament_sequence.json",
+            '{"plate_1":{"nozzle_sequence":[],"optimal_assignment":[],"sequence":[]}}',
+        )
+
+    print(f"[export] wrote Orca multipart 3MF with {len(specs)} part(s) → {out_path}")
+
 
 
 def write_safe_assembly_3mf(

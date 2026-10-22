@@ -1436,8 +1436,146 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
     def __init__(self):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
+        self.paint_panel = None
+        self.workspace_tabs = None
+        self._paint_pending_source = None
         super().__init__()
-        self.setWindowTitle("LayerLoom — Color Assigner v65")
+        self._install_paint_workspace()
+
+    def _install_paint_workspace(self):
+        """Keep painting in the main window, with both workspaces retained."""
+        from layerloom.paint_gui import PaintPanel
+        self._arrange_toolbars = list(self.findChildren(_V58.QtWidgets.QToolBar))
+        self._workspace_action_labels = [
+            (action, action.text()) for action in self.findChildren(_V58.QtWidgets.QAction)
+            if action.text() in {"Open 3MF…", "Open GLB…", "Save Labeled 3MF…", "Weave", "Preview 3D"}
+        ]
+        arrange = self.takeCentralWidget()
+        tabs = _V58.QtWidgets.QTabWidget(self)
+        tabs.setObjectName("layerloomWorkspaces")
+        self.workspace_tabs = tabs
+        self.paint_panel = PaintPanel(parent=tabs)
+        tabs.addTab(self.paint_panel, "Paint surfaces")
+        tabs.addTab(arrange, "Arrange & weave")
+        tabs.setTabToolTip(0, "Select or brush-paint model surfaces, preserve source colors, and export colored 3MFs.")
+        tabs.setTabToolTip(1, "Existing whole-part placement and palette weaving workspace.")
+        self.setCentralWidget(tabs)
+        tabs.currentChanged.connect(self._workspace_changed)
+        self.paint_panel.editor.windowTitleChanged.connect(self._paint_title_changed)
+        self._workspace_changed(0)
+
+    def _paint_active(self):
+        return (self.workspace_tabs is not None and self.paint_panel is not None
+                and self.workspace_tabs.currentWidget() is self.paint_panel)
+
+    def _paint_title_changed(self, title):
+        if self._paint_active():
+            self.setWindowTitle(title + " — main UI prototype")
+
+    def _workspace_changed(self, index):
+        paint = self._paint_active()
+        for toolbar in self._arrange_toolbars:
+            toolbar.setVisible(not paint)
+        labels = {"Open 3MF…": "Open model or paint project…",
+                  "Open GLB…": "Open another model…",
+                  "Save Labeled 3MF…": "Save paint project…",
+                  "Weave": "Export printable painted 3MF…", "Preview 3D": "Fit paint model"}
+        for action, original in self._workspace_action_labels:
+            action.setText(labels.get(original, original) if paint else original)
+        if hasattr(self, "_paint_action"):
+            self._paint_action.setChecked(paint)
+        if paint:
+            self._paint_title_changed(self.paint_panel.editor.windowTitle())
+            self.status_bar.showMessage("Paint surfaces · select an area, choose a color, then Apply paint")
+            pending = self._paint_pending_source
+            if pending:
+                if not self.paint_panel.can_close():
+                    self.workspace_tabs.setCurrentIndex(1)
+                    return
+                if self.paint_panel.open_path(pending):
+                    self._paint_pending_source = None
+        else:
+            self._refresh_status_summary()
+
+    def open_paint_path(self, path):
+        """Public main-window entry point for models and saved paint projects."""
+        if not self.paint_panel.can_close():
+            return False
+        self._paint_pending_source = None
+        self.workspace_tabs.setCurrentWidget(self.paint_panel)
+        return self.paint_panel.open_path(path)
+
+    def _remember_arrange_source(self, before):
+        source = getattr(self, "source_file_path", None)
+        if source and source != before:
+            self._paint_pending_source = source
+
+    def _on_open(self):
+        if self._paint_active():
+            return self.paint_panel.editor.open_dialog()
+        before = getattr(self, "source_file_path", None)
+        result = super()._on_open()
+        self._remember_arrange_source(before)
+        return result
+
+    def _on_open_glb(self):
+        if self._paint_active():
+            return self.paint_panel.editor.open_dialog()
+        before = getattr(self, "source_file_path", None)
+        result = super()._on_open_glb()
+        self._remember_arrange_source(before)
+        return result
+
+    def _on_load_example(self):
+        before = getattr(self, "source_file_path", None)
+        result = super()._on_load_example()
+        self._remember_arrange_source(before)
+        return result
+
+    def _on_save(self):
+        if self._paint_active():
+            return self.paint_panel.editor.save_dialog()
+        return super()._on_save()
+
+    def _on_weave(self):
+        if self._paint_active():
+            return self.paint_panel.editor.export_dialog()
+        return super()._on_weave()
+
+    def _on_preview(self):
+        if self._paint_active():
+            return self.paint_panel.editor.fit_view()
+        return super()._on_preview()
+
+    def closeEvent(self, event):
+        panel = getattr(self, "paint_panel", None)
+        if panel is not None:
+            if not panel.can_close():
+                event.ignore()
+                return
+            panel.shutdown()
+        return super().closeEvent(event)
+
+    def _build_toolbar(self):
+        super()._build_toolbar()
+        toolbar = next(iter(self.findChildren(_V58.QtWidgets.QToolBar)), None)
+        if toolbar is not None:
+            action = _V58.QtWidgets.QAction("Paint surfaces", self)
+            action.setCheckable(True)
+            action.setToolTip("Switch to surface painting in this window. Original source geometry and paint are retained separately from arrange-and-weave edits.")
+            action.triggered.connect(self._open_paint_editor)
+            toolbar.insertAction(toolbar.actions()[0] if toolbar.actions() else None, action)
+            self._paint_action = action
+
+    def _open_paint_editor(self):
+        if self.paint_panel is not None:
+            source = getattr(self, "source_file_path", None) or getattr(self, "base_file", None)
+            if self.paint_panel.editor.document is None and source and os.path.exists(source):
+                self._paint_pending_source = source
+            self.workspace_tabs.setCurrentWidget(self.paint_panel)
+            # Also handle invoking Paint while its tab is already selected.
+            if self._paint_pending_source:
+                self._workspace_changed(0)
 
     def _copy_xy(self, value):
         if value is None:
