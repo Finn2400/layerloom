@@ -1439,12 +1439,14 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.paint_panel = None
         self.workspace_tabs = None
         self._paint_pending_source = None
+        self._shared_paint_workspace = None
         super().__init__()
         self._install_paint_workspace()
 
     def _install_paint_workspace(self):
         """Use the main toolbar to switch modes without discarding either view."""
         from layerloom.paint_gui import PaintPanel
+        from layerloom.paint_workspace import SharedPaintWorkspace
         self._arrange_toolbars = list(self.findChildren(_V58.QtWidgets.QToolBar))
         self._arrange_window_title = self.windowTitle()
         self._workspace_action_labels = [
@@ -1483,22 +1485,26 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._main_toolbar.addAction(action)
         editor.export_action.changed.connect(self._sync_paint_host_actions)
         editor.save_action.changed.connect(self._sync_paint_host_actions)
+        self._shared_paint_workspace = SharedPaintWorkspace(self, editor)
         self._workspace_changed(0)
+
+    def _shared_paint_active(self):
+        return self._shared_paint_workspace is not None and self._shared_paint_workspace.active
 
     def _paint_active(self):
         return (self.workspace_tabs is not None and self.paint_panel is not None
                 and self.workspace_tabs.currentWidget() is self.paint_panel)
 
     def _paint_title_changed(self, title):
-        if self._paint_active():
+        if self._paint_active() or self._shared_paint_active():
             self.setWindowTitle(title + " — main UI prototype")
 
     def _paint_status_changed(self, message):
-        if self._paint_active():
+        if self._paint_active() or self._shared_paint_active():
             self.status_bar.showMessage(message)
 
     def _sync_paint_host_actions(self):
-        paint = self._paint_active()
+        paint = self._paint_active() or self._shared_paint_active()
         editor = self.paint_panel.editor
         for action, original in self._workspace_action_labels:
             if original == "Weave":
@@ -1508,10 +1514,13 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
 
     def _workspace_changed(self, index):
         paint = self._paint_active()
+        shared = self._shared_paint_active()
         for toolbar in self._arrange_toolbars:
             toolbar.show()
         for action in self._arrange_only_toolbar_actions:
-            action.setVisible(False if paint else self._arrange_toolbar_visibility[action])
+            legacy_setting = isinstance(action, _V58.QtWidgets.QWidgetAction)
+            action.setVisible(False if paint or (shared and legacy_setting)
+                              else self._arrange_toolbar_visibility[action])
         labels = {"Open 3MF…": "Open model or paint project…",
                   "Open GLB…": "Open another model…",
                   "Save Labeled 3MF…": "Save paint project…",
@@ -1519,10 +1528,10 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                   "Save Labeled 3MF": "Save paint…",
                   "Weave": "Export geometry 3MF…", "Preview 3D": "Fit view"}
         for action, original in self._workspace_action_labels:
-            action.setText(labels.get(original, original) if paint else original)
+            action.setText(labels.get(original, original) if paint or shared else original)
         for action in self._paint_history_actions:
-            action.setVisible(paint)
-            action.setShortcut(self._paint_shortcuts[action] if paint else _V58.QtGui.QKeySequence())
+            action.setVisible(paint or shared)
+            action.setShortcut(self._paint_shortcuts[action] if paint or shared else _V58.QtGui.QKeySequence())
         self._sync_paint_host_actions()
         if hasattr(self, "_paint_action"):
             self._paint_action.setChecked(paint)
@@ -1544,6 +1553,8 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                 menu.hide()
             self.setWindowTitle(self._arrange_window_title)
             self._refresh_status_summary()
+            if shared:
+                self._paint_title_changed(self.paint_panel.editor.windowTitle())
             plotter = getattr(self.viewer, "plotter", None)
             (plotter if plotter is not None else self.viewer_host).setFocus(_V58.QtCore.Qt.OtherFocusReason)
 
@@ -1555,46 +1566,47 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.workspace_tabs.setCurrentWidget(self.paint_panel)
         return self.paint_panel.open_path(path)
 
-    def _remember_arrange_source(self, before):
-        source = getattr(self, "source_file_path", None)
-        if source and source != before:
-            self._paint_pending_source = source
-
     def _on_open(self):
-        if self._paint_active():
+        if self.paint_panel is not None:
             return self.paint_panel.editor.open_dialog()
-        before = getattr(self, "source_file_path", None)
-        result = super()._on_open()
-        self._remember_arrange_source(before)
-        return result
+        return super()._on_open()
 
     def _on_open_glb(self):
-        if self._paint_active():
+        if self.paint_panel is not None:
             return self.paint_panel.editor.open_dialog()
-        before = getattr(self, "source_file_path", None)
-        result = super()._on_open_glb()
-        self._remember_arrange_source(before)
-        return result
+        return super()._on_open_glb()
 
     def _on_load_example(self):
-        before = getattr(self, "source_file_path", None)
-        result = super()._on_load_example()
-        self._remember_arrange_source(before)
-        return result
+        if self.paint_panel is not None:
+            path = _V62.find_example_file(_V62.DEFAULT_GUI_EXAMPLE)
+            if path is None:
+                self._error("Load Example", "The packaged example model could not be found.")
+                return
+            if self.paint_panel.can_close():
+                return self.paint_panel.open_path(str(path))
+            return
+        return super()._on_load_example()
 
     def _on_save(self):
-        if self._paint_active():
+        if self._paint_active() or self._shared_paint_active():
+            if self._shared_paint_active() and not self._ensure_transform_preview_current():
+                return
             return self.paint_panel.editor.save_dialog()
         return super()._on_save()
 
     def _on_weave(self):
-        if self._paint_active():
+        if self._paint_active() or self._shared_paint_active():
+            if self._shared_paint_active() and not self._ensure_transform_preview_current():
+                return
             return self.paint_panel.editor.export_dialog()
         return super()._on_weave()
 
     def _on_preview(self):
         if self._paint_active():
             return self.paint_panel.editor.fit_view()
+        if self._shared_paint_active():
+            self.viewer._set_default_loaded_camera()
+            return
         return super()._on_preview()
 
     def closeEvent(self, event):
@@ -1614,7 +1626,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             action = _V58.QtWidgets.QAction("Paint", self)
             action.setObjectName("paintMode")
             action.setCheckable(True)
-            action.setToolTip("Toggle surface painting. Turn off to arrange and weave whole parts; both modes retain their edits.")
+            action.setToolTip("Toggle surface painting. Paint and Arrange share the same model, colors and placement.")
             action.triggered.connect(self._set_paint_mode)
             toolbar.insertAction(toolbar.actions()[0] if toolbar.actions() else None, action)
             self._paint_action = action
@@ -1792,6 +1804,15 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         if not self.base_file:
             return None
         use_scale = self._current_scale_value(raise_on_error=True) if scale is None else float(scale)
+        if self._shared_paint_active():
+            return self._shared_paint_workspace.model.plan(
+                scale=use_scale,
+                orientation_matrix=self.pending_rotation_matrix,
+                plate_width=_V58.PLATE_WIDTH_MM,
+                plate_depth=_V58.PLATE_DEPTH_MM,
+                center_xy=False,
+                target_center_xy=self.pending_target_center_xy if target_center_xy is None else target_center_xy,
+            )
         return _V58.compute_transform_plan(
             self.base_file,
             scale=use_scale,
@@ -1954,6 +1975,20 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         return plan
 
     def _apply_transform_preview(self, quiet: bool = False) -> bool:
+        if self._shared_paint_active():
+            try:
+                plan = self._pending_transform_plan()
+                self._shared_paint_workspace.apply_plan(plan)
+                self.applied_rotation_matrix = self.pending_rotation_matrix.copy()
+                self.applied_scale = self._current_scale_value(raise_on_error=True)
+                self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
+                self._update_transform_flags()
+                self._sync_viewer_tool_mode()
+                return True
+            except Exception as exc:
+                if not quiet:
+                    self._error("Transform", str(exc))
+                return False
         ok = super()._apply_transform_preview(quiet=quiet)
         if ok:
             self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
@@ -1963,6 +1998,10 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         return ok
 
     def _refresh_preview_from_current_file(self, *, force: bool = False):
+        if self._shared_paint_active():
+            self._shared_paint_workspace.refresh_geometry()
+            self._shared_paint_workspace.refresh_colors()
+            return
         mode_before = getattr(self, "viewer_tool_mode", "normal")
         super()._refresh_preview_from_current_file(force=force)
         if mode_before in {"move", "gizmo", "surface"} and self.viewer is not None and self.base_file and not self.large_model_mode:
@@ -2020,6 +2059,8 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._last_transform_plan = pending_plan
         self._refresh_transform_readout(self._last_transform_plan)
         self._refresh_plate_warning(self._last_transform_plan)
+        if self._shared_paint_active():
+            self._apply_transform_preview()
         return self.pending_target_center_xy - current_xy
 
     def _apply_rotation_delta(self, delta_rotation, target_center_xy=None):
@@ -2037,9 +2078,26 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._last_transform_plan = pending_plan
         self._refresh_transform_readout(self._last_transform_plan)
         self._refresh_plate_warning(self._last_transform_plan)
+        if self._shared_paint_active():
+            self._apply_transform_preview()
 
     def _reset_transform_to_default(self):
         self.pending_target_center_xy = None
+        if self._shared_paint_active():
+            workspace = self._shared_paint_workspace
+            workspace.loading = True
+            try:
+                self.pending_rotation_matrix = _V58.np.eye(3)
+                self.applied_rotation_matrix = _V58.np.eye(3)
+                self.applied_target_center_xy = None
+                self.applied_scale = 1.0
+                self._set_transform_values(0.0, 0.0, 0.0, 1.0)
+                workspace.apply_plan(workspace.model.identity_plan)
+                self._update_transform_flags()
+                self._sync_viewer_tool_mode()
+            finally:
+                workspace.loading = False
+            return
         result = super()._reset_transform_to_default()
         if self.large_model_mode:
             self.applied_target_center_xy = None
@@ -2049,6 +2107,79 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
         return super()._load_canonical_model(stamped_path)
+
+    def _ensure_transform_preview_current(self, quiet: bool = False):
+        if self._shared_paint_active():
+            return self._apply_transform_preview(quiet=quiet) if self.transform_dirty else True
+        return super()._ensure_transform_preview_current(quiet=quiet)
+
+    def _on_transform_value_change(self, *_args):
+        super()._on_transform_value_change(*_args)
+        if (self._shared_paint_active() and not self._shared_paint_workspace.loading
+                and not self._setting_transform_widgets):
+            self._apply_transform_preview()
+
+    def _assign_selected(self, entry):
+        if self._shared_paint_active():
+            oid = self._current_selected_oid() or self._last_picked_oid
+            if oid:
+                self._shared_paint_workspace.assign_part(oid, entry)
+            return
+        return super()._assign_selected(entry)
+
+    def _set_assignment_for_oid(self, oid, entry, source_hex=None):
+        if self._shared_paint_active():
+            return self._shared_paint_workspace.assign_part(oid, entry)
+        return super()._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if self._shared_paint_active():
+            # Browsing or filtering a palette is not a paint edit.
+            self._shared_paint_workspace.refresh_colors()
+            return
+        return super()._refresh_assignment_hexes_from_current_palette()
+
+    def _load_palette(self, name):
+        if not self._shared_paint_active():
+            return super()._load_palette(name)
+        from layerloom.palette_assignment import load_palette_entries
+        entries = load_palette_entries(name)
+        if self.limit_two_checkbox.isChecked():
+            entries = [entry for entry in entries if len(set(entry["token"])) <= 2]
+        entries = _V58._filter_by_bw_visibility(
+            entries, add_k=self.add_black_checkbox.isChecked(), add_w=self.add_white_checkbox.isChecked(),
+        )
+        entries = self._filter_by_required_letters(entries, self._required_letters())
+        self.current_palette_name = name
+        self.current_palette = entries
+        self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
+        self._refresh_status_summary()
+
+    def _refresh_status_summary(self):
+        super()._refresh_status_summary()
+        if self._shared_paint_active():
+            self._paint_title_changed(self.paint_panel.editor.windowTitle())
+
+    def _flash_actor_by_name(self, name, oid=None):
+        if not self._shared_paint_active():
+            return super()._flash_actor_by_name(name, oid)
+        actor = self.viewer.actors_by_name.get(name)
+        if actor is None:
+            return
+        previous_edges = actor.prop.show_edges
+        previous_color = actor.prop.edge_color
+        actor.prop.show_edges = True
+        actor.prop.edge_color = "#FFD750"
+        self.viewer.plotter.render()
+
+        def restore():
+            if self.viewer and self.viewer.actors_by_name.get(name) is actor:
+                actor.prop.show_edges = previous_edges
+                actor.prop.edge_color = previous_color
+                self.viewer.plotter.render()
+
+        _V58.QtCore.QTimer.singleShot(180, restore)
 
 
 def main():

@@ -475,3 +475,143 @@ def test_compact_panel_keeps_paint_controls_and_mapping_summary_visible(app):
         panel.shutdown()
         host.close()
         app.processEvents()
+
+
+def test_shared_placement_preserves_paint_history_selection_mapping_and_project(window, tmp_path):
+    mesh = window.document.meshes[0]
+    original_paint = mesh.face_rgba.copy()
+    original_source = mesh.source_rgba.copy()
+    original_faces = mesh.faces.copy()
+    window.tool_combo.setCurrentText("Surface select")
+    window.set_paint_color("#DD6633")
+    click_surface(window)
+    QtTest.QTest.mouseClick(window.apply_selection_button, QtCore.Qt.LeftButton)
+    click_surface(window)
+    selection = window._selection[0].copy()
+    painted = mesh.face_rgba.copy()
+    assert window.assign_colors()
+    mapping = window._mapping
+    history = window._undo
+    cached_topology = window._mesh_topology(0)
+    window.project_path = str(tmp_path / "shared.llpaint")
+    window.dirty = False
+    changes = QtTest.QSignalSpy(window.geometryChanged)
+
+    moved = mesh.vertices * 2 + [8, 3, 6]
+    mesh.vertices = moved.copy()
+    assert window.refresh_geometry()
+    assert len(changes) == 1 and window.dirty
+    assert window._undo is history and len(history) == 1
+    assert window._mapping is mapping and window.mapping_table.rowCount() == len(mapping)
+    assert window.project_path == str(tmp_path / "shared.llpaint")
+    np.testing.assert_array_equal(window._selection[0], selection)
+    np.testing.assert_array_equal(mesh.face_rgba, painted)
+    np.testing.assert_array_equal(mesh.source_rgba, original_source)
+    np.testing.assert_array_equal(mesh.faces, original_faces)
+    np.testing.assert_array_equal(window._polys[0].points, moved)
+    assert window._mesh_topology(0) is not cached_topology
+    np.testing.assert_allclose(window._mesh_topology(0).centers, moved[mesh.faces].mean(axis=1))
+    assert "20.0 × 20.0 × 20.0 mm" in window.model_label.text()
+    window.dirty = False
+    assert not window.refresh_geometry() and not window.dirty and len(changes) == 1
+
+    window.plotter.reset_camera()
+    hit = window.pick_at(viewport_point(window, (10, 3, 16)))
+    assert hit is not None and np.all(mesh.vertices[mesh.faces[hit[1]], 2] == 16)
+    window.undo()
+    np.testing.assert_array_equal(mesh.face_rgba, original_paint)
+    np.testing.assert_array_equal(mesh.vertices, moved)
+    window.redo()
+    np.testing.assert_array_equal(mesh.face_rgba, painted)
+    output = tmp_path / "shared.llpaint"
+    save_paint_document(window.document, output)
+    reopened = load_paint_document(output)
+    for name in ("vertices", "faces", "face_rgba", "source_rgba"):
+        np.testing.assert_array_equal(getattr(reopened.meshes[0], name), getattr(mesh, name))
+
+
+def test_shared_whole_part_fill_is_one_undoable_edit_without_changing_brush(window):
+    first = window.document.meshes[0].copy()
+    second = first.copy()
+    second.key = "second"
+    second.vertices += [20, 0, 0]
+    loaded = QtTest.QSignalSpy(window.documentChanged)
+    window.set_document(PaintDocument([first, second]))
+    assert len(loaded) == 1 and loaded[0][0] is window.document
+    source = second.source_rgba.copy()
+    brush = window.paint_rgba.copy()
+    changes = QtTest.QSignalSpy(window.paintChanged)
+    assert window.fill_mesh(1, [22, 166, 77, 255])
+    assert len(window._undo) == 1 and len(changes) == 1
+    np.testing.assert_array_equal(first.face_rgba, first.source_rgba)
+    np.testing.assert_array_equal(second.source_rgba, source)
+    np.testing.assert_array_equal(window.paint_rgba, brush)
+    assert np.all(second.face_rgba == [22, 166, 77, 255])
+    assert not window.fill_mesh(1, [22, 166, 77, 255])
+    assert len(window._undo) == 1 and len(changes) == 1
+    window.undo()
+    np.testing.assert_array_equal(second.face_rgba, source)
+    window.redo()
+    assert np.all(second.face_rgba == [22, 166, 77, 255]) and len(changes) == 3
+
+
+def test_shared_geometry_refresh_rejects_topology_changes(window):
+    old_points = window._polys[0].points.copy()
+    window.document.meshes[0].vertices += [2, 3, 4]
+    window.document.meshes[0].faces = window.document.meshes[0].faces[::-1].copy()
+    with pytest.raises(ValueError, match="preserve mesh topology"):
+        window.refresh_geometry()
+    np.testing.assert_array_equal(window._polys[0].points, old_points)
+
+
+def test_arrange_recipe_preferences_survive_edits_and_project_roundtrip(window, tmp_path):
+    from layerloom.palette_assignment import load_palette_entries
+    entries = load_palette_entries("Normal")
+    chosen = next(entry for entry in entries if len(entry["token"]) > 1)
+    color = "#123456"
+    preferences = {"Normal": {color: chosen["token"], "bad": "c", "#FFFFFF": "invalid"}}
+    window.document.metadata["paint_recipe_preferences"] = preferences
+    window.palette_combo.setCurrentText("Normal")
+    assert window.fill_mesh(0, [18, 52, 86, 255])
+    assert window.assign_colors()
+    assert window._mapping[color]["token"] == chosen["token"]
+    window.undo()
+    assert window.assign_colors() and color not in window._mapping
+    window.redo()
+    assert window.assign_colors() and window._mapping[color]["token"] == chosen["token"]
+    output = tmp_path / "preferred_recipe.llpaint"
+    save_paint_document(window.document, output)
+    window.dirty = False
+    assert window.open_path(output)
+    assert window.document.metadata["paint_recipe_preferences"] == preferences
+    assert window._mapping[color]["token"] == chosen["token"]
+    assert window._preferred_recipe_overrides(mode="source") == {}
+    assert window._preferred_recipe_overrides(mode="direct") == {}
+    assert window._preferred_recipe_overrides(palette_name="Simple") == {}
+    window.document.metadata["paint_recipe_preferences"] = ["invalid"]
+    assert window._preferred_recipe_overrides() == {}
+
+
+def test_export_recovers_explicit_recipe_after_paint_undo_clears_mapping(window, monkeypatch, tmp_path):
+    from layerloom import paint_export
+    color = "#647896"
+    window.document.metadata["paint_recipe_preferences"] = {"Normal": {color: "c"}}
+    window.fill_mesh(0, [255, 0, 0, 255])
+    window.undo()
+    assert not window._mapping
+    captured = {}
+
+    def fake_export(document, output, **settings):
+        captured.update(settings)
+        return {"ok": True}
+
+    monkeypatch.setattr(paint_export, "export_painted_3mf", fake_export)
+    monkeypatch.setattr(window, "_export_success", lambda report: setattr(window, "last_export_report", report))
+    assert window.start_export(tmp_path / "preferred.3mf", mode="woven", palette_name="Normal")
+    for _ in range(200):
+        QtTest.QTest.qWait(10)
+        if window._export_thread is None:
+            break
+    assert window._export_thread is None
+    assert window.last_export_report["ok"] is True
+    assert captured["recipe_overrides"] == {color: "c"}

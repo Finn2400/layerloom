@@ -342,6 +342,31 @@ def compute_transform_plan(
 
     object_infos = _parse_object_infos(root)
     build_items = _parse_build_items(root)
+    return _compute_transform_plan_from_infos(
+        object_infos, build_items, rot_x_deg=rot_x_deg, rot_y_deg=rot_y_deg,
+        rot_z_deg=rot_z_deg, scale=scale, orientation_matrix=orientation_matrix,
+        plate_width=plate_width, plate_depth=plate_depth, center_xy=center_xy,
+        target_center_xy=target_center_xy,
+    )
+
+
+def _compute_transform_plan_from_infos(
+    object_infos: Dict[str, _ObjectInfo],
+    build_items: List[Tuple[str, np.ndarray]],
+    *,
+    rot_x_deg: float = 0.0,
+    rot_y_deg: float = 0.0,
+    rot_z_deg: float = 0.0,
+    scale: float,
+    orientation_matrix: Optional[np.ndarray] = None,
+    plate_width: float = 256.0,
+    plate_depth: float = 256.0,
+    center_xy: bool = True,
+    target_center_xy: Optional[Tuple[float, float]] = None,
+) -> TransformPlan:
+    """Shared placement math for archive and in-memory mesh geometry."""
+    if scale <= 0:
+        raise ValueError("Scale must be > 0.")
     original_bounds = _compute_bounds_from_infos(object_infos, build_items)
 
     center = original_bounds.center

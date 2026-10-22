@@ -72,7 +72,7 @@ def save_via_ui(window, output):
     assert output.is_file() and not window.dirty
 
 
-def screenshot(window, output, *, host=None):
+def screenshot(window, output, *, host=None, overlays=()):
     popup = window.tool_settings_menu if window.tool_settings_menu.isVisible() else None
     if popup is None:
         settle(window)
@@ -92,6 +92,17 @@ def screenshot(window, output, *, host=None):
     painter = QtGui.QPainter(result)
     origin = window.plotter.mapTo(host, QtCore.QPoint(0, 0))
     painter.drawImage(QtCore.QRect(origin, window.plotter.size()), frame)
+    overlay_records = []
+    for index, overlay in enumerate(overlays):
+        if not overlay.isVisible():
+            continue
+        overlay_path = output.with_name(output.stem + f"_overlay_{index}.png")
+        overlay_pixels = overlay.grab()
+        assert overlay_pixels.save(str(overlay_path))
+        overlay_origin = overlay.mapTo(host, QtCore.QPoint(0, 0))
+        painter.drawPixmap(overlay_origin, overlay_pixels)
+        overlay_records.append({"path": str(overlay_path), "sha256": digest(overlay_path),
+                                "origin": [overlay_origin.x(), overlay_origin.y()]})
     popup_record = {}
     if popup is not None:
         # QMenu is a separate native window. Capture its actual pixels and
@@ -113,6 +124,7 @@ def screenshot(window, output, *, host=None):
             "mapping_table": {"palette": window.palette_combo.currentText(), "mode": window._mapping_mode,
                               "rows": window.mapping_table.rowCount()},
             "raw_viewport": str(viewport_path), "raw_viewport_sha256": digest(viewport_path),
+            "native_qt_overlays": overlay_records,
             **popup_record}
 
 

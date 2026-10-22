@@ -177,6 +177,11 @@ class ExportWorker(QtCore.QObject):
 class PaintWindow(QtWidgets.QMainWindow):
     """Face-based painting, durable projects and background printable export."""
 
+    documentChanged = QtCore.Signal(object)
+    paintChanged = QtCore.Signal()
+    geometryChanged = QtCore.Signal()
+    appearanceChanged = QtCore.Signal()
+
     def __init__(self, path=None, *, document: PaintDocument | None = None, parent=None):
         super().__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -591,14 +596,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             self._polys[index] = poly
             self._actors[index] = actor
             self.picker.AddPickList(actor)
-        size = (np.max([m.vertices.max(axis=0) for m in document.meshes], axis=0)
-                - np.min([m.vertices.min(axis=0) for m in document.meshes], axis=0))
-        face_count = sum(len(m.faces) for m in document.meshes)
-        self.model_label.setText(
-            f"{Path(document.source_path).name if document.source_path else 'Paint project'}\n"
-            f"{len(document.meshes)} part(s) · {face_count:,} faces\n"
-            f"{size[0]:.1f} × {size[1]:.1f} × {size[2]:.1f} mm"
-        )
+        size = self._update_model_label()
         self.radius_spin.setValue(max(float(size.max()) / 30.0, 0.01))
         palette = document.metadata.get("paint_palette", "Normal")
         if palette in PALETTE_FILES:
@@ -615,6 +613,83 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.fit_view()
         self._update_actions()
         self._update_title()
+        self.documentChanged.emit(document)
+
+    def _update_model_label(self):
+        document = self.document
+        size = (np.max([m.vertices.max(axis=0) for m in document.meshes], axis=0)
+                - np.min([m.vertices.min(axis=0) for m in document.meshes], axis=0))
+        face_count = sum(len(m.faces) for m in document.meshes)
+        self.model_label.setText(
+            f"{Path(document.source_path).name if document.source_path else 'Paint project'}\n"
+            f"{len(document.meshes)} part(s) · {face_count:,} faces\n"
+            f"{size[0]:.1f} × {size[1]:.1f} × {size[2]:.1f} mm"
+        )
+        return size
+
+    def refresh_geometry(self, *, mark_dirty=True, reset_camera=False):
+        """Refresh a shared placement without replacing the editable document.
+
+        The caller may update vertices only. Face identity, paint history,
+        selection, recipes and the current project path survive the placement.
+        """
+        if self.document is None:
+            return False
+        self.document.validate()
+        changed = []
+        for index, mesh in enumerate(self.document.meshes):
+            poly = self._polys.get(index)
+            if (poly is None or poly.n_points != len(mesh.vertices)
+                    or poly.n_cells != len(mesh.faces)
+                    or not np.array_equal(poly.faces.reshape(-1, 4)[:, 1:], mesh.faces)):
+                raise ValueError("Placement refresh must preserve mesh topology and face order")
+            if not np.array_equal(poly.points, mesh.vertices):
+                changed.append(index)
+        if not changed:
+            return False
+        self.end_stroke()
+        for index in changed:
+            poly = self._polys[index]
+            poly.points = self.document.meshes[index].vertices.copy()
+            # Explicit normals from a previous consumer are stale after rotation.
+            for attributes in (poly.point_data, poly.cell_data):
+                if "Normals" in attributes:
+                    del attributes["Normals"]
+            poly.Modified()
+        self._topology.clear()
+        self._update_model_label()
+        if mark_dirty:
+            self.dirty = True
+        if reset_camera:
+            self.plotter.reset_camera()
+        self.plotter.reset_camera_clipping_range()
+        if self.isVisible():
+            self.plotter.render()
+        self._update_title()
+        self.geometryChanged.emit()
+        return True
+
+    def fill_mesh(self, index, rgba):
+        """Apply a whole-part color as one undoable edit, retaining brush color."""
+        if self.document is None:
+            return False
+        color = np.asarray(rgba)
+        if (color.shape != (4,) or not np.isfinite(color).all()
+                or np.any(color < 0) or np.any(color > 255)
+                or np.any(color != np.floor(color))):
+            raise ValueError("Part paint must contain four integer RGBA values from 0 to 255")
+        color = color.astype(np.uint8)
+        self.end_stroke()
+        mesh = self.document.meshes[index]
+        ids = np.flatnonzero(np.any(mesh.face_rgba != color, axis=1))
+        if not len(ids):
+            return False
+        before = mesh.face_rgba[ids].copy()
+        mesh.face_rgba[ids] = color
+        self._undo.append({index: (ids, before, mesh.face_rgba[ids].copy())})
+        self._redo.clear()
+        self._after_edit()
+        return True
 
     def fit_view(self):
         self.plotter.view_isometric()
@@ -784,6 +859,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.plotter.render()
         self._update_actions()
         self._update_title()
+        self.paintChanged.emit()
 
     def _update_mesh_colors(self, index, *, mapped=None):
         mesh = self.document.meshes[index]
@@ -814,6 +890,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             self.document.metadata.pop("paint_mapping", None)
             self.dirty = True
             self._update_title()
+            self.appearanceChanged.emit()
 
     def _sync_mapping_controls(self):
         source = self.mapping_mode_combo.currentData() == "source"
@@ -877,13 +954,36 @@ class PaintWindow(QtWidgets.QMainWindow):
             + "Click a row to reuse its paint color."
         )
 
+    def _preferred_recipe_overrides(self, *, mode=None, palette_name=None):
+        """Keep explicit Arrange recipes for matching colors and palettes."""
+        mode = self.mapping_mode_combo.currentData() if mode is None else mode
+        if self.document is None or mode == "source":
+            return {}
+        palette_name = self.palette_combo.currentText() if palette_name is None else palette_name
+        preferences = self.document.metadata.get("paint_recipe_preferences", {})
+        stored = preferences.get(palette_name, {}) if isinstance(preferences, dict) else {}
+        if not isinstance(stored, dict):
+            return {}
+        eligible = {entry["token"] for entry in load_palette_entries(palette_name)
+                    if mode == "woven" or len(entry["token"]) == 1}
+        result = {}
+        for color, token in stored.items():
+            if not isinstance(color, str) or not isinstance(token, str):
+                continue
+            color, token = color.upper(), token.lower()
+            if (len(color) == 7 and color.startswith("#")
+                    and all(c in "0123456789ABCDEF" for c in color[1:]) and token in eligible):
+                result[color] = token
+        return result
+
     def assign_colors(self):
         if self.document is None:
             return False
         try:
             from .paint_export import assign_palette
             self._mapping_mode = self.mapping_mode_combo.currentData()
-            self._mapping = assign_palette(self.document, self.palette_combo.currentText(), mode=self._mapping_mode)
+            self._mapping = assign_palette(self.document, self.palette_combo.currentText(), mode=self._mapping_mode,
+                                           recipe_overrides=self._preferred_recipe_overrides())
             self._populate_mapping_table()
             self.document.metadata["paint_palette"] = self.palette_combo.currentText()
             self.document.metadata["paint_mapping_mode"] = self._mapping_mode
@@ -909,6 +1009,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         for index in self._polys:
             self._update_mesh_colors(index, mapped=enabled)
         self.plotter.render()
+        self.appearanceChanged.emit()
 
     def save_dialog(self):
         if self.document is None:
@@ -997,6 +1098,9 @@ class PaintWindow(QtWidgets.QMainWindow):
         if (self._mapping and self._mapping_mode != "source" and settings.get("mode", "woven") == self._mapping_mode
                 and settings.get("palette_name", "Normal") == self.palette_combo.currentText()):
             settings.setdefault("recipe_overrides", {key: entry["token"] for key, entry in self._mapping.items()})
+        else:
+            settings.setdefault("recipe_overrides", self._preferred_recipe_overrides(
+                mode=settings.get("mode", "woven"), palette_name=settings.get("palette_name", "Normal")))
         thread = QtCore.QThread(self)
         worker = ExportWorker(self.document.copy(), str(output), settings)
         worker.moveToThread(thread)

@@ -3,10 +3,9 @@
 The `codex/paint-main-ui` branch includes **Paint** as a mode in the main
 LayerLoom toolbar, active by default. Turn Paint off to use the existing
 arrange-and-weave controls, then turn it on to return to painting. Both modes
-retain their edits and views. Entering Paint from an imported arrange model
-opens the original source, preserving paint that the legacy normalizer does
-not understand. Placement and whole-part assignments in Arrange remain
-separate from the paint document.
+use the same loaded model, paint and placement in memory. Switching modes
+does not reread the source or replace paint edits. Arrange shows the same
+surface colors as Paint, including the optional palette-mapping preview.
 
 The compact side panel keeps the tool, paint color, selection and **Apply
 paint** visible. **Settings…** opens a small contextual popover for brush
@@ -17,8 +16,10 @@ Export, Undo and Redo use the main toolbar; export progress stays in the main
 footer even when switching modes.
 
 Use the normal `layerloom-gui` launcher. File/Open, File/Save and Tools/Export
-follow the selected workspace, and closing the main window protects unsaved
-paint or an active export.
+operate on this shared model in either mode: Open loads a model or paint
+project, Save writes an editable `.llpaint` project, and Export writes material
+geometry. Undo and Redo remain available in both modes. Closing the main window
+protects unsaved paint or placement changes and an active export.
 
 **Printable exports contain geometry only.** Imported and edited paint guides
 the conversion into separate meshes for physical filaments. Exported 3MFs use
@@ -53,10 +54,13 @@ python -m layerloom.paint_gui /path/to/model.3mf
    individual palette filaments. **Exact colors — one material each** instead
    assigns one physical filament slot to each exact current paint color.
    Mapping preview never overwrites source paint. The table and status show the
-   recipes and required physical filaments.
+   recipes and required physical filaments. Explicit recipe preferences apply
+   to a paint color throughout the document within the selected palette. They
+   are not independent assignments for separate regions of the same color.
 5. **Save paint…** writes an editable `.llpaint` project. It includes geometry,
-   current colors, original colors for erase, and palette metadata. Use Open to
-   reopen it.
+   the current model pose, current colors, original colors for erase, and
+   palette metadata. Use Open to reopen it; the saved pose becomes the loaded
+   placement for that session.
 6. **Export geometry 3MF…** converts the painted solid into separate material
    meshes. Woven mode assigns each layer according to the recipe; the other
    modes make geometry for their physical colors. All modes export geometry,
@@ -66,6 +70,33 @@ python -m layerloom.paint_gui /path/to/model.3mf
 Import all exported parts together, retaining their common alignment. There is
 no native painted-3MF or standard surface-color export option. Colored 3MF
 writers used to generate import-test fixtures are internal development helpers.
+
+## Positioning the shared model
+
+Turn Paint off to use Arrange's move, rotate, scale and plate-placement
+controls. These change the whole assembly, keeping its parts aligned and paint
+attached to the same faces. Each placement is calculated from the geometry as
+it was loaded, using an absolute scale and rotation, so repeated edits do not
+accumulate coordinate drift. Painting before or after placement changes the
+same document, and paint undo/redo remains available after moving the model.
+
+Loading a model preserves its original placement, including any height above
+the plate. Explicit placement follows Arrange's centering and grounding rules.
+**Reset** restores the loaded pose without undoing paint edits. Save retains
+the current posed geometry; reopening that `.llpaint` starts from the saved
+pose rather than reconstructing the earlier placement history.
+
+Selecting a part in Arrange and assigning a palette color paints that entire
+part as one undoable paint edit. Paint's Undo/Redo controls also undo and redo
+these whole-part color edits. Erase continues to restore the imported source
+colors. The chosen weave recipe is remembered for that color and palette
+throughout the document, including other regions with the same color.
+
+Printable geometry export uses the current rotated and scaled geometry. As in
+the existing export contract, it then centers and grounds the assembly on the
+output plate with one shared translation. Its XY plate position can therefore
+differ from the Arrange view; relative part alignment, orientation and size
+are preserved. Export does not change the editable model's placement.
 
 ## Material-volume conversion
 
@@ -130,6 +161,21 @@ undo/redo, saving, reopening, and the main v65 Paint toolbar button. See
 `outputs/paint_prototype_2026_10_22/gui/gui-proof.json` for source hashes and
 assertions. Its screenshots combine Qt window chrome with the same native VTK
 viewport framebuffer; the separate raw viewport captures are retained.
+
+The shared-model proof exercises surface painting, placement, Save/Open from
+Arrange, and a real geometry export, then compares both views of the repaired
+baby dragon. It supplies file-dialog choices and captures export notifications
+in the test harness; geometry conversion and model rendering use the real app.
+Give it a new output directory:
+
+```sh
+QT_QPA_PLATFORM=cocoa python -m layerloom.paint_tests.shared_workspace_proof \
+  --baby-project /path/to/baby_repaired_woven.llpaint \
+  --output-dir /path/to/new-proof --stay-open
+```
+
+Its `shared-workspace-proof.json` records source hashes, checks and screenshots.
+Paint and Arrange captures use the same camera; their viewport sizes differ.
 
 Slicer checks use Bambu Studio 02.08.02.61 through its CLI, with a local X1
 Carbon 0.4 mm profile, 100% infill, fixed 0.2 mm first/subsequent layers, and
