@@ -1,0 +1,1706 @@
+{
+  "slicer": "PrusaSlicer-2.8.0+MacOS-arm64-202406270929 based on Slic3r (with GUI support)",
+  "purpose": "Geometry consumption only; no printer hardware or multicolor profile was used.",
+  "expected_cube_layers": 10,
+  "expected_cube_z_mm": [
+    0.2,
+    0.4,
+    0.6,
+    0.8,
+    1.0,
+    1.2,
+    1.4,
+    1.6,
+    1.8,
+    2.0
+  ],
+  "color_limit": "Native volume PAT names do not assign physical extruders in this generic single-extruder profile.",
+  "cases": [
+    {
+      "name": "c_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/open_top_c.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 2.664691708981991,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "c_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/open_top_c.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.2523395830066875,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "cmy_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/open_top_cmy.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.7221485419431701,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "cmy_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/open_top_cmy.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.0919294999912381,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "tutorial_cubes_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_assembly.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 2.592855790979229,
+      "expected_layers": 40,
+      "bytes": 485559,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0,
+        2.2,
+        2.4,
+        2.6,
+        2.8,
+        3.0,
+        3.2,
+        3.4,
+        3.6,
+        3.8,
+        4.0,
+        4.2,
+        4.4,
+        4.6,
+        4.8,
+        5.0,
+        5.2,
+        5.4,
+        5.6,
+        5.8,
+        6.0,
+        6.2,
+        6.4,
+        6.6,
+        6.8,
+        7.0,
+        7.2,
+        7.4,
+        7.6,
+        7.8,
+        8.0
+      ],
+      "layer_count": 40,
+      "layers_with_xy_extrusion": 40,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 288
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 8.0,
+          "xy_extrusion_moves": 284
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "tutorial_cubes_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_assembly.3mf"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.9283462079474702,
+      "expected_layers": 40,
+      "bytes": 485559,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0,
+        2.2,
+        2.4,
+        2.6,
+        2.8,
+        3.0,
+        3.2,
+        3.4,
+        3.6,
+        3.8,
+        4.0,
+        4.2,
+        4.4,
+        4.6,
+        4.8,
+        5.0,
+        5.2,
+        5.4,
+        5.6,
+        5.8,
+        6.0,
+        6.2,
+        6.4,
+        6.6,
+        6.8,
+        7.0,
+        7.2,
+        7.4,
+        7.6,
+        7.8,
+        8.0
+      ],
+      "layer_count": 40,
+      "layers_with_xy_extrusion": 40,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 288
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 8.0,
+          "xy_extrusion_moves": 284
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "c_geometry_only_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.45867229206487536,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "c_geometry_only_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/c_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.569065292016603,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "cmy_geometry_only_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.32149808295071125,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "cmy_geometry_only_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/cmy_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.2509896249976009,
+      "expected_layers": 10,
+      "bytes": 40664,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0
+      ],
+      "layer_count": 10,
+      "layers_with_xy_extrusion": 10,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 72
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 93
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 96
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 71
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "tutorial_cubes_geometry_only_direct",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only_direct.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only_direct.gcode",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 0.9947615830460563,
+      "expected_layers": 40,
+      "bytes": 484617,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0,
+        2.2,
+        2.4,
+        2.6,
+        2.8,
+        3.0,
+        3.2,
+        3.4,
+        3.6,
+        3.8,
+        4.0,
+        4.2,
+        4.4,
+        4.6,
+        4.8,
+        5.0,
+        5.2,
+        5.4,
+        5.6,
+        5.8,
+        6.0,
+        6.2,
+        6.4,
+        6.6,
+        6.8,
+        7.0,
+        7.2,
+        7.4,
+        7.6,
+        7.8,
+        8.0
+      ],
+      "layer_count": 40,
+      "layers_with_xy_extrusion": 40,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 288
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 8.0,
+          "xy_extrusion_moves": 284
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    },
+    {
+      "name": "tutorial_cubes_geometry_only_merged",
+      "command": [
+        "/Applications/PrusaSlicer.app/Contents/MacOS/PrusaSlicer",
+        "--export-gcode",
+        "--dont-arrange",
+        "--no-ensure-on-bed",
+        "--no-variable-layer-height",
+        "--layer-height",
+        "0.2",
+        "--first-layer-height",
+        "0.2",
+        "--no-binary-gcode",
+        "--nozzle-diameter",
+        "0.4",
+        "--filament-diameter",
+        "1.75",
+        "--skirts",
+        "0",
+        "--datadir",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/isolated_config",
+        "--save",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only_merged.ini",
+        "--output",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only_merged.gcode",
+        "--merge",
+        "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/slicer_native/tutorial_cubes_geometry_only.stl"
+      ],
+      "returncode": 0,
+      "elapsed_s": 1.3720778750721365,
+      "expected_layers": 40,
+      "bytes": 484708,
+      "layer_z_mm": [
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+        1.2,
+        1.4,
+        1.6,
+        1.8,
+        2.0,
+        2.2,
+        2.4,
+        2.6,
+        2.8,
+        3.0,
+        3.2,
+        3.4,
+        3.6,
+        3.8,
+        4.0,
+        4.2,
+        4.4,
+        4.6,
+        4.8,
+        5.0,
+        5.2,
+        5.4,
+        5.6,
+        5.8,
+        6.0,
+        6.2,
+        6.4,
+        6.6,
+        6.8,
+        7.0,
+        7.2,
+        7.4,
+        7.6,
+        7.8,
+        8.0
+      ],
+      "layer_count": 40,
+      "layers_with_xy_extrusion": 40,
+      "layers": [
+        {
+          "z": 0.2,
+          "xy_extrusion_moves": 288
+        },
+        {
+          "z": 0.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 0.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 0.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 1.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 1.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 2.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 2.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 3.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 3.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 4.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 4.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 5.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 5.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.0,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.2,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.4,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 6.6,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 6.8,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.0,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.2,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.4,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 7.6,
+          "xy_extrusion_moves": 352
+        },
+        {
+          "z": 7.8,
+          "xy_extrusion_moves": 376
+        },
+        {
+          "z": 8.0,
+          "xy_extrusion_moves": 284
+        }
+      ],
+      "tool_commands": [],
+      "retained_expected_layer_count": true
+    }
+  ]
+}

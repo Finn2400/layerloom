@@ -1,0 +1,187 @@
+{
+  "scope": "Existing repository 3MF inputs evaluated with the optional fixed-layer contour prototype; these are geometry/export reports, not slicer validation.",
+  "versions": {
+    "python": "3.12.0rc3",
+    "numpy": "2.4.6",
+    "trimesh": "4.11.5",
+    "shapely": "2.1.2"
+  },
+  "comparison_caveat": "Both Benchy runs fail. The coarser grid reduces rejected profiles but does not complete material extrusion or export. Material-validation counts are partial and not directly comparable as full-model totals.",
+  "runs": [
+    {
+      "report": "tutorial_cubes.json",
+      "status": "ok",
+      "source": {
+        "path": "/Users/finn/Documents/layerloom/src/layerloom/examples/tutorial_cmy_cubes.3mf",
+        "name": "tutorial_cmy_cubes.3mf",
+        "sha256": "72bc403952e977d4be65285e698db87747f158b9c9bf561d54af106374b0c353",
+        "parts": 4,
+        "triangles": 48
+      },
+      "config": {
+        "layer_height_mm": 0.2,
+        "precision_mm": 1e-05,
+        "max_gap_mm": 0.03,
+        "z_gap_mm": 0.001,
+        "z_origin_mm": 0.0,
+        "fallback_recipe": "cmy"
+      },
+      "profiles": {
+        "total_part_layers": 160,
+        "status_counts": {
+          "ok": 160
+        },
+        "accepted_nonempty": 160,
+        "rejected": 0,
+        "empty": 0,
+        "all_parts_profiled": true
+      },
+      "errors": {
+        "total": 0,
+        "category_counts": {}
+      },
+      "warnings": {
+        "total": 0,
+        "empty_midpoint_samples": 0
+      },
+      "material_validation": {
+        "complete": true,
+        "layer_records": 40,
+        "material_bands_recorded": 100,
+        "invalid_material_bands_recorded": 0,
+        "last_recorded_layer_index": 39,
+        "partial_counts": false,
+        "caveat": null
+      },
+      "output": {
+        "requested_path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/tutorial_cubes.3mf",
+        "file_exists": true,
+        "published_by_successful_run": true,
+        "exported_bands": 100,
+        "roundtrip_max_footprint_error_mm2": 0.0
+      }
+    },
+    {
+      "report": "tutorial_benchy.json",
+      "status": "failed",
+      "source": {
+        "path": "/Users/finn/Documents/layerloom/src/layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
+        "name": "tutorial_cmy_benchy_cutup.3mf",
+        "sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+        "parts": 8,
+        "triangles": 253176
+      },
+      "config": {
+        "layer_height_mm": 0.2,
+        "precision_mm": 1e-05,
+        "max_gap_mm": 0.03,
+        "z_gap_mm": 0.001,
+        "z_origin_mm": -2.7e-08,
+        "fallback_recipe": "cmy"
+      },
+      "profiles": {
+        "total_part_layers": 657,
+        "status_counts": {
+          "branching": 22,
+          "empty": 8,
+          "ok": 627
+        },
+        "accepted_nonempty": 627,
+        "rejected": 22,
+        "empty": 8,
+        "all_parts_profiled": true
+      },
+      "errors": {
+        "total": 43,
+        "category_counts": {
+          "extrusion_exception": 1,
+          "float32_geometry_validation": 8,
+          "material_overlap": 12,
+          "unresolved_contour": 22
+        }
+      },
+      "warnings": {
+        "total": 8,
+        "empty_midpoint_samples": 8
+      },
+      "material_validation": {
+        "complete": false,
+        "layer_records": 39,
+        "material_bands_recorded": 60,
+        "invalid_material_bands_recorded": 8,
+        "last_recorded_layer_index": 38,
+        "partial_counts": true,
+        "caveat": "Material assembly stops at the first extrusion exception. Recorded overlap and float32-validation counts cover only the material bands reached; they are not totals for the full model."
+      },
+      "output": {
+        "requested_path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/tutorial_benchy.3mf",
+        "file_exists": false,
+        "published_by_successful_run": false,
+        "exported_bands": null,
+        "roundtrip_max_footprint_error_mm2": null,
+        "final_benchy_published": false
+      }
+    },
+    {
+      "report": "tutorial_benchy_grid001.json",
+      "status": "failed",
+      "source": {
+        "path": "/Users/finn/Documents/layerloom/src/layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
+        "name": "tutorial_cmy_benchy_cutup.3mf",
+        "sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+        "parts": 8,
+        "triangles": 253176
+      },
+      "config": {
+        "layer_height_mm": 0.2,
+        "precision_mm": 0.001,
+        "max_gap_mm": 0.03,
+        "z_gap_mm": 0.001,
+        "z_origin_mm": -2.7e-08,
+        "fallback_recipe": "cmy"
+      },
+      "profiles": {
+        "total_part_layers": 657,
+        "status_counts": {
+          "branching": 19,
+          "empty": 8,
+          "ok": 630
+        },
+        "accepted_nonempty": 630,
+        "rejected": 19,
+        "empty": 8,
+        "all_parts_profiled": true
+      },
+      "errors": {
+        "total": 55,
+        "category_counts": {
+          "extrusion_exception": 1,
+          "float32_geometry_validation": 32,
+          "material_overlap": 3,
+          "unresolved_contour": 19
+        }
+      },
+      "warnings": {
+        "total": 8,
+        "empty_midpoint_samples": 8
+      },
+      "material_validation": {
+        "complete": false,
+        "layer_records": 30,
+        "material_bands_recorded": 45,
+        "invalid_material_bands_recorded": 32,
+        "last_recorded_layer_index": 30,
+        "partial_counts": true,
+        "caveat": "Material assembly stops at the first extrusion exception. Recorded overlap and float32-validation counts cover only the material bands reached; they are not totals for the full model."
+      },
+      "output": {
+        "requested_path": "/Users/finn/.codex/worktrees/layer-contour-repair/layerloom/experiments/planar_bands/results/tutorial_benchy_grid001.3mf",
+        "file_exists": false,
+        "published_by_successful_run": false,
+        "exported_bands": null,
+        "roundtrip_max_footprint_error_mm2": null,
+        "final_benchy_published": false
+      }
+    }
+  ]
+}

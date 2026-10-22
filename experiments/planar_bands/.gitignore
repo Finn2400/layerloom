@@ -1,0 +1,5 @@
+results/*
+!results/report.json
+!results/comparison.png
+!results/real_input_summary.json
+!results/slicer_validation.json
