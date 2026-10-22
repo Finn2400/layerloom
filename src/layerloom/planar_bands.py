@@ -43,6 +43,17 @@ class ProfileResult:
 
 
 @dataclass
+class LayerProfile:
+    """Recovered source contour on a nominal layer; not an exported solid."""
+
+    index: int
+    low: float
+    high: float
+    sample_z: float
+    profile: ProfileResult
+
+
+@dataclass
 class BandResult:
     index: int
     low: float
@@ -457,6 +468,27 @@ def _extrude_indexed_cap(vertices, faces, low, high):
     return mesh, splits
 
 
+def _cdt_cap_arrays(triangulated):
+    """Read all CDT triangle coordinates without creating Python ring objects.
+
+    GEOS returns closed, two-dimensional triangles in collection order. Keep
+    that exact order when dropping each closing coordinate, so this fast path
+    produces the same indexed cap as reading every exterior ring individually.
+    """
+    triangles = shapely.get_parts(triangulated)
+    if (not len(triangles)
+            or np.any(shapely.get_type_id(triangles) != shapely.GeometryType.POLYGON)
+            or np.any(shapely.get_num_coordinates(triangles) != 4)
+            or np.any(shapely.has_z(triangles))):
+        raise ValueError("constrained triangulator must return closed 2D triangles")
+    coordinates = shapely.get_coordinates(triangles, include_z=False).reshape(-1, 4, 2)
+    if not np.array_equal(coordinates[:, 0], coordinates[:, -1]):
+        raise ValueError("constrained triangulator returned an open triangle ring")
+    points = coordinates[:, :3].reshape(-1, 2)
+    vertices, inverse = np.unique(points, axis=0, return_inverse=True)
+    return vertices, inverse.reshape(-1, 3)
+
+
 def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
     """Build closed bands on the output coordinate lattice, retaining holes.
 
@@ -475,10 +507,7 @@ def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
     for polygon in shapely.get_parts(region):
         if cdt is not None:
             triangulated = cdt(polygon)
-            points = np.asarray([np.asarray(triangle.exterior.coords)[:3]
-                                 for triangle in triangulated.geoms]).reshape(-1, 2)
-            vertices, inverse = np.unique(points, axis=0, return_inverse=True)
-            faces = inverse.reshape(-1, 3)
+            vertices, faces = _cdt_cap_arrays(triangulated)
         else:
             # Keep basic inputs usable with Shapely 2.0. Validation below still
             # rejects any degenerate triangulation instead of dropping faces.
@@ -506,13 +535,15 @@ def extrude_profile(region, low: float, high: float) -> trimesh.Trimesh | None:
     return result
 
 
-def reconstruct_layers(mesh: trimesh.Trimesh, layer_height: float, z0: float | None = None,
-                       config: RepairConfig = RepairConfig()) -> list[BandResult]:
-    """Reconstruct full nominal bands; retain every failure for caller diagnostics.
+def reconstruct_layer_profiles(mesh: trimesh.Trimesh, layer_height: float, z0: float | None = None,
+                               config: RepairConfig = RepairConfig()) -> list[LayerProfile]:
+    """Recover bounded source contours without constructing intermediate solids.
 
     The sample grid is authoritative. Short features between samples can vanish;
     a partial top layer can extend beyond the source by up to half a layer.
     No automatic switch between this backend and capped 3D clipping is performed.
+    A successful profile is not a claim that its individual extrusion is valid.
+    Callers assembling material regions must validate their final extruded meshes.
     """
     if not math.isfinite(layer_height) or layer_height <= 0:
         raise ValueError("layer_height must be finite and positive")
@@ -536,12 +567,26 @@ def reconstruct_layers(mesh: trimesh.Trimesh, layer_height: float, z0: float | N
             profile.diagnostics["sampling_warning"] = (
                 "No contour at the nominal midpoint; sublayer features may be missed."
             )
+        result.append(LayerProfile(k, low, high, sample_z, profile))
+    return result
+
+
+def reconstruct_layers(mesh: trimesh.Trimesh, layer_height: float, z0: float | None = None,
+                       config: RepairConfig = RepairConfig()) -> list[BandResult]:
+    """Reconstruct full nominal bands; retain every failure for caller diagnostics.
+
+    This compatibility API still extrudes and validates every source-part band.
+    Material assembly can use ``reconstruct_layer_profiles`` to avoid extruding
+    source bands that would be discarded after their contours are partitioned.
+    """
+    result = []
+    for layer in reconstruct_layer_profiles(mesh, layer_height, z0=z0, config=config):
         band = None
-        if profile.ok:
+        if layer.profile.ok:
             try:
-                band = extrude_profile(profile.region, low, high)
+                band = extrude_profile(layer.profile.region, layer.low, layer.high)
             except Exception as exc:
-                profile.ok = False
-                profile.diagnostics.update(status="extrusion_failed", error=str(exc))
-        result.append(BandResult(k, low, high, sample_z, profile, band))
+                layer.profile.ok = False
+                layer.profile.diagnostics.update(status="extrusion_failed", error=str(exc))
+        result.append(BandResult(layer.index, layer.low, layer.high, layer.sample_z, layer.profile, band))
     return result

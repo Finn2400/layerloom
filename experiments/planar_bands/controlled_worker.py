@@ -36,14 +36,14 @@ from controlled_fixtures import fixtures, reference_profile
 from layerloom.contour_repair import _float32_mesh_checks
 from layerloom.group_by_color import group_by_color
 from layerloom.ingest import read_parts
-from layerloom.planar_bands import RepairConfig, extrude_profile, section_profile
+from layerloom.planar_bands import RepairConfig, extrude_profile, reconstruct_layer_profiles, section_profile
 from layerloom.planar_materials import partition_materials
 from layerloom.repair import MeshGeometryCounts, repair_rejection_reason
 from layerloom.strata import _slice_between
 from layerloom.tokens import TOKEN_ALPHABET
 
 CASES = ("cubes", "benchy", "hollow_tube", "hollow_tube_gap020")
-METHODS = ("cut", "repair_cut", "contour")
+METHODS = ("cut", "repair_cut", "contour", "contour_optimized")
 Z_GAP = 0.001
 CONFIG = RepairConfig()
 SEAM_TOLERANCE = 0.001
@@ -58,6 +58,24 @@ def _legacy_module():
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
         spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+def _baseline_planar(path):
+    """Load an archived standalone planar kernel before any measured work."""
+    path = Path(path).resolve()
+    digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    name = f"_controlled_baseline_planar_{digest}"
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, path)
+        module = importlib.util.module_from_spec(spec)
+        # Dataclasses resolve their defining module during import.
+        sys.modules[name] = module
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            del sys.modules[name]
+            raise
     return sys.modules[name]
 
 
@@ -113,18 +131,21 @@ def _recipe(label):
     return value
 
 
-def _warmup(legacy):
+def _warmup(legacy, *, planar=None):
+    make_profile = section_profile if planar is None else planar.section_profile
+    make_mesh = extrude_profile if planar is None else planar.extrude_profile
+    config = CONFIG if planar is None else planar.RepairConfig(**asdict(CONFIG))
     mesh = trimesh.creation.box(extents=(1, 1, 1))
     mesh.apply_translation((0, 0, 0.5))
     legacy.repair_geometry(mesh.vertices, mesh.faces, legacy.RepairConfig(quiet=True))
     _slice_between(mesh.copy(), 0.2, 0.4, z_gap=Z_GAP)
-    profile = section_profile(mesh.copy(), 0.3, CONFIG)
-    band = extrude_profile(profile.region, 0.2005, 0.3995)
+    profile = make_profile(mesh.copy(), 0.3, config)
+    band = make_mesh(profile.region, 0.2005, 0.3995)
     regions, _, errors = partition_materials({"c": [profile.region]}, precision=CONFIG.precision,
                                               seam_tolerance=SEAM_TOLERANCE)
     if errors or band is None:
         raise RuntimeError("Common warmup failed")
-    native = extrude_profile(regions["c"], 0.2005, 0.3995)
+    native = make_mesh(regions["c"], 0.2005, 0.3995)
     _float32_mesh_checks(native)
     group_by_color([("warmup__PAT_c__", band)], verbose=False)
 
@@ -299,11 +320,27 @@ def _audit(case, source_parts, records, meshes, native_records, native_meshes, h
             "audit_s": time.perf_counter() - started}
 
 
-def run_case(case, height, method, audit=True, *, input_path=None):
+def run_case(case, height, method, audit=True, *, input_path=None, baseline_planar_path=None):
     if method not in METHODS:
         raise ValueError(f"Unknown method: {method}")
+    optimized = method == "contour_optimized"
+    contour_method = method in {"contour", "contour_optimized"}
+    if optimized and audit:
+        raise ValueError("contour_optimized defers source meshes; use audit=False and validate final native geometry identity instead of the source-mesh audit")
     if not math.isfinite(height) or height <= Z_GAP:
         raise ValueError(f"height must be finite and greater than {Z_GAP}")
+    baseline = None
+    baseline_provenance = {"path": None, "sha256": None, "loaded": False,
+                           "used_for_timed_geometry": False}
+    if baseline_planar_path is not None:
+        path = Path(baseline_planar_path).resolve()
+        baseline_provenance.update(path=str(path), sha256=hashlib.sha256(path.read_bytes()).hexdigest())
+        if method == "contour":
+            baseline = _baseline_planar(path)
+            baseline_provenance.update(loaded=True, used_for_timed_geometry=True)
+    make_profile = section_profile if baseline is None else baseline.section_profile
+    make_mesh = extrude_profile if baseline is None else baseline.extrude_profile
+    planar_config = CONFIG if baseline is None else baseline.RepairConfig(**asdict(CONFIG))
     parts, source = _load_case(case, input_path)
     if not parts:
         raise ValueError("No input parts")
@@ -318,7 +355,10 @@ def run_case(case, height, method, audit=True, *, input_path=None):
     # Import and warm the same primitives for every arm, outside timed work.
     legacy = _legacy_module()
     warm_started = time.perf_counter()
-    _warmup(legacy)
+    if baseline is None:
+        _warmup(legacy)
+    else:
+        _warmup(legacy, planar=baseline)
     timings = {"warmup_s": time.perf_counter() - warm_started, "repair_s": 0.0, "repair_cpu_s": 0.0}
     repair = {"before": asdict(_counts(parts)), "after": asdict(_counts(parts)),
               "fallback_to_raw": False, "rejection_reason": None, "parts": []}
@@ -327,25 +367,45 @@ def run_case(case, height, method, audit=True, *, input_path=None):
         started, cpu = time.perf_counter(), time.process_time()
         effective, repair = _repair(parts, legacy)
         timings.update(repair_s=time.perf_counter() - started, repair_cpu_s=time.process_time() - cpu)
-    records, meshes = [], []
+    records, meshes, profiles = [], [], []
     by_layer = defaultdict(lambda: defaultdict(list))
     errors, warnings = [], []
+    profile_batches, profile_batch_errors = {}, {}
     started, cpu = time.perf_counter(), time.process_time()
     for scheduled in schedules:
         record = dict(scheduled)
         low = z0 + record["layer_index"] * height
         high = z0 + (record["layer_index"] + 1) * height
         mesh = None
+        profile = None
         try:
-            if method == "contour":
-                profile = section_profile(effective[record["part_index"]][1], record["sample_z_mm"], CONFIG)
+            if contour_method:
+                if optimized:
+                    part_index = record["part_index"]
+                    if part_index not in profile_batches and part_index not in profile_batch_errors:
+                        try:
+                            batch = reconstruct_layer_profiles(effective[part_index][1], height, z0=z0, config=CONFIG)
+                            profile_batches[part_index] = {layer.index: layer for layer in batch}
+                        except Exception as exc:
+                            profile_batch_errors[part_index] = exc
+                    if part_index in profile_batch_errors:
+                        raise profile_batch_errors[part_index]
+                    layer = profile_batches[part_index][record["layer_index"]]
+                    if layer.sample_z != record["sample_z_mm"] or layer.low != low or layer.high != high:
+                        raise ValueError("Production profile grid differs from the original benchmark grid")
+                    profile = layer.profile
+                else:
+                    profile = make_profile(effective[record["part_index"]][1], record["sample_z_mm"], planar_config)
                 record["profile"] = {"ok": bool(profile.ok), **profile.diagnostics}
                 if not profile.ok:
                     record["failure"] = "profile_rejected"
                 elif profile.region.is_empty:
                     record["empty_midpoint"] = True
+                elif optimized:
+                    record["extrusion_deferred"] = True
+                    by_layer[record["layer_index"]][record["token"]].append(profile.region)
                 else:
-                    mesh = extrude_profile(profile.region, low + Z_GAP / 2, high - Z_GAP / 2)
+                    mesh = make_mesh(profile.region, low + Z_GAP / 2, high - Z_GAP / 2)
                     if mesh is not None:
                         by_layer[record["layer_index"]][record["token"]].append(profile.region)
             else:
@@ -353,25 +413,26 @@ def run_case(case, height, method, audit=True, *, input_path=None):
         except Exception as exc:
             record["exception"] = f"{type(exc).__name__}: {exc}"
             record["failure"] = "exception"
-        if mesh is None:
+        if mesh is None and not optimized:
             record["missing_output"] = True
             if method == "contour" and not record.get("empty_midpoint"):
                 record.setdefault("failure", "no_band")
         records.append(record)
         meshes.append(mesh)
+        profiles.append(profile)
     timings.update(layers_s=time.perf_counter() - started, layers_cpu_s=time.process_time() - cpu)
 
     native_records, native_meshes = [], []
     started, cpu = time.perf_counter(), time.process_time()
-    if method == "contour":
+    if contour_method:
         for index, token_regions in sorted(by_layer.items()):
             try:
                 regions, diagnostics, partition_errors = partition_materials(token_regions, precision=CONFIG.precision,
                                                                               seam_tolerance=SEAM_TOLERANCE)
                 errors.extend(f"Layer {index}: {error}" for error in partition_errors)
                 for token, region in sorted(regions.items()):
-                    mesh = extrude_profile(region, z0 + index * height + Z_GAP / 2,
-                                           z0 + (index + 1) * height - Z_GAP / 2)
+                    mesh = make_mesh(region, z0 + index * height + Z_GAP / 2,
+                                     z0 + (index + 1) * height - Z_GAP / 2)
                     if mesh is None:
                         errors.append(f"Layer {index}/{token}: no native band")
                         continue
@@ -396,18 +457,22 @@ def run_case(case, height, method, audit=True, *, input_path=None):
             native_records.append({"name": name, "layer_index": None, "token": labels_to_tokens[name]})
             native_meshes.append(mesh)
     timings.update(assembly_s=time.perf_counter() - started, assembly_cpu_s=time.process_time() - cpu)
-    timings["matched_part_bands_s"] = timings["repair_s"] + timings["layers_s"]
-    timings["core_s"] = timings["matched_part_bands_s"] + timings["assembly_s"]
+    timings["matched_part_bands_s"] = None if optimized else timings["repair_s"] + timings["layers_s"]
+    timings["core_s"] = timings["repair_s"] + timings["layers_s"] + timings["assembly_s"]
     timings["core_cpu_s"] = sum(timings[name] for name in ("repair_cpu_s", "layers_cpu_s", "assembly_cpu_s"))
 
     # Stable exact geometry fingerprints are deliberately outside timed work.
-    for record, mesh in zip(records, meshes):
-        record.update(geometry_sha256=_mesh_hash(mesh), triangles=0 if mesh is None else len(mesh.faces))
+    for record, mesh, profile in zip(records, meshes, profiles):
+        record.update(geometry_sha256=_mesh_hash(mesh), triangles=0 if mesh is None else len(mesh.faces),
+                      profile_sha256=None if profile is None else hashlib.sha256(profile.region.wkb).hexdigest())
         if record.get("failure"):
             errors.append(f"Part {record['part_index']}, layer {record['layer_index']}: {record.get('exception', record['failure'])}")
     for record, mesh in zip(native_records, native_meshes):
         record.update(geometry_sha256=_mesh_hash(mesh), triangles=len(mesh.faces))
-    band_hash = _json_hash([[r["part_index"], r["layer_index"], r["token"], r["geometry_sha256"]] for r in records])
+    band_hash = None if optimized else _json_hash([[r["part_index"], r["layer_index"], r["token"], r["geometry_sha256"]] for r in records])
+    profile_hash = None if not contour_method else _json_hash([
+        [r["part_index"], r["layer_index"], r["token"], r.get("profile", {}).get("ok"), r["profile_sha256"]]
+        for r in records])
     native_hash = _json_hash([[r["name"], r["layer_index"], r["token"], r["geometry_sha256"]] for r in native_records])
     if repair.get("fallback_to_raw"):
         warnings.append(repair["rejection_reason"])
@@ -421,22 +486,44 @@ def run_case(case, height, method, audit=True, *, input_path=None):
             dependency_versions[name] = None
     report = {"case": case, "height_mm": height, "method": method, "source": source,
               "timings": timings, "repair": repair, "bands": records, "native_parts": native_records,
+              "baseline_planar": baseline_provenance,
+              "execution_plan": {
+                  "source_stage": "production profile extraction; source extrusion deferred" if optimized else "source-part mesh bands",
+                  "native_stage": ("material partition and one final extrusion with mandatory intrinsic checks" if optimized else
+                                   "material partition and second extrusion with mandatory intrinsic checks" if contour_method else
+                                   "group_by_color mesh concatenation"),
+                  "source_meshes_expected": not optimized,
+                  "final_geometry_identity": "native_parts_sha256 includes canonical name, layer, token, vertices, and faces",
+              },
+              "timing_description": {
+                  "layers_s": "profile extraction only; no source meshes created" if optimized else "source-part band creation",
+                  "matched_part_bands_s": "not applicable: source meshes intentionally deferred" if optimized else "repair_s plus layers_s",
+                  "core_s": "repair_s plus layers_s plus assembly_s; complete final geometry work",
+              },
               "settings": {"z0_mm": z0, "z_gap_mm": Z_GAP, **asdict(CONFIG), "seam_tolerance": SEAM_TOLERANCE,
                            "grid": "original input part bounds, original global z0; same nominal intervals for every method",
                            "gap_policy": "both ends of every nominal band trimmed by 0.0005 mm, including outer boundaries",
-                           "assembly": "old: actual group_by_color concatenation; contour: partition_materials and second extrusion with native intrinsic checks"},
+                           "assembly": ("contour_optimized: profile-only source stage, partition_materials, one final extrusion with native intrinsic checks" if optimized else
+                                        "old: actual group_by_color concatenation; contour: partition_materials and second extrusion with native intrinsic checks")},
               "versions": {"python": platform.python_version(), "numpy": np.__version__, "trimesh": trimesh.__version__,
                            "shapely": shapely.__version__, "geos": shapely.geos_version_string, **dependency_versions},
               "counts": {"source_parts": len(parts), "source_triangles": sum(len(mesh.faces) for _, mesh in parts),
                          "source_vertices": sum(len(mesh.vertices) for _, mesh in parts), "nominal_bands": len(records),
                          "produced_bands": sum(mesh is not None for mesh in meshes),
-                         "missing_bands": sum(mesh is None for mesh in meshes),
+                         "produced_source_meshes": sum(mesh is not None for mesh in meshes),
+                         "missing_bands": 0 if optimized else sum(mesh is None for mesh in meshes),
+                         "source_profiles": sum(profile is not None for profile in profiles),
+                         "nonempty_source_profiles": sum(profile is not None and profile.ok and not profile.region.is_empty for profile in profiles),
+                         "empty_source_profiles": sum(profile is not None and profile.ok and profile.region.is_empty for profile in profiles),
+                         "failed_source_profiles": sum("failure" in record for record in records) if contour_method else 0,
+                         "deferred_source_extrusions": sum(record.get("extrusion_deferred", False) for record in records),
                          "exceptions": sum("exception" in record for record in records),
                          "failed_bands": sum("failure" in record for record in records),
                          "output_triangles": sum(record["triangles"] for record in records),
                          "native_parts": len(native_records), "native_triangles": sum(record["triangles"] for record in native_records)},
               "fingerprints": {"part_bands_sha256": band_hash, "native_parts_sha256": native_hash,
-                               "combined_sha256": _json_hash([band_hash, native_hash])},
+                               "source_profiles_sha256": profile_hash,
+                               "combined_sha256": _json_hash([profile_hash if optimized else band_hash, native_hash])},
               "errors": errors, "warnings": warnings}
     report["audit"] = _audit(case, parts, records, meshes, native_records, native_meshes, height, z0) if audit else {"enabled": False}
     timings["audit_s"] = report["audit"].get("audit_s", 0.0)
@@ -461,8 +548,11 @@ def main(argv=None):
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--audit", choices=("full", "none"), default="full")
     parser.add_argument("--input", type=Path)
+    parser.add_argument("--baseline-planar", type=Path,
+                        help="Archived standalone planar_bands.py used by the unoptimized contour arm")
     args = parser.parse_args(argv)
-    result = run_case(args.case, args.height, args.method, args.audit == "full", input_path=args.input)
+    result = run_case(args.case, args.height, args.method, args.audit == "full", input_path=args.input,
+                      baseline_planar_path=args.baseline_planar)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, default=_json_default, allow_nan=False) + "\n")
     print(json.dumps({"case": args.case, "method": args.method, "status": result["status"],

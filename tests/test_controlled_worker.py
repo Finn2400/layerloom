@@ -1,5 +1,6 @@
 """Behavioral checks for the isolated, matched-band benchmark harness."""
 import importlib.util
+import hashlib
 import json
 from pathlib import Path
 from types import SimpleNamespace
@@ -33,10 +34,10 @@ def controlled_inputs(monkeypatch, parts):
     monkeypatch.setattr(worker, "_load_case", lambda case, path=None: (
         [(name, mesh.copy()) for name, mesh in parts], {"synthetic": True, "sha256": "test"}))
     monkeypatch.setattr(worker, "_legacy_module", lambda: fake_legacy())
-    monkeypatch.setattr(worker, "_warmup", lambda legacy: None)
+    monkeypatch.setattr(worker, "_warmup", lambda legacy, **kwargs: None)
 
 
-@pytest.mark.parametrize("method", worker.METHODS)
+@pytest.mark.parametrize("method", ("cut", "repair_cut", "contour"))
 def test_same_original_grid_assignments_and_valid_footprints(monkeypatch, method):
     controlled_inputs(monkeypatch, [("first__PAT_cm__", box()), ("second__PAT_y__", box(x=2))])
     result = worker.run_case("cubes", 0.2, method)
@@ -125,3 +126,151 @@ def test_actual_legacy_helper_and_common_warmup_are_usable():
     assert details["parts"][0]["topology_after"]
     assert not details["fallback_to_raw"]
     assert effective[0][1].is_volume
+
+
+def test_optimized_defers_source_extrusion_and_preserves_final_material_geometry(monkeypatch):
+    controlled_inputs(monkeypatch, [("first__PAT_cm__", box()), ("second__PAT_y__", box(x=2))])
+    previous = worker.run_case("cubes", 0.2, "contour", audit=False)
+    reconstruct = worker.reconstruct_layer_profiles
+    extrude = worker.extrude_profile
+    calls = {"source_parts": 0, "extrusions": 0}
+
+    def profiles(*args, **kwargs):
+        calls["source_parts"] += 1
+        return reconstruct(*args, **kwargs)
+
+    def final_mesh(*args, **kwargs):
+        calls["extrusions"] += 1
+        return extrude(*args, **kwargs)
+
+    monkeypatch.setattr(worker, "reconstruct_layer_profiles", profiles)
+    monkeypatch.setattr(worker, "extrude_profile", final_mesh)
+    result = worker.run_case("cubes", 0.2, "contour_optimized", audit=False)
+    assert result["status"] == "ok", result["errors"]
+    assert calls == {"source_parts": 2, "extrusions": result["counts"]["native_parts"]}
+    assert result["fingerprints"]["native_parts_sha256"] == previous["fingerprints"]["native_parts_sha256"]
+    assert result["fingerprints"]["source_profiles_sha256"] == previous["fingerprints"]["source_profiles_sha256"]
+    assert result["fingerprints"]["part_bands_sha256"] is None
+    assert result["counts"]["source_profiles"] == 4
+    assert result["counts"]["deferred_source_extrusions"] == 4
+    assert result["counts"]["produced_source_meshes"] == 0
+    assert result["counts"]["missing_bands"] == 0
+    assert result["execution_plan"]["source_meshes_expected"] is False
+    for record in result["bands"]:
+        assert record["extrusion_deferred"]
+        assert "missing_output" not in record
+        assert record["geometry_sha256"] is None
+        assert len(record["profile_sha256"]) == 64
+    for record in result["native_parts"]:
+        assert record["intrinsic_float32"]["is_volume"]
+        assert not record["intrinsic_float32"]["zero_area_triangles"]
+        assert not record["intrinsic_float32"]["duplicate_faces"]
+    times = result["timings"]
+    assert times["matched_part_bands_s"] is None
+    assert times["core_s"] == pytest.approx(times["repair_s"] + times["layers_s"] + times["assembly_s"])
+    json.dumps(result, default=worker._json_default, allow_nan=False)
+
+
+def test_optimized_rejects_inapplicable_source_mesh_audit():
+    with pytest.raises(ValueError, match="defers source meshes; use audit=False"):
+        worker.run_case("cubes", 0.2, "contour_optimized")
+
+
+def test_optimized_empty_midpoints_are_profiles_without_missing_mesh_failures(monkeypatch):
+    controlled_inputs(monkeypatch, [("anchor__PAT_c__", box()),
+                                    ("thin__PAT_m__", box(height=0.02, bottom=0.05, x=2))])
+    result = worker.run_case("cubes", 0.2, "contour_optimized", audit=False)
+    assert result["status"] == "ok", result["errors"]
+    assert result["counts"]["source_profiles"] == 3
+    assert result["counts"]["nonempty_source_profiles"] == 2
+    assert result["counts"]["empty_source_profiles"] == 1
+    assert result["counts"]["deferred_source_extrusions"] == 2
+    assert result["counts"]["missing_bands"] == 0
+    assert result["counts"]["failed_source_profiles"] == 0
+    thin = result["bands"][-1]
+    assert thin["empty_midpoint"]
+    assert "extrusion_deferred" not in thin
+    assert "missing_output" not in thin
+
+
+def test_optimized_final_extrusion_failure_is_rejected(monkeypatch):
+    controlled_inputs(monkeypatch, [("box__PAT_c__", box())])
+
+    def reject(*args, **kwargs):
+        raise ValueError("final mesh rejected")
+
+    monkeypatch.setattr(worker, "extrude_profile", reject)
+    result = worker.run_case("cubes", 0.2, "contour_optimized", audit=False)
+    assert result["status"] == "geometry_failure"
+    assert result["counts"]["source_profiles"] == 2
+    assert result["counts"]["missing_bands"] == 0
+    assert result["counts"]["native_parts"] == 0
+    assert len(result["errors"]) == 2
+    assert all("final mesh rejected" in error for error in result["errors"])
+
+
+def test_optimized_rejected_profile_cannot_reach_native_assembly(monkeypatch):
+    controlled_inputs(monkeypatch, [("box__PAT_c__", box())])
+    reconstruct = worker.reconstruct_layer_profiles
+
+    def rejected_profile(*args, **kwargs):
+        result = reconstruct(*args, **kwargs)
+        result[0].profile.ok = False
+        return result
+
+    monkeypatch.setattr(worker, "reconstruct_layer_profiles", rejected_profile)
+    result = worker.run_case("cubes", 0.2, "contour_optimized", audit=False)
+    assert result["status"] == "geometry_failure"
+    assert result["counts"]["failed_source_profiles"] == 1
+    assert result["counts"]["deferred_source_extrusions"] == 1
+    assert result["counts"]["missing_bands"] == 0
+    assert [record["layer_index"] for record in result["native_parts"]] == [1]
+    assert "profile_rejected" in result["errors"][0]
+
+
+def test_frozen_planar_kernel_drives_both_timed_stages_and_warmup(monkeypatch, tmp_path):
+    original_warmup = worker._warmup
+    controlled_inputs(monkeypatch, [("box__PAT_c__", box())])
+    previous = worker.run_case("cubes", 0.2, "contour", audit=False)
+    archived = tmp_path / "frozen_planar.py"
+    archived.write_text(
+        "from layerloom.planar_bands import RepairConfig, section_profile as _section, extrude_profile as _extrude\n"
+        "calls = []\n"
+        "def section_profile(*args, **kwargs):\n"
+        "    calls.append('profile')\n"
+        "    return _section(*args, **kwargs)\n"
+        "def extrude_profile(*args, **kwargs):\n"
+        "    calls.append('extrude')\n"
+        "    return _extrude(*args, **kwargs)\n")
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("current planar kernel used in frozen control")
+
+    monkeypatch.setattr(worker, "section_profile", forbidden)
+    monkeypatch.setattr(worker, "extrude_profile", forbidden)
+    monkeypatch.setattr(worker, "_warmup", original_warmup)
+    result = worker.run_case("cubes", 0.2, "contour", audit=False, baseline_planar_path=archived)
+    frozen = worker._baseline_planar(archived)
+    # One profile and two extrusions warm up the selected implementation;
+    # each of two measured layers then has a source and final extrusion.
+    assert frozen.calls.count("profile") == 3
+    assert frozen.calls.count("extrude") == 6
+    assert result["status"] == "ok", result["errors"]
+    assert result["fingerprints"] == previous["fingerprints"]
+    assert result["baseline_planar"] == {
+        "path": str(archived.resolve()), "sha256": hashlib.sha256(archived.read_bytes()).hexdigest(),
+        "loaded": True, "used_for_timed_geometry": True,
+    }
+
+
+@pytest.mark.parametrize("method", ("cut", "repair_cut", "contour_optimized"))
+def test_other_methods_record_but_do_not_load_frozen_control(monkeypatch, tmp_path, method):
+    controlled_inputs(monkeypatch, [("box__PAT_c__", box())])
+    archived = tmp_path / "unused_planar.py"
+    archived.write_text("raise RuntimeError('only the old contour arm may import this module')\n")
+    result = worker.run_case("cubes", 0.2, method, audit=False, baseline_planar_path=archived)
+    assert result["status"] == "ok", result["errors"]
+    assert result["baseline_planar"] == {
+        "path": str(archived.resolve()), "sha256": hashlib.sha256(archived.read_bytes()).hexdigest(),
+        "loaded": False, "used_for_timed_geometry": False,
+    }

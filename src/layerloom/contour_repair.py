@@ -24,7 +24,7 @@ import trimesh
 
 from layerloom.export import write_basic_3mf
 from layerloom.ingest import read_parts
-from layerloom.planar_bands import RepairConfig, extrude_profile, reconstruct_layers
+from layerloom.planar_bands import RepairConfig, extrude_profile, reconstruct_layer_profiles
 from layerloom.planar_materials import partition_materials
 from layerloom.tokens import TOKEN_ALPHABET, COLOR_OBJECT_LABELS
 
@@ -200,6 +200,7 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
         "fallback_recipe": run, "recipe_policy": "last PAT label, otherwise fallback recipe",
         "packaging": "one mesh object with named per-layer PrusaSlicer volume ranges",
         "sampling": "global layer midpoint; piecewise constant XY profile through each band",
+        "geometry_pipeline": "recover source contours, partition materials, extrude final material regions once",
         "limitations": ["Short features between sample planes can disappear.",
                         "Surface color patches do not define volumetric regions.",
                         "Downstream first and subsequent layer heights and Z origin must match; adaptive layers must be disabled.",
@@ -235,7 +236,7 @@ def reconstruct_file(input_path: Path, output_path: Path, *, layer_height: float
                 raise ValueError(f"Part {label!r} has an empty or unsupported PAT recipe")
             part_report = {"label": label, "recipe": recipe, "input_is_volume": bool(mesh.is_volume), "layers": []}
             report["parts"].append(part_report)
-            for band in reconstruct_layers(mesh, layer_height, z0=z0, config=config):
+            for band in reconstruct_layer_profiles(mesh, layer_height, z0=z0, config=config):
                 part_report["layers"].append({"index": band.index, "sample_z_mm": band.sample_z,
                                                "ok": band.profile.ok, **band.profile.diagnostics})
                 if not band.profile.ok:

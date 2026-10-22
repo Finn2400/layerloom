@@ -522,3 +522,130 @@ a concrete optimization candidate. A selective fallback is another candidate,
 but would need checks for float32 degeneracies as well as indexed volume;
 checking volume alone would miss some of the defects seen here. Neither
 optimization is implemented or included in these measurements.
+
+## Removing redundant extrusion, 22 October 2026
+
+The production contour path now recovers source profiles, partitions the
+material regions, and extrudes each final material region once. It no longer
+creates source-part prisms that would be discarded before color assembly.
+`reconstruct_layer_profiles` exposes that contour-only step; the existing
+`reconstruct_layers` API still constructs and validates source-part meshes.
+The final triangulator also reads GEOS triangle coordinates in bulk, retaining
+the exact previous ordering and indexed cap arrays. Float32 normalization,
+hole handling, boundary fan splitting, partition rules, and final validation
+are unchanged.
+
+One acceptance rule intentionally changes: a source profile no longer needs
+to form a valid standalone prism if its final combined material region forms
+a valid exported mesh. The contour itself must still pass reconstruction, and
+the final material must pass extrusion, float32 volume, duplicate/collapsed
+triangle, export/reimport, cap footprint, whole-layer and seam checks. Tests
+explicitly check that a failed final extrusion is rejected.
+
+The follow-up benchmark runs the same four inputs at 0.20 mm with the same
+recipes, Z origin, 0.001 mm interlayer gap, settings, libraries, thread limits,
+and fresh-process warmup. It runs four methods four times each, serially,
+rotating order so every method occupies every position once for each input.
+The original 2D control imports `planar_bands.py` frozen from `a27dc7de` for
+both its source and final extrusion stages. The harness requires that source
+file's SHA-256 to equal the one recorded in the previous benchmark; each
+worker records whether it actually loaded and used this frozen implementation.
+Neither the previous benchmark nor its detailed result directory is changed.
+
+The directly comparable headline is **complete geometry processing**
+(`core_s`): repair + source-band creation or contour-only extraction + final
+color assembly. All intrinsic checks remain timed. Optimized contour-only
+extraction does not create source meshes, so its old `matched_part_bands_s`
+field is explicitly null; reporting it as a matched mesh-band time would be
+misleading. Loading, imports, warmup, geometry hashing, export, external
+audits, slicer processing and printing remain excluded.
+
+Every new output must match the archived final mesh arrays, names, layer
+indices and color tokens exactly, in addition to source bytes, numerical
+settings, library versions and final counts. Only then does the report reuse
+the original external audit evidence. Known old-path defects and the 11
+generic-section Benchy failures remain recorded; the identical Benchy meshes
+also retain the supplementary cap-union proof described above. The expensive
+common external audit is not rerun in this timing experiment. A separate,
+untimed production Benchy run repeats the full CLI's export/reimport and seam
+checks and compares all 349 named bands against the previously inspected 3MF.
+
+Reproduce from the repository root (using the same environment as above):
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/optimized_benchmark.py
+
+PYTHONPATH=src python experiments/planar_bands/optimized_plot.py \
+  experiments/planar_bands/results/optimized_benchmark.json
+
+PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=src python \
+  experiments/planar_bands/optimized_cli_validation.py \
+  --output /tmp/benchy_optimized_validation.3mf \
+  --report /tmp/benchy_optimized_validation.report.json \
+  --summary /tmp/benchy_optimization_validation.json
+```
+
+The CLI validation requires fresh output paths and the original local Benchy
+3MF/report as controls. Benchmark raw details stay local; the aggregate report,
+plot and compact CLI identity proof are retained in this directory.
+
+The production validation passed for all **349 bands, 182 layers and
+1,466,260 triangles**. Every native band name, vertex array and face array
+equals the previously inspected output exactly. All report diagnostics also
+match except the file paths, ZIP-container checksum and new pipeline
+description: contour recovery, partitioning, tiny-hole normalization, exported
+footprints, and seam metadata are unchanged. The original 3MF and its Orca
+inspection copy were preserved; the new local output is
+`results/benchy_optimized.3mf`. The compact proof is in
+[`results/optimization_validation.json`](results/optimization_validation.json).
+
+### Optimization measurements
+
+All **64 workers** completed. Every final mesh matches its archived control
+exactly, all frozen-control dispatch checks pass, and all recorded source-file
+and previous-evidence hashes remained unchanged. All contour outputs retain
+the successful final checks, including the supplementary Benchy prism proof.
+The cut-only and mesh-repair paths retain their known defects described above.
+
+Complete geometry processing, seconds: **median [minimum–maximum]**, four
+fresh serial repetitions per cell. These are measurements from this new run,
+including the frozen original 2D control, rather than a comparison against
+historical timings from a different session.
+
+| Input | Existing cuts | Mesh repair + cuts | Original 2D | Optimized 2D |
+| --- | ---: | ---: | ---: | ---: |
+| Tutorial cubes | 0.194 [0.192–0.199] | 0.203 [0.202–0.206] | 0.439 [0.434–0.450] | **0.299 [0.289–0.509]** |
+| Benchy | 10.922 [10.877–11.973] | 11.453 [11.235–11.922] | 59.141 [57.475–64.200] | **39.998 [38.896–47.839]** |
+| Intact hollow tube | 1.179 [1.122–1.193] | 1.172 [1.138–1.262] | 11.866 [11.816–23.683] | **7.451 [7.432–7.803]** |
+| Tube with 0.020 mm seam | 1.506 [1.489–1.564] | 1.148 [1.133–1.165] | 15.694 [13.971–20.195] | **9.529 [9.478–10.288]** |
+
+The optimized 2D method reduces median wall time by **32.0%, 32.4%, 37.2%
+and 39.3%**, respectively: **1.47×, 1.48×, 1.59× and 1.65×** faster. The older
+3D paths are still faster, with the previously measured geometry defects;
+this optimization preserves the 2D geometry improvements rather than making
+the two methods equivalent.
+
+For Benchy, source processing falls from a median 33.193 s (contours plus
+649 intermediate prisms) to 17.314 s (contours only). Final material assembly
+falls from 26.046 s to 22.684 s with bulk triangle-coordinate extraction.
+Stage medians do not necessarily sum to the median total. The optimized path
+creates the same 349 final bands and 1,466,260 triangles. The benchmark reports
+zero source meshes as intentional deferred work, not missing layers.
+
+No observations were discarded. Several slow wall-time observations are
+visible, especially the original intact tube (23.683 s wall versus 13.908 s
+CPU) and one optimized cube. CPU time is recorded alongside every wall time;
+Benchy's median CPU time also improves from 57.675 s to 39.365 s. These remain
+local desktop measurements without CPU pinning or isolation from background
+applications, with only four observations per cell; ranges are not confidence
+intervals.
+
+![Optimized repair and layer-creation timings](results/optimized_comparison.png)
+
+The plot stacks the stage times from the two central total-time runs, averaging
+them so the bar equals the median total; whiskers retain the full observed
+range. Full timings, provenance and inherited quality evidence are in
+[`results/optimized_benchmark.json`](results/optimized_benchmark.json).
+The combined contour, CLI, benchmark and G-code-probe regression suite passed
+**189 tests** after the measurements, without competing with the timed workers.
