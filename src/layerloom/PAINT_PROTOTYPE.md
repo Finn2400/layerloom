@@ -1,6 +1,6 @@
 # LayerLoom paint prototype
 
-The `codex/paint-main-ui` branch includes **Paint** as a mode in the main
+The `codex/paint-release-integration` branch includes **Paint** as a mode in the main
 LayerLoom toolbar, active by default. Turn Paint off to use the existing
 arrange-and-weave controls, then turn it on to return to painting. Both modes
 use the same loaded model, paint and placement in memory. Switching modes
@@ -22,9 +22,11 @@ geometry. Undo and Redo remain available in both modes. Closing the main window
 protects unsaved paint or placement changes and an active export.
 
 The export dialog shows estimated additional memory, layer count and sampling
-work before conversion. Its memory budget defaults to **2,048 MiB** and can be
-adjusted. Work or memory estimates beyond the selected limits disable export;
-increase sampling size/layer height or reduce the model first. Leave memory for
+work before conversion. **Advanced export settings** exposes the memory budget
+(default **2,048 MiB**), sampling budget (default **2 million cells**) and standard
+or fine geometry precision. Work or memory estimates beyond the selected limits
+disable export. Increase sampling size/layer height, reduce the model, or explicitly
+raise the appropriate budget when resources permit. Leave memory for
 the loaded model, application and other programs. This is an allocation estimate,
 not a hard operating-system limit on application RAM. Runtime checks also track
 generated geometry, nearest-surface candidates and serialization. Export snapshots
@@ -310,11 +312,16 @@ original geometry and successful G-code audit. See
 `independent-transform-reserialization-audit.json` under the same slicer folder.
 
 The full-size dragon proof uses 0.2 mm layers, a 0.4 mm paint-sampling pitch, and
-0.00001 mm coordinate precision. Its local development driver uses a validated
-exact triangle-search accelerator, parallel layer checkpoints, and an explicitly
-increased cell budget. The ordinary GUI converter still has a two-million-cell
-guard; large-model performance and advanced export controls remain prototype
-work. The accelerator and reproduction commands are retained beside the output.
+0.00001 mm coordinate precision. The earlier development driver used parallel
+layer checkpoints. The normal converter now includes an exact triangle-search
+accelerator with deterministic lowest-face-ID tie resolution, portable Numba
+wheels and no external compiler or writable JIT cache. It streams large 3MF XML
+in bounded chunks and releases source search data before final unions. The
+dragon settings are available through the normal dialog: 20 million sampling
+cells, fine precision and a 12,288 MiB export budget. These settings have a
+preflight estimate of roughly 11,176 MiB; actual memory also depends on the model.
+`paint_tests/release_ui_proof.py` exercises the actual main-window options dialog
+and worker with no cached geometry, recording input/output hashes and progress.
 
 Main-window pointer tests select and paint an entire cube face, exercise
 undo/redo and mode switching, and verify exact save/reopen. GUI evidence is under
