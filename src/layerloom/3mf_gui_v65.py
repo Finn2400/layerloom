@@ -1643,6 +1643,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                 hints.get(mode, hints["normal"])
                 + " Angles and scale are relative to the opened file; saved orientation is retained."
             )
+            self._position_viewer_overlays()
 
     def _set_viewer_tool_mode(self, mode: str):
         result = super()._set_viewer_tool_mode(mode)
@@ -1661,6 +1662,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
     def _refresh_transform_readout(self, plan=None):
         super()._refresh_transform_readout(plan)
         self._sync_position_fields(plan or self._last_transform_plan)
+        self._position_viewer_overlays()
 
     def _update_transform_ui_state(self):
         super()._update_transform_ui_state()

@@ -4384,7 +4384,10 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.camera_overlay.adjustSize()
         max_w = max(340, host_rect.width() - (margin * 3) - self.camera_overlay.width())
         self.viewer_top_overlay.setMaximumWidth(max_w)
-        self.viewer_top_overlay.resize(min(max_w, self.viewer_top_overlay.sizeHint().width()), self.viewer_top_overlay.sizeHint().height())
+        width = min(max_w, self.viewer_top_overlay.sizeHint().width())
+        layout = self.viewer_top_overlay.layout()
+        height = layout.totalHeightForWidth(width) if layout.hasHeightForWidth() else self.viewer_top_overlay.sizeHint().height()
+        self.viewer_top_overlay.resize(width, max(height, self.viewer_top_overlay.minimumSizeHint().height()))
         self.viewer_top_overlay.move(margin, margin)
         self.camera_overlay.move(
             max(margin, host_rect.width() - self.camera_overlay.width() - margin),

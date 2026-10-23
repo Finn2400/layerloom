@@ -272,6 +272,8 @@ def _run_workflow(artifact_dir):
                 click(button)
                 assert window.viewer_tool_mode == mode
                 assert button.isChecked()
+                hint = window.tool_hint_label
+                assert hint.height() >= hint.heightForWidth(hint.width())
             for button, mode in ((window.move_tool_btn, "move"),
                                  (window.rotate_tool_btn, "gizmo"),
                                  (window.cancel_tool_btn, "normal")):
