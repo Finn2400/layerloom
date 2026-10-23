@@ -5414,7 +5414,10 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             self._load_canonical_model(stamped_woven)
             self._refresh_preview_from_current_file(force=True)
             _log("INFO", f"[weave] woven model loaded in large-file safety mode → {woven}")
-            self.status_bar.showMessage(f"Weave complete in safety mode: {os.path.basename(woven)}", 5000)
+            self.status_bar.showMessage(
+                f"Weave complete in safety mode: {os.path.basename(woven)}. "
+                "Parts are grouped by filament color; reopen the source model to edit original recipes."
+            )
             return
         self._postweave_pat_audit(woven, "[post-weave PAT check]")
         stamped_woven = self._stamp_ids_only(woven)
@@ -5423,7 +5426,10 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.document_path = woven
         self._load_canonical_model(stamped_woven)
         _log("INFO", f"[weave] woven model loaded → {woven}")
-        self.status_bar.showMessage(f"Weave complete: {os.path.basename(woven)}", 5000)
+        self.status_bar.showMessage(
+            f"Weave complete: {os.path.basename(woven)}. "
+            "Parts are grouped by filament color; reopen the source model to edit original recipes."
+        )
 
     def _on_preview(self):
         if not (self.base_file or self.current_file) or not (_TRIMESH_OK and _PYVISTA_OK):

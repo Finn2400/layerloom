@@ -1543,8 +1543,37 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.tool_hint_label.setWordWrap(True)
         self.tool_hint_label.setObjectName("muted")
         self.viewer_top_overlay.layout().addWidget(self.tool_hint_label)
+        self._configure_tool_mode_buttons()
         self._refresh_tool_button_states()
         self._position_viewer_overlays()
+
+    def _configure_tool_mode_buttons(self):
+        self._tool_mode_button_group = _V58.QtWidgets.QButtonGroup(self)
+        self._tool_mode_button_group.setExclusive(True)
+        for button, activate in (
+            (self.cancel_tool_btn, lambda: self._set_viewer_tool_mode("normal")),
+            (self.move_tool_btn, self._activate_move_tool),
+            (self.rotate_tool_btn, self._activate_rotate_gizmo),
+            (self.place_tool_btn, self._activate_place_on_plate),
+        ):
+            # Accessible checkbox actions may emit toggled without clicked.
+            # Use one activation path for both accessibility and pointer input.
+            button.clicked.disconnect()
+            button.setCheckable(True)
+            self._tool_mode_button_group.addButton(button)
+            button.toggled.connect(
+                lambda checked, activate=activate: self._on_tool_mode_toggled(checked, activate)
+            )
+
+    def _on_tool_mode_toggled(self, checked, activate):
+        if not checked:
+            return
+        try:
+            activate()
+        finally:
+            # An activation guard can reject the request (e.g. no model or a
+            # failed preview). Keep the selection faithful to the actual mode.
+            self._refresh_tool_button_states()
 
     def _on_position_value_change(self, *_args):
         if self._setting_transform_widgets or not self.base_file or self.large_model_mode:
@@ -1942,6 +1971,15 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
 
     def _apply_transform_preview(self, quiet: bool = False) -> bool:
         mode_before = self.viewer_tool_mode
+        camera_state = None
+        try:
+            camera = self.viewer.plotter.camera
+            camera_state = (
+                tuple(camera.GetPosition()), tuple(camera.GetFocalPoint()), tuple(camera.GetViewUp()),
+                camera.GetParallelProjection(), camera.GetParallelScale(), camera.GetViewAngle(),
+            )
+        except (AttributeError, RuntimeError):
+            pass
         ok = super()._apply_transform_preview(quiet=quiet)
         if ok:
             self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
@@ -1950,6 +1988,22 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                 self._set_viewer_tool_mode(mode_before)
             self._refresh_transform_readout(self._last_transform_plan)
             self._refresh_plate_warning(self._last_transform_plan)
+            if camera_state is not None:
+                # Materializing a placement rebuilds actors, but does not open a
+                # new document. Keep the user's view when switching tools.
+                try:
+                    plotter = self.viewer.plotter
+                    camera = plotter.camera
+                    camera.SetPosition(camera_state[0])
+                    camera.SetFocalPoint(camera_state[1])
+                    camera.SetViewUp(camera_state[2])
+                    camera.SetParallelProjection(camera_state[3])
+                    camera.SetParallelScale(camera_state[4])
+                    camera.SetViewAngle(camera_state[5])
+                    plotter.reset_camera_clipping_range()
+                    plotter.render()
+                except (AttributeError, RuntimeError):
+                    pass
         return ok
 
     def _refresh_preview_from_current_file(self, *, force: bool = False):

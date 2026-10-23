@@ -272,6 +272,13 @@ def _run_workflow(artifact_dir):
                 click(button)
                 assert window.viewer_tool_mode == mode
                 assert button.isChecked()
+            for button, mode in ((window.move_tool_btn, "move"),
+                                 (window.rotate_tool_btn, "gizmo"),
+                                 (window.cancel_tool_btn, "normal")):
+                button.setChecked(True)  # Accessibility checkbox activation.
+                pump()
+                assert window.viewer_tool_mode == mode
+                assert sum(b.isChecked() for b in window._tool_mode_button_group.buttons()) == 1
             enter_number(window.layer_height_spin, 0.20)
             enter_number(window.scale_spin, 1.25)
             enter_number(window.rot_x_spin, 23.0)
@@ -280,12 +287,20 @@ def _run_workflow(artifact_dir):
             assert_preview_matches_plan(window)
             action(window, "Refresh 3D")
             click(window.move_tool_btn)
+            window._set_camera_view("top")
+            camera = window.viewer.plotter.camera
+            camera_before = [*camera.GetPosition(), *camera.GetFocalPoint(), *camera.GetViewUp(),
+                             camera.GetParallelProjection(), camera.GetParallelScale(), camera.GetViewAngle()]
             previous_rotation = window.pending_rotation_matrix.copy()
             enter_number(window.position_x_spin, 138.0)
             enter_number(window.position_y_spin, 118.0)
             np.testing.assert_allclose(window.pending_rotation_matrix, previous_rotation)
             assert_preview_matches_plan(window)
             click(window.rotate_tool_btn)
+            camera = window.viewer.plotter.camera
+            camera_after = [*camera.GetPosition(), *camera.GetFocalPoint(), *camera.GetViewUp(),
+                            camera.GetParallelProjection(), camera.GetParallelScale(), camera.GetViewAngle()]
+            np.testing.assert_allclose(camera_after, camera_before, atol=1e-8)
             enter_number(window.rot_z_spin, 53.0)
             np.testing.assert_allclose(window.pending_target_center_xy, [138., 118.])
             assert_preview_matches_plan(window)
