@@ -238,7 +238,7 @@ jobs:
           mesa3d-release: '24.3.0'
       - name: Exercise native Paint, Arrange and desktop controls
         run: >-
-          uv run --no-sync python -m pytest
+          uv run --no-sync python -u -m pytest -vv -s -o faulthandler_timeout=120
           src/layerloom/paint_tests/test_paint_gui.py
           src/layerloom/paint_tests/test_main_paint.py
           tests/test_desktop_ui.py
