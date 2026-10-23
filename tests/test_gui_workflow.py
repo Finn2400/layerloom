@@ -228,6 +228,29 @@ def _run_workflow(artifact_dir):
             np.testing.assert_allclose(actor.GetProperty().GetColor(), expected_rgb, atol=1 / 255)
             step("part selection and palette click update only selected part and rendered color")
 
+            preview_assignments = copy.deepcopy(window.assignments)
+            for pending_selection in (False, True):
+                if pending_selection:
+                    # Rebuild while a real table selection still has its flash
+                    # timer pending; it must not later recolor replacement actors.
+                    another_item = window.parts_table.topLevelItem(1)
+                    window.parts_table.scrollToItem(another_item)
+                    QtTest.QTest.mouseClick(window.parts_table.viewport(), QtCore.Qt.LeftButton,
+                                            pos=window.parts_table.visualItemRect(another_item).center())
+                    assert window.parts_table.currentItem() is another_item
+                    assert window._flash_timers
+                action(window, "Preview 3D")
+                assert not window._flash_timers
+                QtTest.QTest.qWait(300)
+                assert window.assignments == preview_assignments
+                for part_oid, assignment in preview_assignments.items():
+                    actor = window.viewer.actors_by_name[window.oid_to_name[part_oid]]
+                    hex_color = assignment["hex"]
+                    expected_rgb = [int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
+                    np.testing.assert_allclose(actor.GetProperty().GetColor(), expected_rgb, atol=1 / 255)
+            screenshot(window, "benchy-preview-refreshed")
+            step("repeated Preview 3D retains all assigned colors and cancels pending selection feedback")
+
             for button, mode in ((window.move_tool_btn, "move"),
                                  (window.rotate_tool_btn, "gizmo"),
                                  (window.cancel_tool_btn, "normal")):

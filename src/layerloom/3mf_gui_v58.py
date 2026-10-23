@@ -5422,6 +5422,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         if not self._ensure_transform_preview_current(quiet=False):
             return
         self._build_or_rebuild_viewer()
+        self._tint_viewer_from_assignments()
 
     # ---------- viewer + selection ----------
     def _set_camera_view(self, which: str):
