@@ -14,11 +14,14 @@ from typing import Any, Callable
 import numpy as np
 
 DEFAULT_MEMORY_BUDGET_BYTES = 2 * 1024**3
-_FIXED_BYTES = 64 * 1024**2
+_FIXED_BYTES = 256 * 1024**2
 # Planning allowances include native topology, Python objects, intermediate
 # triangle/adjacency arrays and XML serialization. They are deliberately larger
 # than the raw arrays; runtime checks also account for actual generated faces.
-_TRIANGLE_BYTES = 1024
+# Retained geometry has no populated Trimesh caches. Array-backed mesh data
+# uses about36 bytes/face; this larger allowance also covers Manifold's native
+# topology/BVH. Active union/validation calls reserve their own extra memory.
+_TRIANGLE_BYTES = 384
 _CANDIDATE_BYTES = 320
 
 
@@ -133,6 +136,7 @@ class ExportControl:
         self.stage_callback = stage
         self.retained_triangles = 0
         self.live_layer_bytes = 0
+        self.source_working_released = False
         self.peak_estimated_bytes = estimate.estimated_peak_bytes
         estimate.check_budget(self.budget)
 
@@ -148,7 +152,7 @@ class ExportControl:
 
     def check_memory(self, extra_bytes: int = 0, *, stage: str = "geometry processing") -> None:
         self.checkpoint()
-        estimated = (self.estimate.base_bytes + self.retained_triangles * _TRIANGLE_BYTES +
+        estimated = (self.base_bytes + self.retained_triangles * _TRIANGLE_BYTES +
                      self.live_layer_bytes + int(extra_bytes))
         self.peak_estimated_bytes = max(self.peak_estimated_bytes, estimated)
         if estimated > self.budget:
@@ -158,13 +162,22 @@ class ExportControl:
                 "Increase pitch/layer height or raise the memory budget. No output was written."
             )
 
+    @property
+    def base_bytes(self) -> int:
+        return self.estimate.base_bytes - (
+            self.estimate.source_working_bytes if self.source_working_released else 0)
+
+    def release_source_working_memory(self) -> None:
+        """Call only after dropping the prepared source and triangle index."""
+        self.source_working_released = True
+
     def nearest_batch_size(self, source_triangles: int) -> int:
         # nearby_faces itself creates Python candidate lists. Bound that query
         # conservatively before asking it to build them, then check the actual
         # candidate count before vectorized triangle/closest-point allocations.
         per_point = max(1, source_triangles) * _CANDIDATE_BYTES
         self.check_memory(per_point, stage="nearest-surface search")
-        available = (self.budget - self.estimate.base_bytes - self.retained_triangles * _TRIANGLE_BYTES -
+        available = (self.budget - self.base_bytes - self.retained_triangles * _TRIANGLE_BYTES -
                      self.live_layer_bytes)
         return max(1, min(4096, available // per_point))
 

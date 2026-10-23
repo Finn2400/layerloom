@@ -62,9 +62,18 @@ def _brand_geometry_archive(path: Path, tokens: list[str], *, control: ExportCon
     with zipfile.ZipFile(path) as source, zipfile.ZipFile(rewritten, "w") as target:
         for info in source.infolist():
             if control is not None:
-                control.check_memory(info.file_size * 8, stage="3MF metadata serialization")
-            content = source.read(info.filename)
-            if info.filename == "3D/3dmodel.model":
+                control.checkpoint()
+            if info.filename != "3D/3dmodel.model":
+                with source.open(info) as incoming, target.open(info, "w") as outgoing:
+                    while chunk := incoming.read(1024 * 1024):
+                        if control is not None:
+                            control.checkpoint()
+                        outgoing.write(chunk)
+                continue
+            else:
+                if control is not None:
+                    control.check_memory(info.file_size * 8, stage="3MF metadata serialization")
+                content = source.read(info.filename)
                 root = ET.fromstring(content)
                 for child in list(root):
                     if child.tag.rsplit("}", 1)[-1] != "metadata":
@@ -301,7 +310,8 @@ def _layer_domain(cross_section: Any, *, precision: float, layer_index: int):
 def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
                      domain: Any, *, z: float, layer_index: int, pitch: float,
                      origin: np.ndarray, precision: float, interface_offset: float,
-                     source_colors: bool = False, control: ExportControl | None = None):
+                     source_colors: bool = False, control: ExportControl | None = None,
+                     nearest_query: Callable | None = None):
     """Clip a complete grid to the footprint, then color every surviving cell.
 
     Sampling each clipped cell at an interior point retains narrow/disconnected
@@ -332,11 +342,13 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
     xy = shapely.get_coordinates(samples)
     points = np.c_[xy, np.full(len(xy), z)]
     face_indices = []
-    batch_size = 4096 if control is None else control.nearest_batch_size(len(surface.faces))
+    batch_size = 4096 if control is None or nearest_query is not None else control.nearest_batch_size(len(surface.faces))
     for start in range(0, len(points), batch_size):
         if control is not None:
             control.checkpoint()
-        face_indices.append(_nearest_faces(surface, points[start:start + batch_size], control=control))
+        batch = points[start:start + batch_size]
+        face_indices.append(nearest_query(batch) if nearest_query is not None else
+                            _nearest_faces(surface, batch, control=control))
     selected = face_recipes[np.concatenate(face_indices)]
     materials = (selected if source_colors else
                  np.asarray([recipe[layer_index % len(recipe)] for recipe in selected], dtype=object))
@@ -427,7 +439,7 @@ def _interior_sample(mesh: trimesh.Trimesh, *, control: ExportControl | None = N
 
 
 def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_height, mode, *,
-                     control: ExportControl | None = None):
+                     control: ExportControl | None = None, nearest_query: Callable | None = None):
     """Retain missed positive components as physical mesh geometry.
 
     Each clipped piece is smaller than the declared layer spacing. Its material
@@ -464,9 +476,10 @@ def _sub_layer_parts(surface, face_recipes, details, midpoints, z0, zmax, layer_
                 part = trimesh.Trimesh(np.asarray(data.vert_properties)[:, :3]*scale+center,
                                        np.asarray(data.tri_verts), process=False)
             sample = _interior_sample(part, control=control)
-            if control is not None:
+            if control is not None and nearest_query is None:
                 control.nearest_batch_size(len(surface.faces))
-            face = int(_nearest_faces(surface, sample[None, :], control=control)[0])
+            face = int((nearest_query(sample[None, :]) if nearest_query is not None else
+                        _nearest_faces(surface, sample[None, :], control=control))[0])
             recipe = str(face_recipes[face])
             token = recipe if mode == "source" else recipe[layer % len(recipe)]
             retained.append({"mesh": part, "token": token, "audit": {
@@ -630,6 +643,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     component_details = []
     surface, source, face_recipes, source_rows = _source_geometry(
         document, assignments, component_details=component_details, control=control)
+    from layerloom.paint_nearest import NearestTriangles
+    control.stage("Building paint search index")
+    nearest = NearestTriangles(surface, control=control)
     bounds = np.asarray(surface.bounds)
     z0, zmax = bounds[:, 2]
     # Preflight includes unreferenced imported vertices. Source preparation may
@@ -639,7 +655,9 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     midpoints = (z0 + np.arange(layers) * layer_height +
                  np.minimum(zmax, z0 + (np.arange(layers) + 1) * layer_height)) / 2
     retained = _sub_layer_parts(surface, face_recipes, component_details, midpoints,
-                                z0, zmax, layer_height, mode, control=control)
+                                z0, zmax, layer_height, mode, control=control,
+                                nearest_query=nearest.query)
+    component_details.clear()
     control.retained_triangles = sum(len(part["mesh"].faces) for part in retained)
     control.check_memory(stage="sub-layer geometry")
     translation = np.array((-(bounds[0, 0] + bounds[1, 0]) / 2,
@@ -660,7 +678,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             regions, cells, coverage, overlap, interior_gap, partition_area = _partition_layer(
                 surface, face_recipes, domain, z=z, layer_index=layer, pitch=pitch,
                 origin=bounds[0, :2], precision=precision, interface_offset=interface_offset,
-                source_colors=mode == "source", control=control)
+                source_colors=mode == "source", control=control, nearest_query=nearest.query)
             sampled_cells += cells
             if sampled_cells > max_cells:
                 raise ValueError("Export exceeded max_cells after splitting disconnected grid pieces")
@@ -684,6 +702,12 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     if not by_filament and not retained:
         raise ValueError("No printable layers were generated")
 
+    source_volume = float(source.volume())
+    # Source topology and the search index are no longer needed. Releasing
+    # them before the largest final unions keeps these phases from overlapping.
+    del surface, source, face_recipes, nearest, midpoints
+    control.release_source_working_memory()
+
     items, material_rows, final_solids = [], [], []
     used_tokens = _material_order(set(by_filament) | {part["token"] for part in retained})
     extruders = {token: i + 1 for i, token in enumerate(used_tokens)}
@@ -705,6 +729,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         control.retained_triangles -= layer_triangles
         control.retained_triangles += int(solid.num_tri())
         mesh, solid, material_audit = _finalize_filament(solid, token, precision, control=control)
+        mesh._cache.clear()
         control.retained_triangles += len(mesh.faces)
         control.check_memory(stage="final material geometry")
         metadata = {"source_hex": _material_hex(token), "stack_token": token,
@@ -742,7 +767,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
             final_solids.append(mf.Manifold(mf.Mesh64(np.ascontiguousarray(mesh.vertices),
                                     np.ascontiguousarray(mesh.faces, dtype=np.uint64))))
     sampled_volume += retained_volume
-    control.check_memory(sum(int(solid.num_tri()) for solid in final_solids) * 2048,
+    control.check_memory(sum(int(solid.num_tri()) for solid in final_solids) * 1024,
                          stage="final overlap validation")
     final_union = mf.Manifold.batch_boolean(final_solids, mf.OpType.Add)
     control.checkpoint()
@@ -753,7 +778,6 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         raise ValueError("Final printable solids changed layer coverage or overlap; export was cancelled "
                          f"(sampled={sampled_volume:.9g}, parts={output_volume:.9g}, "
                          f"union={union_volume:.9g} mm³, tolerance={tolerance:.9g})")
-    source_volume = float(source.volume())
     output_bounds = np.stack([item.mesh.bounds for item in items])
     output_bounds = np.stack((output_bounds[:, 0].min(axis=0), output_bounds[:, 1].max(axis=0)))
     report = {
@@ -778,6 +802,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         "maximum_layer_coverage_error_mm2": max_coverage, "maximum_layer_overlap_mm2": max_overlap,
         "maximum_internal_layer_gap_mm2": max_interior_gap,
         "output_overlap_mm3": max(0.0, output_volume - union_volume),
+        "nearest_surface_search": "exact triangle BVH; minimum-distance pass followed by lowest-face-ID tie pass",
         "resources": {**estimate.to_dict(), "memory_budget_bytes": control.budget,
                       "budget_policy": "Estimated additional export working memory; not a process RSS cap"},
         "assignments": assignments, "filaments": material_rows,
@@ -796,15 +821,24 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     report_path = output.with_suffix(".paint-report.json")
     report["report_path"] = str(report_path)
     report["report_written"] = True
+    # The streaming writer only needs plain arrays. Release validation-only
+    # solids and cached mesh properties before serializing millions of faces.
+    final_solids.clear()
+    del final_union
+    solid = None
+    for item in items:
+        item.mesh._cache.clear()
+    control.retained_triangles = sum(len(item.mesh.faces) for item in items)
     control.stage("Writing 3MF")
-    control.check_memory(sum(len(item.mesh.faces) for item in items) * 2048,
+    control.check_memory(8 * 1024**2,
                          stage="3MF geometry serialization")
     output.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="layerloom_paint_", dir=output.parent) as temporary:
         staged = Path(temporary) / output.name
         staged_report = Path(temporary) / report_path.name
         write_orca_multipart_3mf(items, str(staged), title=output.stem,
-                                 extruder_by_token={token.lower(): slot for token, slot in extruders.items()})
+                                 extruder_by_token={token.lower(): slot for token, slot in extruders.items()},
+                                 checkpoint=control.checkpoint)
         control.checkpoint()
         _brand_geometry_archive(staged, used_tokens, control=control)
         # Serialize both files before publishing either. The report is optional

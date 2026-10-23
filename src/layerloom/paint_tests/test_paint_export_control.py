@@ -189,3 +189,38 @@ def test_unused_vertex_bounds_do_not_add_empty_or_inverted_export_layers(tmp_pat
     assert result["resources"]["layers"] == 21
     assert result["layers"] == 2
     assert result["output_volume_mm3"] == pytest.approx(8)
+
+
+def test_releasing_source_working_memory_allows_later_geometry_stage():
+    mesh = trimesh.creation.icosphere(subdivisions=2)
+    colors = np.full((len(mesh.faces), 4), 255, dtype=np.uint8)
+    doc = PaintDocument([PaintMesh("sphere", "Sphere", mesh.vertices, mesh.faces, colors)])
+    estimate = estimate_export_resources(doc, pitch=1, layer_height=1)
+    control = ExportControl(estimate, estimate.estimated_peak_bytes)
+    extra = estimate.source_working_bytes // 2
+    with pytest.raises(ExportMemoryBudgetExceeded):
+        control.check_memory(extra, stage="validation while source remains live")
+    control.release_source_working_memory()
+    control.check_memory(extra, stage="validation after source release")
+    assert control.base_bytes == estimate.base_bytes - estimate.source_working_bytes
+    assert control.base_bytes >= estimate.snapshot_bytes
+
+
+def test_cancellation_inside_streaming_geometry_writer_preserves_previous_export(tmp_path, monkeypatch):
+    output, report = existing_output(tmp_path)
+    stop = Event()
+    writer = paint_export.write_orca_multipart_3mf
+    reached = []
+    def cancellable_writer(*args, **kwargs):
+        checkpoint = kwargs.pop("checkpoint")
+        def on_stream_chunk():
+            reached.append(True)
+            if len(reached) == 3:
+                stop.set()
+            checkpoint()
+        return writer(*args, checkpoint=on_stream_chunk, **kwargs)
+    monkeypatch.setattr(paint_export, "write_orca_multipart_3mf", cancellable_writer)
+    with pytest.raises(ExportCancelled):
+        export(document(), output, cancel_requested=stop.is_set)
+    assert len(reached) == 3
+    unchanged(output, report)
