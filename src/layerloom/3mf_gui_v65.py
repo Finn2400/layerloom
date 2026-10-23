@@ -1610,7 +1610,10 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                 "gizmo": "Rotate: drag a colored ring or enter Rotation X/Y/Z in degrees. Drag elsewhere to orbit the camera. Esc returns to View.",
                 "surface": "Place: click a highlighted flat face to rest it on the plate. Esc returns to View.",
             }
-            self.tool_hint_label.setText(hints.get(mode, hints["normal"]))
+            self.tool_hint_label.setText(
+                hints.get(mode, hints["normal"])
+                + " Angles and scale are relative to the opened file; saved orientation is retained."
+            )
 
     def _set_viewer_tool_mode(self, mode: str):
         result = super()._set_viewer_tool_mode(mode)

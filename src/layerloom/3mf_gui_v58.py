@@ -4154,7 +4154,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         filter_row = QtWidgets.QHBoxLayout()
         filter_row.setSpacing(8)
-        self.limit_two_checkbox = QtWidgets.QCheckBox("Two-color only")
+        self.limit_two_checkbox = QtWidgets.QCheckBox("Up to two colors")
         self.limit_two_checkbox.toggled.connect(self._on_two_color_toggle)
         self.add_black_checkbox = QtWidgets.QCheckBox("Add K")
         self.add_black_checkbox.toggled.connect(self._on_bw_toggle)

@@ -215,7 +215,7 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
 
         req_row = _V58.QtWidgets.QGridLayout()
         req_row.setSpacing(6)
-        req_label = _V58.QtWidgets.QLabel("Show recipes containing")
+        req_label = _V58.QtWidgets.QLabel("Show recipes containing all selected colors")
         req_label.setObjectName("muted")
         req_row.addWidget(req_label, 0, 0, 1, 3)
         self.req_buttons = {}
