@@ -16,6 +16,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 import math
+import logging
 import os
 import re
 import io
@@ -659,7 +660,9 @@ def write_orca_multipart_3mf(
             '{"plate_1":{"nozzle_sequence":[],"optimal_assignment":[],"sequence":[]}}',
         )
 
-    print(f"[export] wrote Orca multipart 3MF with {len(specs)} part(s) → {out_path}")
+    # Reporting must not turn a successful archive write into a failure on
+    # Windows consoles which cannot encode Unicode filenames or symbols.
+    logging.getLogger(__name__).info("Wrote Orca multipart 3MF with %s parts: %s", len(specs), out_path)
 
 
 

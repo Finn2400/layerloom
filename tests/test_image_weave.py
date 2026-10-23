@@ -97,6 +97,20 @@ def test_multipart_stream_can_cancel_within_one_large_part(tmp_path):
     assert calls == 5
 
 
+def test_multipart_export_succeeds_with_windows_console_encoding(tmp_path):
+    import contextlib
+    import io
+    output = tmp_path / "模型 café.3mf"
+    mesh = trimesh.creation.box()
+    console = io.TextIOWrapper(io.BytesIO(), encoding="cp1252", errors="strict")
+    with contextlib.redirect_stdout(console):
+        write_orca_multipart_3mf([LeafMeshSpec("model", mesh, {})], str(output))
+    with zipfile.ZipFile(output) as archive:
+        assert archive.testzip() is None
+        root = ET.fromstring(archive.read("3D/3dmodel.model"))
+        assert root.find(".//{http://schemas.microsoft.com/3dmanufacturing/core/2015/02}object").get("name") == output.stem
+
+
 def test_compaction_unions_touching_layer_slabs():
     lower = trimesh.creation.box(extents=(2.0, 2.0, 1.0))
     upper = lower.copy()
