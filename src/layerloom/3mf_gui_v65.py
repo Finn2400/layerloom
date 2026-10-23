@@ -2051,6 +2051,8 @@ def main():
         }
         """
     )
+    from layerloom.desktop_ui import install_desktop_ui
+    install_desktop_ui(window)
     window.show()
     return app.exec_()
 

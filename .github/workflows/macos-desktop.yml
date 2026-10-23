@@ -1,0 +1,167 @@
+name: Mac desktop
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/macos-desktop.yml'
+      - '.python-version'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - 'src/**'
+      - 'examples/**'
+      - 'scripts/build_macos.py'
+      - 'scripts/validate_macos.py'
+      - 'scripts/runtime-pins.txt'
+      - 'packaging/macos/**'
+      - 'tests/test_macos_packaging.py'
+      - 'tests/test_worker.py'
+      - 'docs/images/mac-first-open.svg'
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+# Tagged builds are deliberately disabled until the initial manual release gates
+# in packaging/macos/RELEASE_CHECKLIST.md have passed. Manual builds work now.
+jobs:
+  build:
+    if: >-
+      github.event.repository.private == false &&
+      (github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' || vars.MAC_DESKTOP_RELEASES_ENABLED == 'true')
+    name: Build ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-14, arch: arm64 }
+          - { runner: macos-15-intel, arch: x86_64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+          enable-cache: true
+      - name: Install locked build environment
+        run: uv sync --managed-python --locked --extra gui --extra desktop --extra dev --no-editable
+      - name: Verify release tag matches package version
+        if: github.event_name == 'push'
+        run: .venv/bin/python -c 'import os,tomllib; from pathlib import Path; version=tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]; assert os.environ["GITHUB_REF_NAME"] == "v"+version, "Tag must match pyproject version"'
+      - name: Test desktop infrastructure
+        run: .venv/bin/python -m pytest tests/test_macos_packaging.py tests/test_worker.py
+      - name: Install isolated desktop build environment
+        env:
+          UV_PROJECT_ENVIRONMENT: .venv-desktop
+        run: uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable
+      - name: Build app and DMG
+        run: .venv-desktop/bin/python scripts/build_macos.py
+      - name: Preserve application, architecture notices and build identity
+        run: |
+          tar -czf dist/macos/LayerLoom-${{ matrix.arch }}.app.tar.gz -C dist/macos LayerLoom.app
+          tar -czf dist/macos/THIRD_PARTY_NOTICES-${{ matrix.arch }}.tar.gz -C dist/macos/LayerLoom.app/Contents/Resources THIRD_PARTY_NOTICES
+          cp dist/macos/LayerLoom.app/Contents/Resources/build-info.json dist/macos/LayerLoom-${{ matrix.arch }}-build-info.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-${{ matrix.arch }}
+          path: |
+            dist/macos/*.dmg
+            dist/macos/*.sha256
+            dist/macos/*.tar.gz
+            dist/macos/*-build-info.json
+          compression-level: 0
+          retention-days: 14
+
+  validate:
+    needs: build
+    name: Validate ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { runner: macos-14, arch: arm64 }
+          - { runner: macos-15, arch: arm64 }
+          - { runner: macos-26, arch: arm64 }
+          - { runner: macos-15-intel, arch: x86_64 }
+          - { runner: macos-26-intel, arch: x86_64 }
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      # Python runs the external verifier only; the relocated application uses
+      # exclusively its own interpreter and is launched with a clean PATH.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: mac-${{ matrix.arch }}
+          path: artifact
+      - name: Extract exact oldest-OS application
+        run: tar -xzf artifact/LayerLoom-${{ matrix.arch }}.app.tar.gz -C artifact
+      - name: Prepare affected Intel hosted runner icon service
+        if: matrix.runner == 'macos-26-intel'
+        run: |
+          mkdir -p validation
+          {
+            sw_vers
+            uname -m
+            printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}"
+          } > validation/runner-image.txt
+          # This exact VM image has a crash-looping icon service on its virtual
+          # GPU. It blocks AppKit icon requests indefinitely; generic icons work.
+          # https://github.com/actions/runner-images/issues/14751
+          # This only prepares the disposable CI VM. App bytes and all native/
+          # GUI assertions stay unchanged; users do not need this workaround.
+          if [[ "${ImageVersion:-}" == '20260824.0517.1' ]]; then
+            service="gui/$(id -u)/com.apple.iconservices.iconservicesagent"
+            launchctl print "$service" > validation/iconservices-before.log 2>&1 || true
+            launchctl bootout "$service" > validation/iconservices-bootout.log 2>&1 || true
+            launchctl disable "$service"
+            launchctl print-disabled "gui/$(id -u)" > validation/iconservices-after.log 2>&1
+            printf '%s\n' 'Applied runner-images#14751 workaround to the affected CI image.' >> validation/runner-image.txt
+          fi
+      - name: Verify checksums, signatures, native requirements, workers and GUI
+        run: |
+          cd artifact
+          shasum -a 256 -c ./*.sha256
+          cd ..
+          python scripts/validate_macos.py artifact/LayerLoom.app --gui --report validation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-${{ matrix.runner }}
+          path: validation
+          retention-days: 30
+
+  draft-release:
+    needs: [build, validate]
+    if: github.event_name == 'push' && vars.MAC_DESKTOP_RELEASES_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: mac-*
+          path: artifacts
+          merge-multiple: true
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+      - name: Build corresponding LayerLoom source and wheel
+        run: |
+          uv sync --managed-python --locked --extra dev
+          .venv/bin/python -m build
+          cp packaging/macos/RELEASE_CHECKLIST.md artifacts/RELEASE_CHECKLIST.md
+          cp 'packaging/macos/Read Me First.html' artifacts/Read-Me-First.html
+          cp docs/images/mac-first-open.svg artifacts/mac-first-open.svg
+      - name: Create draft only
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl

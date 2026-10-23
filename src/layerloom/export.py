@@ -279,7 +279,7 @@ def write_basic_3mf(
         ET.SubElement(
             build,
             M("item"),
-            {"objectid": str(obj_id), "printable": "1", "partnumber": label},
+            {"objectid": str(obj_id), "partnumber": label},
         )
         obj_id += 1
 
@@ -290,6 +290,128 @@ def write_basic_3mf(
         z.writestr("3D/3dmodel.model", xml_bytes)
 
     print(f"[export] wrote {obj_id - 1} object(s) → {out_path}")
+
+
+def _display_hex(value: object) -> Optional[str]:
+    """
+    Normalize a 3MF base-material display color to ``#RRGGBBFF``.
+    """
+    raw = str(value or "").strip().lstrip("#")
+    if len(raw) == 8:
+        raw = raw[:6]
+    if len(raw) != 6 or any(ch not in "0123456789abcdefABCDEF" for ch in raw):
+        return None
+    return f"#{raw.upper()}FF"
+
+
+def write_metadata_assembly_3mf(
+    items: Sequence[LeafMeshSpec | Tuple[str, trimesh.Trimesh, Dict[str, str]]],
+    out_path: str,
+    *,
+    title: Optional[str] = None,
+    validate_solids: bool = False,
+    include_display_colors: bool = True,
+) -> None:
+    """
+    Write one named, metadata-bearing mesh object per input and expose them
+    through a single top-level assembly.
+
+    ``source_hex`` metadata is also emitted as a 3MF base material when
+    ``include_display_colors`` is true.  The metadata remains authoritative for
+    LayerLoom palette assignment; the base material simply makes source files
+    easier to inspect in ordinary 3MF viewers and slicers.
+    """
+    if not items:
+        raise ValueError("No meshes provided to export.")
+
+    specs: List[LeafMeshSpec] = []
+    for item in items:
+        if isinstance(item, LeafMeshSpec):
+            spec = item
+        else:
+            label, mesh, metadata = item
+            spec = LeafMeshSpec(str(label), mesh, dict(metadata))
+        if not isinstance(spec.mesh, trimesh.Trimesh) or spec.mesh.faces.size == 0:
+            continue
+        solid = (
+            _validated_volume_mesh(spec.mesh, label=spec.label)
+            if validate_solids
+            else _copy_mesh(spec.mesh)
+        )
+        specs.append(LeafMeshSpec(spec.label, solid, dict(spec.metadata)))
+
+    if not specs:
+        raise ValueError("No non-empty meshes provided to export.")
+
+    resolved_title = title or os.path.splitext(os.path.basename(out_path))[0]
+    root = ET.Element(M("model"), {"unit": "millimeter", f"{{{XML_NS}}}lang": "en-US"})
+    ET.SubElement(root, M("metadata"), {"name": "Title"}).text = resolved_title
+    resources = ET.SubElement(root, M("resources"))
+    build = ET.SubElement(root, M("build"))
+
+    color_to_index: Dict[str, int] = {}
+    base_material_id: Optional[int] = None
+    if include_display_colors:
+        display_colors = []
+        for spec in specs:
+            display = _display_hex(spec.metadata.get("source_hex"))
+            if display and display not in color_to_index:
+                color_to_index[display] = len(display_colors)
+                display_colors.append(display)
+        if display_colors:
+            base_material_id = 1
+            bases = ET.SubElement(resources, M("basematerials"), {"id": str(base_material_id)})
+            for display in display_colors:
+                ET.SubElement(
+                    bases,
+                    M("base"),
+                    {
+                        "name": display[:7],
+                        "displaycolor": display,
+                    },
+                )
+
+    next_id = 2 if base_material_id is not None else 1
+    leaf_ids: List[int] = []
+    for spec in specs:
+        object_id = next_id
+        next_id += 1
+        leaf_ids.append(object_id)
+        obj_el = _append_mesh_object(
+            resources,
+            object_id,
+            spec.label,
+            spec.mesh,
+            metadata=spec.metadata,
+        )
+        if base_material_id is not None:
+            display = _display_hex(spec.metadata.get("source_hex"))
+            if display in color_to_index:
+                obj_el.set("pid", str(base_material_id))
+                obj_el.set("pindex", str(color_to_index[display]))
+
+    assembly_id = next_id
+    assembly = ET.SubElement(
+        resources,
+        M("object"),
+        {"id": str(assembly_id), "type": "model", "name": resolved_title},
+    )
+    _add_name_metadata(assembly, resolved_title)
+    components = ET.SubElement(assembly, M("components"))
+    for object_id in leaf_ids:
+        ET.SubElement(components, M("component"), {"objectid": str(object_id)})
+    ET.SubElement(
+        build,
+        M("item"),
+        {"objectid": str(assembly_id), "partnumber": resolved_title},
+    )
+
+    with zipfile.ZipFile(out_path, "w", compression=zipfile.ZIP_DEFLATED) as z:
+        z.writestr("[Content_Types].xml", _content_types_xml())
+        z.writestr("_rels/.rels", _rels_root_xml())
+        z.writestr("3D/3dmodel.model", _xml_bytes(root))
+
+    print(f"[export] wrote {len(specs)} metadata object(s) → {out_path}")
 
 
 def _orca_transform_3mf(x: float, y: float, z: float) -> str:
@@ -681,7 +803,6 @@ def write_safe_assembly_3mf(
         {
             "objectid": str(assembly_id),
             "partnumber": base_name,
-            "printable": "1",
             P("UUID"): str(uuid.uuid5(uuid.NAMESPACE_URL, f"{base_name}:build")),
         },
     )

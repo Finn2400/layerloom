@@ -4,44 +4,131 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
-    name: ${{ matrix.os }} / Python ${{ matrix.python-version }}
+    if: github.event.repository.private == false
+    name: ${{ matrix.os }} / locked Python
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: LayerLoom café source
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
-        python-version: ["3.10", "3.11", "3.12"]
-
+        os: [macos-14, windows-latest, ubuntu-latest]
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: pip
-
-      - name: Install LayerLoom
+          path: LayerLoom café source
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+          enable-cache: true
+      - name: Linux native GUI prerequisites
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libgl1 libegl1 libopengl0 libxkbcommon-x11-0
+      - name: Verify binary wheels for every supported desktop
+        if: runner.os == 'Linux'
+        shell: bash
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e ".[gui,dev]"
-
-      - name: Diagnose install
-        run: layerloom-doctor
-
-      - name: Run core and paint tests
-        run: python -m pytest tests src/layerloom/paint_tests
-
-      - name: CLI smoke test
-        run: |
-          layerloom-weave --input examples/tutorial_cmy_cubes.3mf --step 0.20 --output tutorial_cmy_cubes_woven.3mf --verbose
-          python -c "from pathlib import Path; p=Path('tutorial_cmy_cubes_woven.3mf'); assert p.is_file() and p.stat().st_size > 0"
-
+          for target in x86_64-pc-windows-msvc x86_64-unknown-linux-gnu aarch64-apple-darwin x86_64-apple-darwin; do
+            UV_PROJECT_ENVIRONMENT="$RUNNER_TEMP/wheel-check-$target" uv sync \
+              --managed-python --locked --extra gui --extra dev --extra desktop \
+              --no-install-project --no-build --python-platform "$target" --dry-run
+          done
+      - name: Install exact GUI and test dependencies
+        run: uv sync --managed-python --locked --extra gui --extra dev --no-editable
+      - name: Diagnose runtime and packaged resources
+        run: uv run --no-sync layerloom-doctor
+      - name: Run tests, including bootstrap recovery and worker processes
+        run: uv run --no-sync pytest tests src/layerloom/paint_tests
+      - name: Real Unix source bootstrap
+        if: runner.os != 'Windows'
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+        run: bash "Launch LayerLoom.sh" --doctor-only
+      - name: Real Unix bootstrap offline reopening
+        if: runner.os != 'Windows'
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+          LAYERLOOM_OFFLINE: '1'
+        run: bash "Launch LayerLoom.sh" --doctor-only
+      - name: Real Windows source bootstrap in Windows PowerShell
+        if: runner.os == 'Windows'
+        shell: cmd
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+        run: call "Launch LayerLoom.bat" --doctor-only < NUL
+      - name: Real Windows bootstrap offline reopening
+        if: runner.os == 'Windows'
+        shell: cmd
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+          LAYERLOOM_OFFLINE: '1'
+        run: call "Launch LayerLoom.bat" --doctor-only < NUL
       - name: Build source and wheel distributions
-        run: python -m build
+        run: uv run --no-sync python -m build
+      - name: Install the built wheel
+        shell: bash
+        run: uv pip install --no-deps --reinstall dist/*.whl
+      - name: Exercise installed package outside the repository
+        shell: bash
+        run: |
+          PYTHON_EXECUTABLE=$(uv run --no-sync python -c 'import sys; print(sys.executable)')
+          cd "$RUNNER_TEMP"
+          "$PYTHON_EXECUTABLE" -I -X utf8 -m layerloom.doctor
+          "$PYTHON_EXECUTABLE" -I -X utf8 - <<'PY'
+          import os
+          from pathlib import Path
+          import subprocess
+          import tempfile
+          import xml.etree.ElementTree as ET
+          import zipfile
+          import layerloom
+          from layerloom.example_assets import find_example_file
+          from layerloom.runtime import worker_command, worker_process_options
+
+          assert "site-packages" in str(layerloom.__file__), layerloom.__file__
+          root = Path(tempfile.mkdtemp(prefix="LayerLoom café 染 "))
+          output = root / "woven café 染 example.3mf"
+          env = os.environ.copy()
+          for name in ("PYTHONPATH", "PYTHONHOME", "PYTHONIOENCODING"):
+              env.pop(name, None)
+          env.update(PYTHONUTF8="0", PYTHONCOERCECLOCALE="0", LC_ALL="C")
+          result = subprocess.run(
+              worker_command("weave", ["-i", str(find_example_file("tutorial_cmy_cubes.3mf")),
+                                       "-o", str(output), "--step", "0.16", "--no-export-stls"]),
+              cwd=root, env=env, capture_output=True, timeout=180,
+              **worker_process_options(),
+          )
+          print(result.stdout)
+          print(result.stderr)
+          assert result.returncode == 0
+          assert "baked+repacked(stream)" in result.stdout
+          with zipfile.ZipFile(output) as archive:
+              model = ET.fromstring(archive.read("3D/3dmodel.model"))
+          ns = {"m": "http://schemas.microsoft.com/3dmanufacturing/core/2015/02"}
+          assert model.findall(".//m:triangle", ns)
+          PY
+      - name: Preserve source bootstrap diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bootstrap-logs-${{ matrix.os }}
+          path: ${{ runner.temp }}/LayerLoom café bootstrap/logs/*
+          if-no-files-found: ignore
+      - uses: actions/upload-artifact@v4
+        with:
+          name: python-distributions-${{ matrix.os }}
+          path: LayerLoom café source/dist/*
 
   paint-gui:
     name: Linux native Paint UI / Python 3.10

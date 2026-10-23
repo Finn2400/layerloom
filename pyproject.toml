@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=77", "wheel"]
+requires = ["setuptools==84.0.0", "wheel==0.48.0", "packaging==26.3"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -31,6 +31,7 @@ dependencies = [
   "manifold3d>=3.2",
   "networkx>=2.8",
   "numpy>=1.23",
+  "Pillow>=9.0",
   "rtree>=1.0",
   "shapely>=2.0",
   "scipy>=1.10",
@@ -43,11 +44,19 @@ Repository = "https://github.com/Finn2400/layerloom"
 Issues = "https://github.com/Finn2400/layerloom/issues"
 
 [project.optional-dependencies]
+desktop = [
+  "pyinstaller==6.22.3",
+]
 gui = [
+  "lib3mf>=2.3",
+  "pygltflib>=1.16",
   "pyvista>=0.43",
   "pyvistaqt>=0.11",
   "qtpy>=2.4",
   "PyQt5>=5.15",
+  # Riverbank publishes newer Qt5 wheels for macOS/Linux, but Windows stops here.
+  "PyQt5-Qt5==5.15.2; sys_platform == 'win32'",
+  "PyQt5-Qt5==5.15.19; sys_platform != 'win32'",
 ]
 bench = [
   "matplotlib>=3.7",
@@ -57,6 +66,7 @@ analysis = [
   "matplotlib>=3.7",
   "pandas>=2.0",
   "Pillow>=9.0",
+  "scikit-image>=0.22",
 ]
 headless = [
   "lib3mf>=2.3",
@@ -67,13 +77,19 @@ dev = [
   "build>=1.0",
   "pytest>=8.0",
   "twine>=5.0",
+  "scikit-image>=0.22",
 ]
 
 [project.scripts]
 layerloom-doctor = "layerloom.doctor:main"
 layerloom-gui = "layerloom.gui_app:main"
+layerloom-worker = "layerloom.worker:main"
 layerloom-weave = "layerloom.weave:main"
 layerloom-headless = "layerloom.headless:main"
+layerloom-glb-compat = "layerloom.glb_compat:main"
+layerloom-pattern-map = "layerloom.pattern_mapper:main"
+layerloom-image-weave = "layerloom.image_weave:main"
+layerloom-marbling-pattern = "layerloom.marbling_pattern:main"
 layerloom-normalize = "layerloom.cli:normalize_main"
 layerloom-benchmark-suite = "layerloom.benchmark_suite:main"
 layerloom-simplified-speed-suite = "layerloom.simplified_speed_suite:main"
@@ -85,6 +101,7 @@ include = [
   "layerloom.experimental_viewer",
   "layerloom.palettes",
   "layerloom.examples",
+  "supporting_scripts",
 ]
 namespaces = false
 
@@ -99,3 +116,14 @@ layerloom = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.uv]
+# Require wheels for the managed runtime on every supported desktop target.
+# This prevents macOS locking from silently selecting a wheel-only package
+# that cannot be installed on Windows or Linux.
+required-environments = [
+  "python_version == '3.12' and sys_platform == 'win32' and platform_machine == 'AMD64'",
+  "python_version == '3.12' and sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "python_version == '3.12' and sys_platform == 'darwin' and platform_machine == 'x86_64'",
+  "python_version == '3.12' and sys_platform == 'linux' and platform_machine == 'x86_64'",
+]

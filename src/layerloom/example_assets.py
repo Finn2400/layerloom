@@ -25,8 +25,8 @@ def repo_root_guess() -> Path:
 def example_search_dirs() -> tuple[Path, ...]:
     """Return likely locations for tutorial examples in source and wheel installs."""
     return (
-        repo_root_guess() / "examples",
         module_root() / "examples",
+        repo_root_guess() / "examples",
     )
 
 

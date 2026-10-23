@@ -5,9 +5,14 @@ but please keep changes focused and testable.
 
 ## Local Setup
 
+For running LayerLoom, use the [installation guide](docs/install.md). For
+development, install [uv](https://docs.astral.sh/uv/getting-started/installation/),
+then run these commands from the extracted repository folder. uv selects the
+pinned managed Python and installs the committed dependency lock.
+
 ```bash
-python -m pip install -e ".[gui,bench,dev]"
-python -m pytest
+uv sync --managed-python --locked --extra gui --extra bench --extra dev
+uv run --no-sync pytest
 ```
 
 ## Development Notes
@@ -21,8 +26,8 @@ python -m pytest
 ## Before Opening A Pull Request
 
 ```bash
-python -m pytest
-python -m build
+uv run --no-sync pytest
+uv run --no-sync python -m build
 ```
 
 If GUI behavior changed, include manual test notes for the current Qt app.
