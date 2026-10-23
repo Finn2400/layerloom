@@ -118,10 +118,19 @@ bash "Launch LayerLoom.sh"
 
 Python is managed automatically. Linux still needs the distribution's Qt/X11
 and OpenGL/EGL runtime libraries, plus `curl` or `wget` for the first download.
-A headless SSH shell cannot provide the GUI. On Ubuntu, the CI environment
-installs `libgl1`, `libegl1`, `libopengl0`, and `libxkbcommon-x11-0`; other
-distributions use different package names. Ask your system administrator if a
-native library or graphics driver is unavailable.
+A headless SSH shell cannot provide the GUI. On Ubuntu, install these runtime
+packages if they are not already provided by your desktop:
+
+```bash
+sudo apt-get update
+sudo apt-get install libgl1 libegl1 libopengl0 libgl1-mesa-dri \
+  libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 \
+  libxcb-cursor0 libxkbcommon-x11-0
+```
+
+Qt's `xcb` platform plugin needs the XCB libraries even when the Python package
+is installed correctly. Other distributions use different package names. Ask
+your system administrator if a native library or graphics driver is unavailable.
 
 ## Repair a source installation
 
