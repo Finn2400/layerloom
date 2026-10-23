@@ -30,17 +30,18 @@ does not establish the first-download experience.
 ## Automated evidence
 
 - [ ] All installation/bootstrap tests pass on Windows, Linux and macOS.
-- [ ] A clean source archive and wheel include runtime modules, palettes and both examples; the wheel runs from an unrelated directory.
+- [ ] Source and wheel content validation passes, including Paint modules, palettes, both examples, helper scripts, source tests, and Paint documentation. The installed wheel exports a painted cube from an unrelated directory.
 - [ ] The real source launchers pass first setup, offline reopening and Unicode-path worker tests on native Windows, macOS and Linux CI.
 - [ ] Both architecture builds pass native minimum-OS, signature and relocation checks.
 - [ ] All five OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
-- [ ] All five jobs render the actual GUI, try the cubes, weave at 0.16 mm, save and reopen the output. Inspect the captured example and woven screenshots; a process exit alone is insufficient.
+- [ ] All five jobs render the actual Paint GUI, load the packaged cubes, reopen an editable project, and switch between Paint and Arrange. Their real asynchronous export worker must complete the small 0.5 mm-layer geometry proof, including the bundled Numba/LLVM search. Inspect example, Arrange, and export screenshots; a process exit alone is insufficient.
+- [ ] Native Paint, Arrange, and desktop integration tests pass on Linux and Windows, including mode switching, shared placement, cancellation, and export controls.
 
 ## Required manual checks on the downloaded DMGs
 
 - [ ] Download each DMG with a browser so the normal quarantine attribute is applied. Keep quarantine intact; do not use `xattr` as an installation workaround.
 - [ ] On a Mac without a user-installed Python, Git, Node or Homebrew, drag LayerLoom to Applications and launch it from Finder. Follow Read Me First's graphical Open Anyway instructions. Record OS, architecture and the observed prompts.
-- [ ] Have a person unfamiliar with Python load the example, weave it and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
+- [ ] Have a person unfamiliar with Python load the example, use Export geometry 3MF with 0.16 mm layers, and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
 - [ ] Open the result in a slicer; verify the preassigned parts, common alignment and the 0.16 mm layer instructions.
 - [ ] Reopen while offline, move the app to another folder containing spaces/non-ASCII characters, and repeat the example.
 - [ ] Replace an older app with this build, verify the new version starts, and record any renewed approval prompt. Do not delete user output or application logs.

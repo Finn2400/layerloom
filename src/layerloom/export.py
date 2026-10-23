@@ -14,8 +14,9 @@ Writers in this module:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Sequence, Tuple
 import math
+import logging
 import os
 import re
 import io
@@ -23,6 +24,7 @@ import uuid
 import zipfile
 import numpy as np
 import xml.etree.ElementTree as ET
+from xml.sax.saxutils import quoteattr
 import trimesh
 
 try:
@@ -141,6 +143,7 @@ def _add_name_metadata(parent: ET.Element, name: str) -> None:
     parent.set("name", name)
 
 
+
 def _add_metadatagroup(parent: ET.Element, metadata: Dict[str, str]) -> None:
     if not metadata:
         return
@@ -184,6 +187,7 @@ def _append_mesh_object(resources: ET.Element,
         f.set("v2", str(int(b)))
         f.set("v3", str(int(c)))
     return obj_el
+
 
 
 def _estimate_leaf_xml_bytes(spec: LeafMeshSpec) -> int:
@@ -420,12 +424,43 @@ def _orca_transform_4x4(x: float, y: float, z: float) -> str:
     return f"1 0 0 {x:.9f} 0 1 0 {y:.9f} 0 0 1 {z:.9f} 0 0 0 1"
 
 
+def _stream_multipart_child(stream, centered_specs, checkpoint):
+    """Serialize immutable input meshes in bounded chunks, without an XML tree."""
+    stream.write((f'<?xml version="1.0" encoding="utf-8"?>\n'
+                  f'<model xmlns="{CORE_NS}" xmlns:p="{PROD_NS}" unit="millimeter" '
+                  'xml:lang="en-US" requiredextensions="p">'
+                  '<metadata name="BambuStudio:3mfVersion">1</metadata><resources>').encode())
+    for index, (spec, center) in enumerate(centered_specs, start=1):
+        checkpoint()
+        stream.write((f'<object id="{index}" type="model" name={quoteattr(spec.label)} '
+                      f'p:UUID="000100{index - 1:02x}-81cb-4c03-9d28-80fed5dfa1dc">').encode())
+        metadata = ET.Element(M("object"))
+        _add_metadatagroup(metadata, spec.metadata)
+        for child in metadata:
+            stream.write(ET.tostring(child, encoding="utf-8"))
+        stream.write(b'<mesh><vertices>')
+        for start in range(0, len(spec.mesh.vertices), 4096):
+            checkpoint()
+            vertices = np.asarray(spec.mesh.vertices[start:start + 4096], dtype=np.float64) - center
+            stream.write(''.join(f'<vertex x="{x:.9f}" y="{y:.9f}" z="{z:.9f}"/>'
+                                 for x, y, z in vertices).encode())
+        stream.write(b'</vertices><triangles>')
+        for start in range(0, len(spec.mesh.faces), 4096):
+            checkpoint()
+            stream.write(''.join(f'<triangle v1="{int(a)}" v2="{int(b)}" v3="{int(c)}"/>'
+                                 for a, b, c in spec.mesh.faces[start:start + 4096]).encode())
+        stream.write(b'</triangles></mesh></object>')
+    stream.write(b'</resources><build/></model>')
+    checkpoint()
+
+
 def write_orca_multipart_3mf(
     items: Sequence[LeafMeshSpec],
     out_path: str,
     *,
     title: Optional[str] = None,
     extruder_by_token: Optional[Dict[str, int]] = None,
+    checkpoint: Optional[Callable[[], None]] = None,
 ) -> None:
     """Write one Orca/Snapmaker object containing material-assigned mesh parts."""
     if not items:
@@ -439,11 +474,11 @@ def write_orca_multipart_3mf(
         "w": 5,
         **(extruder_by_token or {}),
     }
-    specs = [
-        LeafMeshSpec(spec.label, _copy_mesh(spec.mesh), dict(spec.metadata))
-        for spec in items
-        if isinstance(spec.mesh, trimesh.Trimesh) and spec.mesh.faces.size
-    ]
+    checkpoint = checkpoint or (lambda: None)
+    checkpoint()
+    # The caller owns these arrays for the duration of this synchronous write.
+    # Coordinate centering happens per chunk and never mutates input meshes.
+    specs = [spec for spec in items if isinstance(spec.mesh, trimesh.Trimesh) and spec.mesh.faces.size]
     if not specs:
         raise ValueError("No non-empty meshes provided to export.")
 
@@ -458,32 +493,7 @@ def write_orca_multipart_3mf(
     centered_specs: List[Tuple[LeafMeshSpec, np.ndarray]] = []
     for spec in specs:
         center = np.asarray(spec.mesh.bounds, dtype=np.float64).mean(axis=0)
-        centered = spec.mesh.copy()
-        centered.apply_translation(-center)
-        centered_specs.append(
-            (LeafMeshSpec(spec.label, centered, dict(spec.metadata)), center)
-        )
-
-    child_model = ET.Element(
-        M("model"),
-        {
-            "unit": "millimeter",
-            f"{{{XML_NS}}}lang": "en-US",
-            "requiredextensions": "p",
-        },
-    )
-    ET.SubElement(child_model, M("metadata"), {"name": "BambuStudio:3mfVersion"}).text = "1"
-    child_resources = ET.SubElement(child_model, M("resources"))
-    for index, (spec, _center) in enumerate(centered_specs, start=1):
-        obj = _append_mesh_object(
-            child_resources,
-            index,
-            spec.label,
-            spec.mesh,
-            spec.metadata,
-        )
-        obj.set(P("UUID"), f"000100{index - 1:02x}-81cb-4c03-9d28-80fed5dfa1dc")
-    ET.SubElement(child_model, M("build"))
+        centered_specs.append((spec, center))
 
     root_model = ET.Element(
         M("model"),
@@ -641,7 +651,8 @@ def write_orca_multipart_3mf(
         zf.writestr("_rels/.rels", _rels_root_xml())
         zf.writestr("3D/3dmodel.model", _xml_bytes(root_model))
         zf.writestr("3D/_rels/3dmodel.model.rels", root_relationships)
-        zf.writestr(child_path.lstrip("/"), _xml_bytes(child_model))
+        with zf.open(child_path.lstrip("/"), "w", force_zip64=True) as child_stream:
+            _stream_multipart_child(child_stream, centered_specs, checkpoint)
         zf.writestr("Metadata/model_settings.config", _xml_bytes(model_settings))
         zf.writestr("Metadata/slice_info.config", _xml_bytes(slice_info))
         zf.writestr(
@@ -649,7 +660,10 @@ def write_orca_multipart_3mf(
             '{"plate_1":{"nozzle_sequence":[],"optimal_assignment":[],"sequence":[]}}',
         )
 
-    print(f"[export] wrote Orca multipart 3MF with {len(specs)} part(s) → {out_path}")
+    # Reporting must not turn a successful archive write into a failure on
+    # Windows consoles which cannot encode Unicode filenames or symbols.
+    logging.getLogger(__name__).info("Wrote Orca multipart 3MF with %s parts: %s", len(specs), out_path)
+
 
 
 def write_safe_assembly_3mf(

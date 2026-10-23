@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 sys.path.insert(0, SPECPATH)
-from bundle_config import EXCLUDES, native_dependencies
+from bundle_config import EXCLUDES, bundle_short_version, native_dependencies
 
 root = Path(SPECPATH).parents[1]
 native_data, native_binaries = native_dependencies()
@@ -31,7 +31,7 @@ app = BUNDLE(
     coll, name='LayerLoomWorker.app', bundle_identifier='org.layerloom.worker',
     info_plist={
         'CFBundleName': 'LayerLoom Worker',
-        'CFBundleShortVersionString': os.environ['LAYERLOOM_BUILD_VERSION'],
+        'CFBundleShortVersionString': bundle_short_version(os.environ['LAYERLOOM_BUILD_VERSION']),
         'CFBundleVersion': os.environ['LAYERLOOM_BUILD_VERSION'],
         'LSMinimumSystemVersion': os.environ['MACOSX_DEPLOYMENT_TARGET'],
         'LSUIElement': True,

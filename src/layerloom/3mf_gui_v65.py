@@ -15,6 +15,8 @@ import os
 import sys
 from typing import Dict, Optional
 
+from layerloom.paint_main_ui import PaintWorkspaceHostMixin
+
 try:
     import resource
 except Exception:
@@ -89,15 +91,6 @@ class V65InteractiveQtInteractor(_V58.QtInteractor):
 
     def mouseDoubleClickEvent(self, event):
         self.mousePressEvent(event)
-
-    def mouseReleaseEventDefault(self, event):
-        super().mouseReleaseEvent(event)
-
-    def mousePressEventDefault(self, event):
-        super().mousePressEvent(event)
-
-    def mouseMoveEventDefault(self, event):
-        super().mouseMoveEvent(event)
 
     def contextMenuEvent(self, event):
         if self._owner._handle_tool_cancel():
@@ -1432,12 +1425,11 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
 _V58.EmbeddedPVViewer = EmbeddedPVViewerV65
 
 
-class QtAssignColorsApp(_V62.QtAssignColorsApp):
+class QtAssignColorsApp(PaintWorkspaceHostMixin, _V62.QtAssignColorsApp):
     def __init__(self):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
         super().__init__()
-        self.setWindowTitle("LayerLoom — Color Assigner v65")
 
     def _copy_xy(self, value):
         if value is None:
@@ -1596,6 +1588,15 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         if not self.base_file:
             return None
         use_scale = self._current_scale_value(raise_on_error=True) if scale is None else float(scale)
+        if self._shared_paint_active():
+            return self._shared_paint_workspace.model.plan(
+                scale=use_scale,
+                orientation_matrix=self.pending_rotation_matrix,
+                plate_width=_V58.PLATE_WIDTH_MM,
+                plate_depth=_V58.PLATE_DEPTH_MM,
+                center_xy=False,
+                target_center_xy=self.pending_target_center_xy if target_center_xy is None else target_center_xy,
+            )
         return _V58.compute_transform_plan(
             self.base_file,
             scale=use_scale,
@@ -1758,6 +1759,20 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         return plan
 
     def _apply_transform_preview(self, quiet: bool = False) -> bool:
+        if self._shared_paint_active():
+            try:
+                plan = self._pending_transform_plan()
+                self._shared_paint_workspace.apply_plan(plan)
+                self.applied_rotation_matrix = self.pending_rotation_matrix.copy()
+                self.applied_scale = self._current_scale_value(raise_on_error=True)
+                self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
+                self._update_transform_flags()
+                self._sync_viewer_tool_mode()
+                return True
+            except Exception as exc:
+                if not quiet:
+                    self._error("Transform", str(exc))
+                return False
         ok = super()._apply_transform_preview(quiet=quiet)
         if ok:
             self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
@@ -1767,6 +1782,10 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         return ok
 
     def _refresh_preview_from_current_file(self, *, force: bool = False):
+        if self._shared_paint_active():
+            self._shared_paint_workspace.refresh_geometry()
+            self._shared_paint_workspace.refresh_colors()
+            return
         mode_before = getattr(self, "viewer_tool_mode", "normal")
         super()._refresh_preview_from_current_file(force=force)
         if mode_before in {"move", "gizmo", "surface"} and self.viewer is not None and self.base_file and not self.large_model_mode:
@@ -1824,6 +1843,8 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._last_transform_plan = pending_plan
         self._refresh_transform_readout(self._last_transform_plan)
         self._refresh_plate_warning(self._last_transform_plan)
+        if self._shared_paint_active():
+            self._apply_transform_preview()
         return self.pending_target_center_xy - current_xy
 
     def _apply_rotation_delta(self, delta_rotation, target_center_xy=None):
@@ -1841,9 +1862,26 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._last_transform_plan = pending_plan
         self._refresh_transform_readout(self._last_transform_plan)
         self._refresh_plate_warning(self._last_transform_plan)
+        if self._shared_paint_active():
+            self._apply_transform_preview()
 
     def _reset_transform_to_default(self):
         self.pending_target_center_xy = None
+        if self._shared_paint_active():
+            workspace = self._shared_paint_workspace
+            workspace.loading = True
+            try:
+                self.pending_rotation_matrix = _V58.np.eye(3)
+                self.applied_rotation_matrix = _V58.np.eye(3)
+                self.applied_target_center_xy = None
+                self.applied_scale = 1.0
+                self._set_transform_values(0.0, 0.0, 0.0, 1.0)
+                workspace.apply_plan(workspace.model.identity_plan)
+                self._update_transform_flags()
+                self._sync_viewer_tool_mode()
+            finally:
+                workspace.loading = False
+            return
         result = super()._reset_transform_to_default()
         if self.large_model_mode:
             self.applied_target_center_xy = None
@@ -1854,8 +1892,94 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.applied_target_center_xy = None
         return super()._load_canonical_model(stamped_path)
 
+    def _ensure_transform_preview_current(self, quiet: bool = False):
+        if self._shared_paint_active():
+            return self._apply_transform_preview(quiet=quiet) if self.transform_dirty else True
+        return super()._ensure_transform_preview_current(quiet=quiet)
 
-def main():
+    def _on_transform_value_change(self, *_args):
+        super()._on_transform_value_change(*_args)
+        if (self._shared_paint_active() and not self._shared_paint_workspace.loading
+                and not self._setting_transform_widgets):
+            self._apply_transform_preview()
+
+    def _assign_selected(self, entry):
+        if self._shared_paint_active():
+            oid = self._current_selected_oid() or self._last_picked_oid
+            if oid:
+                self._shared_paint_workspace.assign_part(oid, entry)
+            return
+        return super()._assign_selected(entry)
+
+    def _set_assignment_for_oid(self, oid, entry, source_hex=None):
+        if self._shared_paint_active():
+            return self._shared_paint_workspace.assign_part(oid, entry)
+        return super()._set_assignment_for_oid(oid, entry, source_hex=source_hex)
+
+    def _refresh_assignment_hexes_from_current_palette(self):
+        if self._shared_paint_active():
+            # Browsing or filtering a palette is not a paint edit.
+            self._shared_paint_workspace.refresh_colors()
+            return
+        return super()._refresh_assignment_hexes_from_current_palette()
+
+    def _load_palette(self, name):
+        if not self._shared_paint_active():
+            return super()._load_palette(name)
+        from layerloom.palette_assignment import load_palette_entries
+        entries = load_palette_entries(name)
+        if self.limit_two_checkbox.isChecked():
+            entries = [entry for entry in entries if len(set(entry["token"])) <= 2]
+        entries = _V58._filter_by_bw_visibility(
+            entries, add_k=self.add_black_checkbox.isChecked(), add_w=self.add_white_checkbox.isChecked(),
+        )
+        entries = self._filter_by_required_letters(entries, self._required_letters())
+        self.current_palette_name = name
+        self.current_palette = entries
+        self._render_palette_grid()
+        self._refresh_assignment_hexes_from_current_palette()
+        self._refresh_status_summary()
+
+    def _refresh_status_summary(self):
+        super()._refresh_status_summary()
+        if self._shared_paint_active():
+            self._paint_title_changed(self.paint_panel.editor.windowTitle())
+
+    def _flash_actor_by_name(self, name, oid=None):
+        if not self._shared_paint_active():
+            return super()._flash_actor_by_name(name, oid)
+        actor = self.viewer.actors_by_name.get(name)
+        if actor is None:
+            return
+        states = self._paint_flash_states
+        previous = states.get(name)
+        if previous is not None and previous[0] is actor:
+            previous_edges, previous_color = previous[1:3]
+        else:
+            previous_edges = actor.prop.show_edges
+            previous_color = actor.prop.edge_color
+        # A table selection and its pick callback can both flash this actor.
+        # Keep the original appearance and let only the latest timer restore it.
+        state = (actor, previous_edges, previous_color)
+        states[name] = state
+        actor.prop.show_edges = True
+        actor.prop.edge_color = "#FFD750"
+        self.viewer.plotter.render()
+
+        def restore():
+            if states.get(name) is not state:
+                return
+            states.pop(name, None)
+            if self.viewer and self.viewer.actors_by_name.get(name) is actor:
+                actor.prop.show_edges = previous_edges
+                actor.prop.edge_color = previous_color
+                self.viewer.plotter.render()
+
+        _V58.QtCore.QTimer.singleShot(180, restore)
+
+
+def create_main_window():
+    """Build the themed desktop used by both the launcher and GUI proofs."""
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
     except NameError:
@@ -1930,6 +2054,11 @@ def main():
     )
     from layerloom.desktop_ui import install_desktop_ui
     install_desktop_ui(window)
+    return app, window
+
+
+def main():
+    app, window = create_main_window()
     window.show()
     return app.exec_()
 

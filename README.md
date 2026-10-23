@@ -10,10 +10,11 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-The current public entrypoint is the Qt GUI from the v65 line, which includes
-vendor 3MF normalization, streaming preview support for large models,
-whole-model build-plate move/rotate controls, and expanded `N`/`O`/`V`/`G`
-palette controls for gray, orange, violet, and green.
+The current integration alpha opens the Qt GUI with **Paint** enabled. Surface
+and area selection, editable colors, and whole-model placement share one model
+between Paint and Arrange. Save `.llpaint` to keep editable paint; **Export
+geometry 3MF…** converts those colors into physical filament geometry with no
+per-face paint in the printable output.
 
 ![LayerLoom application examples](docs/images/layerloom_applications_overview.jpg)
 
@@ -43,9 +44,10 @@ The first setup needs an internet connection; later launches work offline.
    - Linux x64: run `bash "Launch LayerLoom.sh"` from the extracted folder.
 3. Wait for setup to finish. The source launcher displays a terminal window;
    you normally do not need to type commands into it.
-4. In LayerLoom, click **Try the example**, then **Weave**, and choose an output
-   folder such as Documents. Wait for **Your woven model**, then use
-   **Show in Finder / Show in folder** to find `tutorial_cmy_cubes_woven.3mf`.
+4. Click **Try the example**, then **Export geometry 3MF…**. Choose **Woven
+   apparent colors** and set **Layer height** to `0.16 mm`. Confirm the settings,
+   choose a `.3mf` filename in Documents, and wait for the completion message.
+   Use that same layer height for first and subsequent layers in your slicer.
 
 Keep the extracted folder and reopen the same launcher next time. If the Mac
 launcher is blocked or will not execute, the [installation guide](docs/install.md#macos)
@@ -92,8 +94,10 @@ a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
 
 These files are intentionally simple so new users can learn the open, weave,
 slice, and filament-assignment workflow before trying larger models.
-The GUI also includes a **Load Example** button that opens the packaged CMY
-Benchy example directly.
+Use **Help → Load the Benchy example** for the larger CMY sample. Paint's
+**Save paint…** action saves the editable project, and **Export geometry 3MF…**
+creates the file to slice. The [Paint workflow and limits](src/layerloom/PAINT_PROTOTYPE.md)
+describe selection tools, sampling detail, cancellation, and memory budgeting.
 
 ## Palette Options
 

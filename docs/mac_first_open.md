@@ -52,11 +52,10 @@ attributes to make the test pass.
 
 ## Make your first woven model
 
-1. Click **Try the example**. Four preassigned CMY cubes appear; the layer
-   height is set to **0.16 mm**.
-2. Click **Weave**, select an output folder such as Documents, and confirm the
-   folder selection. Wait for **Your woven model**.
-3. Click **Show in Finder** to reveal `tutorial_cmy_cubes_woven.3mf`.
+1. Click **Try the example**. Four CMY cubes appear in Paint.
+2. Click **Export geometry 3MF…**, choose **Woven apparent colors**, and set
+   **Layer height** to **0.16 mm**. Confirm the settings.
+3. Choose a `.3mf` filename in Documents and wait for the completion message.
 4. Open it in your slicer, keep its parts aligned, and assign the `all_…`
    objects to the corresponding filaments. For this first example, use
    **0.16 mm for both normal and first layers**, with adaptive layers disabled.

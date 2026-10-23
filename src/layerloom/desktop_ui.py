@@ -15,9 +15,9 @@ from .example_assets import find_example_file
 
 
 class _WelcomePanel(QtWidgets.QFrame):
-    def __init__(self, controller):
-        super().__init__(controller.window.viewer_host)
-        self.window = controller.window
+    def __init__(self, controller, parent):
+        super().__init__(parent)
+        self.controller = controller
         self.setObjectName("layerloomWelcome")
         self.setStyleSheet("#layerloomWelcome { background: #252a31; border: 1px solid #566473; border-radius: 12px; } QLabel { color: #e9e9e9; }")
         layout = QtWidgets.QVBoxLayout(self)
@@ -41,7 +41,7 @@ class _WelcomePanel(QtWidgets.QFrame):
 
     def setText(self, text):
         self.message.setText(text)
-        self.actions.setVisible(not bool(self.window.base_file))
+        self.actions.setVisible(not self.controller.has_model())
 
 
 class DesktopController(QtCore.QObject):
@@ -50,15 +50,25 @@ class DesktopController(QtCore.QObject):
         self.window = window
         self.example_directory = None
         self.output_path = None
+        self.paint_editor = getattr(getattr(window, "paint_panel", None), "editor", None)
+        self.paint_welcome = None
         old_hint = window.viewer_empty_hint
         old_hint.hide()
         old_hint.deleteLater()
-        window.viewer_empty_hint = _WelcomePanel(self)
+        window.viewer_empty_hint = _WelcomePanel(self, window.viewer_host)
         window.viewer_empty_hint.setVisible(not bool(window.base_file))
         window._position_viewer_overlays()
         window.viewer_empty_hint.raise_()
         self._install_result_panel()
         window._on_weave_complete = self.weave_complete
+        if self.paint_editor is not None:
+            # Keep the Arrange hint in its existing host. The Paint welcome is
+            # a sibling of the central widget, centered over the VTK viewport.
+            self.paint_welcome = _WelcomePanel(self, self.paint_editor)
+            self.paint_editor.plotter.installEventFilter(self)
+            self.paint_editor.documentChanged.connect(self._sync_paint_welcome)
+            self.paint_editor.exportCompleted.connect(self.paint_export_complete)
+            self._sync_paint_welcome()
         example_action = getattr(window, "_load_example_action", None)
         if example_action is not None:
             example_action.triggered.disconnect(window._on_load_example)
@@ -71,8 +81,35 @@ class DesktopController(QtCore.QObject):
         menu.addAction("Copy diagnostics", self.copy_diagnostics)
         menu.addAction("Open logs", self.open_logs)
 
+    def has_model(self):
+        if self.paint_editor is not None:
+            return self.paint_editor.document is not None
+        return bool(self.window.base_file)
+
+    def _sync_paint_welcome(self, *_args):
+        if self.paint_welcome is None:
+            return
+        panel, viewport = self.paint_welcome, self.paint_editor.plotter
+        panel.setVisible(not self.has_model())
+        if self.has_model():
+            return
+        width = max(1, min(520, viewport.width() - 40))
+        panel.setMaximumWidth(width)
+        panel.adjustSize()
+        panel.resize(min(width, panel.sizeHint().width()), panel.sizeHint().height())
+        origin = viewport.mapTo(self.paint_editor, QtCore.QPoint(0, 0))
+        panel.move(origin.x() + max(0, (viewport.width() - panel.width()) // 2),
+                   origin.y() + max(0, (viewport.height() - panel.height()) // 2))
+        panel.raise_()
+
+    def eventFilter(self, watched, event):
+        if (self.paint_editor is not None and watched is self.paint_editor.plotter
+                and event.type() in (QtCore.QEvent.Resize, QtCore.QEvent.Move, QtCore.QEvent.Show)):
+            self._sync_paint_welcome()
+        return super().eventFilter(watched, event)
+
     def _install_result_panel(self):
-        dock = QtWidgets.QDockWidget("Your woven model", self.window)
+        dock = QtWidgets.QDockWidget("Exported model", self.window)
         dock.setObjectName("weaveResultDock")
         dock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
         content = QtWidgets.QWidget()
@@ -105,13 +142,10 @@ class DesktopController(QtCore.QObject):
         local = Path(directory.name) / path.name
         try:
             shutil.copyfile(path, local)
-            self.window._pending_source_hex_by_name = {}
-            stamped = self.window._stamp_for_preview(
-                str(local), output_path=str(Path(directory.name) / f"preview_id_{path.name}")
-            )
-            self.window._load_canonical_model(stamped)
-            self.window.source_file_path = str(local)
-            self.window.layer_height_spin.setValue(0.16)
+            if not self.window.open_paint_path(str(local)):
+                directory.cleanup()
+                return False
+            self._initialize_example_paint()
         except Exception as exc:
             directory.cleanup()
             logging.getLogger("layerloom.example").exception("Example could not load")
@@ -122,15 +156,54 @@ class DesktopController(QtCore.QObject):
         if previous:
             previous.cleanup()
         self.result_dock.hide()
-        self.window.status_bar.showMessage("Example ready. Click Weave, then choose where to save your 3MF.")
+        self.window.status_bar.showMessage("Example ready. Paint a surface or choose Export geometry 3MF… to create printable material parts.")
         return True
 
+    def _initialize_example_paint(self):
+        """Translate trusted tutorial name recipes into editable source paint.
+
+        The packaged examples predate surface paint and store their recipes in
+        __PAT_*__ names. This initialization is restricted to those examples;
+        ordinary model imports keep their own imported colors.
+        """
+        from .paint_export import assign_palette
+        from .palette_assignment import load_palette_entries
+        from .tokens import PAT_TAG_RE
+        editor = self.paint_editor
+        document = editor.document
+        entries = {entry["token"]: entry for entry in load_palette_entries("Normal")}
+        preferences = {}
+        for mesh in document.meshes:
+            match = PAT_TAG_RE.search(mesh.name)
+            entry = entries.get(match.group(1).lower()) if match else None
+            if entry is None:
+                continue
+            rgba = list(bytes.fromhex(entry["hex"].lstrip("#"))) + [255]
+            mesh.face_rgba[:] = rgba
+            mesh.source_rgba[:] = rgba
+            preferences[entry["hex"].upper()] = entry["token"]
+        document.metadata.update({
+            "paint_palette": "Normal", "paint_mapping_mode": "woven",
+            "paint_recipe_preferences": {"Normal": preferences},
+            "paint_mapping": assign_palette(document, "Normal", recipe_overrides=preferences),
+        })
+        editor.set_document(document)
+        editor.suggested_output_directory = Path(
+            QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.DocumentsLocation) or Path.home()
+        )
+
     def open_model(self):
-        # Offer the existing, fully tested import flows without duplicating them.
-        menu = QtWidgets.QMenu(self.window)
-        menu.addAction("Open 3MF…", self.window._on_open)
-        menu.addAction("Open GLB / GLTF…", self.window._on_open_glb)
-        menu.exec_(QtGui.QCursor.pos())
+        return self.window._on_open()
+
+    def paint_export_complete(self, report):
+        self.output_path = Path(report["output_3mf"]).resolve()
+        step = report["layer_height_mm"]
+        self.result_text.setText(
+            f"Saved: {self.output_path}\n"
+            "Open all material parts together in your slicer and keep their alignment. "
+            f"Use {step:g} mm for both first and subsequent layers; disable adaptive layer height."
+        )
+        self.result_dock.show()
 
     def weave_complete(self, path):
         self.output_path = Path(path).resolve()

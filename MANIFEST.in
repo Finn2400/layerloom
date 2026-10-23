@@ -13,6 +13,12 @@ include scripts/bootstrap.ps1
 include scripts/runtime-pins.txt
 include scripts/build_macos.py
 include scripts/validate_macos.py
+include scripts/validate_distributions.py
+include scripts/installed_paint_smoke.py
+include scripts/chimerax*.py
+recursive-include src/layerloom/paint_tests *.py
+include src/layerloom/PAINT_PROTOTYPE.md
+include src/layerloom/PROTEIN_PRINT_VISUALIZATION_STANDARD.md
 recursive-include packaging/macos *.py *.spec *.txt *.html *.md
 include docs/*.md
 include docs/images/layerloom_applications_overview.jpg

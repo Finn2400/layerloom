@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import io
+import posixpath
 import zipfile
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -341,6 +342,31 @@ def compute_transform_plan(
 
     object_infos = _parse_object_infos(root)
     build_items = _parse_build_items(root)
+    return _compute_transform_plan_from_infos(
+        object_infos, build_items, rot_x_deg=rot_x_deg, rot_y_deg=rot_y_deg,
+        rot_z_deg=rot_z_deg, scale=scale, orientation_matrix=orientation_matrix,
+        plate_width=plate_width, plate_depth=plate_depth, center_xy=center_xy,
+        target_center_xy=target_center_xy,
+    )
+
+
+def _compute_transform_plan_from_infos(
+    object_infos: Dict[str, _ObjectInfo],
+    build_items: List[Tuple[str, np.ndarray]],
+    *,
+    rot_x_deg: float = 0.0,
+    rot_y_deg: float = 0.0,
+    rot_z_deg: float = 0.0,
+    scale: float,
+    orientation_matrix: Optional[np.ndarray] = None,
+    plate_width: float = 256.0,
+    plate_depth: float = 256.0,
+    center_xy: bool = True,
+    target_center_xy: Optional[Tuple[float, float]] = None,
+) -> TransformPlan:
+    """Shared placement math for archive and in-memory mesh geometry."""
+    if scale <= 0:
+        raise ValueError("Scale must be > 0.")
     original_bounds = _compute_bounds_from_infos(object_infos, build_items)
 
     center = original_bounds.center
@@ -416,6 +442,92 @@ def _sync_build_partnumbers(root: ET.Element) -> None:
                 item.set("partnumber", name)
 
 
+def _strip_surface_paint(root: ET.Element) -> set[str]:
+    """Remove surface properties while retaining geometry and part materials."""
+    surface_resources = {"colorgroup", "texture2d", "texture2dgroup",
+                         "compositematerials", "multiproperties"}
+    removed_ids, texture_paths = set(), set()
+    for resources in root.findall(M("resources")):
+        for resource in list(resources):
+            if resource.tag.rsplit("}", 1)[-1] not in surface_resources:
+                continue
+            if resource.get("id"):
+                removed_ids.add(resource.get("id"))
+            if resource.tag.rsplit("}", 1)[-1] == "texture2d" and resource.get("path"):
+                texture_paths.add(resource.get("path"))
+            resources.remove(resource)
+    for node in root.iter():
+        triangle = node.tag.rsplit("}", 1)[-1] == "triangle"
+        removed_binding = node.get("pid") in removed_ids
+        for key in list(node.attrib):
+            local = key.rsplit("}", 1)[-1]
+            if (triangle and local not in {"v1", "v2", "v3"}
+                    or local.startswith("paint_") or local == "mmu_segmentation"
+                    or removed_binding and local in {"pid", "pindex"}):
+                del node.attrib[key]
+    return texture_paths
+
+
+def _register_model_namespaces(content: bytes) -> Dict[str, str]:
+    namespaces = {}
+    for event, value in ET.iterparse(io.BytesIO(content), events=("start-ns", "start")):
+        if event == "start":
+            break
+        prefix, uri = value
+        namespaces[prefix] = uri
+        try:
+            ET.register_namespace(prefix, uri)
+        except ValueError:
+            pass  # ElementTree reserves generated ns0/ns1 prefixes.
+    return namespaces
+
+
+def _geometry_only_members(members: Dict[str, bytes]) -> Dict[str, bytes]:
+    """Scrub every model, including referenced child models, at export time."""
+    rewritten = dict(members)
+    textures = set()
+    for name, content in members.items():
+        if not name.lower().endswith(".model"):
+            continue
+        namespaces = _register_model_namespaces(content)
+        root = ET.fromstring(content)
+        for path in _strip_surface_paint(root):
+            textures.add(posixpath.normpath(path.lstrip("/")) if path.startswith("/")
+                         else posixpath.normpath(posixpath.join(posixpath.dirname(name), path)))
+        # Surface extensions are no longer required after their resources and
+        # triangle bindings are removed. Production extensions remain intact.
+        required = root.get("requiredextensions", "").split()
+        unbound = set(required) - namespaces.keys()
+        if unbound:
+            raise ValueError(f"{name}: unbound required extension prefixes: {', '.join(sorted(unbound))}")
+        kept = [prefix for prefix in required
+                if namespaces.get(prefix) != "http://schemas.microsoft.com/3dmanufacturing/material/2015/02"]
+        if kept:
+            root.set("requiredextensions", " ".join(kept))
+        else:
+            root.attrib.pop("requiredextensions", None)
+        rewritten[name] = _xml_bytes(root)
+    for name in textures:
+        rewritten.pop(name, None)
+    for name, content in list(rewritten.items()):
+        if not name.endswith(".rels") and name != "[Content_Types].xml":
+            continue
+        root = ET.fromstring(content)
+        changed = False
+        # Model relationships live next to the model, inside its _rels folder.
+        base = posixpath.dirname(posixpath.dirname(name)) if name.endswith(".rels") else ""
+        for node in list(root):
+            target = node.get("Target", node.get("PartName", ""))
+            resolved = (posixpath.normpath(target.lstrip("/")) if target.startswith("/")
+                        else posixpath.normpath(posixpath.join(base, target)))
+            if resolved in textures:
+                root.remove(node)
+                changed = True
+        if changed:
+            rewritten[name] = _xml_bytes(root)
+    return rewritten
+
+
 def write_transformed_3mf(
     input_3mf: str,
     output_3mf: str,
@@ -423,13 +535,25 @@ def write_transformed_3mf(
     *,
     name_updates: Optional[Dict[str, str]] = None,
     metadata_updates: Optional[Dict[str, Dict[str, str]]] = None,
+    geometry_only: bool = False,
 ) -> None:
+    """Transform a package; printable saves explicitly request geometry only.
+
+    The default preserves source content for preview/import utilities. With
+    ``geometry_only=True``, face paint and texture resources are removed from
+    every model member while part-level filament assignments remain.
+    """
     with zipfile.ZipFile(input_3mf, "r") as zin:
         model_name = _find_model_xml_name(zin)
         if not model_name:
             raise RuntimeError("No 3D/*.model found in 3MF.")
-        root = ET.fromstring(zin.read(model_name))
+        model_content = zin.read(model_name)
         others = {name: zin.read(name) for name in zin.namelist() if name != model_name}
+    if geometry_only:
+        members = _geometry_only_members({model_name: model_content, **others})
+        model_content = members.pop(model_name)
+        others = members
+    root = ET.fromstring(model_content)
 
     if name_updates or metadata_updates:
         for obj in _all_model_objects(root):
@@ -448,7 +572,12 @@ def write_transformed_3mf(
         item_tf = _parse_tf_3mf(item.get("transform"))
         item.set("transform", _format_tf_3mf(np.asarray(global_matrix, dtype=np.float64) @ item_tf))
 
+    if geometry_only:
+        # Child models may use a different prefix for the same namespace. ET's
+        # registry is global, so restore the root's bindings before serializing
+        # its unchanged requiredextensions list.
+        _register_model_namespaces(model_content)
+    members = {**others, model_name: _xml_bytes(root)}
     with zipfile.ZipFile(output_3mf, "w", compression=zipfile.ZIP_DEFLATED) as zout:
-        for name, data in others.items():
+        for name, data in members.items():
             zout.writestr(name, data)
-        zout.writestr(model_name, _xml_bytes(root))

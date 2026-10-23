@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.4a1 - unreleased
+
+- Integrates editable surface painting with the main Paint and Arrange workspace.
+- Exports printable filament geometry without per-face paint; editable colors stay in `.llpaint` projects.
+- Adds cancellation and an estimated memory budget for geometry conversion.
+- Combines the managed desktop/source installer with Paint and packages tutorial models, helper scripts, Paint tests, and workflow documentation.
+- Adds installed-wheel Paint conversion checks and native GUI coverage on Linux and Windows.
+
+This is an integration alpha. Release CI, standalone-app validation, and manual first-open checks must pass before distribution.
+
 ## 0.6.3 - 2026-06-19
 
 LayerLoom 0.6.3 is a public alpha release focused on the current Qt GUI,
