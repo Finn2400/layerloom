@@ -160,7 +160,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install --yes xvfb xauth libgl1 libegl1 libopengl0 libgl1-mesa-dri \
-            libxcb-icccm4 libxcb-keysyms1 libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0
 
       - name: Install LayerLoom
         run: |
