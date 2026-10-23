@@ -32,8 +32,7 @@ def run(args):
     args.output.mkdir(parents=True, exist_ok=False)
     project_before = digest(args.project)
     source_before = digest(args.original) if args.original else None
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
-    host = _load_current_gui_module().QtAssignColorsApp()
+    app, host = _load_current_gui_module().create_main_window()
     controller = install_desktop_ui(host)
     host.resize(1440, 950)
     host.show()

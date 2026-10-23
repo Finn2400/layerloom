@@ -7,7 +7,7 @@ import pytest
 if os.environ.get("LAYERLOOM_GUI_TESTS") != "1":
     pytest.skip("Native GUI checks require LAYERLOOM_GUI_TESTS=1", allow_module_level=True)
 
-from qtpy import QtCore, QtWidgets, QtTest
+from qtpy import QtCore, QtGui, QtWidgets, QtTest
 from layerloom.gui_app import _load_current_gui_module
 from layerloom.paint_examples import example_document, _write_source_color_fixture_3mf
 
@@ -651,3 +651,62 @@ def test_visible_arrange_recipe_survives_undo_redo_and_geometry_export(main_wind
     assert main_window.palette_combo.currentText() == "Simple"
     main_window.palette_combo.setCurrentText("Normal")
     assert editor.palette_combo.currentText() == "Normal"
+
+
+@pytest.mark.parametrize("initial_background, initial_text", [("#efefef", "#202020"), ("#202020", "#efefef")],
+                         ids=["light-system-palette", "dark-system-palette"])
+def test_real_startup_keeps_paint_controls_readable(main_module, app, tmp_path,
+                                                   initial_background, initial_text):
+    previous_palette = app.palette()
+    previous_style = app.style().objectName()
+    system_palette = QtGui.QPalette(previous_palette)
+    for role in (QtGui.QPalette.Window, QtGui.QPalette.Base, QtGui.QPalette.Button):
+        system_palette.setColor(role, QtGui.QColor(initial_background))
+    for role in (QtGui.QPalette.WindowText, QtGui.QPalette.Text, QtGui.QPalette.ButtonText):
+        system_palette.setColor(role, QtGui.QColor(initial_text))
+    app.setPalette(system_palette)
+    window = None
+
+    def contrast(first, second):
+        def luminance(color):
+            values = [channel / 12.92 if channel <= .04045 else ((channel + .055) / 1.055) ** 2.4
+                      for channel in (color.redF(), color.greenF(), color.blueF())]
+            return sum(channel * weight for channel, weight in zip(values, (.2126, .7152, .0722)))
+        light, dark = sorted((luminance(first), luminance(second)), reverse=True)
+        return (light + .05) / (dark + .05)
+
+    try:
+        startup_app, window = main_module.create_main_window()
+        assert startup_app is app and app.style().objectName().lower() == "fusion"
+        window.resize(1100, 720)
+        window.show()
+        assert window._desktop_controller.try_example()
+        app.processEvents()
+        editor = window.paint_panel.editor
+        panel_image = editor.controls_panel.grab().toImage()
+        # Sample the rendered surface, rather than trusting an inherited palette
+        # when stylesheets or native OS colors could override the actual paint.
+        background = panel_image.pixelColor(3, 3)
+        assert contrast(editor.model_label.palette().color(QtGui.QPalette.WindowText), background) >= 4.5
+        assert background.lightness() < 80
+        settings = editor.tool_settings_button
+        assert settings.isEnabled()
+        for group in (QtGui.QPalette.Active, QtGui.QPalette.Inactive):
+            palette = settings.palette()
+            assert contrast(palette.color(group, QtGui.QPalette.ButtonText),
+                            palette.color(group, QtGui.QPalette.Button)) >= 4.5
+        disabled = editor.apply_selection_button.palette()
+        assert contrast(disabled.color(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText),
+                        disabled.color(QtGui.QPalette.Disabled, QtGui.QPalette.Button)) >= 3
+        assert window.grab().save(str(tmp_path / "themed-example-window.png"))
+    finally:
+        if window is not None:
+            window.paint_panel.editor.dirty = False
+            window.close()
+            if window._desktop_controller.example_directory is not None:
+                window._desktop_controller.example_directory.cleanup()
+            window.deleteLater()
+            app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
+            app.processEvents()
+        app.setStyle(previous_style)
+        app.setPalette(previous_palette)

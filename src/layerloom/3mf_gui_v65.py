@@ -1978,7 +1978,8 @@ class QtAssignColorsApp(PaintWorkspaceHostMixin, _V62.QtAssignColorsApp):
         _V58.QtCore.QTimer.singleShot(180, restore)
 
 
-def main():
+def create_main_window():
+    """Build the themed desktop used by both the launcher and GUI proofs."""
     try:
         script_dir = os.path.dirname(os.path.abspath(__file__))
     except NameError:
@@ -2053,6 +2054,11 @@ def main():
     )
     from layerloom.desktop_ui import install_desktop_ui
     install_desktop_ui(window)
+    return app, window
+
+
+def main():
+    app, window = create_main_window()
     window.show()
     return app.exec_()
 
