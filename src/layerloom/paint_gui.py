@@ -208,6 +208,7 @@ class PaintWindow(QtWidgets.QMainWindow):
     paintChanged = QtCore.Signal()
     geometryChanged = QtCore.Signal()
     appearanceChanged = QtCore.Signal()
+    exportCompleted = QtCore.Signal(object)
 
     def __init__(self, path=None, *, document: PaintDocument | None = None, parent=None):
         super().__init__(parent)
@@ -622,6 +623,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             mode = "woven"
         self.document = document
         self.project_path = None
+        self.suggested_output_directory = None
         self.dirty = False
         self._undo.clear()
         self._redo.clear()
@@ -1072,7 +1074,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         if self.document is None:
             return False
         self.end_stroke()
-        default = self.project_path or str(Path(self.document.source_path or "painted_model").with_suffix(".llpaint"))
+        default = self.default_save_path(".llpaint")
         path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save editable paint project", default, "LayerLoom paint (*.llpaint)")
         if not path:
             return False
@@ -1089,6 +1091,15 @@ class PaintWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.critical(self, "Save failed", str(exc))
             return False
 
+    def default_save_path(self, suffix):
+        """Keep temporary examples' suggested output in a persistent user folder."""
+        source = Path(self.project_path or self.document.source_path or "painted_model")
+        if not self.project_path and self.suggested_output_directory is not None:
+            source = Path(self.suggested_output_directory) / source.name
+        if suffix == ".llpaint":
+            return str(source.with_suffix(suffix))
+        return str(source.with_suffix("")) + suffix
+
     def export_dialog(self):
         if self.document is None or self._export_thread is not None:
             return
@@ -1102,12 +1113,14 @@ class PaintWindow(QtWidgets.QMainWindow):
         mode.addItem("Exact colors — one material each", "source")
         mode.setCurrentIndex(max(0, mode.findData(self.mapping_mode_combo.currentData())))
         layer = QtWidgets.QDoubleSpinBox()
+        layer.setObjectName("geometryExportLayerHeight")
         layer.setDecimals(3)
         layer.setRange(0.04, 2.0)
         layer.setSingleStep(0.04)
         layer.setValue(0.2)
         layer.setSuffix(" mm")
         pitch = QtWidgets.QDoubleSpinBox()
+        pitch.setObjectName("geometryExportPitch")
         pitch.setDecimals(3)
         pitch.setRange(0.05, 10.0)
         pitch.setSingleStep(0.1)
@@ -1123,7 +1136,37 @@ class PaintWindow(QtWidgets.QMainWindow):
         layout.addRow("Color mode", mode)
         layout.addRow("Layer height", layer)
         layout.addRow("XY sampling size", pitch)
-        layout.addRow("Export memory budget", memory)
+        advanced_button = QtWidgets.QToolButton()
+        advanced_button.setText("Advanced export settings")
+        advanced_button.setCheckable(True)
+        advanced_button.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        advanced_button.setArrowType(QtCore.Qt.RightArrow)
+        advanced = QtWidgets.QWidget()
+        advanced_form = QtWidgets.QFormLayout(advanced)
+        advanced_form.setContentsMargins(0, 0, 0, 0)
+        cells = QtWidgets.QDoubleSpinBox()
+        cells.setObjectName("geometryExportCellBudget")
+        cells.setDecimals(1)
+        cells.setRange(0.1, 2000.0)
+        cells.setValue(2.0)
+        cells.setSuffix(" million cells")
+        cells.setToolTip("Maximum sampling work. Larger models may require a higher limit; the memory budget is checked separately.")
+        precision = QtWidgets.QComboBox()
+        precision.setObjectName("geometryExportPrecision")
+        precision.addItem("Standard (0.001 mm)", 0.001)
+        precision.addItem("Fine (0.00001 mm)", 0.00001)
+        precision.setToolTip("Fine precision preserves small features during geometry operations and can take longer.")
+        advanced_form.addRow("Export memory budget", memory)
+        advanced_form.addRow("Sampling budget", cells)
+        advanced_form.addRow("Geometry precision", precision)
+        advanced.hide()
+        def toggle_advanced(checked):
+            advanced.setVisible(checked)
+            advanced_button.setArrowType(QtCore.Qt.DownArrow if checked else QtCore.Qt.RightArrow)
+            dialog.adjustSize()
+        advanced_button.toggled.connect(toggle_advanced)
+        layout.addRow(advanced_button)
+        layout.addRow(advanced)
         estimate_label = QtWidgets.QLabel()
         estimate_label.setObjectName("geometryExportEstimate")
         estimate_label.setWordWrap(True)
@@ -1147,7 +1190,8 @@ class PaintWindow(QtWidgets.QMainWindow):
 
         def update_estimate():
             try:
-                estimate = estimate_export_resources(self.document, layer_height=layer.value(), pitch=pitch.value())
+                estimate = estimate_export_resources(self.document, layer_height=layer.value(), pitch=pitch.value(),
+                                                     max_cells=round(cells.value() * 1_000_000))
                 estimate.check_budget(memory.value() * 1024 ** 2)
                 estimate_label.setText(
                     f"Estimated additional memory: {estimate.estimated_peak_bytes / 1024 ** 2:,.0f} MiB. "
@@ -1159,7 +1203,7 @@ class PaintWindow(QtWidgets.QMainWindow):
                 estimate_label.setText(str(exc))
                 buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
-        for control in (layer, pitch, memory):
+        for control in (layer, pitch, memory, cells):
             control.valueChanged.connect(update_estimate)
         update_estimate()
         if dialog.exec_() != QtWidgets.QDialog.Accepted:
@@ -1168,14 +1212,15 @@ class PaintWindow(QtWidgets.QMainWindow):
         if not self._mapping and not self.assign_colors():
             return
         self.preview_mapping.setChecked(mode.currentData() != "source")
-        default = str(Path(self.project_path or self.document.source_path or "painted_model").with_suffix("")) + "_geometry.3mf"
+        default = self.default_save_path("_geometry.3mf")
         output, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save geometry 3MF", default, "3MF (*.3mf)")
         if not output:
             return
         if not output.lower().endswith(".3mf"):
             output += ".3mf"
         self.start_export(output, mode=mode.currentData(), layer_height=layer.value(), pitch=pitch.value(),
-                          palette_name=self.palette_combo.currentText(), memory_budget_bytes=memory.value() * 1024 ** 2)
+                          palette_name=self.palette_combo.currentText(), memory_budget_bytes=memory.value() * 1024 ** 2,
+                          max_cells=round(cells.value() * 1_000_000), precision=precision.currentData())
 
     def start_export(self, output, **settings):
         """Export a snapshot; editing may continue while conversion runs."""
@@ -1260,6 +1305,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         warnings = report.get("warnings", [])
         detail = "\n\n" + "\n".join(warnings) if warnings else ""
         self.statusBar().showMessage(f"Geometry export complete. {path}" + (" — audit report warning" if warnings else ""))
+        self.exportCompleted.emit(report)
         QtWidgets.QMessageBox.information(
             self, "Export complete", f"Geometry 3MF written.\n{path}\n\n"
             "Inspect the material parts in your slicer using the selected layer height." + detail

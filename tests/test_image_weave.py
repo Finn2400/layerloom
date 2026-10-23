@@ -4,6 +4,7 @@ import zipfile
 from xml.etree import ElementTree as ET
 
 import numpy as np
+import pytest
 import trimesh
 from shapely.geometry import Point
 
@@ -44,6 +45,56 @@ def test_orca_export_groups_filaments_as_one_multipart_object(tmp_path):
     assert len(objects[0].find(core + "components").findall(core + "component")) == 2
     assert len(build_items) == 1
     assert len(config.find("object").findall("part")) == 2
+
+
+def test_multipart_stream_preserves_geometry_metadata_and_input(tmp_path, monkeypatch):
+    from layerloom import export
+    mesh = trimesh.creation.icosphere(subdivisions=4)
+    mesh.apply_translation([12.345678901, -4.876543219, 7.123456789])
+    vertices, faces = mesh.vertices.copy(), mesh.faces.copy()
+    label = 'café <dragon> & "paint"'
+    def no_copy(*args, **kwargs):
+        pytest.fail("The multipart writer must not duplicate whole meshes")
+    monkeypatch.setattr(trimesh.Trimesh, "copy", no_copy)
+    original_sub_element = export.ET.SubElement
+    def bounded_tree(parent, tag, *args, **kwargs):
+        assert tag not in {export.M("vertex"), export.M("triangle")}
+        return original_sub_element(parent, tag, *args, **kwargs)
+    monkeypatch.setattr(export.ET, "SubElement", bounded_tree)
+    path = tmp_path / "café geometry.3mf"
+    checks = []
+    write_orca_multipart_3mf([LeafMeshSpec(label, mesh, {"stack_token": "c", "note": "a < b & c"})],
+                             str(path), checkpoint=lambda: checks.append(True))
+    with zipfile.ZipFile(path) as archive:
+        child = ET.fromstring(archive.read("3D/Objects/object_1.model"))
+        root = ET.fromstring(archive.read("3D/3dmodel.model"))
+    obj = child.find(export.M("resources")).find(export.M("object"))
+    assert obj.get("name") == label
+    assert obj.find(export.M("metadatagroup")).findall(export.M("metadata"))[1].text == "a < b & c"
+    loaded = np.array([[float(v.get(axis)) for axis in "xyz"] for v in obj.iter(export.M("vertex"))])
+    center = np.array(root.find('.//' + export.M("component")).get("transform").split()[-3:], dtype=float)
+    np.testing.assert_allclose(loaded + center, vertices, atol=1e-9, rtol=0)
+    triangles = np.array([[int(t.get(axis)) for axis in ("v1", "v2", "v3")] for t in obj.iter(export.M("triangle"))])
+    np.testing.assert_array_equal(triangles, faces)
+    np.testing.assert_array_equal(mesh.vertices, vertices)
+    np.testing.assert_array_equal(mesh.faces, faces)
+    assert len(checks) > 5
+
+
+def test_multipart_stream_can_cancel_within_one_large_part(tmp_path):
+    mesh = trimesh.creation.icosphere(subdivisions=5)
+    calls = 0
+    class Cancelled(Exception):
+        pass
+    def checkpoint():
+        nonlocal calls
+        calls += 1
+        if calls == 5:
+            raise Cancelled()
+    with pytest.raises(Cancelled):
+        write_orca_multipart_3mf([LeafMeshSpec("sphere", mesh, {})], str(tmp_path / "cancelled.3mf"),
+                                 checkpoint=checkpoint)
+    assert calls == 5
 
 
 def test_compaction_unions_touching_layer_slabs():

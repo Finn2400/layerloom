@@ -314,9 +314,7 @@ def test_export_action_offers_only_material_geometry_for_every_color_mode(window
     captured = {}
     def choose_mode(dialog):
         assert dialog.windowTitle() == "Export geometry 3MF"
-        combos = dialog.findChildren(QtWidgets.QComboBox)
-        assert len(combos) == 1, "There must be no painted-output representation selector"
-        mode = combos[0]
+        mode = dialog.findChild(QtWidgets.QComboBox, "geometryExportMode")
         assert [mode.itemData(i) for i in range(mode.count())] == ["woven", "direct", "source"]
         assert all(spin.isEnabled() for spin in dialog.findChildren(QtWidgets.QDoubleSpinBox))
         assert any("no surface paint" in label.text() for label in dialog.findChildren(QtWidgets.QLabel))
@@ -332,7 +330,8 @@ def test_export_action_offers_only_material_geometry_for_every_color_mode(window
     click_toolbar(window, window.export_action)
     assert captured["output"] == str(output)
     assert captured["settings"] == {"mode": color_mode, "layer_height": .2, "pitch": .5, "palette_name": "Normal",
-                                    "memory_budget_bytes": 2 * 1024 ** 3}
+                                    "memory_budget_bytes": 2 * 1024 ** 3,
+                                    "max_cells": 2_000_000, "precision": .001}
     assert window.document.metadata["paint_mapping_mode"] == color_mode
     if color_mode == "source":
         assert all(key == entry["hex"] == entry["token"] for key, entry in window._mapping.items())
@@ -794,7 +793,8 @@ def test_export_dialog_recomputes_estimate_and_blocks_excess_work(window, monkey
         ok = buttons.button(QtWidgets.QDialogButtonBox.Ok)
         assert memory.value() == 2048 and ok.isEnabled()
         assert "additional memory" in label.text() and "planning estimate" in label.text()
-        layer, pitch = dialog.findChildren(QtWidgets.QDoubleSpinBox)
+        layer = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportLayerHeight")
+        pitch = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportPitch")
         pitch.setValue(.05)
         layer.setValue(.04)
         assert not ok.isEnabled() and "cells" in label.text()
@@ -810,3 +810,59 @@ def test_export_dialog_recomputes_estimate_and_blocks_excess_work(window, monkey
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", inspect_dialog)
     window.export_dialog()
     assert observed and window._export_thread is None
+
+
+def test_export_advanced_settings_pass_through_without_bypassing_memory_guard(window, monkeypatch, tmp_path):
+    captured = {}
+    def choose_settings(dialog):
+        pitch = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportPitch")
+        cells = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportCellBudget")
+        memory = dialog.findChild(QtWidgets.QSpinBox, "geometryExportMemoryBudget")
+        precision = dialog.findChild(QtWidgets.QComboBox, "geometryExportPrecision")
+        ok = dialog.findChild(QtWidgets.QDialogButtonBox).button(QtWidgets.QDialogButtonBox.Ok)
+        pitch.setValue(.05)
+        cells.setValue(20)
+        memory.setValue(64)
+        assert not ok.isEnabled(), "A larger sampling budget must still respect the memory budget"
+        memory.setValue(8192)
+        assert ok.isEnabled()
+        precision.setCurrentIndex(precision.findData(.00001))
+        return QtWidgets.QDialog.Accepted
+    monkeypatch.setattr(QtWidgets.QDialog, "exec_", choose_settings)
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(tmp_path / "fine.3mf"), ""))
+    monkeypatch.setattr(window, "start_export", lambda output, **settings: captured.update(settings))
+    window.export_dialog()
+    assert captured["max_cells"] == 20_000_000
+    assert captured["precision"] == .00001
+    assert captured["memory_budget_bytes"] == 8192 * 1024 ** 2
+
+
+def test_invalid_project_open_preserves_current_edits_and_history(window, monkeypatch, tmp_path):
+    import json
+    import zipfile
+    window.tool_combo.setCurrentText("Object fill")
+    window.set_paint_color("#FF0000")
+    click_surface(window)
+    window.project_path = str(tmp_path / "current.llpaint")
+    original = window.document
+    history = list(window._undo)
+    colors = original.meshes[0].face_rgba.copy()
+    invalid = tmp_path / "invalid.llpaint"
+    save_paint_document(original, invalid)
+    with zipfile.ZipFile(invalid) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    manifest = json.loads(files["manifest.json"])
+    manifest["metadata"]["nested"] = {"value": "OVERFLOW"}
+    files["manifest.json"] = json.dumps(manifest).replace('"OVERFLOW"', '1e999').encode()
+    with zipfile.ZipFile(invalid, "w") as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    errors = []
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    assert not window.open_path(invalid)
+    assert errors and window.document is original and window.dirty
+    assert window.project_path == str(tmp_path / "current.llpaint")
+    assert len(window._undo) == len(history) and window._undo[0] is history[0]
+    np.testing.assert_array_equal(original.meshes[0].face_rgba, colors)
+    window.undo()
+    assert not np.array_equal(original.meshes[0].face_rgba, colors)
