@@ -34,7 +34,9 @@ omit unused project metadata and are checked before copying the model.
 
 **Cancel export** stops at the next safe checkpoint and leaves existing output
 files intact. Native geometry operations must finish before cancellation is
-observed. Closing waits for the worker to finish; cancel in the footer, then close
+observed. The first export also compiles the triangle search code; compilation
+and index construction finish before their next cancellation checkpoint. The
+status bar identifies this preparation stage. Closing waits for the worker to finish; cancel in the footer, then close
 again. The completed 3MF is published with an atomic replacement; a cancellation
 arriving after that replacement is reported as a successful export. The optional
 audit report is handled separately. The paint project remains editable during
