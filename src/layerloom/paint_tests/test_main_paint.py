@@ -28,11 +28,29 @@ def main_window(main_module, app):
     window.show()
     app.processEvents()
     yield window
-    window.paint_panel.editor.dirty = False
-    window.close()
-    window.deleteLater()
-    app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
-    app.processEvents()
+    editor = window.paint_panel.editor
+    late_errors = []
+    # Test-scoped dialog patches may already have been restored after a failed
+    # assertion. Drain a late worker before closing so its modal cannot hide
+    # the original failure or leave a QThread alive when the window is deleted.
+    with pytest.MonkeyPatch.context() as cleanup:
+        cleanup.setattr(QtWidgets.QMessageBox, "information", lambda *args: None)
+        cleanup.setattr(QtWidgets.QMessageBox, "critical",
+                        lambda parent, title, message: late_errors.append(message))
+        if editor._export_thread is not None:
+            editor.cancel_export()
+            timer = QtCore.QElapsedTimer()
+            timer.start()
+            while editor._export_thread is not None and timer.elapsed() < 120000:
+                QtTest.QTest.qWait(20)
+            assert editor._export_thread is None, "Test export worker did not finish after cancellation"
+        editor.end_stroke()
+        editor.dirty = False
+        window.close()
+        window.deleteLater()
+        app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
+        app.processEvents()
+    assert not late_errors, "Late export failure during cleanup: " + "\n".join(late_errors)
 
 
 def click_main_action(window, action):
@@ -618,9 +636,13 @@ def test_visible_arrange_recipe_survives_undo_redo_and_geometry_export(main_wind
                                layer_height=.5, pitch=.5)
     timer = QtCore.QElapsedTimer()
     timer.start()
-    while editor._export_thread is not None and timer.elapsed() < 15000:
+    # This is the process's first real export, including uncached JIT setup.
+    while editor._export_thread is not None and timer.elapsed() < 120000:
         QtTest.QTest.qWait(20)
-    assert editor._export_thread is None and not errors
+    assert editor._export_thread is None, (
+        f"Export still active after {timer.elapsed() / 1000:.1f}s: "
+        f"{editor.statusBar().currentMessage()}; errors={errors!r}")
+    assert not errors, "\n".join(errors)
     assert output.exists() and editor.last_export_report is not None
     assert editor.last_export_report["assignments"][color]["token"] == entry["token"]
     assert {row["token"] for row in editor.last_export_report["filaments"]} == {"c", "m"}
