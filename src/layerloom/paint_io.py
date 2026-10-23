@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import io
 import json
+import math
 import os
 from pathlib import Path
 import posixpath
@@ -103,9 +104,19 @@ def save_paint_document(document: PaintDocument, path: str | os.PathLike) -> Non
     _atomic_write(path, write)
 
 
+def _finite_project_number(value: str) -> float:
+    """Reject JSON constants and numeric overflow before loading any arrays."""
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("Paint project JSON numbers must be finite")
+    return number
+
+
 def _load_project(path: Path) -> PaintDocument:
     with zipfile.ZipFile(path) as archive:
-        manifest = json.loads(archive.read("manifest.json"))
+        manifest = json.loads(archive.read("manifest.json"),
+                              parse_float=_finite_project_number,
+                              parse_constant=_finite_project_number)
         if (not isinstance(manifest, dict) or manifest.get("format") != _FORMAT or
                 type(manifest.get("version")) is not int or manifest.get("version") != _VERSION):
             raise ValueError("Unsupported LayerLoom paint project format or version")

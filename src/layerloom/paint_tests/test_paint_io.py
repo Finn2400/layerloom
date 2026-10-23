@@ -195,6 +195,43 @@ def test_invalid_project_manifest_types_are_rejected(tmp_path, field, value, mes
         load_paint_document(path)
 
 
+@pytest.mark.parametrize("number", ["NaN", "Infinity", "-Infinity", "1e999", "-1e999"])
+@pytest.mark.parametrize("location", ["metadata", "project", "mesh"])
+def test_project_rejects_nonfinite_json_before_loading_arrays(tmp_path, monkeypatch, number, location):
+    path = tmp_path / "nonfinite.llpaint"
+    save_paint_document(_doc(trimesh.creation.box()), path)
+    with zipfile.ZipFile(path) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    manifest = json.loads(files["manifest.json"])
+    target = (manifest["metadata"] if location == "metadata" else
+              manifest["meshes"][0] if location == "mesh" else manifest)
+    target["external_data"] = {"nested": [None, {"value": "INVALID_NUMBER"}]}
+    files["manifest.json"] = json.dumps(manifest).replace('"INVALID_NUMBER"', number).encode()
+    with zipfile.ZipFile(path, "w") as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    monkeypatch.setattr(np, "load", lambda *args, **kwargs: pytest.fail("Reject the manifest before allocating mesh arrays"))
+    with pytest.raises(ValueError, match="JSON numbers must be finite"):
+        load_paint_document(path)
+
+
+def test_finite_nested_project_metadata_remains_saveable(tmp_path):
+    doc = _doc(trimesh.creation.box())
+    doc.metadata["external_data"] = {
+        "numbers": [0, -42, 2**80, 1.25, -0.0, 1e308, -1e308, 5e-324],
+        "nested": [{"enabled": True, "unset": None, "label": "彩色 dragon"}],
+        "text": ["NaN", "Infinity", "-Infinity", "1e999"],
+    }
+    path = tmp_path / "finite.llpaint"
+    save_paint_document(doc, path)
+    loaded = load_paint_document(path)
+    save_paint_document(loaded, tmp_path / "resaved.llpaint")
+    reopened = load_paint_document(tmp_path / "resaved.llpaint")
+    assert reopened.metadata == doc.metadata
+    for key in ("vertices", "faces", "face_rgba", "source_rgba"):
+        np.testing.assert_array_equal(getattr(reopened.meshes[0], key), getattr(doc.meshes[0], key))
+
+
 @pytest.mark.parametrize("failure", ["write", "replace"])
 def test_failed_project_save_preserves_existing_file_and_cleans_temp(tmp_path, monkeypatch, failure):
     from layerloom import paint_io
