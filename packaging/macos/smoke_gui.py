@@ -51,14 +51,12 @@ def main(directory: str) -> int:
         from layerloom.app_logging import initialize_logs
         initialize_logs()
         from layerloom.gui_app import _load_current_gui_module
-        from layerloom.desktop_ui import install_desktop_ui
         from layerloom.paint_examples import example_document
         from layerloom.paint_io import save_paint_document
         gui = _load_current_gui_module()
         qt, qtcore = gui._V58.QtWidgets, gui._V58.QtCore
-        app = qt.QApplication.instance() or qt.QApplication(["LayerLoom Paint smoke test"])
-        window = gui.QtAssignColorsApp()
-        controller = install_desktop_ui(window)
+        app, window = gui.create_main_window()
+        controller = window._desktop_controller
         errors, notices = [], []
         window._error = lambda title, message: errors.append(f"{title}: {message}")
         window._warn = lambda title, message: errors.append(f"{title}: {message}")
@@ -72,6 +70,25 @@ def main(directory: str) -> int:
         editor = window.paint_panel.editor
         assert editor.document is not None and window._shared_paint_active()
         assert window.model_objects and not errors, errors
+        # Sample the rendered sidebar background, since a native light palette
+        # can otherwise make the inherited white labels effectively invisible.
+        sidebar = editor.controls_panel.grab().toImage()
+        background = sidebar.pixelColor(sidebar.width() // 2, sidebar.height() - 3)
+        foreground = editor.model_label.palette().color(editor.model_label.foregroundRole())
+        def luminance(color):
+            rgb = [color.redF(), color.greenF(), color.blueF()]
+            linear = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb]
+            return sum(c * weight for c, weight in zip(linear, (0.2126, 0.7152, 0.0722)))
+        light, dark = sorted((luminance(background), luminance(foreground)), reverse=True)
+        contrast = (light + 0.05) / (dark + 0.05)
+        report["paint_ui"] = {
+            "application_style": app.style().objectName(),
+            "sidebar_background": background.name(),
+            "label_foreground": foreground.name(),
+            "contrast_ratio": contrast,
+        }
+        assert app.style().objectName().lower() == "fusion", report["paint_ui"]
+        assert contrast >= 4.5, f"Paint sidebar labels are unreadable: {report['paint_ui']}"
         image = editor.plotter.screenshot(str(output / "example-render.png"))
         assert image is not None and image.std() > 5, "Paint example render is blank"
         assert window.grab().save(str(output / "example-window.png"))
@@ -87,6 +104,7 @@ def main(directory: str) -> int:
         assert window._shared_paint_active() and editor.document is document
         window.viewer.plotter.render()
         window.viewer.plotter.screenshot(str(output / "arrange-render.png"))
+        assert window.grab().save(str(output / "arrange-window.png"))
         target = model_output / "painted_cube_geometry.3mf"
         assert editor.start_export(target, mode="woven", layer_height=.5, pitch=.5, palette_name="Normal")
         _wait_for_export(editor, qtcore)
