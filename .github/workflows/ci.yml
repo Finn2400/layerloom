@@ -159,7 +159,7 @@ jobs:
       - name: Install virtual display and Qt rendering libraries
         run: |
           sudo apt-get update
-          sudo apt-get install --yes xvfb xauth libgl1 libegl1 libopengl0 libgl1-mesa-dri \
+          sudo apt-get install --yes xvfb xauth openbox x11-utils libgl1 libegl1 libopengl0 libgl1-mesa-dri \
             libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0
 
       - name: Install LayerLoom
@@ -195,20 +195,41 @@ jobs:
           PY
 
       - name: Exercise native Paint and Arrange controls
-        run: >-
-          xvfb-run -a -s "-screen 0 1920x1200x24"
-          python -m pytest
-          src/layerloom/paint_tests/test_paint_gui.py
-          src/layerloom/paint_tests/test_main_paint.py
-          tests/test_desktop_ui.py
-          --junitxml=paint-gui-results.xml
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1200x24" bash -e <<'SH'
+          # Native popup focus requires an active X11 window manager.
+          openbox > paint-window-manager.log 2>&1 &
+          window_manager_pid=$!
+          trap 'kill "$window_manager_pid" 2>/dev/null || true' EXIT
+          window_manager_ready=0
+          for attempt in {1..50}; do
+            if [[ "$(xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null)" == *"window id #"* ]]; then
+              window_manager_ready=1
+              break
+            fi
+            kill -0 "$window_manager_pid" 2>/dev/null || break
+            sleep 0.1
+          done
+          if [[ "$window_manager_ready" != 1 ]]; then
+            cat paint-window-manager.log
+            exit 1
+          fi
+          xprop -root _NET_SUPPORTING_WM_CHECK
+          python -u -m pytest \
+            src/layerloom/paint_tests/test_paint_gui.py \
+            src/layerloom/paint_tests/test_main_paint.py \
+            tests/test_desktop_ui.py \
+            --junitxml=paint-gui-results.xml
+          SH
 
       - name: Save GUI test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: paint-gui-results
-          path: paint-gui-results.xml
+          path: |
+            paint-gui-results.xml
+            paint-window-manager.log
           if-no-files-found: ignore
 
 
