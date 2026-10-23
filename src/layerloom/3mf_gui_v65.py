@@ -161,6 +161,11 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
         }
         self._profile_state = {}
         self._scene_revision = 0
+        self._part_actor_numbers = {}
+        self._selected_part_names = set()
+        self._show_part_numbers = True
+        self._part_annotations_visible = True
+        self._part_annotation_actors = {}
 
     def build_scene(self, *args, **kwargs):
         result = super().build_scene(*args, **kwargs)
@@ -173,6 +178,7 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
         return plotter
 
     def _teardown_scene(self):
+        self._clear_part_annotations()
         self._clear_selection_outline()
         self._whole_model_highlight = False
         self._plate_warning_state = None
@@ -290,6 +296,7 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
             if self.tool_mode not in {"surface", "plate"}:
                 self._clear_surface_highlight()
         self.set_whole_model_highlight(self.tool_mode in {"move", "gizmo"})
+        self.refresh_part_annotations()
         self._set_viewer_cursor("default")
         if self.plotter:
             self.plotter.render()
@@ -1321,6 +1328,113 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
             max(b[5] for b in bounds),
         )
 
+    def _clear_part_annotation_actors(self):
+        for actor in self._part_annotation_actors.values():
+            if self.plotter is not None:
+                try:
+                    self.plotter.remove_actor(actor, reset_camera=False, render=False)
+                except (AttributeError, RuntimeError):
+                    pass
+        self._part_annotation_actors.clear()
+
+    def _clear_part_annotations(self):
+        self._clear_part_annotation_actors()
+        self._part_actor_numbers.clear()
+        self._selected_part_names.clear()
+        self._part_annotations_visible = True
+
+    def set_part_annotations(self, actor_numbers, selected_names, show_numbers=True):
+        """Identify preview actors without altering their geometry or material."""
+        self._part_actor_numbers = {str(name): str(number) for name, number in actor_numbers.items()}
+        self._selected_part_names = set(selected_names)
+        self._show_part_numbers = bool(show_numbers)
+        self.refresh_part_annotations()
+        if self.plotter is not None:
+            self.plotter.render()
+
+    def _set_point_labels_visible(self, visible):
+        super()._set_point_labels_visible(visible)
+        self._part_annotations_visible = bool(visible)
+        if visible:
+            # Drag previews transform actors, not their datasets. Read their
+            # final world bounds when restoring labels after commit or Escape.
+            self.refresh_part_annotations()
+        else:
+            for actor in self._part_annotation_actors.values():
+                actor.SetVisibility(False)
+
+    def refresh_part_annotations(self):
+        """Rebuild inexpensive world-space anchors after placement changes."""
+        self._clear_part_annotation_actors()
+        if self.plotter is None or not self._part_annotations_visible:
+            return
+        regular_points, regular_labels = [], []
+        selected_points, selected_labels, selected_bounds = [], [], []
+        for name, number in self._part_actor_numbers.items():
+            if not self._show_part_numbers and name not in self._selected_part_names:
+                continue
+            actor = self.actors_by_name.get(name)
+            if actor is None:
+                continue
+            try:
+                if hasattr(actor, "GetVisibility") and not actor.GetVisibility():
+                    continue
+                bounds = _V58.np.asarray(actor.GetBounds(), dtype=_V58.np.float64)
+            except (AttributeError, RuntimeError, TypeError, ValueError):
+                continue
+            if bounds.shape != (6,) or not _V58.np.isfinite(bounds).all() or _V58.np.any(bounds[1::2] < bounds[::2]):
+                continue
+            center = 0.5 * (bounds[::2] + bounds[1::2])
+            label = f"#{number}"
+            if name in self._selected_part_names:
+                selected_points.append(center)
+                selected_labels.append(label)
+                selected_bounds.append(bounds)
+            elif self._show_part_numbers:
+                regular_points.append(center)
+                regular_labels.append(label)
+
+        for key, points, labels, selected in (
+            ("__v65_part_numbers__", regular_points, regular_labels, False),
+            ("__v65_selected_part_number__", selected_points, selected_labels, True),
+        ):
+            if not points:
+                continue
+            self._part_annotation_actors[key] = self.plotter.add_point_labels(
+                _V58.np.asarray(points),
+                labels,
+                name=key,
+                font_size=15 if selected else 12,
+                text_color="#1b2026",
+                shape_color="#f2c94c" if selected else "#e5ebf1",
+                shape_opacity=0.95,
+                margin=5 if selected else 3,
+                show_points=False,
+                always_visible=True,
+                pickable=False,
+                reset_camera=False,
+                render=False,
+            )
+        # Move and Rotate already identify the whole model. A separate box in
+        # View mode keeps the chosen part visible after its brief color flash.
+        if selected_bounds and self.tool_mode == "normal":
+            all_bounds = _V58.np.asarray(selected_bounds)
+            bounds = _V58.np.empty(6)
+            bounds[::2] = all_bounds[:, ::2].min(axis=0)
+            bounds[1::2] = all_bounds[:, 1::2].max(axis=0)
+            outline = _V58.pv.Cube(bounds=tuple(bounds)).extract_all_edges()
+            key = "__v65_selected_part_outline__"
+            self._part_annotation_actors[key] = self.plotter.add_mesh(
+                outline,
+                name=key,
+                color="#f2c94c",
+                line_width=3,
+                lighting=False,
+                pickable=False,
+                reset_camera=False,
+                render=False,
+            )
+
     def _clear_selection_outline(self):
         if self.plotter and self.selection_outline_actor is not None:
             try:
@@ -1445,6 +1559,8 @@ _V58.EmbeddedPVViewer = EmbeddedPVViewerV65
 
 class QtAssignColorsApp(_V62.QtAssignColorsApp):
     def __init__(self):
+        self._part_numbers_by_oid = {}
+        self._part_number_source = None
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
         self._preview_dataset_matrix = _V58.np.eye(4, dtype=_V58.np.float64)
@@ -1454,6 +1570,87 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self._preview_original_bounds = None
         super().__init__()
         self.setWindowTitle("LayerLoom — Color Assigner v65")
+
+    def _build_ui(self):
+        super()._build_ui()
+        self.part_numbers_checkbox = _V58.QtWidgets.QCheckBox("Show numbers in model")
+        self.part_numbers_checkbox.setSizePolicy(
+            _V58.QtWidgets.QSizePolicy.Maximum, _V58.QtWidgets.QSizePolicy.Fixed
+        )
+        self.part_numbers_checkbox.setChecked(True)
+        self.part_numbers_checkbox.setEnabled(False)
+        self.part_numbers_checkbox.setToolTip(
+            "Match the # column to numbers on the model. The selected part stays marked when other numbers are hidden."
+        )
+        self.part_numbers_checkbox.toggled.connect(self._sync_part_annotations)
+        self.parts_table.parentWidget().layout().insertWidget(0, self.part_numbers_checkbox)
+        self.selected_name_label.setTextFormat(_V58.QtCore.Qt.PlainText)
+        self.selected_name_label.setWordWrap(True)
+        self.selected_name_label.setTextInteractionFlags(_V58.QtCore.Qt.TextSelectableByMouse)
+        self.selected_reference_label = _V58.QtWidgets.QLabel()
+        self.selected_reference_label.setObjectName("muted")
+        selected_layout = self.selected_name_label.parentWidget().layout().itemAt(1).layout()
+        selected_layout.insertWidget(0, self.selected_reference_label)
+        self._sync_part_label_ui()
+
+    def _reload_current(self):
+        result = super()._reload_current()
+        self._sync_part_label_ui()
+        return result
+
+    def _sync_part_label_ui(self):
+        if not hasattr(self, "part_numbers_checkbox"):
+            return
+        self._part_numbers_by_oid = _V58._build_part_number_map(self.model_objects)
+        self.parts_table.setColumnCount(4)
+        self.parts_table.setHeaderLabels(["Part", "Hex", "Pattern", "#"])
+        header = self.parts_table.header()
+        header.setSectionResizeMode(3, _V58.QtWidgets.QHeaderView.ResizeToContents)
+        if header.visualIndex(3) != 0:
+            header.moveSection(header.visualIndex(3), 0)
+        for index in range(self.parts_table.topLevelItemCount()):
+            item = self.parts_table.topLevelItem(index)
+            oid = item.data(0, _V58.QtCore.Qt.UserRole)
+            number = self._part_numbers_by_oid.get(oid, "")
+            item.setText(3, number)
+            item.setTextAlignment(3, _V58.QtCore.Qt.AlignCenter)
+            # Keep the full source name available even when the table elides it.
+            item.setToolTip(0, item.text(0))
+            item.setToolTip(3, f"Part #{number} in the model")
+        self.part_numbers_checkbox.setEnabled(bool(self.model_objects))
+        if self.base_file != self._part_number_source:
+            self._part_number_source = self.base_file
+            blocked = self.part_numbers_checkbox.blockSignals(True)
+            self.part_numbers_checkbox.setChecked(len(self.model_objects) <= 32)
+            self.part_numbers_checkbox.blockSignals(blocked)
+        self._update_selected_part_summary(self._current_selected_oid())
+
+    def _update_selected_part_summary(self, oid):
+        super()._update_selected_part_summary(oid)
+        if hasattr(self, "selected_reference_label"):
+            number = self._part_numbers_by_oid.get(oid)
+            self.selected_reference_label.setText(f"Part #{number}" if number else "")
+            self.selected_reference_label.setVisible(bool(number))
+            self.selected_name_label.setToolTip(self.selected_name_label.text())
+        self._sync_part_annotations()
+
+    def _sync_part_annotations(self, *_args):
+        viewer = self.viewer
+        if (not self.base_file or viewer is None or not hasattr(viewer, "set_part_annotations")
+                or self._preview_dataset_base_file != self.base_file):
+            return
+        numbers = _V58._build_part_number_map(self.model_objects)
+        selected_oid = self._current_selected_oid()
+        actor_numbers = {}
+        selected_names = set()
+        for name in viewer.actors_by_name:
+            oid = self._resolve_picked_oid(name)
+            if oid in numbers:
+                actor_numbers[name] = numbers[oid]
+            if selected_oid is not None and oid == selected_oid:
+                selected_names.add(name)
+        show_numbers = self.part_numbers_checkbox.isChecked() if hasattr(self, "part_numbers_checkbox") else True
+        viewer.set_part_annotations(actor_numbers, selected_names, show_numbers=show_numbers)
 
     def _copy_xy(self, value):
         if value is None:
@@ -1791,6 +1988,8 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self.viewer.gizmo_center = plan.transformed_bounds.center.copy()
         self.viewer.gizmo_radius = max(float(max(plan.transformed_bounds.size)) * 0.72, 5.0)
         self.viewer._rebuild_selection_outline()
+        if hasattr(self.viewer, "refresh_part_annotations"):
+            self.viewer.refresh_part_annotations()
         if self.viewer_tool_mode == "gizmo":
             self.viewer._rebuild_gizmo()
         self._refresh_plate_warning(plan)
@@ -1810,6 +2009,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         self._preview_original_bounds = None
         self._apply_streaming_actor_transform()
         self._sync_viewer_tool_mode()
+        self._sync_part_label_ui()
 
     def _viewer_object_center_and_radius(self):
         if self._preview_dataset_base_file == self.base_file and self._last_transform_plan is not None:
@@ -2093,6 +2293,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         return result
 
     def _load_canonical_model(self, stamped_path: str):
+        self._part_number_source = None
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
         self._preview_dataset_base_file = None

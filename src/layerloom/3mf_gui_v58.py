@@ -320,7 +320,6 @@ GROUPED_COLOR_ASSIGNMENTS = {
 }
 
 SYNTHETIC_PART_PREFIX_RE = re.compile(r"^(part|object)_\d+$", re.IGNORECASE)
-INSTANCE_SUFFIX_RE = re.compile(r"__inst_(\d+)$", re.IGNORECASE)
 TOKEN_PREFIX_RE = re.compile(rf"^([{TOKEN_ALPHABET}]+)(?:__|$)", re.IGNORECASE)
 
 
@@ -341,10 +340,9 @@ def _clean_model_display_name(path_or_name: Optional[str]) -> str:
 
 
 def _clean_part_display_name(name: Optional[str]) -> str:
-    cleaned = _strip_id_and_pat(str(name or ""))
-    cleaned = re.sub(r"^(preview_id_|tmp_weave_)+", "", cleaned)
-    cleaned = cleaned.strip("_")
-    return cleaned or str(name or "")
+    # ID and recipe tags are LayerLoom bookkeeping. Other punctuation and
+    # filename-like prefixes can be intentional source names, so retain them.
+    return _strip_id_and_pat(str(name or ""))
 
 
 def _sanitize_part_label(name: Optional[str]) -> str:
@@ -356,19 +354,14 @@ def _sanitize_part_label(name: Optional[str]) -> str:
 
 def _looks_synthetic_part_display_name(name: Optional[str]) -> bool:
     cleaned = _clean_part_display_name(name)
-    if not cleaned:
+    if not cleaned.strip():
         return True
-    if SYNTHETIC_PART_PREFIX_RE.fullmatch(cleaned):
-        return True
-    if "__inst_" in cleaned:
-        return True
-    return False
+    return bool(SYNTHETIC_PART_PREFIX_RE.fullmatch(cleaned))
 
 
 def _preferred_part_display_name(
     raw_name: Optional[str],
     import_name: Optional[str] = None,
-    import_counts: Optional[Dict[str, int]] = None,
 ) -> str:
     cleaned = _clean_part_display_name(raw_name)
     pretty = _clean_part_display_name(import_name)
@@ -378,20 +371,15 @@ def _preferred_part_display_name(
         return pretty
     if _looks_synthetic_part_display_name(cleaned):
         return pretty
-    if cleaned.startswith(pretty + "__"):
+    # The normalizer appends this complete suffix to repeated source labels.
+    # Require both its shape and the matching imported label; literal
+    # "__inst_" text or an arbitrary "label__description" is not evidence.
+    normalized_instance = re.fullmatch(
+        re.escape(pretty) + r"__[^/\\]+_\d+__inst_\d{3,}", cleaned
+    )
+    if normalized_instance:
         return pretty
     return cleaned
-
-
-def _extract_instance_suffix(name: Optional[str]) -> Optional[int]:
-    cleaned = _clean_part_display_name(name)
-    m = INSTANCE_SUFFIX_RE.search(cleaned)
-    if not m:
-        return None
-    try:
-        return int(m.group(1))
-    except Exception:
-        return None
 
 
 def _extract_pattern_token_from_name(name: Optional[str]) -> Optional[str]:
@@ -405,32 +393,30 @@ def _extract_pattern_token_from_name(name: Optional[str]) -> Optional[str]:
     return None
 
 
+def _build_part_number_map(model_objects: List[Tuple[str, str]]) -> Dict[str, str]:
+    """Number canonical mesh parts without changing their source identities."""
+    numbers: Dict[str, str] = {}
+    for oid, _raw in model_objects:
+        if oid not in numbers:
+            numbers[oid] = str(len(numbers) + 1)
+    return numbers
+
+
 def _build_preferred_display_name_map(
     model_objects: List[Tuple[str, str]],
     oid_to_name: Dict[str, str],
     import_name_by_oid: Dict[str, str],
 ) -> Dict[str, str]:
-    counts = Counter(
-        _clean_part_display_name(label)
-        for label in import_name_by_oid.values()
-        if _clean_part_display_name(label)
-    )
-    seen: Counter[str] = Counter()
+    numbers = _build_part_number_map(model_objects)
+    model_names = dict(model_objects)
     out: Dict[str, str] = {}
-    all_oids = [oid for oid, _raw in model_objects]
-    for oid in oid_to_name:
-        if oid not in all_oids:
-            all_oids.append(oid)
+    all_oids = dict.fromkeys([*model_names, *oid_to_name])
     for oid in all_oids:
-        raw = oid_to_name.get(oid, "")
+        raw = oid_to_name.get(oid, model_names.get(oid, ""))
         pretty = import_name_by_oid.get(oid)
-        display = _preferred_part_display_name(raw, pretty, counts)
-        clean_pretty = _clean_part_display_name(pretty)
-        if clean_pretty and display == clean_pretty and counts.get(clean_pretty, 0) > 1:
-            seen[clean_pretty] += 1
-            inst = _extract_instance_suffix(raw)
-            suffix = inst if inst is not None else seen[clean_pretty]
-            display = f"{clean_pretty} ({suffix})"
+        display = _preferred_part_display_name(raw, pretty)
+        if oid in numbers and _looks_synthetic_part_display_name(display):
+            display = f"Part {numbers[oid]}"
         out[oid] = display
     return out
 
@@ -888,6 +874,8 @@ def _run_weave(input_3mf: str, step: float = 0.2, output_path: Optional[str] = N
 # PyVista viewer (NOW USES PLY CACHE)
 # ─────────────────────────────────────────────────────────────────────
 class PVWindow:
+    _show_part_name_labels = True
+
     def __init__(self):
         if not (_TRIMESH_OK and _PYVISTA_OK):
             raise RuntimeError("Requires trimesh + pyvista + pyvistaqt")
@@ -1097,7 +1085,7 @@ class PVWindow:
             for n in sorted(list(in_pv_not_in_xml)): _log("DEBUG", f"      - {n}")
 
         # --- Label each part in the 3D view ---
-        if name_labels:
+        if name_labels and self._show_part_name_labels:
             points = [c for c, _ in name_labels]
             texts = [t for _, t in name_labels]
             self.point_label_actor = p.add_point_labels(
@@ -3543,6 +3531,10 @@ class OverlayHostWidget(QtWidgets.QWidget):
 
 
 class EmbeddedPVViewer(PVWindow):
+    # Embedded viewers identify parts separately. Avoid creating legacy label
+    # and point actors only to remove their text immediately afterward.
+    _show_part_name_labels = False
+
     class _MouseEventFilter(QtCore.QObject):
         def __init__(self, owner, parent=None):
             super().__init__(parent)
@@ -3945,16 +3937,6 @@ class EmbeddedPVViewer(PVWindow):
 
     def build_scene(self, file_path: str, names_in_order: List[str], on_pick=None, *, manifest=None, mesh_cache=None):
         super().build_scene(file_path, names_in_order, on_pick=on_pick, manifest=manifest, mesh_cache=mesh_cache)
-        if self.point_label_actor is not None:
-            try:
-                self.plotter.remove_actor(self.point_label_actor, reset_camera=False)
-            except Exception:
-                pass
-            self.point_label_actor = None
-            try:
-                self.plotter.render()
-            except Exception:
-                pass
         self._rebuild_layer_preview()
         self._set_default_loaded_camera()
 

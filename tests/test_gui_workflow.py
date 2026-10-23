@@ -144,6 +144,34 @@ def _run_workflow(artifact_dir):
         np.testing.assert_allclose(vertices.min(axis=0), plan.transformed_bounds.min_corner, atol=2e-4)
         np.testing.assert_allclose(vertices.max(axis=0), plan.transformed_bounds.max_corner, atol=2e-4)
 
+    def assert_part_numbers(window, expected):
+        assert window._part_numbers_by_oid == expected
+        assert window.parts_table.columnCount() == 4
+        assert window.parts_table.header().visualIndex(3) == 0
+        for index in range(window.parts_table.topLevelItemCount()):
+            item = window.parts_table.topLevelItem(index)
+            part_oid = item.data(0, QtCore.Qt.UserRole)
+            assert item.text(3) == expected[part_oid]
+            assert item.text(0) == window.oid_to_display_name[part_oid]
+        assert window.viewer._part_actor_numbers == {
+            window.oid_to_name[part_oid]: number for part_oid, number in expected.items()
+        }
+
+    def assert_selected_part_marker(window):
+        selected_oid = window._current_selected_oid()
+        assert selected_oid is not None
+        number = window._part_numbers_by_oid[selected_oid]
+        actor_name = window.oid_to_name[selected_oid]
+        assert window.selected_reference_label.text() == f"Part #{number}"
+        assert window.selected_name_label.text() == window.oid_to_display_name[selected_oid]
+        assert window.viewer._selected_part_names == {actor_name}
+        annotations = window.viewer._part_annotation_actors
+        assert "__v65_selected_part_number__" in annotations
+        if window.viewer_tool_mode == "normal":
+            outline = annotations["__v65_selected_part_outline__"]
+            actor = window.viewer.actors_by_name[actor_name]
+            np.testing.assert_allclose(outline.GetBounds(), actor.GetBounds(), rtol=0, atol=2e-4)
+
     def screenshot(window, label):
         plotter = window.viewer.plotter
         plotter.render()
@@ -203,6 +231,10 @@ def _run_workflow(artifact_dir):
             report["loaded_parts"] = 8
             original_parts = read_parts([window.base_file])
             original_names = dict(window.oid_to_display_name)
+            original_numbers = {part_oid: str(index) for index, (part_oid, _) in enumerate(window.model_objects, 1)}
+            assert list(original_numbers.values()) == [str(index) for index in range(1, 9)]
+            assert_part_numbers(window, original_numbers)
+            report["part_numbers"] = original_numbers
             original_bounds = bounds(original_parts)
             assert len(original_parts) == 8
             before = screenshot(window, "benchy-loaded")
@@ -243,7 +275,21 @@ def _run_workflow(artifact_dir):
             np.testing.assert_allclose(actor.GetProperty().GetColor(), expected_rgb, atol=1 / 255)
             step("part selection and palette click update only selected part and rendered color")
 
+            assert_selected_part_marker(window)
+            assert window.part_numbers_checkbox.isChecked()
+            assert "__v65_part_numbers__" in window.viewer._part_annotation_actors
+            click(window.part_numbers_checkbox)
+            assert not window.part_numbers_checkbox.isChecked()
+            assert "__v65_part_numbers__" not in window.viewer._part_annotation_actors
+            assert_selected_part_marker(window)
+            screenshot(window, "benchy-selected-part-only")
+            click(window.part_numbers_checkbox)
+            assert "__v65_part_numbers__" in window.viewer._part_annotation_actors
+            assert_selected_part_marker(window)
+            step("part numbers match the table and selected part stays marked when other numbers are hidden")
+
             preview_assignments = copy.deepcopy(window.assignments)
+            annotation_count = len(window.viewer._part_annotation_actors)
             for pending_selection in (False, True):
                 if pending_selection:
                     # Rebuild while a real table selection still has its flash
@@ -254,10 +300,16 @@ def _run_workflow(artifact_dir):
                                             pos=window.parts_table.visualItemRect(another_item).center())
                     assert window.parts_table.currentItem() is another_item
                     assert window._flash_timers
+                old_annotations = list(window.viewer._part_annotation_actors.values())
                 action(window, "Refresh 3D")
                 assert not window._flash_timers
                 QtTest.QTest.qWait(300)
                 assert window.assignments == preview_assignments
+                assert_part_numbers(window, original_numbers)
+                assert_selected_part_marker(window)
+                assert len(window.viewer._part_annotation_actors) == annotation_count
+                assert all(not window.viewer.plotter.renderer.HasViewProp(old_actor)
+                           for old_actor in old_annotations), "Refresh retained old part annotations"
                 for part_oid, assignment in preview_assignments.items():
                     actor = window.viewer.actors_by_name[window.oid_to_name[part_oid]]
                     hex_color = assignment["hex"]
@@ -306,6 +358,8 @@ def _run_workflow(artifact_dir):
             enter_number(window.rot_z_spin, 53.0)
             np.testing.assert_allclose(window.pending_target_center_xy, [138., 118.])
             assert_preview_matches_plan(window)
+            click(window.cancel_tool_btn)
+            assert_selected_part_marker(window)
             screenshot(window, "benchy-mixed-transforms")
             step("numeric movement and rotation remain distinct and match export after a baked preview")
             enter_number(window.rot_x_spin, 0.0)
@@ -348,6 +402,7 @@ def _run_workflow(artifact_dir):
             assert window.assignments[oid]["token"] == token
             assert save_path.name in window.windowTitle()
             assert window.oid_to_display_name == original_names
+            assert_part_numbers(window, original_numbers)
             np.testing.assert_allclose(bounds(read_parts([window.base_file])), saved_bounds, atol=1e-5)
             screenshot(window, "benchy-reopened")
             step("saved model reopens with matching geometry and recipe")
@@ -368,6 +423,10 @@ def _run_workflow(artifact_dir):
             with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(cubes), "3MF")):
                 action(window, "Open 3MF")
             cube_parts = read_parts([window.base_file])
+            assert [window.parts_table.topLevelItem(index).text(0) for index in range(4)] == [
+                "solid_cyan", "solid_yellow", "woven_green_1to1", "woven_purple_1to1",
+            ]
+            assert_part_numbers(window, {part_oid: str(index) for index, (part_oid, _) in enumerate(window.model_objects, 1)})
             enter_number(window.layer_height_spin, 0.20)
             output_dir = artifact_dir / "woven outputs"
             output_dir.mkdir(exist_ok=True)
