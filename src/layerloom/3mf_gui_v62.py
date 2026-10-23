@@ -136,8 +136,12 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
             )
             return
         try:
+            normalized = self._normalize_incoming_3mf(str(path), "Load Example")
+            if not normalized:
+                return
             self._pending_source_hex_by_name = {}
-            stamped = self._stamp_ids_only(str(path))
+            stamped = self._stamp_ids_only(normalized)
+            self.document_path = str(path)
             self._load_canonical_model(stamped)
             _V58._log("INFO", f"Loaded example: {path}")
             self.status_bar.showMessage(f"Loaded example: {path.name}", 5000)
@@ -188,35 +192,34 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
             btn.toggled.connect(self._on_expanded_palette_toggle)
             return btn
 
-        add_row = _V58.QtWidgets.QHBoxLayout()
+        add_row = _V58.QtWidgets.QGridLayout()
         add_row.setSpacing(6)
-        add_label = _V58.QtWidgets.QLabel("Add")
+        add_label = _V58.QtWidgets.QLabel("Optional colors")
         add_label.setObjectName("muted")
-        add_row.addWidget(add_label)
-        self.add_black_checkbox = make_toggle("K", "Enable black")
-        self.add_white_checkbox = make_toggle("W", "Enable white")
-        self.add_gray_checkbox = make_toggle("N", "Enable neutral gray")
-        self.add_orange_checkbox = make_toggle("O", "Enable orange")
-        self.add_violet_checkbox = make_toggle("V", "Enable violet")
-        self.add_green_checkbox = make_toggle("G", "Enable green")
-        for btn in (
+        add_row.addWidget(add_label, 0, 0, 1, 3)
+        self.add_black_checkbox = make_toggle("K · Black", "Add recipes that can use black filament.")
+        self.add_white_checkbox = make_toggle("W · White", "Add recipes that can use white filament.")
+        self.add_gray_checkbox = make_toggle("N · Gray", "Add recipes that can use gray filament.")
+        self.add_orange_checkbox = make_toggle("O · Orange", "Add recipes that can use orange filament.")
+        self.add_violet_checkbox = make_toggle("V · Violet", "Add recipes that can use violet filament.")
+        self.add_green_checkbox = make_toggle("G · Green", "Add recipes that can use green filament.")
+        for index, btn in enumerate((
             self.add_black_checkbox,
             self.add_white_checkbox,
             self.add_gray_checkbox,
             self.add_orange_checkbox,
             self.add_violet_checkbox,
             self.add_green_checkbox,
-        ):
-            add_row.addWidget(btn)
-        add_row.addStretch(1)
+        )):
+            add_row.addWidget(btn, 1 + index // 3, index % 3)
 
-        req_row = _V58.QtWidgets.QHBoxLayout()
+        req_row = _V58.QtWidgets.QGridLayout()
         req_row.setSpacing(6)
-        req_label = _V58.QtWidgets.QLabel("Require")
+        req_label = _V58.QtWidgets.QLabel("Show recipes containing")
         req_label.setObjectName("muted")
-        req_row.addWidget(req_label)
+        req_row.addWidget(req_label, 0, 0, 1, 3)
         self.req_buttons = {}
-        for letter, tip in (
+        for index, (letter, tip) in enumerate((
             ("C", "Require cyan"),
             ("M", "Require magenta"),
             ("Y", "Require yellow"),
@@ -226,22 +229,29 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
             ("O", "Require orange"),
             ("V", "Require violet"),
             ("G", "Require green"),
-        ):
+        )):
             btn = _V58.QtWidgets.QToolButton()
-            btn.setText(letter)
-            btn.setToolTip(tip)
+            color_name = tip.removeprefix("Require ")
+            btn.setText(f"{letter} · {color_name.capitalize()}")
+            btn.setToolTip(f"Show only recipes that include {color_name}.")
             btn.setCheckable(True)
             btn.setAutoRaise(False)
             btn.toggled.connect(self._on_req_letters_toggle)
-            req_row.addWidget(btn)
+            req_row.addWidget(btn, 1 + index // 3, index % 3)
             self.req_buttons[letter.lower()] = btn
-        req_row.addStretch(1)
 
         insert_at = palette_layout.indexOf(self.palette_scroll)
         if insert_at < 0:
             insert_at = palette_layout.count()
         palette_layout.insertLayout(insert_at, req_row)
         palette_layout.insertLayout(insert_at, add_row)
+        help_label = _V58.QtWidgets.QLabel(
+            "Select a part, then choose a color. Each recipe repeats its letters as printed layers: "
+            "C = cyan, M = magenta, Y = yellow. For example, cy alternates cyan and yellow."
+        )
+        help_label.setWordWrap(True)
+        help_label.setObjectName("muted")
+        palette_layout.insertWidget(insert_at, help_label)
 
     def _on_expanded_palette_toggle(self, _checked: bool) -> None:
         self._load_palette(self.current_palette_name)

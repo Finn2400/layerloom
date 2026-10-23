@@ -539,6 +539,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             return
         self._pending_source_hex_by_name = {}
         stamped = self._stamp_ids_only(normalized)
+        self.document_path = path
         self._load_canonical_model(stamped)
         _V58._log("INFO", f"Opened: {path}")
         if normalized != path:
@@ -562,6 +563,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         stamped = self._stamp_ids_only(normalized)
         placed = self._auto_place_glb_import(stamped)
         placed_on_plate = placed != stamped
+        self.document_path = path
         self._load_canonical_model(placed)
         _V58._log("INFO", f"Opened GLB: {path}")
         _V58._log(

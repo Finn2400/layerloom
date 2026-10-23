@@ -396,10 +396,16 @@ def _stamp_object_metadata_values(obj_el: ET.Element, metadata: Dict[str, str]) 
         text = str(value or "").strip()
         if not key or not text:
             continue
-        md = obj_el.find(f"m:metadata[@name='{key}']", NS)
-        if md is None:
-            md = ET.SubElement(obj_el, M("metadata"), {"name": key})
-        md.text = text
+        # Imported normalized models use metadatagroup; older saves use direct
+        # object metadata. Keep both representations current when recoloring.
+        direct = obj_el.findall("m:metadata", NS)
+        grouped = obj_el.findall("m:metadatagroup/m:metadata", NS)
+        matching = [md for md in direct + grouped
+                    if str(md.get("name") or "").split(":")[-1] == key]
+        if not any(md in direct for md in matching):
+            matching.append(ET.SubElement(obj_el, M("metadata"), {"name": key}))
+        for md in matching:
+            md.text = text
 
 
 def _sync_build_partnumbers(root: ET.Element) -> None:

@@ -16,6 +16,11 @@ import sys
 from typing import Dict, Optional
 
 try:
+    from layerloom.transform_3mf import Bounds3D
+except ImportError:
+    from transform_3mf import Bounds3D
+
+try:
     import resource
 except Exception:
     resource = None
@@ -155,6 +160,12 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
             "on",
         }
         self._profile_state = {}
+        self._scene_revision = 0
+
+    def build_scene(self, *args, **kwargs):
+        result = super().build_scene(*args, **kwargs)
+        self._scene_revision += 1
+        return result
 
     def _ensure_plotter(self):
         plotter = super()._ensure_plotter()
@@ -1436,6 +1447,11 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
     def __init__(self):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
+        self._preview_dataset_matrix = _V58.np.eye(4, dtype=_V58.np.float64)
+        self._preview_dataset_base_file = None
+        self._preview_file_matrix = None
+        self._preview_file_path = None
+        self._preview_original_bounds = None
         super().__init__()
         self.setWindowTitle("LayerLoom — Color Assigner v65")
 
@@ -1465,7 +1481,9 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             pass
         self.move_tool_btn = _V58.QtWidgets.QToolButton(text="Move")
         self.move_tool_btn.setCheckable(True)
+        self.move_tool_btn.setToolTip("Move the whole model on the plate. Drag the model or edit Position X/Y below.")
         self.move_tool_btn.clicked.connect(self._activate_move_tool)
+        self.rotate_tool_btn.setToolTip("Rotate the whole model. Drag a colored ring or edit Rotation X/Y/Z below.")
         self.auto_place_btn = _V58.QtWidgets.QToolButton(text="Auto")
         self.auto_place_btn.setToolTip("Scale down if needed, center on the build plate, and drop to Z=0.")
         self.auto_place_btn.clicked.connect(self._auto_place_model)
@@ -1500,7 +1518,67 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             self._position_viewer_overlays()
         except Exception:
             pass
+        position_row = _V58.QtWidgets.QHBoxLayout()
+        position_row.setSpacing(6)
+        position_row.addWidget(_V58.QtWidgets.QLabel("Position (center)"))
+        self.position_x_spin = _V58.QtWidgets.QDoubleSpinBox()
+        self.position_y_spin = _V58.QtWidgets.QDoubleSpinBox()
+        for axis, spin in (("X", self.position_x_spin), ("Y", self.position_y_spin)):
+            spin.setRange(-1000000.0, 1000000.0)
+            spin.setDecimals(3)
+            spin.setSingleStep(1.0)
+            spin.setSuffix(" mm")
+            spin.setKeyboardTracking(False)
+            spin.setButtonSymbols(_V58.QtWidgets.QAbstractSpinBox.NoButtons)
+            spin.setFixedWidth(100)
+            spin.setAccessibleName(f"Position {axis} in millimeters")
+            spin.setToolTip(f"{axis} coordinate of the whole model's footprint center on the plate, in millimeters.")
+            position_row.addWidget(_V58.QtWidgets.QLabel(axis))
+            position_row.addWidget(spin)
+            spin.valueChanged.connect(self._on_position_value_change)
+        position_row.addWidget(_V58.QtWidgets.QLabel("Base Z: 0 mm"))
+        position_row.addStretch(1)
+        self.viewer_top_overlay.layout().insertLayout(1, position_row)
+        self.tool_hint_label = _V58.QtWidgets.QLabel()
+        self.tool_hint_label.setWordWrap(True)
+        self.tool_hint_label.setObjectName("muted")
+        self.viewer_top_overlay.layout().addWidget(self.tool_hint_label)
         self._refresh_tool_button_states()
+        self._position_viewer_overlays()
+
+    def _on_position_value_change(self, *_args):
+        if self._setting_transform_widgets or not self.base_file or self.large_model_mode:
+            return
+        desired = _V58.np.asarray([self.position_x_spin.value(), self.position_y_spin.value()])
+        plan = self._pending_transform_plan(target_center_xy=desired)
+        self.pending_target_center_xy = self._clamped_target_for_plan(desired, plan)
+        self._update_transform_flags()
+        self._apply_streaming_actor_transform()
+        self._refresh_transform_readout(self._last_transform_plan)
+        self._refresh_plate_warning(self._last_transform_plan)
+        if not _V58.np.allclose(desired, self.pending_target_center_xy, atol=1e-6):
+            self.status_bar.showMessage("Position adjusted to keep the model inside the plate margin.", 5000)
+
+    def _sync_position_fields(self, plan=None):
+        if not hasattr(self, "position_x_spin"):
+            return
+        if not self.base_file:
+            center = (0.0, 0.0)
+        elif self.pending_target_center_xy is not None:
+            center = self.pending_target_center_xy
+        elif plan is not None:
+            center = plan.transformed_bounds.center[:2]
+        elif self.viewer is not None and self.viewer.actors_by_name:
+            bounds = self.viewer._current_model_bounds()
+            center = ((bounds[0] + bounds[1]) * 0.5, (bounds[2] + bounds[3]) * 0.5)
+        else:
+            center = (0.0, 0.0)
+        for spin, value in zip((self.position_x_spin, self.position_y_spin), center):
+            blocked = spin.blockSignals(True)
+            try:
+                spin.setValue(float(value))
+            finally:
+                spin.blockSignals(blocked)
 
     def _tool_mode_label(self, mode: Optional[str] = None) -> str:
         mode = (mode or self.viewer_tool_mode or "normal").lower()
@@ -1525,6 +1603,14 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
                 btn.blockSignals(blocked)
             except Exception:
                 pass
+        if hasattr(self, "tool_hint_label"):
+            hints = {
+                "normal": "View: click a part to select it; drag to orbit the camera. Move and Rotate change the whole model.",
+                "move": "Move: drag the model or enter Position X/Y in mm. The base stays on the plate. Drag empty space to orbit the camera.",
+                "gizmo": "Rotate: drag a colored ring or enter Rotation X/Y/Z in degrees. Drag elsewhere to orbit the camera. Esc returns to View.",
+                "surface": "Place: click a highlighted flat face to rest it on the plate. Esc returns to View.",
+            }
+            self.tool_hint_label.setText(hints.get(mode, hints["normal"]))
 
     def _set_viewer_tool_mode(self, mode: str):
         result = super()._set_viewer_tool_mode(mode)
@@ -1542,12 +1628,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
 
     def _refresh_transform_readout(self, plan=None):
         super()._refresh_transform_readout(plan)
-        if not self.base_file or self.viewer_tool_mode != "move" or not hasattr(self, "transform_info_label"):
-            return
-        text = self.transform_info_label.text()
-        tip = "drag the model to move; drag empty space to navigate"
-        if tip not in text:
-            self.transform_info_label.setText(f"{text} | {tip}")
+        self._sync_position_fields(plan or self._last_transform_plan)
 
     def _update_transform_ui_state(self):
         super()._update_transform_ui_state()
@@ -1559,6 +1640,10 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             btn = getattr(self, attr, None)
             if btn is not None:
                 btn.setEnabled(enabled)
+        for attr in ("position_x_spin", "position_y_spin", "rot_x_spin", "rot_y_spin", "rot_z_spin", "scale_spin"):
+            spin = getattr(self, attr, None)
+            if spin is not None:
+                spin.setEnabled(enabled)
         try:
             self.cancel_tool_btn.setEnabled(bool(self.base_file))
         except Exception:
@@ -1596,6 +1681,13 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         if not self.base_file:
             return None
         use_scale = self._current_scale_value(raise_on_error=True) if scale is None else float(scale)
+        target = self.pending_target_center_xy if target_center_xy is None else target_center_xy
+        preview_plan = self._plan_from_preview_geometry(self.pending_rotation_matrix, use_scale, target)
+        if preview_plan is not None:
+            return preview_plan
+        if self.streaming_preview_mode or self.large_model_mode:
+            # Do not defeat the streaming memory limit while a scene is loading.
+            return None
         return _V58.compute_transform_plan(
             self.base_file,
             scale=use_scale,
@@ -1603,8 +1695,93 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             plate_width=_V58.PLATE_WIDTH_MM,
             plate_depth=_V58.PLATE_DEPTH_MM,
             center_xy=False,
-            target_center_xy=self.pending_target_center_xy if target_center_xy is None else target_center_xy,
+            target_center_xy=target,
         )
+
+    def _preview_bounds_after_matrix(self, matrix):
+        if self.viewer is None or self._preview_dataset_base_file != self.base_file:
+            return None
+        minimum = _V58.np.full(3, _V58.np.inf)
+        maximum = _V58.np.full(3, -_V58.np.inf)
+        found = False
+        for actor in self.viewer.actors_by_name.values():
+            dataset = self.viewer._actor_dataset(actor)
+            if dataset is None:
+                continue
+            points = dataset.points
+            # Bound temporary allocations even for a streaming preview. Use real
+            # vertices: rotating an axis-aligned bounding box overestimates an
+            # asymmetric model and can incorrectly lift it above the plate.
+            for start in range(0, len(points), 65536):
+                transformed = _V58.np.asarray(points[start:start + 65536], dtype=_V58.np.float64) @ matrix[:3, :3].T + matrix[:3, 3]
+                if len(transformed):
+                    minimum = _V58.np.minimum(minimum, transformed.min(axis=0))
+                    maximum = _V58.np.maximum(maximum, transformed.max(axis=0))
+                    found = True
+        return Bounds3D(minimum, maximum) if found else None
+
+    def _plan_from_preview_geometry(self, rotation, scale, target_center_xy):
+        if self._preview_dataset_base_file != self.base_file or self.viewer is None:
+            return None
+        inverse_baked = _V58.np.linalg.inv(self._preview_dataset_matrix)
+        if self._preview_original_bounds is None:
+            self._preview_original_bounds = self._preview_bounds_after_matrix(inverse_baked)
+        original = self._preview_original_bounds
+        if original is None:
+            return None
+        pre = _V58.np.eye(4, dtype=_V58.np.float64)
+        pre[:3, :3] = _V58.orthonormalize_rotation(rotation) * float(scale)
+        pre[:3, 3] = -pre[:3, :3] @ original.center
+        bounds = self._preview_bounds_after_matrix(pre @ inverse_baked)
+        if bounds is None:
+            return None
+        target = original.center[:2] if target_center_xy is None else self._copy_xy(target_center_xy)
+        offset = _V58.np.array([target[0] - bounds.center[0], target[1] - bounds.center[1], -bounds.min_corner[2]])
+        pre[:3, 3] += offset
+        return _V58.TransformPlan(pre, original, Bounds3D(bounds.min_corner + offset, bounds.max_corner + offset))
+
+    def _apply_actor_transform(self, rotation):
+        scale = self._current_scale_value()
+        if scale is None:
+            return
+        plan = self._plan_from_preview_geometry(rotation, scale, self.pending_target_center_xy)
+        if plan is None:
+            return
+        # A materialized preview already contains its own global transform.
+        # Replace only the remaining actor transform, never apply it twice.
+        relative = plan.global_matrix @ _V58.np.linalg.inv(self._preview_dataset_matrix)
+        vtk_matrix = self.viewer._vtk_matrix(relative)
+        for actor in self.viewer.actors_by_name.values():
+            actor.SetUserMatrix(vtk_matrix)
+        self._last_transform_plan = plan
+        self.viewer.gizmo_center = plan.transformed_bounds.center.copy()
+        self.viewer.gizmo_radius = max(float(max(plan.transformed_bounds.size)) * 0.72, 5.0)
+        self.viewer._rebuild_selection_outline()
+        if self.viewer_tool_mode == "gizmo":
+            self.viewer._rebuild_gizmo()
+        self._refresh_plate_warning(plan)
+        self.viewer.plotter.render()
+
+    def _build_or_rebuild_viewer(self):
+        # Invalidate before the inherited builder synchronizes controls. A new
+        # canonical file must never transform actors left over from the old one.
+        self._preview_dataset_base_file = None
+        revision = self.viewer._scene_revision if self.viewer is not None else None
+        super()._build_or_rebuild_viewer()
+        if self.viewer is None or self.viewer._scene_revision == revision or not self.viewer.actors_by_name:
+            return
+        baked = self._preview_file_matrix if self.current_file == self._preview_file_path else None
+        self._preview_dataset_matrix = _V58.np.eye(4, dtype=_V58.np.float64) if baked is None else baked.copy()
+        self._preview_dataset_base_file = self.base_file
+        self._preview_original_bounds = None
+        self._apply_streaming_actor_transform()
+        self._sync_viewer_tool_mode()
+
+    def _viewer_object_center_and_radius(self):
+        if self._preview_dataset_base_file == self.base_file and self._last_transform_plan is not None:
+            bounds = self._last_transform_plan.transformed_bounds
+            return bounds.center.copy(), max(float(max(bounds.size)) * 0.72, 5.0)
+        return super()._viewer_object_center_and_radius()
 
     def _footprint_inside_plate(self, plan) -> bool:
         if plan is None:
@@ -1755,13 +1932,19 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
             metadata_updates=self._build_assignment_metadata_updates() if include_assignments else None,
         )
         _V58._perf_log("transform write", t_write, extra=os.path.basename(output_path))
+        if os.path.abspath(output_path) == os.path.abspath(self._preview_temp_path("transform_preview")):
+            self._preview_file_path = output_path
+            self._preview_file_matrix = plan.global_matrix.copy()
         return plan
 
     def _apply_transform_preview(self, quiet: bool = False) -> bool:
+        mode_before = self.viewer_tool_mode
         ok = super()._apply_transform_preview(quiet=quiet)
         if ok:
             self.applied_target_center_xy = self._copy_xy(self.pending_target_center_xy)
             self._update_transform_flags()
+            if mode_before != self.viewer_tool_mode and not self.large_model_mode:
+                self._set_viewer_tool_mode(mode_before)
             self._refresh_transform_readout(self._last_transform_plan)
             self._refresh_plate_warning(self._last_transform_plan)
         return ok
@@ -1839,6 +2022,7 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
         pending_plan = self._pending_transform_plan()
         if pending_plan is not None:
             self._last_transform_plan = pending_plan
+        self._apply_streaming_actor_transform()
         self._refresh_transform_readout(self._last_transform_plan)
         self._refresh_plate_warning(self._last_transform_plan)
 
@@ -1852,6 +2036,11 @@ class QtAssignColorsApp(_V62.QtAssignColorsApp):
     def _load_canonical_model(self, stamped_path: str):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
+        self._preview_dataset_base_file = None
+        self._preview_dataset_matrix = _V58.np.eye(4, dtype=_V58.np.float64)
+        self._preview_file_path = None
+        self._preview_file_matrix = None
+        self._preview_original_bounds = None
         return super()._load_canonical_model(stamped_path)
 
 

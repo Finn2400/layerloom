@@ -438,6 +438,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Z-step (layer thickness in mm, default=0.08)")
     parser.add_argument("--stl-out", type=str,
                         help="Optional output folder for per-color STL export (default: ./stl_out/)")
+    parser.add_argument("--no-stls", action="store_true",
+                        help="Write only the woven 3MF; skip per-color STL export")
     parser.add_argument("-v", "--verbose", action="store_true",
                         help="Enable verbose logging")
     parser.add_argument("-o", "--output", help="Output 3MF path "
@@ -452,6 +454,7 @@ def main(argv: list[str] | None = None) -> int:
             stl_out=os.path.abspath(args.stl_out) if args.stl_out else None,
             verbose=args.verbose,
             output_path=os.path.abspath(args.output) if args.output else None,
+            export_stls=not args.no_stls,
         )
         return 0
     except Exception as e:

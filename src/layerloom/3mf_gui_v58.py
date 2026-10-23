@@ -579,22 +579,22 @@ def _metadata_key(name: Optional[str]) -> str:
     s = str(name or "").strip()
     return s.split(":")[-1] if s else ""
 
+def _object_metadata_values(obj: ET.Element) -> Dict[str, str]:
+    # Older saves appended direct metadata while leaving import metadata in
+    # metadatagroup unchanged. The direct values contain the saved assignment.
+    entries = obj.findall("m:metadatagroup/m:metadata", NS) + obj.findall("m:metadata", NS)
+    return {_metadata_key(md.get("name")): (md.text or "").strip()
+            for md in entries if (md.text or "").strip()}
+
 def _oid_to_source_hex_map(root: ET.Element) -> Dict[str, str]:
     out: Dict[str, str] = {}
     for obj in _all_model_objects(root):
         oid = obj.get("id")
         if not oid:
             continue
-        mg = obj.find("m:metadatagroup", NS)
-        if mg is None:
-            continue
-        for md in mg.findall("m:metadata", NS):
-            if _metadata_key(md.get("name")) != "source_hex":
-                continue
-            hx = _normalize_hex(md.text)
-            if hx:
-                out[oid] = hx
-            break
+        hx = _normalize_hex(_object_metadata_values(obj).get("source_hex"))
+        if hx:
+            out[oid] = hx
     return out
 
 def _oid_to_stack_token_map(root: ET.Element) -> Dict[str, str]:
@@ -603,16 +603,9 @@ def _oid_to_stack_token_map(root: ET.Element) -> Dict[str, str]:
         oid = obj.get("id")
         if not oid:
             continue
-        mg = obj.find("m:metadatagroup", NS)
-        if mg is None:
-            continue
-        for md in mg.findall("m:metadata", NS):
-            if _metadata_key(md.get("name")) != "stack_token":
-                continue
-            tok = str(md.text or "").strip().lower()
-            if tok:
-                out[oid] = tok
-            break
+        tok = _object_metadata_values(obj).get("stack_token", "").lower()
+        if tok:
+            out[oid] = tok
     return out
 
 
@@ -622,16 +615,9 @@ def _oid_to_import_build_label_map(root: ET.Element) -> Dict[str, str]:
         oid = obj.get("id")
         if not oid:
             continue
-        mg = obj.find("m:metadatagroup", NS)
-        if mg is None:
-            continue
-        for md in mg.findall("m:metadata", NS):
-            if _metadata_key(md.get("name")) != "import_source_build_label":
-                continue
-            label = _sanitize_part_label(md.text or "")
-            if label:
-                out[oid] = label
-            break
+        label = _sanitize_part_label(_object_metadata_values(obj).get("import_source_build_label"))
+        if label:
+            out[oid] = label
     return out
 
 def _read_model_summary_streaming(path: str) -> Dict[str, object]:
@@ -4017,6 +4003,9 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.base_file = None
         self.current_file = None
+        # User-selected source or last successful save, distinct from scratch
+        # paths used for normalization and transformed previews.
+        self.document_path = None
         self.transformed_preview_file = None
         self.model_objects: List[Tuple[str, str]] = []
         self.assignments: Dict[str, Dict[str, str]] = {}
@@ -4228,12 +4217,13 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         file_menu.addAction("Open 3MF…", self._on_open)
         file_menu.addAction("Open GLB…", self._on_open_glb)
         file_menu.addSeparator()
-        file_menu.addAction("Save Labeled 3MF…", self._on_save)
+        save_action = file_menu.addAction("Save Labeled 3MF…", self._on_save)
+        save_action.setToolTip("Save the full model with its current position, rotation, scale, and assigned colors.")
         file_menu.addSeparator()
         file_menu.addAction("Exit", self.close)
 
         tools_menu = menu.addMenu("Tools")
-        tools_menu.addAction("Preview 3D", self._on_preview)
+        tools_menu.addAction("Refresh 3D", self._on_preview)
         tools_menu.addAction("Weave", self._on_weave)
 
         debug_menu = menu.addMenu("Debug")
@@ -4250,8 +4240,10 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         open_glb_action = QtWidgets.QAction("Open GLB", self)
         open_glb_action.triggered.connect(self._on_open_glb)
         save_action = QtWidgets.QAction("Save Labeled 3MF", self)
+        save_action.setToolTip("Save the full model with its current position, rotation, scale, and assigned colors.")
         save_action.triggered.connect(self._on_save)
-        preview_action = QtWidgets.QAction("Preview 3D", self)
+        preview_action = QtWidgets.QAction("Refresh 3D", self)
+        preview_action.setToolTip("Refresh the model and its assigned colors. Use Weave to create printable color layers.")
         preview_action.triggered.connect(self._on_preview)
         weave_action = QtWidgets.QAction("Weave", self)
         weave_action.triggered.connect(self._on_weave)
@@ -4274,13 +4266,15 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setRange(0.01, 10.0)
         self.layer_height_spin.setSingleStep(0.01)
         self.layer_height_spin.setValue(0.16)
+        self.layer_height_spin.setAccessibleName("Layer height in millimeters")
+        self.layer_height_spin.setToolTip("Thickness of each printable layer generated by Weave.")
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
         toolbar.addWidget(self._toolbar_label("GLB colors"))
         toolbar.addWidget(self.glb_colors_spin)
         toolbar.addSeparator()
-        toolbar.addWidget(self._toolbar_label("Layer height"))
+        toolbar.addWidget(self._toolbar_label("Layer height (mm)"))
         toolbar.addWidget(self.layer_height_spin)
         toolbar.addSeparator()
         toolbar.addAction(weave_action)
@@ -4330,6 +4324,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         transform_row = QtWidgets.QHBoxLayout()
         transform_row.setSpacing(6)
+        transform_row.addWidget(QtWidgets.QLabel("Rotation"))
         for label_text, spin in (
             ("X", self.rot_x_spin),
             ("Y", self.rot_y_spin),
@@ -4339,7 +4334,16 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             lbl = QtWidgets.QLabel(label_text)
             lbl.setObjectName("muted")
             transform_row.addWidget(lbl)
-            spin.setFixedWidth(72 if label_text != "Scale" else 84)
+            spin.setKeyboardTracking(False)
+            if label_text != "Scale":
+                spin.setSuffix("°")
+                spin.setAccessibleName(f"Rotation {label_text} in degrees")
+                spin.setToolTip(f"Rotate the whole model about {label_text}, in degrees.")
+            else:
+                spin.setSuffix("×")
+                spin.setAccessibleName("Model scale factor")
+                spin.setToolTip("Scale the whole model. 1× is its original size.")
+            spin.setFixedWidth(82 if label_text != "Scale" else 90)
             transform_row.addWidget(spin)
         transform_row.addStretch(1)
         top_outer.addLayout(transform_row)
@@ -4704,7 +4708,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         plan = plan or self._last_transform_plan
         if plan is None:
-            text = f"Plate {PLATE_WIDTH_MM:.0f} × {PLATE_DEPTH_MM:.0f} mm | transform ready to apply"
+            text = f"Plate {PLATE_WIDTH_MM:.0f} × {PLATE_DEPTH_MM:.0f} mm | placement ready for Save and Weave"
             if self.large_model_mode:
                 text += f" | safety mode ({self.large_model_reason})"
             self.transform_info_label.setText(text)
@@ -4722,7 +4726,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         elif self.viewer_tool_mode == "gizmo":
             text += " | drag the colored rotation rings in the viewer"
         if self.transform_dirty:
-            text += " | preview pending apply"
+            text += " | placement changed; included in Save and Weave"
         if self.large_model_mode:
             text += f" | safety mode ({self.large_model_reason})"
         self.transform_info_label.setText(text)
@@ -5287,13 +5291,17 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             return
         if not self._ensure_transform_preview_current(quiet=False):
             return
-        out, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Labeled 3MF", "", "3MF files (*.3mf)")
+        source_name = os.path.basename(getattr(self, "document_path", None) or self.base_file)
+        stem = os.path.splitext(source_name)[0]
+        suggested_name = f"{stem}_labeled.3mf" if not stem.endswith("_labeled") else f"{stem}.3mf"
+        out, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Labeled 3MF", suggested_name, "3MF files (*.3mf)")
         if not out:
             return
         try:
             plan = self._materialize_current_model(out, include_assignments=True)
             self._last_transform_plan = plan
             self.transform_dirty = False
+            self.document_path = out
             self._refresh_transform_readout(plan)
             _log("INFO", f"Saved labeled 3MF: {out}")
             self.status_bar.showMessage(f"Saved labeled 3MF: {os.path.basename(out)}", 5000)
@@ -5303,32 +5311,39 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
     def _run_weave_subprocess(self, input_3mf: str, *, step: float, output_path: str) -> Optional[str]:
         try:
             try:
-                from layerloom.gui_process import run_gui_process
+                from layerloom.gui_process import GuiProcessCancelled, run_gui_process
             except ImportError:
-                from gui_process import run_gui_process
-            cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", output_path]
-            if step is not None:
-                cmd += ["--step", str(step)]
-            _log("INFO", "[weave] running:", " ".join(cmd))
-            t0 = time.perf_counter()
-            proc = run_gui_process(self, cmd, label="Weaving layers", temp_dir=self._temp_dir)
-            _perf_log("subprocess weave", t0, extra=f"returncode={proc.returncode}")
-            if proc.stdout:
-                _log("DEBUG", "[weave stdout]\n" + proc.stdout)
-            if proc.stderr:
-                _log("DEBUG", "[weave stderr]\n" + proc.stderr)
-            if proc.returncode != 0:
-                self._error("Weave Error", proc.stderr or "Weave failed.")
-                return None
-            if os.path.exists(output_path):
-                return output_path
-            for line in reversed((proc.stdout or "").splitlines()):
-                if "→" in line and line.strip().endswith(".3mf"):
-                    alt = line.split("→")[-1].strip()
-                    if os.path.exists(alt):
-                        return alt
-            self._info("Weave", "Weave completed, but output not found.")
-            return None
+                from gui_process import GuiProcessCancelled, run_gui_process
+            # Stage beside the destination so publication is one atomic rename,
+            # including when the destination is on another disk. A canceled or
+            # failed exporter must never truncate a previously woven file.
+            with tempfile.TemporaryDirectory(prefix=".layerloom-weave-", dir=os.path.dirname(os.path.abspath(output_path))) as output_dir:
+                with tempfile.TemporaryDirectory(prefix="weave-job-", dir=self._temp_dir) as job_dir:
+                    staged_path = os.path.join(output_dir, os.path.basename(output_path))
+                    cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", staged_path, "--no-stls"]
+                    if step is not None:
+                        cmd += ["--step", str(step)]
+                    _log("INFO", "[weave] running:", " ".join(cmd))
+                    t0 = time.perf_counter()
+                    try:
+                        proc = run_gui_process(self, cmd, label="Weaving layers", temp_dir=job_dir)
+                    except GuiProcessCancelled:
+                        _log("INFO", "[weave] canceled; current model and previous output kept")
+                        self.status_bar.showMessage("Weave canceled. Your model and any previous output were kept.", 8000)
+                        return None
+                    _perf_log("subprocess weave", t0, extra=f"returncode={proc.returncode}")
+                    if proc.stdout:
+                        _log("DEBUG", "[weave stdout]\n" + proc.stdout)
+                    if proc.stderr:
+                        _log("DEBUG", "[weave stderr]\n" + proc.stderr)
+                    if proc.returncode != 0:
+                        self._error("Weave Error", proc.stderr or proc.stdout or "Weave failed.")
+                        return None
+                    if not os.path.isfile(staged_path):
+                        self._error("Weave", "Weave completed, but its output file was not found. Previous output was kept.")
+                        return None
+                    os.replace(staged_path, output_path)
+                    return output_path
         except Exception as e:
             self._error("Weave", f"Weave failed: {e}")
             return None
@@ -5366,8 +5381,9 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
-        base = os.path.splitext(os.path.basename(self.base_file))[0]
-        base = re.sub(r"^(preview_id_|tmp_weave_)+", "", base)
+        document_path = getattr(self, "document_path", None)
+        display_name = os.path.basename(document_path) if document_path else _clean_model_display_name(self.base_file)
+        base = os.path.splitext(display_name)[0]
         final_woven_path = os.path.join(out_dir, f"{base}_woven.3mf")
         if os.path.exists(final_woven_path):
             if not self._confirm("Overwrite?", f"File already exists:\n{final_woven_path}\n\nOverwrite it?"):
@@ -5394,6 +5410,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             self._prepare_for_heavy_preview_build()
             self._pending_source_hex_by_name = {}
             stamped_woven = self._stamp_ids_only(woven)
+            self.document_path = woven
             self._load_canonical_model(stamped_woven)
             self._refresh_preview_from_current_file(force=True)
             _log("INFO", f"[weave] woven model loaded in large-file safety mode → {woven}")
@@ -5403,6 +5420,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         stamped_woven = self._stamp_ids_only(woven)
         if stamped_woven != woven:
             _log("INFO", f"Previewing ID-stamped *woven* temp copy: {stamped_woven}")
+        self.document_path = woven
         self._load_canonical_model(stamped_woven)
         _log("INFO", f"[weave] woven model loaded → {woven}")
         self.status_bar.showMessage(f"Weave complete: {os.path.basename(woven)}", 5000)
@@ -5585,7 +5603,13 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
     # ---------- summary / lifecycle ----------
     def _refresh_status_summary(self):
-        model_text = _clean_model_display_name(self.base_file or self.current_file) if (self.base_file or self.current_file) else "No model loaded"
+        document_path = getattr(self, "document_path", None)
+        if document_path:
+            model_text = os.path.basename(document_path)
+        elif self.base_file or self.current_file:
+            model_text = _clean_model_display_name(self.base_file or self.current_file)
+        else:
+            model_text = "No model loaded"
         mode_text = self._tool_mode_label()
         summary = f"{model_text}  |  Parts: {len(self.model_objects)}  |  Palette: {self.current_palette_name}  |  Mode: {mode_text}"
         if self.large_model_mode:

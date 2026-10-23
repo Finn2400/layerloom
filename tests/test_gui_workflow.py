@@ -130,6 +130,20 @@ def _run_workflow(artifact_dir):
         return np.array([np.min([m.bounds[0] for _, m in parts], axis=0),
                          np.max([m.bounds[1] for _, m in parts], axis=0)])
 
+    def assert_preview_matches_plan(window):
+        plan = gui._V58.compute_transform_plan(
+            window.base_file, scale=window.scale_spin.value(),
+            orientation_matrix=window.pending_rotation_matrix,
+            center_xy=False, target_center_xy=window.pending_target_center_xy)
+        rendered = []
+        for actor in window.viewer.actors_by_name.values():
+            points = np.asarray(window.viewer._actor_dataset(actor).points)
+            matrix = np.array([[actor.GetMatrix().GetElement(i, j) for j in range(4)] for i in range(4)])
+            rendered.append(points @ matrix[:3, :3].T + matrix[:3, 3])
+        vertices = np.concatenate(rendered)
+        np.testing.assert_allclose(vertices.min(axis=0), plan.transformed_bounds.min_corner, atol=2e-4)
+        np.testing.assert_allclose(vertices.max(axis=0), plan.transformed_bounds.max_corner, atol=2e-4)
+
     def screenshot(window, label):
         plotter = window.viewer.plotter
         plotter.render()
@@ -188,6 +202,7 @@ def _run_workflow(artifact_dir):
             assert len(window.viewer.actors_by_name) == 8
             report["loaded_parts"] = 8
             original_parts = read_parts([window.base_file])
+            original_names = dict(window.oid_to_display_name)
             original_bounds = bounds(original_parts)
             assert len(original_parts) == 8
             before = screenshot(window, "benchy-loaded")
@@ -239,7 +254,7 @@ def _run_workflow(artifact_dir):
                                             pos=window.parts_table.visualItemRect(another_item).center())
                     assert window.parts_table.currentItem() is another_item
                     assert window._flash_timers
-                action(window, "Preview 3D")
+                action(window, "Refresh 3D")
                 assert not window._flash_timers
                 QtTest.QTest.qWait(300)
                 assert window.assignments == preview_assignments
@@ -249,7 +264,7 @@ def _run_workflow(artifact_dir):
                     expected_rgb = [int(hex_color[i:i + 2], 16) / 255 for i in (1, 3, 5)]
                     np.testing.assert_allclose(actor.GetProperty().GetColor(), expected_rgb, atol=1 / 255)
             screenshot(window, "benchy-preview-refreshed")
-            step("repeated Preview 3D retains all assigned colors and cancels pending selection feedback")
+            step("repeated Refresh 3D retains all assigned colors and cancels pending selection feedback")
 
             for button, mode in ((window.move_tool_btn, "move"),
                                  (window.rotate_tool_btn, "gizmo"),
@@ -259,8 +274,27 @@ def _run_workflow(artifact_dir):
                 assert button.isChecked()
             enter_number(window.layer_height_spin, 0.20)
             enter_number(window.scale_spin, 1.25)
+            enter_number(window.rot_x_spin, 23.0)
+            enter_number(window.rot_z_spin, 37.0)
+            click(window.center_plate_btn)
+            assert_preview_matches_plan(window)
+            action(window, "Refresh 3D")
+            click(window.move_tool_btn)
+            previous_rotation = window.pending_rotation_matrix.copy()
+            enter_number(window.position_x_spin, 138.0)
+            enter_number(window.position_y_spin, 118.0)
+            np.testing.assert_allclose(window.pending_rotation_matrix, previous_rotation)
+            assert_preview_matches_plan(window)
+            click(window.rotate_tool_btn)
+            enter_number(window.rot_z_spin, 53.0)
+            np.testing.assert_allclose(window.pending_target_center_xy, [138., 118.])
+            assert_preview_matches_plan(window)
+            screenshot(window, "benchy-mixed-transforms")
+            step("numeric movement and rotation remain distinct and match export after a baked preview")
+            enter_number(window.rot_x_spin, 0.0)
             enter_number(window.rot_z_spin, 90.0)
             click(window.center_plate_btn)
+            assert_preview_matches_plan(window)
             screenshot(window, "benchy-transformed")
             step("tool modes, layer height, rotation, scaling, and center controls work")
 
@@ -268,6 +302,7 @@ def _run_workflow(artifact_dir):
             with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(save_path), "3MF")):
                 action(window, "Save Labeled 3MF")
             assert save_path.is_file()
+            assert save_path.name in window.windowTitle()
             saved_parts = read_parts([str(save_path)])
             report["saved_parts"] = len(saved_parts)
             assert len(saved_parts) == 8
@@ -294,6 +329,8 @@ def _run_workflow(artifact_dir):
                 action(window, "Open 3MF")
             assert window.parts_table.topLevelItemCount() == 8
             assert window.assignments[oid]["token"] == token
+            assert save_path.name in window.windowTitle()
+            assert window.oid_to_display_name == original_names
             np.testing.assert_allclose(bounds(read_parts([window.base_file])), saved_bounds, atol=1e-5)
             screenshot(window, "benchy-reopened")
             step("saved model reopens with matching geometry and recipe")
