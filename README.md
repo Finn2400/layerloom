@@ -324,7 +324,12 @@ Xvfb and software OpenGL; Windows uses Mesa software OpenGL on the hosted runner
 Every run uploads GUI evidence, including on failure.
 The full rendering test is opt-in locally because a missing graphics display can
 abort Qt/VTK. Do not use Qt's `offscreen` platform for the full VTK workflow on
-macOS. These tests exercise the source application, not a packaged installer.
+macOS. The launcher rejects macOS `offscreen`/`minimal` platforms before creating
+the viewer; use the native `cocoa` platform from an unlocked desktop session.
+Native macOS GUI tests also require access to the window server (a restricted
+shell sandbox may prevent Qt from registering the application).
+The workflow captures Python fault-handler output if a native crash occurs.
+These tests exercise the source application, not a packaged installer.
 The GUI's Weave action still uses the existing weave pipeline; experimental 2D
 contour repair remains a separate command-line workflow on this branch.
 

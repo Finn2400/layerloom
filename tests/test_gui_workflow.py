@@ -34,6 +34,7 @@ def test_gui_workflow(tmp_path):
     env["PYTHONUNBUFFERED"] = "1"
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     env["PYTHONUTF8"] = "1"
+    env["PYTHONFAULTHANDLER"] = "1"
     env["MPLCONFIGDIR"] = str(runtime_dir / "matplotlib")
     command = [sys.executable, str(Path(__file__).resolve()), "--run-workflow", str(artifact_dir)]
     log_path = artifact_dir / "gui-workflow.log"
@@ -48,6 +49,7 @@ def test_gui_workflow(tmp_path):
     assert result.returncode == 0, f"GUI workflow failed ({result.returncode}); artifacts: {artifact_dir}\n{log[-18000:]}"
     report = json.loads((artifact_dir / "gui-workflow.json").read_text(encoding="utf-8"))
     assert report["status"] == "ok"
+    assert not report["slot_errors"], report["slot_errors"]
     assert report["rendered_model_pixels"] > 500
     assert report["loaded_parts"] == report["saved_parts"] == 8
     assert report["woven_color_groups"] == 3
@@ -69,6 +71,7 @@ def _run_workflow(artifact_dir):
     from layerloom.example_assets import find_example_file
     from layerloom.ingest import extract_pat_token, read_parts
 
+    gui_app._validate_gui_environment()
     artifact_dir = Path(artifact_dir)
     gui = gui_app._load_current_gui_module()
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(["LayerLoom GUI integration"])
@@ -91,6 +94,7 @@ def _run_workflow(artifact_dir):
         assert not slot_errors, "Unhandled Qt callback exception:\n" + "\n".join(slot_errors)
 
     def step(name):
+        assert not slot_errors, "Unhandled Qt callback exception:\n" + "\n".join(slot_errors)
         assert not errors, f"Unexpected GUI errors: {errors}"
         assert not warnings, f"Unexpected GUI warnings: {warnings}"
         report["completed_steps"].append(name)
@@ -348,6 +352,17 @@ def _run_workflow(artifact_dir):
             assert window.parts_table.topLevelItemCount() == old_count
             screenshot(window, "invalid-open-recovered")
             step("invalid input reports error and keeps the previous model usable")
+
+            # A second window/dialog can keep Qt alive after the model window
+            # closes. Pending selection feedback must not access its renderer.
+            oid, name = next(iter(window.oid_to_name.items()))
+            window._flash_actor_by_name(name, oid)
+            app.setQuitOnLastWindowClosed(False)
+            window.close()
+            window = None
+            QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
+            QtTest.QTest.qWait(350)
+            step("closing during selection feedback leaves no delayed Qt errors")
 
             report["status"] = "ok"
             exit_status[0] = 0

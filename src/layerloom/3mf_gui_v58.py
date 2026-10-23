@@ -4011,6 +4011,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             """
         )
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self._flash_timers: Dict[str, QtCore.QTimer] = {}
 
         self._init_temp_workspace()
 
@@ -4788,6 +4789,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return out
 
     def _prepare_for_heavy_preview_build(self):
+        self._cancel_selection_flashes()
         if self.viewer:
             try:
                 self.viewer._teardown_scene()
@@ -4972,6 +4974,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._apply_transform_preview(quiet=False)
 
     def _load_canonical_model(self, stamped_path: str):
+        self._cancel_selection_flashes()
         self.base_file = stamped_path
         self.current_file = stamped_path
         self.transformed_preview_file = None
@@ -5442,6 +5445,12 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         except Exception as e:
             _log("WARN", f"[viewer] camera preset '{which}' failed: {e}")
 
+    def _cancel_selection_flashes(self):
+        for timer in self._flash_timers.values():
+            timer.stop()
+            timer.deleteLater()
+        self._flash_timers.clear()
+
     def _flash_actor_by_name(self, name: str, oid: str = None):
         if not self.viewer or not name:
             return
@@ -5453,9 +5462,21 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         flash_hex = "#FF0000" if original_hex.upper() != "#FF0000" else "#00FF00"
         self.viewer.set_color_by_name(name, flash_hex)
         source_file = self.base_file
+        viewer = self.viewer
+        previous = self._flash_timers.pop(name, None)
+        if previous is not None:
+            previous.stop()
+            previous.deleteLater()
+        # An unowned singleShot closure can survive a closed/deleted window.
+        # Keep the callback in Qt's object tree and cancel before scene teardown.
+        timer = QtCore.QTimer(self)
+        timer.setSingleShot(True)
+        self._flash_timers[name] = timer
 
         def _restore():
-            if not self.viewer or self.base_file != source_file:
+            self._flash_timers.pop(name, None)
+            timer.deleteLater()
+            if self.viewer is not viewer or self.base_file != source_file:
                 return
             if oid and self.oid_to_name.get(oid) != name:
                 return
@@ -5464,9 +5485,11 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             current_hex = self.assignments.get(oid, {}).get("hex", original_hex)
             self.viewer.set_color_by_name(name, current_hex)
 
-        QtCore.QTimer.singleShot(250, _restore)
+        timer.timeout.connect(_restore)
+        timer.start(250)
 
     def _build_or_rebuild_viewer(self):
+        self._cancel_selection_flashes()
         def _picked(name):
             self._handle_viewer_pick_event(str(name))
         try:
@@ -5571,6 +5594,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         _log("INFO", "Exiting. Cleaning up window previews...")
+        self._cancel_selection_flashes()
         if self.viewer:
             self.viewer.close()
         try:

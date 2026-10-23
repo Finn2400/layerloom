@@ -588,6 +588,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             )
 
     def _build_or_rebuild_viewer(self):
+        self._cancel_selection_flashes()
         def _picked(picked):
             self._handle_viewer_pick_event(picked)
 
