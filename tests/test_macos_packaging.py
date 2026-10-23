@@ -13,7 +13,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "packaging/macos"))
-from bundle_config import EXCLUDES, GUI_FILES, gui_hidden_imports, resource_files
+from bundle_config import EXCLUDES, GUI_FILES, bundle_short_version, gui_hidden_imports, resource_files
 from build_macos import is_license_file
 from validate_macos import command, deployment_versions, write_test_glb
 
@@ -74,3 +74,10 @@ def test_timed_out_native_command_preserves_output(tmp_path):
                  "import time; print('GUI stage reached'); time.sleep(30)"],
                 cwd=tmp_path, env=os.environ.copy(), log=log, timeout=2)
     assert "GUI stage reached" in log.read_text()
+
+
+@pytest.mark.parametrize(("version", "expected"), [
+    ("0.6.4a1", "0.6.4"), ("0.6.4", "0.6.4"), ("1.2", "1.2.0"),
+])
+def test_mac_display_version_remains_numeric_for_alpha_releases(version, expected):
+    assert bundle_short_version(version) == expected
