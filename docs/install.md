@@ -43,8 +43,9 @@ open the Mac app.
    cannot write there, copy it to a folder you own instead.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
-4. Click **Try the example → Weave** and choose Documents or another output
-   folder. When **Your woven model** appears, click **Show in Finder**.
+4. Click **Try the example → Export geometry 3MF…**. Select **Woven apparent
+   colors**, set **Layer height** to `0.16 mm`, confirm, and choose a `.3mf`
+   filename in Documents. Wait for the export completion message.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
@@ -165,7 +166,7 @@ project's DMG instead of installing packages inside it.
 | Setup needs a download while offline | Reconnect and reopen it. First setup, repair, a moved source folder, or changed runtime files needs a fresh environment. |
 | A Qt platform plugin, OpenGL, or native library could not load | Save the error and setup log. On Linux, check the graphics prerequisites above. For source installs, try repair; for a Mac app, try a fresh matching DMG. |
 | `Example unavailable` or `bundled worker is missing` | Source: extract a complete new ZIP. Mac app: replace the whole app from a fresh DMG. Keep your saved models. |
-| Weave completes but you cannot find the model | Use **Show in Finder / Show in folder** in **Your woven model**. The output name ends in `_woven.3mf`, in the folder you chose. |
+| Export completes but you cannot find the model | The completion message shows the full `.3mf` path you chose. `.llpaint` files are editable projects; open the exported `.3mf` in your slicer. |
 | `layerloom-gui` or another command is not found | Beginner launchers do not add commands to your PATH. Reopen the launcher, or use the developer instructions below. |
 
 ### Collect useful information for support

@@ -1,3 +1,9 @@
+# Paint integration alpha: 0.6.4a1
+
+This unreleased candidate combines the standalone installer with the shared Paint/Arrange workspace. Editable paint is saved in `.llpaint`; printable 3MF output contains filament geometry and part assignments. Conversion supports cancellation and an estimated additional-memory budget.
+
+The automated frozen-app smoke test loads the main Paint UI, checks both views, and waits for an actual asynchronous geometry export. Cross-platform CI and manual first-open gates remain required before publishing. Existing signing and minimum macOS requirements below still apply.
+
 This is an **unpublished draft** for maintainer testing. Draft assets are visible only to maintainers with repository write access. Browser-quarantine, Finder first-open, slicer, and first-time-user checks remain publication requirements; automated build results do not establish that they have passed.
 
 ## Choose the Mac app
@@ -11,8 +17,8 @@ Use the attached versioned DMG matching your Mac. The app contains Python and th
 
 1. Open the DMG and drag **LayerLoom.app** to Applications.
 2. Open the copied app. If macOS blocks it, follow the attached **Read-Me-First.html**: **System Settings → Privacy & Security**, find LayerLoom under Security, and use **Open Anyway**. Confirm any further prompt or password request. See [Apple's instructions](https://support.apple.com/en-us/102445).
-3. Choose **Try the example → Weave**, select Documents or another output folder, and wait for **Your woven model**.
-4. Click **Show in Finder**. Open `tutorial_cmy_cubes_woven.3mf` in your slicer, keep its parts aligned, and use 0.16 mm for normal and first layers with adaptive layers disabled.
+3. Choose **Try the example → Export geometry 3MF…**, select **Woven apparent colors**, set **Layer height** to `0.16 mm`, and confirm. Choose a `.3mf` filename in Documents and wait for completion.
+4. Open the exported `.3mf` in your slicer, keep its parts aligned, and use 0.16 mm for normal and first layers with adaptive layers disabled. Save `.llpaint` separately when you want to retain editable paint.
 
 These free builds are ad-hoc signed and are not notarized by Apple. A managed Mac may prohibit approval. After first-open approval, the app works offline. Use **Help → Copy diagnostics** and **Help → Open logs** if something fails.
 

@@ -76,6 +76,8 @@ jobs:
         run: call "Launch LayerLoom.bat" --doctor-only < NUL
       - name: Build source and wheel distributions
         run: uv run --no-sync python -m build
+      - name: Validate source and wheel contents
+        run: uv run --no-sync python scripts/validate_distributions.py dist
       - name: Install the built wheel
         shell: bash
         run: uv pip install --no-deps --reinstall dist/*.whl
@@ -83,8 +85,10 @@ jobs:
         shell: bash
         run: |
           PYTHON_EXECUTABLE=$(uv run --no-sync python -c 'import sys; print(sys.executable)')
+          PAINT_SMOKE="$PWD/scripts/installed_paint_smoke.py"
           cd "$RUNNER_TEMP"
           "$PYTHON_EXECUTABLE" -I -X utf8 -m layerloom.doctor
+          "$PYTHON_EXECUTABLE" -I -X utf8 "$PAINT_SMOKE"
           "$PYTHON_EXECUTABLE" -I -X utf8 - <<'PY'
           import os
           from pathlib import Path
@@ -136,6 +140,7 @@ jobs:
     timeout-minutes: 20
     env:
       LAYERLOOM_GUI_TESTS: "1"
+      LAYERLOOM_RUN_DESKTOP_INTEGRATION: "1"
       QT_API: pyqt5
       QT_QPA_PLATFORM: xcb
       LIBGL_ALWAYS_SOFTWARE: "1"
@@ -167,6 +172,7 @@ jobs:
           python -m pytest
           src/layerloom/paint_tests/test_paint_gui.py
           src/layerloom/paint_tests/test_main_paint.py
+          tests/test_desktop_ui.py
           --junitxml=paint-gui-results.xml
 
       - name: Save GUI test results
@@ -175,4 +181,44 @@ jobs:
         with:
           name: paint-gui-results
           path: paint-gui-results.xml
+          if-no-files-found: ignore
+
+
+  paint-gui-windows:
+    if: github.event.repository.private == false
+    name: Windows native Paint UI / locked Python
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      LAYERLOOM_GUI_TESTS: "1"
+      LAYERLOOM_RUN_DESKTOP_INTEGRATION: "1"
+      QT_API: pyqt5
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+          enable-cache: true
+      - name: Install locked GUI and test dependencies
+        run: uv sync --managed-python --locked --extra gui --extra dev --no-editable
+      - name: Provide a native Windows OpenGL renderer
+        uses: pyvista/setup-headless-display-action@v3
+        with:
+          pyvista: false
+          install-mesa3d-offscreen: false
+          mesa3d-release: '24.3.0'
+      - name: Exercise native Paint, Arrange and desktop controls
+        run: >-
+          uv run --no-sync python -m pytest
+          src/layerloom/paint_tests/test_paint_gui.py
+          src/layerloom/paint_tests/test_main_paint.py
+          tests/test_desktop_ui.py
+          --junitxml=paint-gui-windows-results.xml
+      - name: Save GUI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paint-gui-windows-results
+          path: paint-gui-windows-results.xml
           if-no-files-found: ignore

@@ -25,6 +25,7 @@ def test_explicit_desktop_resources_are_present():
     assert not any("submission" in path or "manuscript" in path for path, _ in resources)
     imports = gui_hidden_imports(ROOT)
     assert "layerloom.transform_3mf" in imports
+    assert "layerloom.paint_main_ui" in imports
     assert "PyQt5.QtWidgets" in imports
     assert "tkinter" not in imports and "pymeshlab" in EXCLUDES
 
