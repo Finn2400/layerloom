@@ -21,8 +21,9 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def application():
+    # Keep one QApplication alive across native modules and their Qt objects.
     app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
     yield app
 
@@ -42,6 +43,8 @@ def desktop(application, monkeypatch):
     window.close()
     if controller.example_directory:
         controller.example_directory.cleanup()
+    window.deleteLater()
+    application.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
     application.processEvents()
 
 

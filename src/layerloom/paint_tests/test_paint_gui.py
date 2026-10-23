@@ -19,8 +19,9 @@ from layerloom.paint_model import PaintDocument, PaintMesh
 from layerloom.paint_io import load_paint_document, save_paint_document
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def app():
+    # Keep one QApplication alive across native modules and their Qt objects.
     return QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
 
@@ -39,6 +40,7 @@ def window(app):
     yield win
     win.dirty = False
     win.close()
+    app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
     app.processEvents()
 
 
@@ -302,6 +304,8 @@ def test_embedded_panel_defaults_surface_selection_and_woven_color_mode(app):
     assert panel.can_close()
     panel.shutdown()
     host.close()
+    host.deleteLater()
+    app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
     app.processEvents()
 
 
@@ -474,6 +478,8 @@ def test_compact_panel_keeps_paint_controls_and_mapping_summary_visible(app):
         editor.dirty = False
         panel.shutdown()
         host.close()
+        host.deleteLater()
+        app.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
         app.processEvents()
 
 

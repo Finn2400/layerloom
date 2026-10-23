@@ -17,8 +17,9 @@ def main_module():
     return _load_current_gui_module()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def app():
+    # Keep one QApplication alive across native modules and their Qt objects.
     return QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
 
 
