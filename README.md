@@ -12,16 +12,18 @@ a weaving-aware slicer.
 
 This branch prepares **0.6.4a3**, an unpublished integration alpha. The older
 0.6.3 Mac installer does not include the Paint workspace described here.
-Use the **0.6.4a3** build when testing this guide: it fixes the bundled Benchy
-appearing gray in the previous candidate. Check **Help → Copy diagnostics**
-to confirm the version. Check the matching draft's attached validation report
-before sharing this unpublished test candidate.
+The existing **0.6.4a3** DMGs include the Benchy color fixes but still open in
+Paint. The Arrange startup described below is a newer source change and needs
+a new desktop build. Check **Help → Copy diagnostics** and the matching draft's
+validation report before sharing a test candidate.
 
-The current integration alpha opens the Qt GUI with **Paint** enabled. Surface
-and area selection, editable colors, and whole-model placement share one model
-between Paint and Arrange. Save `.llpaint` to keep editable paint; **Export
-geometry 3MF…** converts those colors into physical filament geometry with no
-per-face paint in the printable output.
+LayerLoom starts in **Arrange**, with a pixelated Benchy design on the empty
+build plate. Choose **Try the example** or **Open a model** to load geometry.
+Loading either example keeps the current mode. Turn on **Paint** in the main
+toolbar when you want to edit surfaces; turn it off to return to Arrange.
+Both modes share the same model, colors, and placement. Save `.llpaint` to keep
+editable paint; **Export geometry 3MF…** converts those colors into physical
+filament geometry with no per-face paint in the printable output.
 
 ![LayerLoom application examples](docs/images/layerloom_applications_overview.jpg)
 
@@ -100,9 +102,10 @@ a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
   a pre-labeled cut-up 3DBenchy example using only cyan, magenta, and yellow
   tokens.
 
-For a short Paint demonstration, load the cubes, choose **Surface select**, click
-a surface, choose a color, and click **Apply paint**. Try Undo and Redo, then
-**Save paint…** to a `.llpaint` file and reopen it with **Open…**. Export the
+For a short Paint demonstration, load the cubes, turn on **Paint** in the main
+toolbar, choose **Surface select**, click a surface, choose a color, and click
+**Apply paint**. Try Undo and Redo, then **Save paint…** to a `.llpaint` file
+and reopen it with **Open…**. Export the
 printable `.3mf` at the tutorial's selected **0.16 mm**. The editable project
 keeps your paint; the printable file converts it into separate filament geometry.
 The [tutorial](docs/tutorial.md) explains the slicer settings and limitations.

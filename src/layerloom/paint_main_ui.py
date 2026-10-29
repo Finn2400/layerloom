@@ -85,7 +85,17 @@ class PaintWorkspaceHostMixin:
         editor.export_action.changed.connect(self._sync_paint_host_actions)
         editor.save_action.changed.connect(self._sync_paint_host_actions)
         self._shared_paint_workspace = SharedPaintWorkspace(self, editor)
-        self._workspace_changed(0)
+        # The plate is the primary workspace, including before a model loads.
+        # Initialize its scenery once; mode toggles must preserve its camera.
+        self.viewer._ensure_plotter()
+        self.viewer._set_default_loaded_camera()
+        self.workspace_tabs.setCurrentIndex(1)
+        # Fit after Qt has laid out the real viewport, including narrow screens.
+        QtCore.QTimer.singleShot(0, self._fit_initial_build_plate)
+
+    def _fit_initial_build_plate(self):
+        if not self._shared_paint_active() and self.paint_panel.editor.document is None:
+            self.viewer.plotter.reset_camera()
 
     def _shared_paint_active(self):
         return self._shared_paint_workspace is not None and self._shared_paint_workspace.active
@@ -151,13 +161,19 @@ class PaintWorkspaceHostMixin:
             plotter = getattr(self.viewer, "plotter", None)
             (plotter if plotter is not None else self.viewer_host).setFocus(QtCore.Qt.OtherFocusReason)
 
-    def open_paint_path(self, path):
-        """Public main-window entry point for models and saved paint projects."""
+    def open_model_path(self, path):
+        """Open a shared model without changing the user's workspace."""
         if not self.paint_panel.can_close():
             return False
         self._paint_pending_source = None
-        self.workspace_tabs.setCurrentWidget(self.paint_panel)
         return self.paint_panel.open_path(path)
+
+    def open_paint_path(self, path):
+        """Open a model explicitly in Paint, preserving the existing API."""
+        opened = self.open_model_path(path)
+        if opened:
+            self.workspace_tabs.setCurrentWidget(self.paint_panel)
+        return opened
 
     def _on_open(self):
         if self.paint_panel is not None:

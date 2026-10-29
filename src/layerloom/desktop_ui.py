@@ -142,7 +142,7 @@ class DesktopController(QtCore.QObject):
         local = Path(directory.name) / path.name
         try:
             shutil.copyfile(path, local)
-            if not self.window.open_paint_path(str(local)):
+            if not self.window.open_model_path(str(local)):
                 directory.cleanup()
                 return False
             self._initialize_example_paint(filename)
@@ -160,7 +160,8 @@ class DesktopController(QtCore.QObject):
             message = ("Benchy ready — larger example. Export uses 0.16 mm layers and a "
                        "4,096 MiB memory budget. Allow extra time for conversion.")
         else:
-            message = "Example ready. Paint a surface or choose Export geometry 3MF… to create printable material parts."
+            message = ("Example ready. Choose Export geometry 3MF… to create printable material parts, "
+                       "or turn on Paint to color a surface.")
         self.window.status_bar.showMessage(message)
         return True
 

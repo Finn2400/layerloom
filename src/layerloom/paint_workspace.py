@@ -114,7 +114,8 @@ class SharedPaintWorkspace:
         host, viewer = self.host, self.host.viewer
         plotter = viewer._ensure_plotter()
         viewer._teardown_scene()
-        viewer._clear_layer_preview()
+        # Model teardown preserves the plate's non-pickable Benchy and rulers.
+        # They share the legacy preview actor list and must not be cleared here.
         viewer._active_move = None
         viewer._active_rotation = None
         viewer.on_model_pick = host._handle_viewer_pick_event

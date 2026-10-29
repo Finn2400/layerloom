@@ -1,5 +1,11 @@
 # Paint integration alpha: 0.6.4a3
 
+**Source update after the existing a3 build:** startup now opens Arrange with
+the pixelated Benchy design on the empty build plate. Examples keep the current
+mode; turn on Paint in the toolbar for surface editing. The source security
+illustration now ends at “Try the example”. Existing a3 DMGs are unchanged and
+still open in Paint. These source changes need a new build and its own validation.
+
 This unreleased candidate combines the standalone installer with the shared Paint/Arrange workspace. Editable paint is saved in `.llpaint`; printable 3MF output contains filament geometry and part assignments. Conversion supports cancellation and an estimated additional-memory budget.
 
 This candidate repairs two problems found while demonstrating the bundled
@@ -52,7 +58,7 @@ Use the **0.6.4a3** DMG matching your Mac and confirm that version in
 3. Choose **Try the example → Export geometry 3MF…**. The tutorial selects **Woven apparent colors** and `0.16 mm`; check those values and confirm. Choose a `.3mf` filename in Documents and wait for completion, then use **Show in Finder**. First export includes geometry-search compilation and may take longer.
 4. Open the exported `.3mf` in your slicer, keep its parts aligned, and use 0.16 mm for normal and first layers with adaptive layers disabled. Save `.llpaint` separately when you want to retain editable paint.
 
-For a Paint demonstration, select a cube surface, choose a color, click **Apply paint**, then try Undo and Redo. Use **Save paint…** to save `.llpaint` and **Open…** to reopen it. Export a separate printable 3MF; editable paint stays in the project. The older 0.6.3 installer does not include this workspace.
+For a Paint demonstration, turn on **Paint** in the main toolbar, select a cube surface, choose a color, click **Apply paint**, then try Undo and Redo. Use **Save paint…** to save `.llpaint` and **Open…** to reopen it. Export a separate printable 3MF; editable paint stays in the project. The older 0.6.3 installer does not include this workspace.
 
 These free builds are ad-hoc signed and are not notarized by Apple. A managed Mac may prohibit approval. After first-open approval, the app works offline. Use **Help → Copy diagnostics** and **Help → Open logs** if something fails.
 

@@ -55,8 +55,15 @@ def main_window(main_module, app):
 
 
 def click_main_action(window, action):
+    # Programmatic document edits queue QToolBar layout updates. Let the same
+    # event turn a real user gets between loading and clicking finish first.
+    QtWidgets.QApplication.processEvents()
     button = window._main_toolbar.widgetForAction(action)
-    assert button is not None and button.isVisible()
+    assert action.isVisible(), f"Main action is hidden: {action.text()}"
+    assert button is not None and button.isVisible(), (
+        f"Main action button is not visible after layout: {action.text()}; "
+        f"toolbar width={window._main_toolbar.width()}"
+    )
     QtTest.QTest.mouseClick(button, QtCore.Qt.LeftButton)
     QtWidgets.QApplication.processEvents()
 
@@ -142,8 +149,14 @@ def test_imported_part_id_markers_cannot_select_or_paint_another_part(main_windo
     assert main_window._item_for_oid("1").text(0) == first.name
 
 
-def test_paint_is_default_compact_mode_with_visible_main_toolbar(main_window):
-    assert main_window._paint_active()
+def test_arrange_is_default_with_plate_art_and_secondary_paint_toggle(main_window):
+    assert not main_window._paint_active()
+    assert main_window.workspace_tabs.currentIndex() == 1
+    assert main_window.paint_panel.editor.document is None
+    actors = main_window.viewer.plotter.actors
+    for name in ("__build_plate__", "__plate_ascii_0__", "__plate_ascii_1__"):
+        assert name in actors and actors[name].GetVisibility(), name
+        assert actors[name].GetMapper().GetInput().GetNumberOfCells() > 0, name
     assert main_window.workspace_tabs.count() == 2
     assert main_window.workspace_tabs.tabBar().isHidden()
     assert not main_window.paint_panel.editor.isWindow()
@@ -151,8 +164,42 @@ def test_paint_is_default_compact_mode_with_visible_main_toolbar(main_window):
     assert all(bar.isVisible() for bar in main_window._arrange_toolbars)
     assert not main_window.paint_panel.editor.project_toolbar.isVisible()
     assert main_window._paint_action.text() == "Paint"
-    assert main_window._paint_action.isChecked()
+    assert not main_window._paint_action.isChecked()
+    set_paint_mode(main_window, True)
+    assert main_window.paint_panel.isVisible()
     assert main_window.paint_panel.editor.tool_combo.currentText() == "Surface select"
+    assert main_window.paint_panel.editor.document is None
+    set_paint_mode(main_window, False)
+    assert main_window.viewer.plotter.isVisible()
+    assert not main_window.paint_panel.isVisible()
+    for name in ("__build_plate__", "__plate_ascii_0__", "__plate_ascii_1__"):
+        assert actors[name].GetVisibility(), name
+
+
+@pytest.mark.parametrize("initial_paint", [False, True], ids=["arrange", "paint"])
+def test_model_loader_preserves_mode_while_explicit_paint_loader_enters_paint(
+        main_window, tmp_path, initial_paint):
+    source = tmp_path / "model with spaces.3mf"
+    _write_source_color_fixture_3mf(example_document("cube", 8), source)
+    original = source.read_bytes()
+    set_paint_mode(main_window, initial_paint)
+    decoration = {name: actor for name, actor in main_window.viewer.plotter.actors.items()
+                  if name.startswith(("__plate_ascii_", "__layer_static_ruler"))}
+    assert "__plate_ascii_0__" in decoration and "__plate_ascii_1__" in decoration
+    assert any(name.startswith("__layer_static_ruler") for name in decoration)
+    assert main_window.open_model_path(str(source))
+    assert main_window._paint_active() == initial_paint
+    assert main_window._paint_action.isChecked() == initial_paint
+    assert main_window._shared_paint_active()
+    assert_shared_geometry(main_window)
+    for name, actor in decoration.items():
+        assert main_window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
+    assert main_window.open_paint_path(str(source))
+    assert main_window._paint_active() and main_window._paint_action.isChecked()
+    set_paint_mode(main_window, False)
+    for name, actor in decoration.items():
+        assert main_window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
+    assert source.read_bytes() == original
 
 
 def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monkeypatch, tmp_path):
@@ -224,6 +271,7 @@ def test_arrange_import_then_paint_uses_original_source_colors(main_window, monk
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
+    assert not main_window._paint_active() and not main_window._paint_action.isChecked()
     assert main_window.source_file_path == str(source)
     assert main_window._shared_paint_active()
     assert main_window._shared_paint_workspace.model.document is main_window.paint_panel.document
@@ -273,6 +321,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
         assert main_window._paint_pending_source is None
     monkeypatch.setattr(editor, "_confirm_discard", lambda: True)
     main_window._on_open()
+    assert not main_window._paint_active() and not main_window._paint_action.isChecked()
     assert main_window.source_file_path == str(source)
     set_paint_mode(main_window, True)
     assert editor.document is not previous
@@ -375,6 +424,7 @@ def test_arrange_save_scrubs_paint_even_when_input_has_normalized_marker(main_wi
 
 
 def test_host_export_state_progress_status_and_tool_popup_follow_mode(main_window):
+    set_paint_mode(main_window, True)
     editor = main_window.paint_panel.editor
     editor.set_document(example_document("cube", 8))
     export_actions = [action for action, original in main_window._workspace_action_labels if original == "Weave"]
@@ -505,6 +555,7 @@ def test_arrange_open_uses_same_paint_aware_parser_for_glb_and_project(main_wind
     monkeypatch.setattr(main_window, "_run_glb_import_pipeline", lambda *a: pytest.fail("Shared GLB import must retain its paint"))
     set_paint_mode(main_window, False)
     main_window._on_open_glb()
+    assert not main_window._paint_active() and not main_window._paint_action.isChecked()
     assert main_window._shared_paint_active()
     assert_shared_geometry(main_window)
     current = main_window.paint_panel.document
@@ -682,8 +733,11 @@ def test_real_startup_keeps_paint_controls_readable(main_module, app, tmp_path,
         assert startup_app is app and app.style().objectName().lower() == "fusion"
         window.resize(1100, 720)
         window.show()
+        assert not window._paint_active() and not window._paint_action.isChecked()
         assert window._desktop_controller.try_example()
         app.processEvents()
+        assert not window._paint_active(), "Loading the example must keep the default Arrange mode"
+        set_paint_mode(window, True)
         editor = window.paint_panel.editor
         panel_image = editor.controls_panel.grab().toImage()
         # Sample the rendered surface, rather than trusting an inherited palette

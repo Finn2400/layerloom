@@ -48,43 +48,69 @@ def desktop(application, monkeypatch):
     application.processEvents()
 
 
+def _click_paint_mode(window, enabled):
+    if window._paint_active() != enabled:
+        button = window._main_toolbar.widgetForAction(window._paint_action)
+        assert button is not None and button.isVisible() and button.isEnabled()
+        QtTest.QTest.mouseClick(button, QtCore.Qt.LeftButton)
+        QtWidgets.QApplication.processEvents()
+    assert window._paint_active() == enabled
+    assert window._paint_action.isChecked() == enabled
+
+
 def test_welcome_actions_follow_visible_workspace_and_open_model(desktop, application, monkeypatch):
     window, controller, errors, _ = desktop
     assert install_desktop_ui(window) is controller
-    assert window._paint_active()
-    panel = controller.paint_welcome
-    assert panel.isVisible() and not window.viewer_empty_hint.isVisible()
+    assert not window._paint_active() and not window._paint_action.isChecked()
+    assert window.paint_panel.editor.document is None
+    assert window.viewer_empty_hint.isVisible() and not controller.paint_welcome.isVisible()
+    actors = window.viewer.plotter.actors
+    for name in ("__build_plate__", "__plate_ascii_0__", "__plate_ascii_1__"):
+        assert name in actors and actors[name].GetVisibility(), name
+        assert actors[name].GetMapper().GetInput().GetNumberOfCells() > 0, name
+    panel = window.viewer_empty_hint
     buttons = panel.findChildren(QtWidgets.QPushButton)
     assert len(buttons) == 2
     for button in buttons:
         assert button.isVisible() and button.isEnabled()
         assert panel.rect().contains(button.mapTo(panel, button.rect().center()))
-    viewport = window.paint_panel.editor.plotter
-    center = panel.mapTo(window.paint_panel.editor, panel.rect().center())
-    origin = viewport.mapTo(window.paint_panel.editor, viewport.rect().topLeft())
-    assert viewport.rect().translated(origin).contains(center)
     opened = []
     monkeypatch.setattr(window, "_on_open", lambda: opened.append(True))
     open_button = next(button for button in buttons if button.text() == "Open a model")
     QtTest.QTest.mouseClick(open_button, QtCore.Qt.LeftButton)
     assert opened == [True]
-    window._set_paint_mode(False)
-    application.processEvents()
-    assert window.viewer_empty_hint.isVisible() and not panel.isVisible()
-    window._set_paint_mode(True)
-    application.processEvents()
+    _click_paint_mode(window, True)
+    panel = controller.paint_welcome
     assert panel.isVisible() and not window.viewer_empty_hint.isVisible()
-    assert not errors
+    viewport = window.paint_panel.editor.plotter
+    center = panel.mapTo(window.paint_panel.editor, panel.rect().center())
+    origin = viewport.mapTo(window.paint_panel.editor, viewport.rect().topLeft())
+    assert viewport.rect().translated(origin).contains(center)
+    assert all(button.isVisible() and button.isEnabled()
+               for button in panel.findChildren(QtWidgets.QPushButton))
+    _click_paint_mode(window, False)
+    assert window.viewer_empty_hint.isVisible() and not panel.isVisible()
+    assert window.paint_panel.editor.document is None and not errors
 
 
-def test_example_preserves_source_and_initializes_shared_paint_recipes(desktop, application, tmp_path):
+@pytest.mark.parametrize("initial_paint", [False, True], ids=["arrange", "paint"])
+def test_example_preserves_mode_source_and_shared_paint_recipes(desktop, application, tmp_path, initial_paint):
     window, controller, errors, _ = desktop
+    _click_paint_mode(window, initial_paint)
+    decoration = {name: actor for name, actor in window.viewer.plotter.actors.items()
+                  if name.startswith(("__plate_ascii_", "__layer_static_ruler"))}
+    assert "__plate_ascii_0__" in decoration and "__plate_ascii_1__" in decoration
+    assert any(name.startswith("__layer_static_ruler") for name in decoration)
     source = find_example_file("tutorial_cmy_cubes.3mf")
     before = hashlib.sha256(source.read_bytes()).hexdigest()
     assert controller.try_example()
     application.processEvents()
     editor = window.paint_panel.editor
     document = editor.document
+    assert window._paint_active() == initial_paint
+    assert window._paint_action.isChecked() == initial_paint
+    for name, actor in decoration.items():
+        assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
     assert not errors and window._shared_paint_active()
     assert window._shared_paint_workspace.model.document is document
     assert hashlib.sha256(source.read_bytes()).hexdigest() == before
@@ -105,11 +131,16 @@ def test_example_preserves_source_and_initializes_shared_paint_recipes(desktop, 
     assert saved.metadata["paint_recipe_preferences"] == document.metadata["paint_recipe_preferences"]
     for original, reopened in zip(document.meshes, saved.meshes):
         np.testing.assert_array_equal(original.source_rgba, reopened.source_rgba)
-    pixels = editor.plotter.screenshot(return_img=True)
+    active_plotter = editor.plotter if initial_paint else window.viewer.plotter
+    pixels = active_plotter.screenshot(return_img=True)
     assert pixels is not None and pixels.std() > 10
     assert not controller.paint_welcome.isVisible()
     assert not window.viewer_empty_hint.isVisible()
-    window._set_paint_mode(False)
+    _click_paint_mode(window, not initial_paint)
+    _click_paint_mode(window, initial_paint)
+    for name, actor in decoration.items():
+        assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
+    _click_paint_mode(window, False)
     window._set_viewer_hint("Preview temporarily unavailable")
     application.processEvents()
     assert window.viewer_empty_hint.isVisible()
@@ -165,6 +196,7 @@ def test_benchy_export_budget_is_visible_and_does_not_leak_to_other_models(deskt
 
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", inspect_export)
     assert controller.try_benchy_example()
+    assert not window._paint_active() and not window._paint_action.isChecked()
     assert "larger example" in window.status_bar.currentMessage()
     assert "4,096 MiB" in window.status_bar.currentMessage()
     window._on_weave()
@@ -232,14 +264,14 @@ def test_failed_example_load_keeps_previous_private_copy(desktop, monkeypatch):
         attempted.append(Path(path))
         assert Path(path).exists()
         return False
-    monkeypatch.setattr(window, "open_paint_path", decline)
+    monkeypatch.setattr(window, "open_model_path", decline)
     assert not controller.try_example()
     assert attempted and not attempted[0].parent.exists()
     assert controller.example_directory.name == str(first) and first.exists()
     assert window.paint_panel.editor.document is document and not errors
 
 
-def test_benchy_toolbar_routes_private_copy_through_paint_loader(desktop, application, monkeypatch):
+def test_benchy_toolbar_routes_private_copy_through_mode_preserving_loader(desktop, application, monkeypatch):
     window, controller, errors, _ = desktop
     source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
     before = hashlib.sha256(source.read_bytes()).hexdigest()
@@ -250,11 +282,12 @@ def test_benchy_toolbar_routes_private_copy_through_paint_loader(desktop, applic
         assert local != source and local.name == source.name
         assert hashlib.sha256(local.read_bytes()).hexdigest() == before
         return False
-    monkeypatch.setattr(window, "open_paint_path", decline_after_inspection)
+    monkeypatch.setattr(window, "open_model_path", decline_after_inspection)
     monkeypatch.setattr(window, "_load_canonical_model", lambda *args: pytest.fail("Examples must use shared Paint loading"))
     window._load_example_action.trigger()
     application.processEvents()
     assert len(loaded) == 1 and not loaded[0].parent.exists()
+    assert not window._paint_active() and not window._paint_action.isChecked()
     assert controller.example_directory is None
     assert hashlib.sha256(source.read_bytes()).hexdigest() == before
     assert not errors

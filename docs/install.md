@@ -43,14 +43,16 @@ open the Mac app.
    cannot write there, copy it to a folder you own instead.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
-4. Click **Try the example → Export geometry 3MF…**. The cubes select
-   **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+4. The source app starts in Arrange, with a pixelated Benchy design on the empty
+   build plate. Click **Try the example**, then **Export geometry 3MF…**.
+   The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
    confirm, and choose a `.3mf` filename in Documents. Wait for the completion
    message, then use **Show in Finder** to locate it. The first export can take
    longer while its geometry search code compiles.
 
-To demonstrate Paint, select a surface, choose a color, click **Apply paint**,
-and try Undo and Redo. Save an editable `.llpaint` project with **Save paint…**
+Loading an example keeps the current mode. To demonstrate surface painting,
+turn on **Paint** in the main toolbar, select a surface, choose a color, click
+**Apply paint**, and try Undo and Redo. Save an editable `.llpaint` project with **Save paint…**
 and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it contains
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
@@ -59,8 +61,9 @@ The Paint candidate is version **0.6.4a3**; the older **0.6.3** Mac draft does
 not include Paint. Check **Help → Copy diagnostics** when reporting which build
 you tested. Use a DMG or source archive labeled **0.6.4a3** for this preview;
 the earlier 0.6.4a2 candidate can load the Benchy without its intended CMY colors.
-Keep the preview instructions and build version together. An unpublished draft
-is not a public download link.
+The existing 0.6.4a3 DMGs still start in Paint; the Arrange startup is a newer
+source change awaiting a desktop build. Keep the preview instructions and build
+version together. An unpublished draft is not a public download link.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a

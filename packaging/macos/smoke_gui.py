@@ -200,17 +200,60 @@ def main(directory: str) -> int:
         qt.QMessageBox.critical = lambda owner, title, message, *a, **k: errors.append(f"{title}: {message}")
         window.show()
         app.processEvents()
+        editor = window.paint_panel.editor
+        diagnostics.start_heartbeat(qtcore, window, editor)
+        assert not window._paint_active() and not window._paint_action.isChecked()
+        assert window.workspace_tabs.currentIndex() == 1 and editor.document is None
+        assert window.viewer_empty_hint.isVisible() and not controller.paint_welcome.isVisible()
+        startup_actors = window.viewer.plotter.actors
+        decoration = {name: actor for name, actor in startup_actors.items()
+                      if name.startswith(("__plate_ascii_", "__layer_static_ruler"))}
+        assert any(name.startswith("__layer_static_ruler") for name in decoration)
+        plate_actor_names = ("__build_plate__", "__plate_ascii_0__", "__plate_ascii_1__")
+        for name in plate_actor_names:
+            assert name in startup_actors and startup_actors[name].GetVisibility(), name
+            assert startup_actors[name].GetMapper().GetInput().GetNumberOfCells() > 0, name
+        startup_image = window.viewer.plotter.screenshot(str(output / "startup-plate-render.png"))
+        assert startup_image is not None and startup_image.std() > 5, "Startup build plate render is blank"
+        assert window.grab().save(str(output / "startup-window.png"))
+        report["startup_ui"] = {"mode": "arrange", "paint_toggle_checked": False,
+                                "empty_document": True, "plate_art_actors": list(plate_actor_names),
+                                "welcome_visible": True}
+        diagnostics.mark("arrange_startup_verified")
+
+        def toggle_paint(enabled):
+            button = window._main_toolbar.widgetForAction(window._paint_action)
+            assert button is not None and button.isVisible() and button.isEnabled()
+            if window._paint_active() != enabled:
+                button.click()
+                app.processEvents()
+            assert window._paint_active() == enabled
+            assert window._paint_action.isChecked() == enabled
+
         welcome_button = next((button for button in window.findChildren(qt.QPushButton, "tryExampleButton")
                                if button.isVisible()), None)
         assert welcome_button is not None, "The active workspace has no visible example action"
         diagnostics.mark("load_cubes")
         welcome_button.click()
         app.processEvents()
-        editor = window.paint_panel.editor
-        diagnostics.start_heartbeat(qtcore, window, editor)
         diagnostics.mark("cubes_loaded")
         assert editor.document is not None and window._shared_paint_active()
         assert window.model_objects and not errors, errors
+        assert not window._paint_active() and not window._paint_action.isChecked()
+        assert not window.viewer_empty_hint.isVisible()
+        for name, actor in decoration.items():
+            assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
+        assert window.grab().save(str(output / "example-arrange-window.png"))
+        tutorial_document = editor.document
+        tutorial_vertices = [mesh.vertices.copy() for mesh in tutorial_document.meshes]
+        tutorial_colors = [mesh.face_rgba.copy() for mesh in tutorial_document.meshes]
+        diagnostics.mark("toggle_paint_for_cubes")
+        toggle_paint(True)
+        assert editor.document is tutorial_document
+        for mesh, vertices, colors in zip(editor.document.meshes, tutorial_vertices, tutorial_colors):
+            np.testing.assert_array_equal(mesh.vertices, vertices)
+            np.testing.assert_array_equal(mesh.face_rgba, colors)
+        report["startup_ui"].update(example_preserves_arrange=True, explicit_paint_toggle=True)
         # Sample the rendered sidebar background, since a native light palette
         # can otherwise make the inherited white labels effectively invisible.
         sidebar = editor.controls_panel.grab().toImage()
@@ -318,10 +361,23 @@ def main(directory: str) -> int:
                                   "saved_project_reopened": True,
                                   "imported_colors_preserved_for_erase": True}
         document = editor.document
+        vertices_before_toggle = [mesh.vertices.copy() for mesh in document.meshes]
         diagnostics.mark("switch_to_arrange")
-        window._set_paint_mode(False)
-        app.processEvents()
+        toggle_paint(False)
         assert window._shared_paint_active() and editor.document is document
+        for mesh, vertices in zip(document.meshes, vertices_before_toggle):
+            np.testing.assert_array_equal(mesh.vertices, vertices)
+        np.testing.assert_array_equal(document.meshes[0].face_rgba, changed)
+        toggle_paint(True)
+        assert editor.document is document
+        np.testing.assert_array_equal(document.meshes[0].face_rgba, changed)
+        toggle_paint(False)
+        for mesh, vertices in zip(document.meshes, vertices_before_toggle):
+            np.testing.assert_array_equal(mesh.vertices, vertices)
+        report["paint_editing"]["toolbar_mode_roundtrip_preserves_geometry_and_paint"] = True
+        for name, actor in decoration.items():
+            assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
+        report["startup_ui"]["plate_art_and_rulers_survive_import_and_toggles"] = True
         window.viewer.plotter.render()
         window.viewer.plotter.screenshot(str(output / "arrange-render.png"))
         assert window.grab().save(str(output / "arrange-window.png"))
@@ -356,8 +412,10 @@ def main(directory: str) -> int:
         benchy_source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
         benchy_hash = hashlib.sha256(benchy_source.read_bytes()).hexdigest()
         diagnostics.mark("load_benchy")
+        assert window._paint_active(), "Explicit paint-path open should enter Paint"
         assert controller.try_benchy_example(), errors
         app.processEvents()
+        assert window._paint_active() and window._paint_action.isChecked(), "Example must retain Paint mode"
         benchy = editor.document
         recipes = sorted({entry["token"] for entry in editor._mapping.values()})
         assert len(benchy.meshes) == 8 and sum(len(mesh.faces) for mesh in benchy.meshes) == 253176

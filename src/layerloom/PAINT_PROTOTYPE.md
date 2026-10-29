@@ -1,11 +1,15 @@
 # LayerLoom paint prototype
 
-The `codex/paint-release-integration` branch includes **Paint** as a mode in the main
-LayerLoom toolbar, active by default. Turn Paint off to use the existing
-arrange-and-weave controls, then turn it on to return to painting. Both modes
+The `codex/paint-release-integration` source starts in **Arrange**, with a
+pixelated Benchy design on the empty build plate. **Paint** is an optional mode
+in the main toolbar: turn it on for surface editing and off for placement.
+Loading the cubes or Benchy example preserves the current mode. Both modes
 use the same loaded model, paint and placement in memory. Switching modes
 does not reread the source or replace paint edits. Arrange shows the same
 surface colors as Paint, including the optional palette-mapping preview.
+
+This startup default is newer than the already-built 0.6.4a3 DMGs, which open
+with Paint enabled; it requires a new desktop build.
 
 The compact side panel keeps the tool, paint color, selection and **Apply
 paint** visible. **Settings…** opens a small contextual popover for brush
@@ -64,7 +68,8 @@ python -m layerloom.paint_gui /path/to/model.3mf
 
 ## Working with paint
 
-1. Open a painted 3MF, GLB/GLTF, STL, OBJ, PLY, or `.llpaint` project.
+1. Open a painted 3MF, GLB/GLTF, STL, OBJ, PLY, or `.llpaint` project. Turn on
+   **Paint** in the main toolbar to show its surface-editing controls.
 2. **Surface select** picks a whole connected patch. Open **Settings…** to
    adjust its edge angle and surface span. The crease-angle limit
    stops at sharp edges; the surface-span limit prevents selection from wrapping

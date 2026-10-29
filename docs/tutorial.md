@@ -5,20 +5,25 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
 ## Open and inspect a model
 
-1. Open LayerLoom using the [installation guide](install.md).
-2. Click **Try the example**, or **Help → Try the CMY cubes example**.
-3. Paint is enabled in the main toolbar. The compact panel beside the model
-   contains selection tools, the current paint color, and **Apply paint**.
-4. Toggle **Paint** off to arrange the same model. Move, rotate, and scale it in
-   Arrange, then toggle Paint on to continue painting. Both views keep the same
-   model, colors, and placement.
+1. Open LayerLoom using the [installation guide](install.md). The current source
+   starts in **Arrange**, with a pixelated Benchy design on the empty build plate.
+2. Click **Try the example**, or **Help → Try the CMY cubes example**, to load
+   the cubes. Loading an example keeps your current mode.
+3. Move, rotate, and scale the model in Arrange. Turn on **Paint** in the main
+   toolbar when you want surface-selection and painting controls.
+4. Turn Paint off to return to Arrange. Both views keep the same model, colors,
+   and placement; exporting is available in either mode.
+
+The already-built 0.6.4a3 Mac draft opens with Paint enabled. Turn it off to
+follow the Arrange steps; the new startup default needs a new desktop build.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 
 ## Paint a surface or area
 
-1. Choose **Surface select** and click a face to select a connected surface.
+1. Turn on **Paint** in the main toolbar. Choose **Surface select** and click a
+   face to select a connected surface.
    Use **Settings…** to adjust which neighboring faces count as that surface.
 2. Choose a paint color, then click **Apply paint**. Selection alone does not
    change the paint.
@@ -100,8 +105,9 @@ preview, walls, thin features, and filament assignments before printing.
 
 ## Try the Benchy or your own model
 
-Use **Help → Load the Benchy example** for the larger bundled model. Follow the
-same Paint, save, and export workflow. In **0.6.4a3**, its eight parts should
+Use **Help → Load the Benchy example** for the larger bundled model. It keeps
+the current mode; turn on **Paint** for surface editing and Color mapping.
+Follow the same save and export workflow. In **0.6.4a3**, its eight parts should
 appear in several colors; Color mapping should contain four woven recipes
 using cyan, magenta and yellow. An entirely gray Benchy or a black/white-only
 mapping is not the intended example. Check **Help → Copy diagnostics** and
