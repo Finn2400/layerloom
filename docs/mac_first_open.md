@@ -50,9 +50,13 @@ message is different: stop, obtain a fresh project download, and report the
 exact message if it persists. Do not disable Gatekeeper or remove quarantine
 attributes to make the test pass.
 
+On the first launch, allow roughly half a minute for bundled libraries and
+font caches to initialize. After approval, wait for the window instead of
+opening another copy.
+
 ## Make your first woven model
 
-1. The current source starts in Arrange, showing a pixelated Benchy design on
+1. LayerLoom starts in Arrange, showing a pixelated Benchy design on
    the empty build plate. Click **Try the example** to load four CMY cubes.
    Examples keep the mode you are using.
 2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
@@ -74,11 +78,8 @@ reopen it with **Open…**. Export a separate
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
 for selection tools, the larger Benchy example, and export limits.
 
-The existing **0.6.4a3** DMGs still open with Paint enabled; turn it off for
-Arrange. The new Arrange startup described here is a source change awaiting a
-desktop build. Use **Help → Copy diagnostics** to identify the build and read
-its matching instructions. The older 0.6.3 draft has no Paint workspace, and
-0.6.4a2 can show the bundled Benchy in gray.
+These instructions accompany **0.6.4a4**. Use **Help → Copy diagnostics** to
+confirm the build and follow the instructions supplied with that download.
 
 Python and the required libraries are inside the app. Once first-open approval
 is complete, you can run the example offline. Outputs go to the folder you

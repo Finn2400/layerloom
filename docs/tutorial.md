@@ -5,7 +5,7 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
 ## Open and inspect a model
 
-1. Open LayerLoom using the [installation guide](install.md). The current source
+1. Open LayerLoom using the [installation guide](install.md). LayerLoom
    starts in **Arrange**, with a pixelated Benchy design on the empty build plate.
 2. Click **Try the example**, or **Help → Try the CMY cubes example**, to load
    the cubes. Loading an example keeps your current mode.
@@ -13,9 +13,6 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
    toolbar when you want surface-selection and painting controls.
 4. Turn Paint off to return to Arrange. Both views keep the same model, colors,
    and placement; exporting is available in either mode.
-
-The already-built 0.6.4a3 Mac draft opens with Paint enabled. Turn it off to
-follow the Arrange steps; the new startup default needs a new desktop build.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
@@ -100,6 +97,10 @@ Use **0.16 mm for both the first layer and subsequent layers** for this tutorial
 and disable adaptive layer heights. For another export, use the layer height
 chosen in its export dialog. The exported assembly is centered and grounded.
 
+For the tested Bambu Classic profile, enable **Detect thin walls** to retain
+the Benchy's narrow top cap. Inspect narrow tips in preview; other models and
+profiles need their own checks.
+
 A valid geometry export is not a physical print test. Review the slicer's layer
 preview, walls, thin features, and filament assignments before printing.
 
@@ -107,11 +108,8 @@ preview, walls, thin features, and filament assignments before printing.
 
 Use **Help → Load the Benchy example** for the larger bundled model. It keeps
 the current mode; turn on **Paint** for surface editing and Color mapping.
-Follow the same save and export workflow. In **0.6.4a3**, its eight parts should
-appear in several colors; Color mapping should contain four woven recipes
-using cyan, magenta and yellow. An entirely gray Benchy or a black/white-only
-mapping is not the intended example. Check **Help → Copy diagnostics** and
-use the matching 0.6.4a3 candidate if an older build is open. Its example
+Its eight parts appear in several colors, with four woven recipes using cyan,
+magenta and yellow. Follow the same save and export workflow. Its example
 settings include the larger memory budget described above. Larger models or fine
 sampling may need more memory and time. The [Paint workflow and known limits](../src/layerloom/PAINT_PROTOTYPE.md)
 provide more detail about supported imports and conversion.

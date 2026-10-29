@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.6.4a4 - unreleased
+
+- Opens Arrange by default, with the full build plate and pixelated Benchy artwork visible.
+- Keeps the selected workspace when loading either tutorial; Paint remains an optional toolbar mode.
+- Retains shared model placement, colors, editable projects and geometry export across both modes.
+- Checks default startup, tutorial loading in each mode, and export from Arrange in native and frozen GUI tests.
+- Simplifies first-run instructions and corrects the security illustration.
+
+This candidate requires new source packages and both Mac installers with their own acceptance record. Earlier candidates remain separate; their test results do not validate these artifacts.
+
 ## 0.6.4a3 - unreleased
 
 - Restores the bundled Benchy's CMY colors when a slicer's display names hide the original part recipe tags.

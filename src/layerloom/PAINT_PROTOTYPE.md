@@ -8,9 +8,6 @@ use the same loaded model, paint and placement in memory. Switching modes
 does not reread the source or replace paint edits. Arrange shows the same
 surface colors as Paint, including the optional palette-mapping preview.
 
-This startup default is newer than the already-built 0.6.4a3 DMGs, which open
-with Paint enabled; it requires a new desktop build.
-
 The compact side panel keeps the tool, paint color, selection and **Apply
 paint** visible. **Settings…** opens a small contextual popover for brush
 radius or surface-selection angles; Escape or an outside click dismisses it

@@ -10,12 +10,9 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-This branch prepares **0.6.4a3**, an unpublished integration alpha. The older
-0.6.3 Mac installer does not include the Paint workspace described here.
-The existing **0.6.4a3** DMGs include the Benchy color fixes but still open in
-Paint. The Arrange startup described below is a newer source change and needs
-a new desktop build. Check **Help → Copy diagnostics** and the matching draft's
-validation report before sharing a test candidate.
+This branch prepares **0.6.4a4**, an unpublished test candidate. Follow the
+instructions supplied with that build. **Help → Copy diagnostics** identifies
+your version; the draft's validation report records completed and pending checks.
 
 LayerLoom starts in **Arrange**, with a pixelated Benchy design on the empty
 build plate. Choose **Try the example** or **Open a model** to load geometry.

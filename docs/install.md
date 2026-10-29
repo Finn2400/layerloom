@@ -43,7 +43,7 @@ open the Mac app.
    cannot write there, copy it to a folder you own instead.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
-4. The source app starts in Arrange, with a pixelated Benchy design on the empty
+4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
    build plate. Click **Try the example**, then **Export geometry 3MF…**.
    The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
    confirm, and choose a `.3mf` filename in Documents. Wait for the completion
@@ -57,13 +57,9 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-The Paint candidate is version **0.6.4a3**; the older **0.6.3** Mac draft does
-not include Paint. Check **Help → Copy diagnostics** when reporting which build
-you tested. Use a DMG or source archive labeled **0.6.4a3** for this preview;
-the earlier 0.6.4a2 candidate can load the Benchy without its intended CMY colors.
-The existing 0.6.4a3 DMGs still start in Paint; the Arrange startup is a newer
-source change awaiting a desktop build. Keep the preview instructions and build
-version together. An unpublished draft is not a public download link.
+These instructions accompany **0.6.4a4**. Use **Help → Copy diagnostics** to
+confirm your build. Keep the instructions and download from the same release
+together. Draft downloads require repository write access.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
