@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.4a3 - unreleased
+
+- Restores the bundled Benchy's CMY colors when a slicer's display names hide the original part recipe tags.
+- Resolves equivalent tutorial CMY recipe spellings against the selected palette, so every Benchy part receives its intended recipe.
+- Preserves those recipes and imported colors when saving and reopening an editable paint project.
+- Adds checks of the actual eight-part Benchy colors and recipe assignments to source tests and the frozen app smoke test.
+- Corrects a false overlap report in the validation measurement of final color partitions; material construction and accepted tolerances remain unchanged.
+- Records frozen GUI stage timings, responsiveness and progress, with bounded five-minute export waits and a fifteen-minute outer verifier deadline.
+
+This candidate requires new source distributions, both Mac installers and their own validation. The passing 0.6.4a2 baseline does not validate the rebuilt 0.6.4a3 artifacts.
+
 ## 0.6.4a2 - unreleased
 
 - Selects the tutorial layer height of 0.16 mm automatically, including after reopening a saved tutorial project.

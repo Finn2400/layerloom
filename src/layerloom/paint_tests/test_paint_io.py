@@ -345,3 +345,27 @@ def test_local_baby_dragon_keeps_paint_and_both_build_instances():
             (179, 102, 255, 255), (0, 0, 0, 255), (255, 255, 255, 255), (255, 255, 0, 255)}
     np.testing.assert_array_equal(doc.meshes[0].face_rgba, doc.meshes[1].face_rgba)
     np.testing.assert_array_equal(doc.meshes[0].faces, doc.meshes[1].faces)
+
+
+def test_vendor_display_name_keeps_source_recipe_provenance_without_repainting(tmp_path):
+    path, _ = _native_file(tmp_path, paint="0")
+    with zipfile.ZipFile(path) as archive:
+        files = {name: archive.read(name) for name in archive.namelist()}
+    root = ET.fromstring(files["3D/3dmodel.model"])
+    root.find(f".//{{{CORE}}}object").set("name", "Original__PAT_cy__")
+    files["3D/3dmodel.model"] = ET.tostring(root)
+    files["Metadata/model_settings.config"] = (
+        b'<config><object id="1"><metadata key="name" value="Friendly part"/>'
+        b'<metadata key="extruder" value="1"/></object></config>'
+    )
+    with zipfile.ZipFile(path, "w") as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    document = load_paint_document(path)
+    mesh = document.meshes[0]
+    assert mesh.name == "Friendly part"
+    assert document.metadata["3mf_source_object_names"] == {mesh.key: "Original__PAT_cy__"}
+    # Ordinary model import keeps its actual red filament paint. Only the
+    # trusted tutorial action interprets recipe tags as display colors.
+    assert np.all(mesh.face_rgba == [255, 0, 0, 255])
+    np.testing.assert_array_equal(mesh.face_rgba, mesh.source_rgba)

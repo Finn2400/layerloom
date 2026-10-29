@@ -10,8 +10,12 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-This branch prepares **0.6.4a2**, an unpublished integration alpha. The older
+This branch prepares **0.6.4a3**, an unpublished integration alpha. The older
 0.6.3 Mac installer does not include the Paint workspace described here.
+Use the **0.6.4a3** build when testing this guide: it fixes the bundled Benchy
+appearing gray in the previous candidate. Check **Help → Copy diagnostics**
+to confirm the version. Check the matching draft's attached validation report
+before sharing this unpublished test candidate.
 
 The current integration alpha opens the Qt GUI with **Paint** enabled. Surface
 and area selection, editable colors, and whole-model placement share one model
@@ -49,7 +53,7 @@ The first setup needs an internet connection; later launches work offline.
    you normally do not need to type commands into it.
 4. Click **Try the example**, then **Export geometry 3MF…**. **Woven apparent
    colors** and **0.16 mm** are selected for this tutorial. Check those values
-   and confirm the settings,
+   and confirm the settings. Then
    choose a `.3mf` filename in Documents, and wait for the completion message.
    Use that same layer height for first and subsequent layers in your slicer.
 

@@ -1,17 +1,119 @@
 """Exercise the shared Paint UI and its real export worker in a frozen app."""
 from __future__ import annotations
 
+import faulthandler
+import hashlib
 import json
 import sys
 import tempfile
+import time
 import traceback
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
 
 
-def _wait_for_export(editor, qtcore, *, timeout_ms=180000):
-    """Process Qt signals until the worker and its thread have both finished."""
+EXPORT_TIMEOUT_MS = 300_000
+GUI_TIMEOUT_SECONDS = 900
+
+
+class _SmokeDiagnostics:
+    """Persist stage and Qt-loop evidence even if the outer verifier kills us."""
+    def __init__(self, output, report):
+        self.output, self.report = output, report
+        self.started = time.monotonic()
+        self.last_heartbeat = None
+        self.editor = None
+        self.heartbeat = None
+        self.stage = "startup"
+        self.trace = (output / "gui-deadline-traceback.log").open("w", encoding="utf-8")
+        report.update(timings=[], ui_heartbeat={"count": 0, "maximum_gap_seconds": 0.0},
+                      deadlines={"export_seconds": EXPORT_TIMEOUT_MS / 1000,
+                                 "outer_gui_seconds": GUI_TIMEOUT_SECONDS})
+        self.mark("startup")
+        self.arm_dump()
+
+    def mark(self, stage, **details):
+        now = time.monotonic()
+        self.stage = stage
+        event = {"stage": stage, "monotonic_seconds": now,
+                 "elapsed_seconds": round(now - self.started, 3), **details}
+        self.report["timings"].append(event)
+        with (self.output / "gui-stages.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(event) + "\n")
+        return event
+
+    def snapshot(self):
+        snapshot = {}
+        if self.editor is not None:
+            try:
+                snapshot = {
+                    "status": self.editor.statusBar().currentMessage(),
+                    "worker_thread_present": self.editor._export_thread is not None,
+                    "progress": {"value": self.editor.progress.value(),
+                                 "minimum": self.editor.progress.minimum(),
+                                 "maximum": self.editor.progress.maximum(),
+                                 "visible": self.editor.progress.isVisible()},
+                }
+            except Exception as exc:
+                snapshot["snapshot_error"] = f"{type(exc).__name__}: {exc}"
+        return snapshot
+
+    def tick(self):
+        now = time.monotonic()
+        heartbeat = self.report["ui_heartbeat"]
+        heartbeat["count"] += 1
+        if self.last_heartbeat is not None:
+            heartbeat["maximum_gap_seconds"] = max(
+                heartbeat["maximum_gap_seconds"], round(now - self.last_heartbeat, 3))
+        self.last_heartbeat = now
+        heartbeat.update(monotonic_seconds=now, elapsed_seconds=round(now - self.started, 3),
+                         stage=self.stage, **self.snapshot())
+        (self.output / "gui-progress.json").write_text(json.dumps(heartbeat, indent=2) + "\n", encoding="utf-8")
+        with (self.output / "gui-heartbeats.jsonl").open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(heartbeat) + "\n")
+
+    def start_heartbeat(self, qtcore, window, editor):
+        self.editor = editor
+        self.heartbeat = qtcore.QTimer(window)
+        self.heartbeat.setInterval(1000)
+        self.heartbeat.timeout.connect(self.tick)
+        self.last_heartbeat = time.monotonic()
+        self.heartbeat.start()
+        self.tick()
+
+    def arm_dump(self, export_deadline=None):
+        # faulthandler's watchdog can dump stacks even when Qt is blocked. Keep
+        # a real file descriptor: windowed app stderr may be a logging wrapper.
+        deadline = self.started + GUI_TIMEOUT_SECONDS - 30
+        if export_deadline is not None:
+            deadline = min(deadline, export_deadline - 15)
+        delay = max(1.0, deadline - time.monotonic())
+        try:
+            faulthandler.cancel_dump_traceback_later()
+            self.trace.write(f"Stage {self.stage}: traceback watchdog in {delay:.3f}s\n")
+            self.trace.flush()
+            faulthandler.dump_traceback_later(delay, file=self.trace)
+        except (OSError, RuntimeError, ValueError) as exc:
+            self.report.setdefault("diagnostic_errors", []).append(str(exc))
+
+    def finish(self):
+        if self.heartbeat is not None:
+            try:
+                self.heartbeat.stop()
+            except RuntimeError:
+                pass  # Closing a delete-on-close window can destroy its timer.
+        self.report["elapsed_seconds"] = round(time.monotonic() - self.started, 3)
+        faulthandler.cancel_dump_traceback_later()
+        self.trace.close()
+
+
+def _wait_for_export(editor, qtcore, *, diagnostics, label,
+                     timeout_ms=EXPORT_TIMEOUT_MS):
+    """Wait for full worker/thread completion; output existence cannot pass it."""
+    started = time.monotonic()
+    diagnostics.mark(label + ":waiting", **diagnostics.snapshot())
+    diagnostics.arm_dump(started + timeout_ms / 1000)
     loop = qtcore.QEventLoop()
     poll = qtcore.QTimer()
     poll.setInterval(25)
@@ -19,25 +121,53 @@ def _wait_for_export(editor, qtcore, *, timeout_ms=180000):
     deadline = qtcore.QTimer()
     deadline.setSingleShot(True)
     timed_out = []
+
     def timeout():
+        # The worker-finished callback and this timer can both be queued while
+        # native rendering is busy. Recheck completion before declaring failure.
+        if editor._export_thread is None:
+            diagnostics.mark(label + ":completed_at_deadline", **diagnostics.snapshot())
+            loop.quit()
+            return
         timed_out.append(True)
+        diagnostics.mark(label + ":deadline", **diagnostics.snapshot())
         editor.cancel_export()
         loop.quit()
+
     deadline.timeout.connect(timeout)
     poll.start()
     deadline.start(timeout_ms)
-    if editor._export_thread is not None:
-        loop.exec_()
-    poll.stop()
-    deadline.stop()
-    if timed_out:
-        # Do not terminate a thread while native geometry owns memory/files.
+    try:
         if editor._export_thread is not None:
+            loop.exec_()
+    finally:
+        poll.stop()
+        deadline.stop()
+    if timed_out:
+        # Allow bounded cooperative cleanup; never terminate native geometry.
+        if editor._export_thread is not None:
+            diagnostics.mark(label + ":cancel_cleanup", **diagnostics.snapshot())
             cleanup = qtcore.QEventLoop()
-            editor._export_thread.finished.connect(cleanup.quit)
-            qtcore.QTimer.singleShot(60000, cleanup.quit)
-            cleanup.exec_()
-        raise TimeoutError("Paint geometry export did not finish within the smoke-test deadline")
+            cleanup_poll = qtcore.QTimer()
+            cleanup_poll.setInterval(25)
+            cleanup_poll.timeout.connect(lambda: cleanup.quit() if editor._export_thread is None else None)
+            cleanup_deadline = qtcore.QTimer()
+            cleanup_deadline.setSingleShot(True)
+            cleanup_deadline.timeout.connect(cleanup.quit)
+            cleanup_poll.start()
+            cleanup_deadline.start(60_000)
+            try:
+                cleanup.exec_()
+            finally:
+                cleanup_poll.stop()
+                cleanup_deadline.stop()
+        diagnostics.mark(label + ":timed_out", wait_seconds=round(time.monotonic() - started, 3),
+                         **diagnostics.snapshot())
+        diagnostics.arm_dump()
+        raise TimeoutError(f"Paint geometry export did not finish within {timeout_ms / 1000:g}s ({label})")
+    diagnostics.mark(label + ":finished", wait_seconds=round(time.monotonic() - started, 3),
+                     **diagnostics.snapshot())
+    diagnostics.arm_dump()
 
 
 def main(directory: str) -> int:
@@ -45,6 +175,7 @@ def main(directory: str) -> int:
     output.mkdir(parents=True, exist_ok=True)
     model_output = Path(tempfile.mkdtemp(prefix="paint-output-", dir=output))
     report = {"frozen": bool(getattr(sys, "frozen", False)), "executable": sys.executable}
+    diagnostics = _SmokeDiagnostics(output, report)
     window = None
     old_information = old_critical = old_save_dialog = None
     try:
@@ -54,9 +185,12 @@ def main(directory: str) -> int:
         from layerloom.paint_examples import example_document
         from layerloom.paint_io import save_paint_document, load_paint_document
         import numpy as np
+        diagnostics.mark("load_gui_modules")
         gui = _load_current_gui_module()
         qt, qtcore = gui._V58.QtWidgets, gui._V58.QtCore
+        diagnostics.mark("create_window")
         app, window = gui.create_main_window()
+        diagnostics.mark("window_created")
         controller = window._desktop_controller
         errors, notices = [], []
         window._error = lambda title, message: errors.append(f"{title}: {message}")
@@ -69,9 +203,12 @@ def main(directory: str) -> int:
         welcome_button = next((button for button in window.findChildren(qt.QPushButton, "tryExampleButton")
                                if button.isVisible()), None)
         assert welcome_button is not None, "The active workspace has no visible example action"
+        diagnostics.mark("load_cubes")
         welcome_button.click()
         app.processEvents()
         editor = window.paint_panel.editor
+        diagnostics.start_heartbeat(qtcore, window, editor)
+        diagnostics.mark("cubes_loaded")
         assert editor.document is not None and window._shared_paint_active()
         assert window.model_objects and not errors, errors
         # Sample the rendered sidebar background, since a native light palette
@@ -96,12 +233,23 @@ def main(directory: str) -> int:
         image = editor.plotter.screenshot(str(output / "example-render.png"))
         assert image is not None and image.std() > 5, "Paint example render is blank"
         assert window.grab().save(str(output / "example-window.png"))
+        diagnostics.mark("cubes_rendered")
+        report["renderer"] = {"qt_platform": app.platformName(),
+                              "device_pixel_ratio": float(editor.plotter.devicePixelRatioF())}
+        try:
+            render_window = editor.plotter.GetRenderWindow()
+            report["renderer"].update(class_name=render_window.GetClassName(),
+                                      size=list(render_window.GetSize()),
+                                      capabilities=render_window.ReportCapabilities())
+        except Exception as exc:
+            report["renderer"]["details_unavailable"] = f"{type(exc).__name__}: {exc}"
 
         assert editor.document.metadata["paint_export_layer_height_mm"] == 0.16
         tutorial_output = model_output / "tutorial_cubes_geometry.3mf"
+        diagnostics.mark("tutorial_export:start")
         assert editor.start_export(tutorial_output, mode="woven", layer_height=.16,
                                    pitch=.5, palette_name="Normal")
-        _wait_for_export(editor, qtcore)
+        _wait_for_export(editor, qtcore, diagnostics=diagnostics, label="tutorial_export")
         assert not errors and tutorial_output.is_file(), errors
         assert editor.last_export_report["layer_height_mm"] == .16
         report["tutorial_export"] = editor.last_export_report
@@ -110,7 +258,9 @@ def main(directory: str) -> int:
         # bundled paint IO as well as the main-window export worker.
         source = model_output / "painted cube.llpaint"
         save_paint_document(example_document("cube", 4), source)
+        diagnostics.mark("open_editable_cube")
         assert window.open_paint_path(source)
+        diagnostics.mark("editable_cube_opened")
         # Exercise real pointer event handling in the packaged editor. QtTest is
         # deliberately excluded from desktop builds; Qt's native event API is
         # sufficient to drive the same surface selection path.
@@ -134,6 +284,7 @@ def main(directory: str) -> int:
             qt.QApplication.sendEvent(editor.plotter, event)
         app.processEvents()
         assert editor.apply_selection_button.isEnabled(), "Surface selection failed"
+        diagnostics.mark("apply_surface_paint")
         editor.apply_selection_button.click()
         changed = editor.document.meshes[0].face_rgba.copy()
         count = int(np.count_nonzero(np.any(changed != original, axis=1)))
@@ -146,6 +297,7 @@ def main(directory: str) -> int:
         app.processEvents()
         assert window.grab().save(str(output / "edited-paint-window.png"))
 
+        diagnostics.mark("paint_undo_redo_verified")
         saved_project = model_output / "edited paint café.llpaint"
         old_save_dialog = qt.QFileDialog.getSaveFileName
         qt.QFileDialog.getSaveFileName = lambda *a, **k: (str(saved_project), "")
@@ -158,12 +310,15 @@ def main(directory: str) -> int:
         saved = load_paint_document(saved_project)
         np.testing.assert_array_equal(saved.meshes[0].face_rgba, changed)
         np.testing.assert_array_equal(saved.meshes[0].source_rgba, original_source)
+        diagnostics.mark("reopen_saved_paint")
         assert window.open_paint_path(saved_project)
+        diagnostics.mark("saved_paint_reopened")
         np.testing.assert_array_equal(editor.document.meshes[0].face_rgba, changed)
         report["paint_editing"] = {"selected_faces_changed": count, "undo_redo": True,
                                   "saved_project_reopened": True,
                                   "imported_colors_preserved_for_erase": True}
         document = editor.document
+        diagnostics.mark("switch_to_arrange")
         window._set_paint_mode(False)
         app.processEvents()
         assert window._shared_paint_active() and editor.document is document
@@ -171,8 +326,9 @@ def main(directory: str) -> int:
         window.viewer.plotter.screenshot(str(output / "arrange-render.png"))
         assert window.grab().save(str(output / "arrange-window.png"))
         target = model_output / "painted_cube_geometry.3mf"
+        diagnostics.mark("painted_export:start")
         assert editor.start_export(target, mode="woven", layer_height=.16, pitch=.5, palette_name="Normal")
-        _wait_for_export(editor, qtcore)
+        _wait_for_export(editor, qtcore, diagnostics=diagnostics, label="painted_export")
         assert not errors, errors
         assert editor.last_export_report is not None, "Paint export returned no success report"
         assert target.is_file() and target.stat().st_size > 0, "No printable geometry was written"
@@ -186,15 +342,43 @@ def main(directory: str) -> int:
         assert not editor.export_cancel_button.isVisible()
         assert window.grab().save(str(output / "export-window.png"))
         exported_report = editor.last_export_report
+        diagnostics.mark("reopen_export")
         assert window.open_paint_path(target), "The exported 3MF could not be reopened"
         app.processEvents()
         assert editor.document.meshes and not errors, errors
         assert window.grab().save(str(output / "reopened-export-window.png"))
-        report.update(status="passed", output=str(target), objects=len(window.model_objects),
+        diagnostics.mark("export_reopened")
+        reopened_objects = len(window.model_objects)
+        # The real multipart tutorial carries PAT tags in 3MF object names,
+        # while slicer metadata supplies different friendly display names.
+        # Check the exact packaged asset, not another synthetic cube.
+        from layerloom.example_assets import find_example_file
+        benchy_source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
+        benchy_hash = hashlib.sha256(benchy_source.read_bytes()).hexdigest()
+        diagnostics.mark("load_benchy")
+        assert controller.try_benchy_example(), errors
+        app.processEvents()
+        benchy = editor.document
+        recipes = sorted({entry["token"] for entry in editor._mapping.values()})
+        assert len(benchy.meshes) == 8 and sum(len(mesh.faces) for mesh in benchy.meshes) == 253176
+        assert len(editor._mapping) == 4 and recipes == ["cm", "cmy", "cy", "my"], recipes
+        assert set("".join(recipes)) == {"c", "m", "y"}
+        assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+        assert not errors, errors
+        image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))
+        assert image is not None and image.std() > 5, "Benchy example render is blank"
+        assert window.grab().save(str(output / "benchy-example-window.png"))
+        diagnostics.mark("benchy_rendered_and_recipes_verified")
+        report["benchy_example"] = {"parts": 8, "faces": 253176, "paint_colors": 4,
+                                   "recipes": recipes, "filaments": ["c", "m", "y"],
+                                   "source_sha256": benchy_hash, "source_unchanged": True}
+        report.update(status="passed", output=str(target), objects=reopened_objects,
                       notices=notices, paint_export=exported_report, exported_3mf_reopened=True)
+        diagnostics.mark("assertions_passed")
         return 0
     except Exception:
         report.update(status="failed", traceback=traceback.format_exc())
+        diagnostics.mark("failed", **diagnostics.snapshot())
         return 1
     finally:
         (output / "gui-smoke.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
@@ -203,6 +387,12 @@ def main(directory: str) -> int:
         if old_information is not None:
             qt.QMessageBox.information = old_information
             qt.QMessageBox.critical = old_critical
-        if window is not None and window.paint_panel.editor._export_thread is None:
-            window.paint_panel.editor.dirty = False
-            window.close()
+        try:
+            if window is not None and window.paint_panel.editor._export_thread is None:
+                diagnostics.mark("close_window")
+                window.paint_panel.editor.dirty = False
+                window.close()
+                diagnostics.mark("window_closed")
+        finally:
+            diagnostics.finish()
+            (output / "gui-smoke.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

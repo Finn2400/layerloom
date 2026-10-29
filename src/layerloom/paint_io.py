@@ -295,6 +295,7 @@ def _load_3mf(path: Path) -> PaintDocument:
     warnings: list[str] = []
     meshes = []
     statistics = {"paint_annotations": 0, "paint_split_annotations": 0}
+    source_object_names: dict[str, str] = {}
     with zipfile.ZipFile(path) as z:
         palette, settings = _vendor_settings(z)
         root_member = "3D/3dmodel.model"
@@ -448,7 +449,11 @@ def _load_3mf(path: Path) -> PaintDocument:
             if np.linalg.det(world[:3, :3]) < 0:
                 f = f[:, ::-1]
             name = config.get("name") or obj.get("name") or f"Object {oid}"
-            meshes.append(PaintMesh(f"mesh-{len(meshes):06d}", name, v, f, np.asarray(colors, dtype=np.uint8)))
+            key = f"mesh-{len(meshes):06d}"
+            # Vendor display names can hide LayerLoom's original recipe tags.
+            # Preserve provenance without changing imported names or colors.
+            source_object_names[key] = obj.get("name", "")
+            meshes.append(PaintMesh(key, name, v, f, np.asarray(colors, dtype=np.uint8)))
 
         root, resources, unit = model(root_member)
         build = root.find("c:build", NS)
@@ -460,7 +465,8 @@ def _load_3mf(path: Path) -> PaintDocument:
             target = item.get(f"{{{PROD}}}path") or item.get("path")
             member = _package_member(root_member, target) if target else root_member
             visit(member, item.get("objectid"), _transform(item.get("transform"), unit), {}, ())
-    doc = PaintDocument(meshes, str(path.resolve()), {"format": "3mf", "units": "millimeter", "warnings": warnings, **statistics})
+    doc = PaintDocument(meshes, str(path.resolve()), {"format": "3mf", "units": "millimeter", "warnings": warnings,
+                                                     "3mf_source_object_names": source_object_names, **statistics})
     doc.validate()
     return doc
 

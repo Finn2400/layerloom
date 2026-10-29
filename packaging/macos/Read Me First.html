@@ -12,7 +12,7 @@ img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:.9em}a{color:#1
 </head>
 <body>
 <h1>Start LayerLoom</h1>
-<p><strong>Version 0.6.4a2 — Paint test candidate</strong></p>
+<p><strong>Version 0.6.4a3 — Paint test candidate</strong></p>
 <p>This disk image contains the Mac app and its required libraries. You do not need to install Python, Git, Node, or Homebrew.</p>
 <div class="note"><strong>Draft build for testing.</strong> This release is unpublished and available only to maintainers with repository write access. Automated checks do not replace the required downloaded-app and first-time-user checks. Public users can use the source launchers until a desktop release is published.</div>
 <h2>1. Check your Mac</h2>
@@ -43,7 +43,9 @@ img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:.9em}a{color:#1
 <li>Try <strong>Undo</strong> and <strong>Redo</strong>. Choose <strong>Save paint…</strong> and save a <code>.llpaint</code> project in Documents. Use <strong>Open…</strong> to reopen it and check your edit.</li>
 <li>Export a separate <code>.3mf</code> for printing. The project retains editable paint; the printable output converts those colors into separate physical filament geometry.</li>
 </ol>
-<p>Start with the cubes. <strong>Help → Load the Benchy example</strong> opens the larger model, which selects a 4,096 MiB estimated export budget. Cubes and ordinary models use 2,048 MiB. The export summary shows the budget; it is not a hard limit on total memory, and larger models take longer.</p>
+<p>Use <strong>Help → Copy diagnostics</strong> to confirm version <strong>0.6.4a3</strong> when following this guide. Earlier candidates can show the bundled Benchy without its intended CMY colors.</p>
+<p>Start with the cubes. <strong>Help → Load the Benchy example</strong> opens the larger eight-part model. It should show several colors and four CMY recipes in Color mapping. It selects a 4,096 MiB estimated export budget. Cubes and ordinary models use 2,048 MiB. The export summary shows the budget; it is not a hard limit on total memory, and larger models take longer.</p>
+<p>For a larger model, <strong>Advanced export settings → Sampling budget</strong> limits work in millions of cells; <strong>Export memory budget</strong> is an additional-memory estimate in MiB. Consider coarser XY sampling first if either limit is exceeded. Increase only the relevant limit when the computer has capacity; a higher budget does not guarantee speed or success.</p>
 <p>After first-open approval, the example works offline. Outputs stay in the folder you choose. To update, quit LayerLoom and replace the app; keep your models outside the app.</p>
 <h2>If something goes wrong</h2>
 <p>Use <strong>Help → Copy diagnostics</strong> and <strong>Help → Open logs</strong>. If the app cannot start, its error dialog gives details and a log location. Include the exact message, Mac model, macOS version, and the step that failed when reporting the issue.</p>

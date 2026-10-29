@@ -410,3 +410,22 @@ def test_placed_vertex_collision_is_corrected_without_dropping_a_material_compon
     assert correction["topology_and_face_count_preserved"]
     assert correction["maximum_vertex_displacement_mm"] <= correction["displacement_limit_mm"]
     assert mesh.is_volume
+
+
+@pytest.mark.parametrize("left_edge,right_edge", [(2.1, 1.9), (1.9, 2.1)],
+                         ids=["real-material-overlap", "real-interior-gap"])
+def test_partition_audit_rejects_genuinely_invalid_grid(left_edge, right_edge, monkeypatch):
+    import shapely
+    from layerloom.paint_export import _partition_layer
+
+    domain = shapely.box(0, 0, 4, 4)
+    # Fault injection: material cells overlap by 0.2 mm, or leave an interior
+    # 0.2 mm gap. Neither defect may be hidden by the coordinate audit.
+    invalid_cells = np.asarray([shapely.box(0, 0, left_edge, 4),
+                                shapely.box(right_edge, 0, 4, 4)], dtype=object)
+    monkeypatch.setattr(shapely, "box", lambda *_args, **_kwargs: invalid_cells)
+    with pytest.raises(ValueError, match="Layer 0 has gaps/overlap"):
+        _partition_layer(None, np.asarray(["c", "m"], dtype=object), domain,
+                         z=.08, layer_index=0, pitch=2, origin=np.zeros(2),
+                         precision=.001, interface_offset=0,
+                         nearest_query=lambda points: (points[:, 0] >= 2).astype(int))

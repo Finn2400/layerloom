@@ -66,9 +66,18 @@ The main export summary shows the active estimated memory budget: **2,048 MiB**
 for cubes and ordinary imports, or **4,096 MiB** for the bundled Benchy. Advanced
 export settings let you change that budget, the sampling budget and geometry
 precision. The first export also compiles the geometry search code; compilation
-may take time before regular progress updates begin. Increase a budget only when the computer has enough
-capacity; a higher budget does not make conversion faster. Open models must be
-closed solids before printable conversion.
+may take time before regular progress updates begin. Increase a budget only
+when the computer has enough capacity; a higher budget does not make conversion
+faster. Open models must be closed solids before printable conversion.
+
+For a larger model, expand **Advanced export settings**. **Sampling budget**
+is the allowed sampling work, in millions of cells; **Export memory budget**
+is an estimate of additional memory, in MiB. They are separate limits. If the
+estimate exceeds either limit, first consider a coarser **XY sampling size**,
+which reduces work but can lose detail. Raise only the relevant budget when the
+computer has capacity and you can allow more processing time; leave memory for
+the model, LayerLoom and other apps. A higher limit does not guarantee success
+or speed. Keep the editable project and inspect the exported details in a slicer.
 
 Paint extends through the full volume from its nearest surface. There is no
 shell-depth control. The export samples the exterior at layer midpoints, so it
@@ -92,9 +101,13 @@ preview, walls, thin features, and filament assignments before printing.
 ## Try the Benchy or your own model
 
 Use **Help → Load the Benchy example** for the larger bundled model. Follow the
-same Paint, save, and export workflow. Its example settings include the larger
-memory budget described above. Larger models or fine sampling may need
-more memory and time. The [Paint workflow and known limits](../src/layerloom/PAINT_PROTOTYPE.md)
+same Paint, save, and export workflow. In **0.6.4a3**, its eight parts should
+appear in several colors; Color mapping should contain four woven recipes
+using cyan, magenta and yellow. An entirely gray Benchy or a black/white-only
+mapping is not the intended example. Check **Help → Copy diagnostics** and
+use the matching 0.6.4a3 candidate if an older build is open. Its example
+settings include the larger memory budget described above. Larger models or fine
+sampling may need more memory and time. The [Paint workflow and known limits](../src/layerloom/PAINT_PROTOTYPE.md)
 provide more detail about supported imports and conversion.
 
 If LayerLoom does not open, follow the [installation troubleshooting table](install.md#troubleshooting).

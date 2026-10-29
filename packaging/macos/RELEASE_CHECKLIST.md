@@ -48,6 +48,7 @@ does not establish the first-download experience.
 - [ ] All four standard hosted OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
 - [ ] This exact ARM artifact also passes `validate_macos.py --gui` on macOS 14, using the optional hosted job before retirement or a local Mac afterward. Record its checksum and report; this remains required for publication.
 - [ ] All hosted jobs and the required macOS 14 acceptance run render the actual Paint GUI and export the packaged cubes at 0.16 mm. They must select and paint a surface, undo and redo the edit, save and reopen an editable project, and switch between Paint and Arrange. Their real asynchronous export worker must complete the painted-cube geometry proof at 0.16 mm, including the bundled Numba/LLVM search, then reopen its exported 3MF. Inspect example, edited-paint, Arrange, export, and reopened-output screenshots; a process exit alone is insufficient.
+- [ ] Inspect frozen GUI stage timings, heartbeat/progress logs and any near-deadline traceback. A valid output file alone does not pass the test: worker completion, editing, saved-project reopening and exported-model reopening must all succeed.
 - [ ] Native Paint, Arrange, and desktop integration tests pass on Linux and Windows, including mode switching, shared placement, cancellation, and export controls.
 
 ## Required manual checks on the downloaded DMGs
@@ -59,8 +60,11 @@ does not establish the first-download experience.
 - [ ] Reopen while offline, move the app to another folder containing spaces/non-ASCII characters, and repeat the example.
 - [ ] Replace an older app with this build, verify the new version starts, and record any renewed approval prompt. Do not delete user output or application logs.
 - [ ] Review `THIRD_PARTY_NOTICES`, the GPL/LGPL terms of the bundled PyQt/Qt components and availability of required corresponding sources for the exact versions. Include or link corresponding source downloads alongside the draft; do not assume the LayerLoom MIT license replaces dependency obligations.
-- [ ] Verify draft assets include both DMGs, their SHA-256 files, source archive, wheel, architecture-specific notices/build-info files, and first-run HTML plus SVG. Confirm the tag equals the app version and all artifacts correspond to the recorded commit.
+- [ ] Match the version shown in Help → Copy diagnostics to the DMG/source archive and instructions. In the private preview release body, link the source guide to the recorded commit, not the default branch. A new candidate needs newly built source distributions and both DMGs.
+- [ ] Verify draft assets include both DMGs, their SHA-256 files, source archive, wheel, architecture-specific notices/build-info files, first-run HTML plus SVG, and `VALIDATION.txt` with results for that exact candidate. Confirm the tag equals the app version and all artifacts correspond to the recorded commit.
 - [ ] Before publication, update draft-status notices in README, install/first-open docs, release notes and DMG HTML; add the actual validated public download link. Rebuild the DMGs if their bundled instructions change.
+
+Private complex-model input files and screenshots stay outside public release assets; the validation record may summarize appropriate aggregate measurements.
 
 Only after these gates pass may a maintainer publish the draft and switch the README's default Mac installation path to the validated release. Managed Macs that prohibit local approval are unsupported by ad-hoc signing; do not claim universal compatibility.
 

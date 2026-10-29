@@ -71,9 +71,10 @@ editable `.llpaint` project, then reopen it with **Open…**. Export a separate
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
 for selection tools, the larger Benchy example, and export limits.
 
-These Paint instructions apply to the **0.6.4a2 candidate**; the older 0.6.3
+These Paint instructions apply to the **0.6.4a3 candidate**; the older 0.6.3
 Mac draft does not include this workspace. Use **Help → Copy diagnostics** to
-check the version being tested.
+check the version being tested. Use a DMG labeled **0.6.4a3** for this guide;
+the previous 0.6.4a2 candidate can show the bundled Benchy in gray.
 
 Python and the required libraries are inside the app. Once first-open approval
 is complete, you can run the example offline. Outputs go to the folder you

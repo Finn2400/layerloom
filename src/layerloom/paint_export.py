@@ -382,7 +382,10 @@ def _partition_layer(surface: trimesh.Trimesh, face_recipes: np.ndarray,
             regularized[token] = region
             remaining = _polygonal(shapely.difference(remaining, region, grid_size=precision), precision)
         regions = regularized
-    united = shapely.union_all(list(regions.values()), grid_size=precision)
+    # Measure the exact region coordinates that will be extruded. Another
+    # grid-snapped union can change their outline and invent (or hide) overlap.
+    # Dropping the precision model leaves every coordinate unchanged.
+    united = shapely.union_all([shapely.set_precision(region, 0) for region in regions.values()])
     # Grid intersections round the outline by at most the declared precision.
     # Measure that movement without snapping it away, and separately reject any
     # gap away from the outside boundary (including hole boundaries).

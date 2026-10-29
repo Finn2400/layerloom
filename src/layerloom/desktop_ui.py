@@ -171,6 +171,7 @@ class DesktopController(QtCore.QObject):
         __PAT_*__ names. This initialization is restricted to those examples;
         ordinary model imports keep their own imported colors.
         """
+        from collections import Counter
         from .paint_export import assign_palette
         from .paint_export_control import DEFAULT_MEMORY_BUDGET_BYTES
         from .palette_assignment import load_palette_entries
@@ -178,10 +179,14 @@ class DesktopController(QtCore.QObject):
         editor = self.paint_editor
         document = editor.document
         entries = {entry["token"]: entry for entry in load_palette_entries("Normal")}
+        # The palette deduplicates equal filament counts (e.g. cym -> cmy).
+        equivalent = {tuple(sorted(Counter(token).items())): entry for token, entry in entries.items()}
+        source_names = document.metadata.get("3mf_source_object_names", {})
         preferences = {}
         for mesh in document.meshes:
-            match = PAT_TAG_RE.search(mesh.name)
-            entry = entries.get(match.group(1).lower()) if match else None
+            match = PAT_TAG_RE.search(source_names.get(mesh.key) or mesh.name)
+            token = match.group(1).lower() if match else ""
+            entry = entries.get(token) or equivalent.get(tuple(sorted(Counter(token).items())))
             if entry is None:
                 continue
             rgba = list(bytes.fromhex(entry["hex"].lstrip("#"))) + [255]

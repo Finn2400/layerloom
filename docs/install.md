@@ -55,9 +55,12 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-The Paint candidate is version **0.6.4a2**; the older **0.6.3** Mac draft does
+The Paint candidate is version **0.6.4a3**; the older **0.6.3** Mac draft does
 not include Paint. Check **Help → Copy diagnostics** when reporting which build
-you tested. An unpublished draft is not a public download link.
+you tested. Use a DMG or source archive labeled **0.6.4a3** for this preview;
+the earlier 0.6.4a2 candidate can load the Benchy without its intended CMY colors.
+Keep the preview instructions and build version together. An unpublished draft
+is not a public download link.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
@@ -187,7 +190,8 @@ project's DMG instead of installing packages inside it.
 | Setup needs a download while offline | Reconnect and reopen it. First setup, repair, a moved source folder, or changed runtime files needs a fresh environment. |
 | A Qt platform plugin, OpenGL, or native library could not load | Save the error and setup log. On Linux, check the graphics prerequisites above. For source installs, try repair; for a Mac app, try a fresh matching DMG. |
 | `Example unavailable` or `bundled worker is missing` | Source: extract a complete new ZIP. Mac app: replace the whole app from a fresh DMG. Keep your saved models. |
-| Export says its estimated memory budget is exceeded | Check the budget shown in the export summary. The supplied Benchy uses 4,096 MiB; cubes and ordinary imports use 2,048 MiB. Choose coarser XY sampling or increase the budget in Advanced export settings only if the Mac has memory to spare. |
+| Export exceeds the sampling limit | Open **Advanced export settings → Sampling budget**. This limits work in millions of cells, independently of memory. Consider coarser XY sampling first; raise the limit only for work you intend to run. |
+| Export says its estimated memory budget is exceeded | Check **Advanced export settings → Export memory budget** and the displayed estimate. The supplied Benchy uses 4,096 MiB; cubes and ordinary imports use 2,048 MiB. Consider coarser XY sampling first, and leave memory for the model, app and other programs if increasing the budget. |
 | Export completes but you cannot find the model | The completion message shows the full `.3mf` path you chose. `.llpaint` files are editable projects; open the exported `.3mf` in your slicer. |
 | `layerloom-gui` or another command is not found | Beginner launchers do not add commands to your PATH. Reopen the launcher, or use the developer instructions below. |
 
