@@ -20,6 +20,7 @@ def validate(distributions: Path) -> None:
         "layerloom/paint_workspace.py", "layerloom/paint_workspace_model.py",
         "layerloom/paint_selection.py", "layerloom/paint_model.py", "layerloom/paint_repair.py",
         "layerloom/paint_sub_layer.py", "layerloom/paint_examples.py",
+        "layerloom/assets/benchy_ascii_with_text.txt",
         "layerloom/examples/tutorial_cmy_cubes.3mf",
         "layerloom/examples/tutorial_cmy_benchy_cutup.3mf",
         "layerloom/palettes/normal_palette.json", "layerloom/palettes/simple_palette.json",
@@ -38,6 +39,7 @@ def validate(distributions: Path) -> None:
         "scripts/chimerax_prepare_layerloom.py", "scripts/chimerax_make_1e27_pmhc_presentation.py",
         "scripts/installed_paint_smoke.py", "scripts/validate_distributions.py",
         "scripts/bootstrap.py", "scripts/build_macos.py", "scripts/validate_macos.py",
+        "scripts/macos_validation_matrix.py",
         "packaging/macos/bundle_config.py", "packaging/macos/smoke_gui.py",
     }
     for directory in ("tests", "src/layerloom/paint_tests"):

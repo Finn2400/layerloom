@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Build a self-contained, ad-hoc signed Mac app and DMG using free tools.
 
-Run in the locked desktop environment on the oldest supported OS for the native
-architecture. Cross compilation and universal binaries are deliberately refused.
+Run in the locked desktop environment for the native architecture, selecting
+wheels for its declared minimum macOS version. A newer build host still requires
+native-binary checks and acceptance tests on the minimum supported OS. Cross
+compilation and universal binaries are deliberately refused.
 """
 from __future__ import annotations
 
@@ -168,6 +170,7 @@ def main(argv=None):
     # This summary is an auditable identity, not a claim that manual QA passed.
     build_info = {
         "version": version, "architecture": arch, "minimum_macos": MINIMUM[arch],
+        "build_macos": platform.mac_ver()[0],
         "python": expected_python, "pyinstaller": importlib.metadata.version("pyinstaller"),
         "lock_sha256": hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
         "signing": "ad-hoc", "notarized": False,

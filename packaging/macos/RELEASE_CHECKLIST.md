@@ -2,8 +2,20 @@
 
 Build with the **Mac desktop** manual or pull-request GitHub Actions workflow.
 Only public-repository standard runners are used, to keep the workflow free.
-Apple Silicon is built on macOS 14; Intel is built on macOS 15. The very same
-applications are then tested on macOS 14/15/26 (arm64) and 15/26 (Intel).
+Both architectures build on macOS 15. Apple Silicon dependency selection and
+native binaries target macOS 14; Intel targets macOS 15. The same applications
+are tested on macOS 15/26 for both architectures. The manual workflow's
+`validate_macos14` input adds a hosted macOS 14 ARM job while that runner remains
+available; it defaults to false because GitHub retires it on November 2, 2026.
+The workflow summary explicitly records when macOS 14 runtime testing is absent.
+
+**macOS 14 support still requires a passing test of the exact ARM artifact on
+macOS 14.** After runner retirement, perform this gate on a local macOS 14 Mac.
+Record the artifact SHA-256, OS version, verifier report and GUI first-run result.
+A newer build host, compatible wheel tags and static native-library checks alone
+do not establish backward compatibility. Do not mark this gate passed using a
+previous build's evidence. Runner retirement does not change the app's stated
+minimum OS. See [GitHub's retirement notice](https://github.com/actions/runner-images/issues/13518).
 
 The workflow builds draft-quality artifacts. **A passing workflow does not
 verify Gatekeeper or establish novice usability.** Before enabling tagged draft
@@ -33,8 +45,9 @@ does not establish the first-download experience.
 - [ ] Source and wheel content validation passes, including Paint modules, palettes, both examples, helper scripts, source tests, and Paint documentation. The installed wheel exports a painted cube from an unrelated directory.
 - [ ] The real source launchers pass first setup, offline reopening and Unicode-path worker tests on native Windows, macOS and Linux CI.
 - [ ] Both architecture builds pass native minimum-OS, signature and relocation checks.
-- [ ] All five OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
-- [ ] All five jobs render the actual Paint GUI, load the packaged cubes, reopen an editable project, and switch between Paint and Arrange. Their real asynchronous export worker must complete the small 0.5 mm-layer geometry proof, including the bundled Numba/LLVM search. Inspect example, Arrange, and export screenshots; a process exit alone is insufficient.
+- [ ] All four standard hosted OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
+- [ ] This exact ARM artifact also passes `validate_macos.py --gui` on macOS 14, using the optional hosted job before retirement or a local Mac afterward. Record its checksum and report; this remains required for publication.
+- [ ] All hosted jobs and the required macOS 14 acceptance run render the actual Paint GUI and export the packaged cubes at 0.16 mm. They must select and paint a surface, undo and redo the edit, save and reopen an editable project, and switch between Paint and Arrange. Their real asynchronous export worker must complete the painted-cube geometry proof at 0.16 mm, including the bundled Numba/LLVM search, then reopen its exported 3MF. Inspect example, edited-paint, Arrange, export, and reopened-output screenshots; a process exit alone is insufficient.
 - [ ] Native Paint, Arrange, and desktop integration tests pass on Linux and Windows, including mode switching, shared placement, cancellation, and export controls.
 
 ## Required manual checks on the downloaded DMGs
@@ -56,7 +69,10 @@ Only after these gates pass may a maintainer publish the draft and switch the RE
 With the pinned uv installed, from a clean checkout:
 
 ```sh
-UV_PROJECT_ENVIRONMENT=.venv-desktop uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable
+# Apple Silicon: target aarch64-apple-darwin, minimum 14.0.
+# Intel: use x86_64-apple-darwin and minimum 15.0 instead.
+MACOSX_DEPLOYMENT_TARGET=14.0 UV_PROJECT_ENVIRONMENT=.venv-desktop uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-install-project --no-build --python-platform aarch64-apple-darwin
+MACOSX_DEPLOYMENT_TARGET=14.0 UV_PROJECT_ENVIRONMENT=.venv-desktop uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable --python-platform aarch64-apple-darwin
 .venv-desktop/bin/python scripts/build_macos.py
 .venv-desktop/bin/python scripts/validate_macos.py dist/macos/LayerLoom.app --gui --report dist/macos/validation
 ```

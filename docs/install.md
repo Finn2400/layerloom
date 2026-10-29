@@ -43,9 +43,21 @@ open the Mac app.
    cannot write there, copy it to a folder you own instead.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
-4. Click **Try the example → Export geometry 3MF…**. Select **Woven apparent
-   colors**, set **Layer height** to `0.16 mm`, confirm, and choose a `.3mf`
-   filename in Documents. Wait for the export completion message.
+4. Click **Try the example → Export geometry 3MF…**. The cubes select
+   **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+   confirm, and choose a `.3mf` filename in Documents. Wait for the completion
+   message, then use **Show in Finder** to locate it. The first export can take
+   longer while its geometry search code compiles.
+
+To demonstrate Paint, select a surface, choose a color, click **Apply paint**,
+and try Undo and Redo. Save an editable `.llpaint` project with **Save paint…**
+and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it contains
+filament geometry rather than editable face-paint annotations. Follow the
+[Paint tutorial](tutorial.md) for the full sequence.
+
+The Paint candidate is version **0.6.4a2**; the older **0.6.3** Mac draft does
+not include Paint. Check **Help → Copy diagnostics** when reporting which build
+you tested. An unpublished draft is not a public download link.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
@@ -175,6 +187,7 @@ project's DMG instead of installing packages inside it.
 | Setup needs a download while offline | Reconnect and reopen it. First setup, repair, a moved source folder, or changed runtime files needs a fresh environment. |
 | A Qt platform plugin, OpenGL, or native library could not load | Save the error and setup log. On Linux, check the graphics prerequisites above. For source installs, try repair; for a Mac app, try a fresh matching DMG. |
 | `Example unavailable` or `bundled worker is missing` | Source: extract a complete new ZIP. Mac app: replace the whole app from a fresh DMG. Keep your saved models. |
+| Export says its estimated memory budget is exceeded | Check the budget shown in the export summary. The supplied Benchy uses 4,096 MiB; cubes and ordinary imports use 2,048 MiB. Choose coarser XY sampling or increase the budget in Advanced export settings only if the Mac has memory to spare. |
 | Export completes but you cannot find the model | The completion message shows the full `.3mf` path you chose. `.llpaint` files are editable projects; open the exported `.3mf` in your slicer. |
 | `layerloom-gui` or another command is not found | Beginner launchers do not add commands to your PATH. Reopen the launcher, or use the developer instructions below. |
 

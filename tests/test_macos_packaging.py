@@ -20,7 +20,8 @@ from validate_macos import command, deployment_versions, write_test_glb
 
 def test_explicit_desktop_resources_are_present():
     resources = resource_files(ROOT)
-    assert len(resources) == 11
+    assert len(resources) == 12
+    assert (str(ROOT / "src/layerloom/assets/benchy_ascii_with_text.txt"), "layerloom/assets") in resources
     assert {Path(path).name for path, _ in resources if path.endswith(".py")} == set(GUI_FILES)
     assert not any("submission" in path or "manuscript" in path for path, _ in resources)
     imports = gui_hidden_imports(ROOT)
@@ -81,3 +82,29 @@ def test_timed_out_native_command_preserves_output(tmp_path):
 ])
 def test_mac_display_version_remains_numeric_for_alpha_releases(version, expected):
     assert bundle_short_version(version) == expected
+
+
+def test_validation_matrix_requires_explicit_retired_runner_opt_in():
+    from macos_validation_matrix import validation_matrix
+    normal = validation_matrix()["include"]
+    expanded = validation_matrix(include_macos14=True)["include"]
+    assert len(normal) == 4 and len(expanded) == 5
+    assert all(item["runner"] != "macos-14" for item in normal)
+    assert [item for item in expanded if item not in normal] == [
+        {"runner": "macos-14", "arch": "arm64"}
+    ]
+    for arch in ("arm64", "x86_64"):
+        assert len([item for item in normal if item["arch"] == arch]) == 2
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_validation_plan_records_missing_minimum_os_evidence(tmp_path, enabled):
+    output, summary = tmp_path / "output", tmp_path / "summary"
+    env = dict(os.environ, GITHUB_OUTPUT=str(output), GITHUB_STEP_SUMMARY=str(summary),
+               LAYERLOOM_VALIDATE_MACOS14=str(enabled).lower())
+    subprocess.run([sys.executable, str(ROOT / "scripts/macos_validation_matrix.py")],
+                   env=env, check=True)
+    matrix = json.loads(output.read_text().split("=", 1)[1])
+    assert (any(item["runner"] == "macos-14" for item in matrix["include"])) is enabled
+    assert ("NOT performed" in summary.read_text()) is not enabled
+    assert ("SHA-256" in summary.read_text()) is not enabled

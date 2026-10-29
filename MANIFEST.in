@@ -13,6 +13,7 @@ include scripts/bootstrap.ps1
 include scripts/runtime-pins.txt
 include scripts/build_macos.py
 include scripts/validate_macos.py
+include scripts/macos_validation_matrix.py
 include scripts/validate_distributions.py
 include scripts/installed_paint_smoke.py
 include scripts/chimerax*.py
@@ -27,6 +28,7 @@ include examples/*.md
 include examples/*.3mf
 recursive-include src/layerloom/examples *.3mf
 recursive-include src/layerloom/palettes *.json
+recursive-include src/layerloom/assets *.txt
 recursive-include src/supporting_scripts *.py
 prune src/layerloom/gamut_photo_analysis
 prune src/layerloom/legacy

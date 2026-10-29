@@ -53,12 +53,27 @@ attributes to make the test pass.
 ## Make your first woven model
 
 1. Click **Try the example**. Four CMY cubes appear in Paint.
-2. Click **Export geometry 3MF…**, choose **Woven apparent colors**, and set
-   **Layer height** to **0.16 mm**. Confirm the settings.
+2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
+   colors** and **0.16 mm** automatically. Check those values and confirm.
+   The first export may take longer while geometry search code compiles.
 3. Choose a `.3mf` filename in Documents and wait for the completion message.
+   Use **Show in Finder** to locate the output.
 4. Open it in your slicer, keep its parts aligned, and assign the `all_…`
    objects to the corresponding filaments. For this first example, use
    **0.16 mm for both normal and first layers**, with adaptive layers disabled.
+
+## Try painting
+
+With the cubes open, choose **Surface select**, click a surface, pick a color,
+and click **Apply paint**. Try Undo and Redo. Choose **Save paint…** to keep an
+editable `.llpaint` project, then reopen it with **Open…**. Export a separate
+`.3mf` for slicing: it contains the physical filament geometry generated from
+those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
+for selection tools, the larger Benchy example, and export limits.
+
+These Paint instructions apply to the **0.6.4a2 candidate**; the older 0.6.3
+Mac draft does not include this workspace. Use **Help → Copy diagnostics** to
+check the version being tested.
 
 Python and the required libraries are inside the app. Once first-open approval
 is complete, you can run the example offline. Outputs go to the folder you

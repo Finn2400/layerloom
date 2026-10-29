@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.6.4a2 - unreleased
+
+- Selects the tutorial layer height of 0.16 mm automatically, including after reopening a saved tutorial project.
+- Gives the larger Benchy example a 4,096 MiB estimated export budget and shows the active budget in the main export summary; ordinary models retain the 2,048 MiB default.
+- Cancels selection-flash timers when a model or window closes, and restores colors correctly after repeated selection.
+- Reports unsupported macOS Qt platforms before initializing the native 3D viewer.
+- Bundles decorative build-plate artwork so startup no longer searches the user's Downloads folder or requests access to it for that decoration.
+- Builds on maintained macOS 15 runners while retaining the ARM macOS 14 target and a required test of each release artifact on macOS 14.
+- Updates the Mac first-run and Paint demonstration instructions.
+
+This candidate remains unpublished. Each rebuilt installer needs its own download, Finder, GUI, offline and slicer acceptance evidence.
+
 ## 0.6.4a1 - unreleased
 
 - Integrates editable surface painting with the main Paint and Arrange workspace.

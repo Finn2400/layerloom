@@ -317,13 +317,10 @@ def test_headless_cli_defaults_and_validation(tmp_path, monkeypatch):
     assert cfg.first_layer_color == "auto"
 
 
-@pytest.mark.skipif(
-    os.environ.get("LAYERLOOM_RUN_HEADLESS_INTEGRATION") != "1",
-    reason="Headless weave integration is opt-in because 0.08 mm weaving can be slow.",
-)
-def test_headless_pipeline_tiny_glb_opt_in(tmp_path):
+def test_headless_pipeline_tiny_glb_without_optional_repair(tmp_path):
     pytest.importorskip("lib3mf")
-    pytest.importorskip("pymeshlab")
+    # This path explicitly skips optional repair and must also work with the
+    # managed GUI/bundled dependency set, which intentionally omits PyMeshLab.
     from layerloom.headless import HeadlessConfig, run_headless
 
     glb = tmp_path / "tiny.glb"

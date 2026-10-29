@@ -117,6 +117,70 @@ def test_example_preserves_source_and_initializes_shared_paint_recipes(desktop, 
     window._set_viewer_hint(None)
 
 
+def test_example_export_uses_tutorial_height_after_project_reopen_without_affecting_other_models(
+        desktop, monkeypatch, tmp_path):
+    window, controller, errors, _ = desktop
+    editor = window.paint_panel.editor
+    observed = []
+    exports = []
+
+    def accept_export(dialog):
+        height = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportLayerHeight")
+        observed.append(height.value())
+        return QtWidgets.QDialog.Accepted
+
+    monkeypatch.setattr(QtWidgets.QDialog, "exec_", accept_export)
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName",
+                        lambda *args: (str(tmp_path / "tutorial.3mf"), ""))
+    monkeypatch.setattr(editor, "start_export", lambda output, **settings: exports.append(settings))
+    assert controller.try_example()
+    window._on_weave()
+    project = tmp_path / "saved tutorial.llpaint"
+    save_paint_document(editor.document, project)
+    assert editor.open_path(project)
+    window._on_weave()
+    assert observed == [0.16, 0.16]
+    assert [settings["layer_height"] for settings in exports] == [0.16, 0.16]
+
+    # Opening an ordinary model must not inherit the previous tutorial's default.
+    assert editor.open_path(find_example_file("tutorial_cmy_cubes.3mf"))
+    window._on_weave()
+    assert observed[-1] == 0.2 and exports[-1]["layer_height"] == 0.2
+    assert not errors
+
+
+def test_benchy_export_budget_is_visible_and_does_not_leak_to_other_models(desktop, monkeypatch, tmp_path):
+    window, controller, errors, _ = desktop
+    editor = window.paint_panel.editor
+    source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
+    original = hashlib.sha256(source.read_bytes()).hexdigest()
+    observed = []
+
+    def inspect_export(dialog):
+        memory = dialog.findChild(QtWidgets.QSpinBox, "geometryExportMemoryBudget")
+        summary = dialog.findChild(QtWidgets.QLabel, "geometryExportEstimate")
+        assert f"Export memory budget: {memory.value():,} MiB" in summary.text()
+        observed.append(memory.value())
+        return QtWidgets.QDialog.Rejected
+
+    monkeypatch.setattr(QtWidgets.QDialog, "exec_", inspect_export)
+    assert controller.try_benchy_example()
+    assert "larger example" in window.status_bar.currentMessage()
+    assert "4,096 MiB" in window.status_bar.currentMessage()
+    window._on_weave()
+    project = tmp_path / "saved benchy.llpaint"
+    save_paint_document(editor.document, project)
+    assert editor.open_path(project)
+    window._on_weave()
+    assert controller.try_example()
+    window._on_weave()
+    assert editor.open_path(find_example_file("tutorial_cmy_cubes.3mf"))
+    window._on_weave()
+    assert observed == [4096, 4096, 2048, 2048]
+    assert hashlib.sha256(source.read_bytes()).hexdigest() == original
+    assert not errors
+
+
 def test_repeating_example_replaces_private_copy_without_modifying_source(desktop, application):
     window, controller, errors, _ = desktop
     assert controller.try_example()

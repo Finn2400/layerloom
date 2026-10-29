@@ -44,6 +44,7 @@ def resource_files(root: Path) -> list[tuple[str, str]]:
     result = [(str(package / name), "layerloom") for name in GUI_FILES]
     result += [(str(package / "examples" / name), "layerloom/examples") for name in EXAMPLES]
     result += [(str(package / "palettes" / name), "layerloom/palettes") for name in PALETTES]
+    result.append((str(package / "assets" / "benchy_ascii_with_text.txt"), "layerloom/assets"))
     for source, _ in result:
         if not Path(source).is_file():
             raise FileNotFoundError(f"Required desktop resource is missing: {source}")

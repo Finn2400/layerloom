@@ -1117,7 +1117,13 @@ class PaintWindow(QtWidgets.QMainWindow):
         layer.setDecimals(3)
         layer.setRange(0.04, 2.0)
         layer.setSingleStep(0.04)
-        layer.setValue(0.2)
+        # Tutorial defaults belong to the document, so reopening its editable
+        # project retains the correct height without affecting another model.
+        preferred_height = self.document.metadata.get("paint_export_layer_height_mm", 0.2)
+        if (isinstance(preferred_height, bool) or not isinstance(preferred_height, (int, float))
+                or not 0.04 <= preferred_height <= 2.0):
+            preferred_height = 0.2
+        layer.setValue(preferred_height)
         layer.setSuffix(" mm")
         pitch = QtWidgets.QDoubleSpinBox()
         pitch.setObjectName("geometryExportPitch")
@@ -1130,7 +1136,12 @@ class PaintWindow(QtWidgets.QMainWindow):
         memory.setObjectName("geometryExportMemoryBudget")
         memory.setRange(64, 65536)
         memory.setSingleStep(256)
-        memory.setValue(DEFAULT_MEMORY_BUDGET_BYTES // (1024 ** 2))
+        default_budget = DEFAULT_MEMORY_BUDGET_BYTES // (1024 ** 2)
+        preferred_budget = self.document.metadata.get("paint_export_memory_budget_mib", default_budget)
+        if (isinstance(preferred_budget, bool) or not isinstance(preferred_budget, int)
+                or not 64 <= preferred_budget <= 65536):
+            preferred_budget = default_budget
+        memory.setValue(preferred_budget)
         memory.setSuffix(" MiB")
         memory.setToolTip("Budget for estimated additional export memory. Leave room for the model, application and other programs.")
         layout.addRow("Color mode", mode)
@@ -1189,18 +1200,19 @@ class PaintWindow(QtWidgets.QMainWindow):
         layout.addRow(buttons)
 
         def update_estimate():
+            budget_summary = f"Export memory budget: {memory.value():,} MiB. "
             try:
                 estimate = estimate_export_resources(self.document, layer_height=layer.value(), pitch=pitch.value(),
                                                      max_cells=round(cells.value() * 1_000_000))
                 estimate.check_budget(memory.value() * 1024 ** 2)
                 estimate_label.setText(
-                    f"Estimated additional memory: {estimate.estimated_peak_bytes / 1024 ** 2:,.0f} MiB. "
+                    budget_summary + f"Estimated additional memory: {estimate.estimated_peak_bytes / 1024 ** 2:,.0f} MiB. "
                     f"{estimate.layers:,} layers; approximately {estimate.estimated_cells:,} sampling cells. "
                     "This is a planning estimate, not a hard limit on total application memory."
                 )
                 buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
             except (ValueError, OverflowError) as exc:
-                estimate_label.setText(str(exc))
+                estimate_label.setText(budget_summary + str(exc))
                 buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
         for control in (layer, pitch, memory, cells):

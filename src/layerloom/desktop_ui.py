@@ -145,7 +145,7 @@ class DesktopController(QtCore.QObject):
             if not self.window.open_paint_path(str(local)):
                 directory.cleanup()
                 return False
-            self._initialize_example_paint()
+            self._initialize_example_paint(filename)
         except Exception as exc:
             directory.cleanup()
             logging.getLogger("layerloom.example").exception("Example could not load")
@@ -156,10 +156,15 @@ class DesktopController(QtCore.QObject):
         if previous:
             previous.cleanup()
         self.result_dock.hide()
-        self.window.status_bar.showMessage("Example ready. Paint a surface or choose Export geometry 3MF… to create printable material parts.")
+        if filename == "tutorial_cmy_benchy_cutup.3mf":
+            message = ("Benchy ready — larger example. Export uses 0.16 mm layers and a "
+                       "4,096 MiB memory budget. Allow extra time for conversion.")
+        else:
+            message = "Example ready. Paint a surface or choose Export geometry 3MF… to create printable material parts."
+        self.window.status_bar.showMessage(message)
         return True
 
-    def _initialize_example_paint(self):
+    def _initialize_example_paint(self, filename):
         """Translate trusted tutorial name recipes into editable source paint.
 
         The packaged examples predate surface paint and store their recipes in
@@ -167,6 +172,7 @@ class DesktopController(QtCore.QObject):
         ordinary model imports keep their own imported colors.
         """
         from .paint_export import assign_palette
+        from .paint_export_control import DEFAULT_MEMORY_BUDGET_BYTES
         from .palette_assignment import load_palette_entries
         from .tokens import PAT_TAG_RE
         editor = self.paint_editor
@@ -184,6 +190,9 @@ class DesktopController(QtCore.QObject):
             preferences[entry["hex"].upper()] = entry["token"]
         document.metadata.update({
             "paint_palette": "Normal", "paint_mapping_mode": "woven",
+            "paint_export_layer_height_mm": 0.16,
+            "paint_export_memory_budget_mib": (4096 if filename == "tutorial_cmy_benchy_cutup.3mf"
+                                                else DEFAULT_MEMORY_BUDGET_BYTES // (1024 ** 2)),
             "paint_recipe_preferences": {"Normal": preferences},
             "paint_mapping": assign_palette(document, "Normal", recipe_overrides=preferences),
         })

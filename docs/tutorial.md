@@ -49,8 +49,11 @@ model in the workspace.
 2. Choose **Woven apparent colors** for LayerLoom's layered color recipes.
    **Direct physical filament colors** uses the available single filaments;
    **Exact colors — one material each** creates a material for each paint color.
-3. For the cubes tutorial, set **Layer height** to **0.16 mm**. Leave **XY
-   sampling size** at its initial value for the first attempt.
+3. The packaged tutorials select **0.16 mm** automatically, including after
+   saving and reopening their `.llpaint` projects. Check this value and leave
+   **XY sampling size** at its initial value for the first attempt. Ordinary
+   imported models retain the general **0.2 mm** default; choose the height
+   intended for your print.
 4. Review the estimated additional memory and sampling work. Smaller sampling
    sizes retain more detail and increase time and memory use. The estimate is
    not a hard cap on total application memory.
@@ -59,8 +62,11 @@ model in the workspace.
 6. Use **Cancel export** in the footer if needed. Cancellation waits for the
    current geometry operation to finish and leaves any previous output intact.
 
-Advanced export settings expose the estimated memory budget, sampling budget,
-and geometry precision. Increase a budget only when the computer has enough
+The main export summary shows the active estimated memory budget: **2,048 MiB**
+for cubes and ordinary imports, or **4,096 MiB** for the bundled Benchy. Advanced
+export settings let you change that budget, the sampling budget and geometry
+precision. The first export also compiles the geometry search code; compilation
+may take time before regular progress updates begin. Increase a budget only when the computer has enough
 capacity; a higher budget does not make conversion faster. Open models must be
 closed solids before printable conversion.
 
@@ -86,7 +92,8 @@ preview, walls, thin features, and filament assignments before printing.
 ## Try the Benchy or your own model
 
 Use **Help → Load the Benchy example** for the larger bundled model. Follow the
-same Paint, save, and export workflow. Larger models or fine sampling may need
+same Paint, save, and export workflow. Its example settings include the larger
+memory budget described above. Larger models or fine sampling may need
 more memory and time. The [Paint workflow and known limits](../src/layerloom/PAINT_PROTOTYPE.md)
 provide more detail about supported imports and conversion.
 

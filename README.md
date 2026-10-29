@@ -10,6 +10,9 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
+This branch prepares **0.6.4a2**, an unpublished integration alpha. The older
+0.6.3 Mac installer does not include the Paint workspace described here.
+
 The current integration alpha opens the Qt GUI with **Paint** enabled. Surface
 and area selection, editable colors, and whole-model placement share one model
 between Paint and Arrange. Save `.llpaint` to keep editable paint; **Export
@@ -44,8 +47,9 @@ The first setup needs an internet connection; later launches work offline.
    - Linux x64: run `bash "Launch LayerLoom.sh"` from the extracted folder.
 3. Wait for setup to finish. The source launcher displays a terminal window;
    you normally do not need to type commands into it.
-4. Click **Try the example**, then **Export geometry 3MF…**. Choose **Woven
-   apparent colors** and set **Layer height** to `0.16 mm`. Confirm the settings,
+4. Click **Try the example**, then **Export geometry 3MF…**. **Woven apparent
+   colors** and **0.16 mm** are selected for this tutorial. Check those values
+   and confirm the settings,
    choose a `.3mf` filename in Documents, and wait for the completion message.
    Use that same layer height for first and subsequent layers in your slicer.
 
@@ -92,9 +96,19 @@ a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
   a pre-labeled cut-up 3DBenchy example using only cyan, magenta, and yellow
   tokens.
 
-These files are intentionally simple so new users can learn the open, weave,
-slice, and filament-assignment workflow before trying larger models.
-Use **Help → Load the Benchy example** for the larger CMY sample. Paint's
+For a short Paint demonstration, load the cubes, choose **Surface select**, click
+a surface, choose a color, and click **Apply paint**. Try Undo and Redo, then
+**Save paint…** to a `.llpaint` file and reopen it with **Open…**. Export the
+printable `.3mf` at the tutorial's selected **0.16 mm**. The editable project
+keeps your paint; the printable file converts it into separate filament geometry.
+The [tutorial](docs/tutorial.md) explains the slicer settings and limitations.
+
+Start with the cubes before trying larger models. The first export also compiles
+its geometry search code, so leave it running while progress advances.
+Use **Help → Load the Benchy example** for the larger CMY sample. It selects a
+4,096 MiB estimated export budget; the cubes and ordinary models use 2,048 MiB.
+The export summary shows the active budget. This is a planning estimate for
+additional work, not a limit on total app memory or a guarantee of speed. Paint's
 **Save paint…** action saves the editable project, and **Export geometry 3MF…**
 creates the file to slice. The [Paint workflow and limits](src/layerloom/PAINT_PROTOTYPE.md)
 describe selection tools, sampling detail, cancellation, and memory budgeting.

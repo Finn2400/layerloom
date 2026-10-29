@@ -1945,6 +1945,10 @@ class QtAssignColorsApp(PaintWorkspaceHostMixin, _V62.QtAssignColorsApp):
         if self._shared_paint_active():
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
 
+    def _cancel_selection_flashes(self):
+        super()._cancel_selection_flashes()
+        self._paint_flash_states.clear()
+
     def _flash_actor_by_name(self, name, oid=None):
         if not self._shared_paint_active():
             return super()._flash_actor_by_name(name, oid)
@@ -1975,7 +1979,7 @@ class QtAssignColorsApp(PaintWorkspaceHostMixin, _V62.QtAssignColorsApp):
                 actor.prop.edge_color = previous_color
                 self.viewer.plotter.render()
 
-        _V58.QtCore.QTimer.singleShot(180, restore)
+        self._schedule_selection_restore(name, 180, restore)
 
 
 def create_main_window():

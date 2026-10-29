@@ -69,7 +69,7 @@ def set_paint_mode(window, enabled):
 
 
 @pytest.mark.parametrize("edges", [False, True])
-def test_overlapping_part_flashes_restore_original_edges(main_window, main_module, monkeypatch, edges):
+def test_overlapping_part_flashes_restore_original_edges(main_window, edges):
     editor = main_window.paint_panel.editor
     editor.set_document(example_document("cube", 8))
     name = main_window.oid_to_name["1"]
@@ -77,45 +77,46 @@ def test_overlapping_part_flashes_restore_original_edges(main_window, main_modul
     actor.prop.show_edges = edges
     actor.prop.edge_color = "#135790"
     original_color = actor.prop.edge_color
-    callbacks = []
-    monkeypatch.setattr(main_module._V58.QtCore.QTimer, "singleShot",
-                        lambda delay, callback: callbacks.append(callback))
     # A new 3D pick selects its table row, then explicitly flashes the part.
     # A second pick also must not capture the temporary yellow appearance.
     main_window._handle_viewer_pick_event(name)
+    stale = main_window._flash_timers[name]
     main_window._handle_viewer_pick_event(name)
-    assert len(callbacks) >= 2
-    for callback in callbacks[:-1]:
-        callback()
-        assert actor.prop.show_edges
-    callbacks[-1]()
+    current = main_window._flash_timers[name]
+    assert current is not stale and current.parent() is main_window
+    assert not stale.isActive() and current.isActive()
+    # A queued signal from a superseded timer cannot erase the current timer's
+    # ownership or restore its temporary yellow appearance.
+    stale.timeout.emit()
+    assert main_window._flash_timers[name] is current
+    assert actor.prop.show_edges
+    QtTest.QTest.qWait(250)
     assert actor.prop.show_edges == edges
     assert actor.prop.edge_color == original_color
-    assert not main_window._paint_flash_states
+    assert not main_window._paint_flash_states and not main_window._flash_timers
 
 
-def test_stale_part_flash_timer_does_not_modify_replacement_model(main_window, main_module, monkeypatch):
+def test_stale_part_flash_timer_does_not_modify_replacement_model(main_window):
     editor = main_window.paint_panel.editor
     editor.set_document(example_document("cube", 8))
     name = main_window.oid_to_name["1"]
-    callbacks = []
-    monkeypatch.setattr(main_module._V58.QtCore.QTimer, "singleShot",
-                        lambda delay, callback: callbacks.append(callback))
     main_window._flash_actor_by_name(name)
-    stale = callbacks[-1]
+    stale = main_window._flash_timers[name]
     editor.set_document(example_document("sphere", 8))
     replacement = main_window.viewer.actors_by_name[name]
     replacement.prop.show_edges = False
     replacement.prop.edge_color = "#135790"
     original_color = replacement.prop.edge_color
     main_window._flash_actor_by_name(name)
-    current = callbacks[-1]
-    stale()
+    current = main_window._flash_timers[name]
+    assert current is not stale and not stale.isActive()
+    stale.timeout.emit()
+    assert main_window._flash_timers[name] is current
     assert replacement.prop.show_edges
-    current()
+    QtTest.QTest.qWait(250)
     assert not replacement.prop.show_edges
     assert replacement.prop.edge_color == original_color
-    assert not main_window._paint_flash_states
+    assert not main_window._paint_flash_states and not main_window._flash_timers
 
 
 def test_imported_part_id_markers_cannot_select_or_paint_another_part(main_window):
