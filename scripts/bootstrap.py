@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
 import time
@@ -28,9 +29,24 @@ class SetupError(RuntimeError):
 def read_pins(source: Path) -> dict[str, str]:
     rows = [line.split() for line in (source / "scripts/runtime-pins.txt").read_text(encoding="utf-8").splitlines()]
     pins = {row[0]: row[1] for row in rows if len(row) == 2 and not row[0].startswith("#")}
+    if any(not re.fullmatch(r"\d+\.\d+\.\d+", pins.get(name, "")) for name in ("python", "uv")):
+        raise SetupError("The runtime manifest is incomplete or invalid. Download and extract a fresh LayerLoom ZIP.")
     if pins.get("python") != (source / ".python-version").read_text(encoding="utf-8").strip():
         raise SetupError("The downloaded runtime files disagree. Download a fresh LayerLoom release.")
     return pins
+
+
+def validate_source(source: Path) -> None:
+    required = (".python-version", "pyproject.toml", "uv.lock", "scripts/runtime-pins.txt",
+                "src/layerloom/__init__.py", "src/layerloom/gui_app.py")
+    missing = [name for name in required if not (source / name).is_file()]
+    if missing:
+        raise SetupError(
+            "The LayerLoom folder is incomplete. Extract the entire ZIP first "
+            "(Windows: right-click the ZIP and choose Extract All), then open the "
+            "launcher inside the extracted folder. Keep its files together. "
+            "Missing: " + ", ".join(missing)
+        )
 
 
 def clean_environment(home: Path) -> dict[str, str]:
@@ -140,6 +156,7 @@ def run(command: list[str], *, source: Path, env: dict[str, str], log) -> int:
 
 
 def prepare(source: Path, home: Path, uv: Path, *, repair: bool, log) -> tuple[Path, dict[str, str]]:
+    validate_source(source)
     pins = read_pins(source)
     if platform.python_version() != pins["python"]:
         raise SetupError(f"The launcher needs its managed Python {pins['python']}. Reopen the included launcher.")
@@ -151,7 +168,15 @@ def prepare(source: Path, home: Path, uv: Path, *, repair: bool, log) -> tuple[P
         if existing is not None:
             print("Checking your existing LayerLoom installation...", flush=True)
             check = [str(environment_python(existing)), "-I", "-X", "utf8", "-u", "-m", "layerloom.doctor"]
-            if run(check, source=source, env=env, log=log) == 0:
+            try:
+                healthy = run(check, source=source, env=env, log=log) == 0
+            except OSError as exc:
+                # A partial/deleted interpreter can still exist on disk while
+                # failing to execute. Treat that like any failed startup check.
+                log.write(f"Existing environment could not start: {exc}\n")
+                log.flush()
+                healthy = False
+            if healthy:
                 return existing, env
             print("The installation needs repair. Preparing a fresh environment...", flush=True)
         if env.get("UV_OFFLINE"):
@@ -188,10 +213,17 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     home, source = args.home.expanduser().resolve(), args.source.resolve()
     logs = home / "logs"
-    logs.mkdir(parents=True, exist_ok=True)
     log_path = logs / f"setup-{time.strftime('%Y%m%d-%H%M%S')}-{os.getpid()}.log"
+    try:
+        logs.mkdir(parents=True, exist_ok=True)
+        log = log_path.open("w", encoding="utf-8")
+    except OSError as exc:
+        print(f"LayerLoom cannot write its setup log in {logs}. "
+              "Check that your account can write to this folder and the drive has free space. "
+              f"Details: {exc}", file=sys.stderr)
+        return 1
     print(f"LayerLoom setup log: {log_path}", flush=True)
-    with log_path.open("w", encoding="utf-8") as log:
+    with log:
         try:
             environment, env = prepare(source, home, args.uv.resolve(), repair=args.repair, log=log)
             if args.doctor_only or os.environ.get("LAYERLOOM_LAUNCHER_DOCTOR_ONLY") == "1":

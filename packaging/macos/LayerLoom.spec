@@ -3,7 +3,7 @@ import os
 import sys
 from pathlib import Path
 sys.path.insert(0, SPECPATH)
-from bundle_config import EXCLUDES, gui_hidden_imports, native_dependencies, resource_files
+from bundle_config import EXCLUDES, bundle_short_version, gui_hidden_imports, native_dependencies, resource_files
 
 root = Path(SPECPATH).parents[1]
 arch = os.environ['LAYERLOOM_BUILD_ARCH']
@@ -28,9 +28,10 @@ exe = EXE(
 coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='LayerLoom')
 app = BUNDLE(
     coll, name='LayerLoom.app', bundle_identifier='org.layerloom.LayerLoom',
+    icon=os.environ['LAYERLOOM_BUILD_ICON'],
     info_plist={
         'CFBundleName': 'LayerLoom', 'CFBundleDisplayName': 'LayerLoom',
-        'CFBundleShortVersionString': version, 'CFBundleVersion': version,
+        'CFBundleShortVersionString': bundle_short_version(version), 'CFBundleVersion': version,
         'LSMinimumSystemVersion': minimum,
         'NSHighResolutionCapable': True,
         'NSPrincipalClass': 'NSApplication',

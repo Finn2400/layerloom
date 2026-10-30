@@ -4,7 +4,9 @@ from __future__ import annotations
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -23,6 +25,9 @@ def setup_tree(tmp_path, monkeypatch):
     (source / ".python-version").write_text("3.12.15\n")
     (source / "pyproject.toml").write_text("[project]\nname = 'layerloom'\n")
     (source / "uv.lock").write_text("version = 1\n")
+    (source / "src/layerloom").mkdir(parents=True)
+    for name in ("__init__.py", "gui_app.py"):
+        (source / "src/layerloom" / name).write_text("# fixture\n")
     (source / ".venv").mkdir()
     (source / ".venv/user-file.txt").write_text("preserve me")
     home = tmp_path / "Application Support" / "LayerLoom"
@@ -182,3 +187,116 @@ def test_offline_first_install_never_starts_downloads(setup_tree, monkeypatch):
     with pytest.raises(bootstrap.SetupError, match="Connect to the internet"):
         bootstrap.prepare(source, home, uv, repair=False, log=io.StringIO())
     assert calls == []
+
+
+@pytest.mark.parametrize("offline", [False, True])
+def test_unexecutable_ready_python_recovers_without_losing_old_environment(setup_tree, monkeypatch, offline):
+    source, home, uv = setup_tree
+    monkeypatch.setattr(bootstrap, "run", fake_installer([]))
+    old, _ = bootstrap.prepare(source, home, uv, repair=False, log=io.StringIO())
+    before = (old.parent / "ready.json").read_bytes()
+    original_python = bootstrap.environment_python(old).read_bytes()
+    calls = []
+    install = fake_installer(calls)
+
+    def broken_existing(command, **kwargs):
+        if command[0] == str(bootstrap.environment_python(old)):
+            raise OSError("damaged executable")
+        return install(command, **kwargs)
+
+    monkeypatch.setattr(bootstrap, "run", broken_existing)
+    if offline:
+        monkeypatch.setenv("LAYERLOOM_OFFLINE", "1")
+        with pytest.raises(bootstrap.SetupError, match="Connect to the internet"):
+            bootstrap.prepare(source, home, uv, repair=False, log=io.StringIO())
+        assert calls == []
+        assert (old.parent / "ready.json").read_bytes() == before
+    else:
+        new, _ = bootstrap.prepare(source, home, uv, repair=False, log=io.StringIO())
+        assert new != old and "sync" in calls[0]
+    assert bootstrap.environment_python(old).read_bytes() == original_python
+    assert (source / ".venv/user-file.txt").read_text() == "preserve me"
+
+
+@pytest.mark.parametrize("missing", ["uv.lock", "scripts/runtime-pins.txt", "src/layerloom/gui_app.py"])
+def test_incomplete_source_explains_extraction_before_creating_environment(setup_tree, monkeypatch, missing):
+    source, home, uv = setup_tree
+    (source / missing).unlink()
+    calls = []
+    monkeypatch.setattr(bootstrap, "run", fake_installer(calls))
+    with pytest.raises(bootstrap.SetupError, match="Extract the entire ZIP"):
+        bootstrap.prepare(source, home, uv, repair=False, log=io.StringIO())
+    assert calls == []
+    assert not (home / "environments").exists()
+
+
+@pytest.mark.parametrize("manifest", ["python 3.12.15\n", "python 3.12.15\nuv broken\n"])
+def test_incomplete_manifest_has_recovery_instructions(setup_tree, manifest):
+    source, _, _ = setup_tree
+    (source / "scripts/runtime-pins.txt").write_text(manifest)
+    with pytest.raises(bootstrap.SetupError, match="fresh LayerLoom ZIP"):
+        bootstrap.read_pins(source)
+
+
+def test_log_creation_failure_is_readable(tmp_path, capsys):
+    home = tmp_path / "not-a-directory"
+    home.write_text("preserve me")
+    assert bootstrap.main(["--home", str(home), "--uv", str(tmp_path / "uv")]) == 1
+    assert "cannot write its setup log" in capsys.readouterr().err
+    assert home.read_text() == "preserve me"
+
+
+@pytest.mark.parametrize("include_scripts", [False, True])
+def test_real_launcher_rejects_partial_extraction_before_download(tmp_path, include_scripts):
+    repo = Path(__file__).parents[1]
+    source = tmp_path / "LayerLoom café partial"
+    source.mkdir()
+    home = tmp_path / "unused home"
+    windows = os.name == "nt"
+    launcher = "Launch LayerLoom.bat" if windows else "Launch LayerLoom.command"
+    shutil.copyfile(repo / launcher, source / launcher)
+    if include_scripts:
+        (source / "scripts").mkdir()
+        script = "bootstrap.ps1" if windows else "bootstrap.sh"
+        shutil.copyfile(repo / "scripts" / script, source / "scripts" / script)
+    command = ([os.environ["COMSPEC"], "/d", "/c", str(source / launcher)] if windows
+               else ["bash", str(source / launcher)])
+    result = subprocess.run(command, input="", capture_output=True, text=True, timeout=30,
+                            env={**os.environ, "LAYERLOOM_HOME": str(home)})
+    assert result.returncode != 0
+    assert "Extract" in result.stdout + result.stderr
+    assert not home.exists()
+
+
+@pytest.mark.parametrize("blocked", ["home", "logs"])
+def test_real_launcher_explains_unwritable_storage_before_download(tmp_path, blocked):
+    repo = Path(__file__).parents[1]
+    home = tmp_path / "LayerLoom storage"
+    obstruction = home if blocked == "home" else home / "logs"
+    obstruction.parent.mkdir(parents=True, exist_ok=True)
+    obstruction.write_text("user file: keep me")
+    command = ([os.environ["COMSPEC"], "/d", "/c", str(repo / "Launch LayerLoom.bat"), "--doctor-only"]
+               if os.name == "nt" else ["bash", str(repo / "Launch LayerLoom.command"), "--doctor-only"])
+    result = subprocess.run(command, input="", capture_output=True, text=True, timeout=30,
+                            env={**os.environ, "LAYERLOOM_HOME": str(home)})
+    assert result.returncode != 0
+    assert "Check folder permissions and free disk space" in result.stdout + result.stderr
+    assert obstruction.read_text() == "user file: keep me"
+    assert "Downloading" not in result.stdout
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Unix manifest parsing")
+def test_unix_launcher_accepts_windows_manifest_line_endings(setup_tree):
+    source, home, _ = setup_tree
+    repo = Path(__file__).parents[1]
+    shutil.copyfile(repo / "scripts/bootstrap.sh", source / "scripts/bootstrap.sh")
+    (source / "scripts/bootstrap.py").write_text("# not reached while offline\n")
+    pins = (repo / "scripts/runtime-pins.txt").read_text().replace("\n", "\r\n")
+    (source / "scripts/runtime-pins.txt").write_bytes(pins.encode())
+    result = subprocess.run(["bash", str(source / "scripts/bootstrap.sh"), "--doctor-only"],
+                            input="", capture_output=True, text=True, timeout=30,
+                            env={**os.environ, "LAYERLOOM_HOME": str(home), "LAYERLOOM_OFFLINE": "1"})
+    assert result.returncode == 1
+    assert "First setup needs an internet connection" in result.stdout
+    assert "missing its runtime manifest" not in result.stdout
+    assert "Downloading" not in result.stdout

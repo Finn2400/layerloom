@@ -3232,7 +3232,10 @@ class AssignColorsApp(tk.Tk if tk is not None else object):
         if not out:
             return
         try:
-            plan = self._materialize_current_model(out, include_assignments=True)
+            with tempfile.TemporaryDirectory(prefix="layerloom_geometry_save_") as work_dir:
+                staged = os.path.join(work_dir, "assigned.3mf")
+                plan = self._materialize_current_model(staged, include_assignments=True)
+                write_transformed_3mf(staged, out, np.eye(4), geometry_only=True)
             self._last_transform_plan = plan
             self._applied_transform_signature = self._get_transform_values() or self._applied_transform_signature
             self.transform_dirty = False
@@ -3493,6 +3496,7 @@ class AssignColorsApp(tk.Tk if tk is not None else object):
 # ─────────────────────────────────────────────────────────────────────
 try:
     from qtpy import QtCore, QtGui, QtWidgets
+    from layerloom import file_dialogs
     from pyvistaqt import QtInteractor
 
     _QT_OK = True
@@ -3654,7 +3658,7 @@ class EmbeddedPVViewer(PVWindow):
     def _read_plate_ascii_lines(self) -> List[str]:
         path = os.environ.get(
             "LAYERLOOM_PLATE_ASCII",
-            os.path.expanduser("~/Downloads/benchy_ascii_with_text.txt"),
+            os.path.join(os.path.dirname(__file__), "assets", "benchy_ascii_with_text.txt"),
         )
         try:
             with open(path, "r", encoding="utf-8", errors="replace") as f:
@@ -4019,6 +4023,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             """
         )
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+        self._flash_timers: Dict[str, QtCore.QTimer] = {}
 
         self.temp_ply_dir = os.path.join(tempfile.gettempdir(), "layerloom_ply_cache")
         self._clear_ply_cache()
@@ -4802,6 +4807,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return out
 
     def _prepare_for_heavy_preview_build(self):
+        self._cancel_selection_flashes()
         if self.viewer:
             try:
                 self.viewer._teardown_scene()
@@ -4986,6 +4992,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._apply_transform_preview(quiet=False)
 
     def _load_canonical_model(self, stamped_path: str):
+        self._cancel_selection_flashes()
         self.base_file = stamped_path
         self.current_file = stamped_path
         self.transformed_preview_file = None
@@ -5004,7 +5011,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return _stamp_ids_only(path, output_path=output_path)
 
     def _on_open(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open 3MF", "", "3MF Files (*.3mf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open 3MF", "", "3MF Files (*.3mf)")
         if not path:
             return
         self._pending_source_hex_by_name = {}
@@ -5075,7 +5082,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return import_3mf, manifest_map, repair_warning, color_levels
 
     def _on_open_glb(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
         if not path:
             return
         try:
@@ -5299,11 +5306,14 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             return
         if not self._ensure_transform_preview_current(quiet=False):
             return
-        out, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Labeled 3MF", "", "3MF files (*.3mf)")
+        out, _ = file_dialogs.get_save_file_name(self, "Save Labeled 3MF", "", "3MF files (*.3mf)")
         if not out:
             return
         try:
-            plan = self._materialize_current_model(out, include_assignments=True)
+            with tempfile.TemporaryDirectory(prefix="layerloom_geometry_save_") as work_dir:
+                staged = os.path.join(work_dir, "assigned.3mf")
+                plan = self._materialize_current_model(staged, include_assignments=True)
+                write_transformed_3mf(staged, out, np.eye(4), geometry_only=True)
             self._last_transform_plan = plan
             self.transform_dirty = False
             self._refresh_transform_readout(plan)
@@ -5386,7 +5396,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             return
         if not self._ensure_transform_preview_current(quiet=False):
             return
-        out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
+        out_dir = file_dialogs.get_existing_directory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
         output_source = self.source_file_path or self.base_file
@@ -5478,27 +5488,54 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         except Exception as e:
             _log("WARN", f"[viewer] camera preset '{which}' failed: {e}")
 
+    def _cancel_selection_flashes(self):
+        for timer in self._flash_timers.values():
+            timer.stop()
+            timer.deleteLater()
+        self._flash_timers.clear()
+
+    def _schedule_selection_restore(self, name, delay_ms, restore):
+        previous = self._flash_timers.pop(name, None)
+        if previous is not None:
+            previous.stop()
+            previous.deleteLater()
+        # Parent ownership also cancels callbacks when Qt deletes the window
+        # without a closeEvent. Scene teardown cancels them explicitly.
+        timer = QtCore.QTimer(self)
+        timer.setSingleShot(True)
+        self._flash_timers[name] = timer
+
+        def finish():
+            if self._flash_timers.get(name) is not timer:
+                return
+            self._flash_timers.pop(name, None)
+            timer.deleteLater()
+            restore()
+
+        timer.timeout.connect(finish)
+        timer.start(delay_ms)
+
     def _flash_actor_by_name(self, name: str, oid: str = None):
         if not self.viewer or not name:
             return
-        original_hex = "#d3d3d3"
-        if oid:
-            entry = self.assignments.get(oid)
-            if entry and entry.get("hex"):
-                original_hex = entry.get("hex")
+        original_hex = self.assignments.get(oid, {}).get("hex") or "#d3d3d3"
         flash_hex = "#FF0000" if original_hex.upper() != "#FF0000" else "#00FF00"
         self.viewer.set_color_by_name(name, flash_hex)
+        viewer, source_file = self.viewer, self.base_file
 
-        def _restore():
-            if not self.viewer:
+        def restore():
+            if self.viewer is not viewer or self.base_file != source_file:
                 return
-            if oid and self._current_selected_oid() != oid:
+            if oid and self.oid_to_name.get(oid) != name:
                 return
-            self.viewer.set_color_by_name(name, original_hex)
+            # A palette edit during the flash must keep its new color.
+            current_hex = self.assignments.get(oid, {}).get("hex", original_hex)
+            viewer.set_color_by_name(name, current_hex)
 
-        QtCore.QTimer.singleShot(250, _restore)
+        self._schedule_selection_restore(name, 250, restore)
 
     def _build_or_rebuild_viewer(self):
+        self._cancel_selection_flashes()
         def _picked(name):
             self._handle_viewer_pick_event(str(name))
         try:
@@ -5602,6 +5639,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.setWindowTitle(f"{APP_TITLE} — {model_text}" if model_text else APP_TITLE)
 
     def closeEvent(self, event):
+        self._cancel_selection_flashes()
         _log("INFO", "Exiting. Cleaning up PLY cache...")
         try:
             if os.path.isdir(self.temp_ply_dir):

@@ -1,0 +1,11 @@
+{
+  "filename": "LayerLoom-0.6.4a5-macos-arm64.dmg",
+  "bytes": 316312533,
+  "sha256": "fef6eed441b9233df92b2319d395de65e02810f84c4d5d7993142a5139d67056",
+  "matches_tested_draft_asset": true,
+  "downloaded_by": "user through Chrome",
+  "quarantine": "0081;6ae4a1f9;Chrome;11DA5FBC-3C0D-47D0-8559-E5B1B91B7D98",
+  "quarantine_modified_by_agent": false,
+  "gatekeeper_test": "pending",
+  "gui_blocker": "Finder control timed out three times; inventory responded"
+}

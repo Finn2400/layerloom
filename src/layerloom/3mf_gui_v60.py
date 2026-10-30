@@ -11,6 +11,7 @@ embedded-viewer interaction controller.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from layerloom import file_dialogs
 import hashlib
 import importlib.util
 import os
@@ -532,7 +533,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             return path
 
     def _on_open(self):
-        path, _ = _V58.QtWidgets.QFileDialog.getOpenFileName(self, "Open 3MF", "", "3MF Files (*.3mf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open 3MF", "", "3MF Files (*.3mf)")
         if not path:
             return
         normalized = self._normalize_incoming_3mf(path, "Open 3MF")
@@ -549,7 +550,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
             _V58._log("INFO", f"Previewing ID-stamped temp copy: {stamped}")
 
     def _on_open_glb(self):
-        path, _ = _V58.QtWidgets.QFileDialog.getOpenFileName(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
         if not path:
             return
         try:

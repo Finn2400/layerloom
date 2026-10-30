@@ -4,6 +4,8 @@ from __future__ import annotations
 import ast
 from pathlib import Path
 
+from packaging.version import Version
+
 GUI_FILES = tuple(f"3mf_gui_v{version}.py" for version in (58, 60, 61, 62, 65))
 EXAMPLES = ("tutorial_cmy_cubes.3mf", "tutorial_cmy_benchy_cutup.3mf")
 PALETTES = (
@@ -25,12 +27,24 @@ EXCLUDES += [f"PyQt5.{name}" for name in (
 )]
 
 
+def bundle_short_version(version: str) -> str:
+    """Apple's display version has three numeric fields, even for an alpha.
+
+    The full prerelease version remains in CFBundleVersion and build-info.json.
+    """
+    release = Version(version).release
+    if len(release) > 3:
+        raise ValueError("Mac release versions must have at most three numeric fields")
+    return ".".join(str(value) for value in release + (0,) * (3 - len(release)))
+
+
 def resource_files(root: Path) -> list[tuple[str, str]]:
     """Never recursively collect the source tree: it contains research assets."""
     package = root / "src" / "layerloom"
     result = [(str(package / name), "layerloom") for name in GUI_FILES]
     result += [(str(package / "examples" / name), "layerloom/examples") for name in EXAMPLES]
     result += [(str(package / "palettes" / name), "layerloom/palettes") for name in PALETTES]
+    result.append((str(package / "assets" / "benchy_ascii_with_text.txt"), "layerloom/assets"))
     for source, _ in result:
         if not Path(source).is_file():
             raise FileNotFoundError(f"Required desktop resource is missing: {source}")

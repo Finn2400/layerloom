@@ -2,6 +2,12 @@ name: Mac desktop
 
 on:
   workflow_dispatch:
+    inputs:
+      validate_macos14:
+        description: 'Also test the exact ARM app on macos-14 (runner retires November 2, 2026)'
+        type: boolean
+        required: false
+        default: false
   pull_request:
     paths:
       - '.github/workflows/macos-desktop.yml'
@@ -11,7 +17,9 @@ on:
       - 'src/**'
       - 'examples/**'
       - 'scripts/build_macos.py'
+      - 'scripts/macos_icon.py'
       - 'scripts/validate_macos.py'
+      - 'scripts/macos_validation_matrix.py'
       - 'scripts/runtime-pins.txt'
       - 'packaging/macos/**'
       - 'tests/test_macos_packaging.py'
@@ -23,9 +31,28 @@ on:
 permissions:
   contents: read
 
+# Superseded PR builds should not occupy the free Mac runner pool. Preserve
+# manually requested and tagged builds, which may be validation/release evidence.
+concurrency:
+  group: mac-desktop-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 # Tagged builds are deliberately disabled until the initial manual release gates
 # in packaging/macos/RELEASE_CHECKLIST.md have passed. Manual builds work now.
 jobs:
+  validation-plan:
+    if: github.event.repository.private == false
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        name: Select available validation runners
+        env:
+          LAYERLOOM_VALIDATE_MACOS14: ${{ github.event_name == 'workflow_dispatch' && inputs.validate_macos14 }}
+        run: python3 scripts/macos_validation_matrix.py
+
   build:
     if: >-
       github.event.repository.private == false &&
@@ -35,9 +62,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { runner: macos-14, arch: arm64 }
-          - { runner: macos-15-intel, arch: x86_64 }
+          - { runner: macos-15, arch: arm64, target: aarch64-apple-darwin, minimum: '14.0' }
+          - { runner: macos-15-intel, arch: x86_64, target: x86_64-apple-darwin, minimum: '15.0' }
     runs-on: ${{ matrix.runner }}
+    env:
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.minimum }}
     timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
@@ -46,7 +75,11 @@ jobs:
           version: '0.13.0'
           enable-cache: true
       - name: Install locked build environment
-        run: uv sync --managed-python --locked --extra gui --extra desktop --extra dev --no-editable
+        run: |
+          # Select binary dependencies for the declared minimum OS, even on a
+          # newer builder. Only LayerLoom itself is built from source afterward.
+          uv sync --managed-python --locked --extra gui --extra desktop --extra dev --no-install-project --no-build --python-platform "${{ matrix.target }}"
+          uv sync --managed-python --locked --extra gui --extra desktop --extra dev --no-editable --python-platform "${{ matrix.target }}"
       - name: Verify release tag matches package version
         if: github.event_name == 'push'
         run: .venv/bin/python -c 'import os,tomllib; from pathlib import Path; version=tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]; assert os.environ["GITHUB_REF_NAME"] == "v"+version, "Tag must match pyproject version"'
@@ -55,7 +88,9 @@ jobs:
       - name: Install isolated desktop build environment
         env:
           UV_PROJECT_ENVIRONMENT: .venv-desktop
-        run: uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable
+        run: |
+          uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-install-project --no-build --python-platform "${{ matrix.target }}"
+          uv sync --managed-python --locked --extra gui --extra desktop --no-default-groups --no-editable --python-platform "${{ matrix.target }}"
       - name: Build app and DMG
         run: .venv-desktop/bin/python scripts/build_macos.py
       - name: Preserve application, architecture notices and build identity
@@ -75,17 +110,11 @@ jobs:
           retention-days: 14
 
   validate:
-    needs: build
+    needs: [build, validation-plan]
     name: Validate ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - { runner: macos-14, arch: arm64 }
-          - { runner: macos-15, arch: arm64 }
-          - { runner: macos-26, arch: arm64 }
-          - { runner: macos-15-intel, arch: x86_64 }
-          - { runner: macos-26-intel, arch: x86_64 }
+      matrix: ${{ fromJSON(needs.validation-plan.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
     steps:
@@ -99,7 +128,7 @@ jobs:
         with:
           name: mac-${{ matrix.arch }}
           path: artifact
-      - name: Extract exact oldest-OS application
+      - name: Extract exact built application
         run: tar -xzf artifact/LayerLoom-${{ matrix.arch }}.app.tar.gz -C artifact
       - name: Prepare affected Intel hosted runner icon service
         if: matrix.runner == 'macos-26-intel'
@@ -156,6 +185,8 @@ jobs:
         run: |
           uv sync --managed-python --locked --extra dev
           .venv/bin/python -m build
+          .venv/bin/python scripts/build_source_zip.py dist
+          .venv/bin/python scripts/validate_distributions.py dist
           cp packaging/macos/RELEASE_CHECKLIST.md artifacts/RELEASE_CHECKLIST.md
           cp 'packaging/macos/Read Me First.html' artifacts/Read-Me-First.html
           cp docs/images/mac-first-open.svg artifacts/mac-first-open.svg
@@ -164,4 +195,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl
+          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl dist/*-source.zip

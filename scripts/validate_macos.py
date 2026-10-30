@@ -17,6 +17,7 @@ import shutil
 import struct
 import subprocess
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
@@ -69,9 +70,21 @@ def write_test_glb(path: Path):
 
 def command(command, *, cwd, env, log, timeout=300):
     # Stream to disk so diagnostics survive TimeoutExpired or a hung GUI.
-    with log.open("w", encoding="utf-8") as stream:
-        proc = subprocess.run([str(arg) for arg in command], cwd=cwd, env=env,
-                              stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
+    started = time.monotonic()
+    proc, timed_out = None, False
+    try:
+        with log.open("w", encoding="utf-8") as stream:
+            proc = subprocess.run([str(arg) for arg in command], cwd=cwd, env=env,
+                                  stdout=stream, stderr=subprocess.STDOUT, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        timed_out = True
+        raise
+    finally:
+        log.with_suffix(".timing.json").write_text(json.dumps({
+            "monotonic_started": started, "elapsed_seconds": round(time.monotonic() - started, 3),
+            "timeout_seconds": timeout, "timed_out": timed_out,
+            "returncode": proc.returncode if proc is not None else None,
+        }, indent=2) + "\n", encoding="utf-8")
     output = log.read_text(encoding="utf-8", errors="replace")
     if proc.returncode:
         raise RuntimeError(f"Command exited {proc.returncode}: {command}\n{output[-12000:]}")
@@ -100,6 +113,14 @@ def main(argv=None):
     args = parser.parse_args(argv)
     report_dir = args.report.resolve()
     report_dir.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
+    timings = []
+    def mark(stage):
+        now = time.monotonic()
+        timings.append({"stage": stage, "monotonic_seconds": now,
+                        "elapsed_seconds": round(now - started, 3)})
+        (report_dir / "validation-stages.json").write_text(json.dumps(timings, indent=2) + "\n")
+    mark("native_checks_started")
     with (args.app / "Contents/Info.plist").open("rb") as stream:
         info = plistlib.load(stream)
     arch = info["LayerLoomArchitecture"]
@@ -123,21 +144,24 @@ def main(argv=None):
     for path in args.app.rglob("*"):
         assert not any(part.startswith(("submission_", "manuscript_", "LayerLoomPhotos", "color_calibrated_TIF")) for part in path.parts)
         assert "pymeshlab" not in path.parts and "_tkinter" not in path.name
+    mark("native_checks_finished")
     env = os.environ.copy()
     for key in ("PYTHONPATH", "PYTHONHOME", "VIRTUAL_ENV", "QT_PLUGIN_PATH", "DYLD_LIBRARY_PATH"):
         env.pop(key, None)
     env.update(PATH="/usr/bin:/bin", PYTHONNOUSERSITE="1",
                LAYERLOOM_LOG_DIR=str(report_dir / "logs"), MPLCONFIGDIR=str(report_dir / "matplotlib"))
     report = {"architecture": arch, "os": platform.mac_ver()[0], "native_binaries": native_count,
-              "manual_quarantine_test": "not performed by automation", "status": "running"}
+              "manual_quarantine_test": "not performed by automation", "status": "running", "timings": timings}
     try:
         with tempfile.TemporaryDirectory(prefix="LayerLoom relocated é ") as directory:
             relocated = Path(directory) / "LayerLoom.app"
             shutil.copytree(args.app, relocated, symlinks=True)
+            mark("application_relocated")
             work = Path(directory) / "unrelated working directory"
             work.mkdir()
             helper = relocated / "Contents/Helpers/LayerLoomWorker.app/Contents/MacOS/layerloom-worker"
             capabilities = json.loads(command([helper, "--capabilities"], cwd=work, env=env, log=report_dir / "capabilities.log"))
+            mark("worker_capabilities_completed")
             assert capabilities["repair"] is False, "First desktop bundle must not include PyMeshLab"
             examples = relocated / "Contents/Resources/layerloom/examples"
             original = examples / "tutorial_cmy_cubes.3mf"
@@ -146,24 +170,31 @@ def main(argv=None):
             command([helper, "weave", "-i", original, "-o", output, "--step", "0.16", "--no-export-stls"],
                     cwd=work, env=env, log=report_dir / "weave.log")
             report["woven"] = validate_3mf(output)
+            mark("worker_weave_validated")
             assert hashlib.sha256(original.read_bytes()).hexdigest() == original_hash
             glb = work / "colored-tetrahedron.glb"
             write_test_glb(glb)
             imported = work / "glb-import.3mf"
             command([helper, "glb-split", glb, "--scale", "1", "--out", imported], cwd=work, env=env, log=report_dir / "glb.log")
             report["glb_import"] = validate_3mf(imported)
+            mark("glb_import_validated")
             if args.gui:
                 executable = relocated / "Contents/MacOS/LayerLoom"
+                mark("gui_started")
                 command([executable, "--desktop-smoke-test", report_dir], cwd=work, env=env,
-                        log=report_dir / "gui.log", timeout=600)
+                        log=report_dir / "gui.log", timeout=900)
+                mark("gui_process_finished")
                 gui = json.loads((report_dir / "gui-smoke.json").read_text())
                 assert gui["status"] == "passed" and gui["frozen"], gui
                 report["gui"] = gui
             report["status"] = "passed"
+            mark("validation_passed")
     except Exception as exc:
         report.update(status="failed", error=f"{type(exc).__name__}: {exc}")
+        mark("validation_failed")
         raise
     finally:
+        report["elapsed_seconds"] = round(time.monotonic() - started, 3)
         (report_dir / "validation.json").write_text(json.dumps(report, indent=2) + "\n")
     return 0
 

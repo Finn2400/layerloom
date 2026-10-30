@@ -4,20 +4,18 @@
 launchers.** They install a private Python and the required packages for you.
 LayerLoom and its installation tools are free.
 
-The standalone Mac release is currently an **unpublished draft**. Only
-maintainers with repository write access can download draft assets. Until a
-desktop release is published, public users should follow **Download and run the
-source** below. The [release checklist](../packaging/macos/RELEASE_CHECKLIST.md)
-records the checks required before publication.
+**Mac users:** start with the [standalone app and four-step quick start](../README.md#download-for-mac).
+It includes Python and its libraries. The source launchers below are intended
+for Windows/Linux users and developers.
 
 ## Choose your installation
 
-| Computer | Current public installation | Standalone Mac draft |
-| --- | --- | --- |
-| Mac with an Apple M-series chip | Source ZIP, `.command` launcher | `arm64` DMG; macOS 14 or newer |
-| Mac with an Intel processor | Source ZIP, `.command` launcher | `x86_64` DMG; macOS 15 or newer |
-| Windows x64 | Source ZIP, `.bat` launcher | Not included |
-| Linux x86_64 desktop | Source ZIP, `.sh` launcher | Not included |
+| Computer | Recommended installation |
+| --- | --- |
+| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg) |
+| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) |
+| Windows x64 | Source ZIP, `.bat` launcher |
+| Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
 On a Mac, **Apple menu → About This Mac** shows the chip or processor and macOS
 version. Windows ARM, Linux ARM, and older Mac systems are not validated targets
@@ -43,13 +41,28 @@ open the Mac app.
    cannot write there, copy it to a folder you own instead.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
-4. Click **Try the example → Weave** and choose Documents or another output
-   folder. When **Your woven model** appears, click **Show in Finder**.
+4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
+   build plate. Click **Try the example**, then **Export geometry 3MF…**.
+   The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+   click **Choose save location…**, and choose a `.3mf` filename and folder.
+   The Mac example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel, then use **Show in Finder** to locate it. The first export can take
+   longer while its geometry search code compiles.
+
+Loading an example keeps the current mode. To demonstrate surface painting,
+turn on **Paint** in the main toolbar, select a surface, choose a color, click
+**Apply paint**, and try Undo and Redo. Save an editable `.llpaint` project with **Save paint…**
+and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it contains
+filament geometry rather than editable face-paint annotations. Follow the
+[Paint tutorial](tutorial.md) for the full sequence.
+
+These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
+confirm your build. Keep the instructions and download from the same release
+together. No GitHub account is needed for the public release.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
 new copy; macOS may ask you to approve the new download. Keep saved models
-in Documents or another folder outside the app.
+in the suggested LayerLoom folder or another folder outside the app.
 
 These builds use free ad-hoc signing and are **not notarized by Apple**. A
 managed Mac may prohibit local approval. No paid Apple account is required to
@@ -57,14 +70,22 @@ use LayerLoom.
 
 ## Download and run the source
 
-1. On the [LayerLoom repository](https://github.com/Finn2400/layerloom), choose
-   **Code → Download ZIP**. This downloads the branch currently selected on the
-   page. Keep the launchers and all files from the same download together.
+If a release supplies **LayerLoom-&lt;version&gt;-source.zip**, prefer that file:
+it contains the application, examples, launchers and instructions without
+manuscript materials. For a standalone Mac installation, choose the matching
+DMG instead.
+
+1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip).
+   This selects the release containing the installation fixes in this guide;
+   no GitHub account is needed. Keep the launchers and all files from the same
+   download together. GitHub's **Code → Download ZIP** uses whichever branch is
+   selected on that page, which may contain an older version.
 2. Open Downloads. On macOS, double-click the ZIP to extract it. On Windows,
    right-click the ZIP, choose **Extract All**, and finish extraction. On Linux,
    use your archive manager's **Extract** action.
 3. Open the extracted folder containing `README.md`, `scripts`, and the
    **Launch LayerLoom** files. Do not run files from inside an archive preview.
+   Double-click **START_HERE.html** for the short, offline-readable instructions.
 4. Use the launcher for your computer below. Keep the extracted folder for
    future launches; moving it after setup requires a new environment download.
 
@@ -98,6 +119,11 @@ Double-click **Launch LayerLoom.bat** in the extracted folder. File Explorer may
 hide the `.bat` extension; its file type is **Windows Batch File**. A setup
 window stays visible during installation.
 
+If Windows shows **Open File – Security Warning** with **Unknown Publisher**,
+check that the file is **Launch LayerLoom.bat** from the LayerLoom ZIP you
+downloaded, then click **Run**. You can leave **Always ask before opening this
+file** checked; Windows may show the same prompt on later launches.
+
 If Windows shows **Windows protected your PC**, check that this is the launcher
 from the LayerLoom download, then use **More info → Run anyway** if offered.
 On a managed computer, an administrator may need to approve it. The launcher
@@ -117,10 +143,19 @@ bash "Launch LayerLoom.sh"
 
 Python is managed automatically. Linux still needs the distribution's Qt/X11
 and OpenGL/EGL runtime libraries, plus `curl` or `wget` for the first download.
-A headless SSH shell cannot provide the GUI. On Ubuntu, the CI environment
-installs `libgl1`, `libegl1`, `libopengl0`, and `libxkbcommon-x11-0`; other
-distributions use different package names. Ask your system administrator if a
-native library or graphics driver is unavailable.
+A headless SSH shell cannot provide the GUI. On Ubuntu, install these runtime
+packages if they are not already provided by your desktop:
+
+```bash
+sudo apt-get update
+sudo apt-get install libgl1 libegl1 libopengl0 libgl1-mesa-dri \
+  libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 \
+  libxcb-cursor0 libxkbcommon-x11-0
+```
+
+Qt's `xcb` platform plugin needs the XCB libraries even when the Python package
+is installed correctly. Other distributions use different package names. Ask
+your system administrator if a native library or graphics driver is unavailable.
 
 ## Repair a source installation
 
@@ -155,17 +190,21 @@ project's DMG instead of installing packages inside it.
 
 | What you see | What to do |
 | --- | --- |
-| No DMG on the public Releases page | The desktop release may still be an unpublished draft. Use the source ZIP instructions above. |
+| Unsure which download to choose | Use the direct Mac download links in the README; choose the DMG matching your chip. Windows/Linux users choose the source ZIP. |
 | Mac says the developer cannot be verified or Apple cannot check the app | Follow [Mac first-open](mac_first_open.md). Attempt to open the copied app before looking for the approval button. |
 | Mac says the app is damaged, or will damage your computer | Stop and obtain a fresh copy from the project. If it persists, report the exact message; this differs from the ordinary verification prompt. |
 | Mac says this application is not supported | Check About This Mac against the architecture and minimum OS table. Use `arm64` for Apple Silicon and `x86_64` for Intel. |
 | `python: command not found`, Python 3.9, or an activation error | Use the included launcher. You do not need a `python` command or a manually activated environment. |
 | Download failed, checksum failed, connection error, or interrupted setup | Restore internet access and reopen the same launcher. It retries incomplete setup. Do not install extra Python versions to fix a download failure. |
+| “The LayerLoom folder is incomplete” | Extract the entire ZIP, then open the launcher inside that extracted folder. Do not copy just the launcher to your Desktop. If files are still missing, download and extract a fresh ZIP. |
+| Setup cannot write its logs or create its folders | Check free disk space and that your account can write to the reported folder. On a managed computer, ask your administrator; changing Python versions will not fix folder access. |
 | `Another LayerLoom setup is running` | Let the first setup finish. If two launchers are open, keep the one doing the installation. A crashed process releases its lock automatically. |
 | Setup needs a download while offline | Reconnect and reopen it. First setup, repair, a moved source folder, or changed runtime files needs a fresh environment. |
 | A Qt platform plugin, OpenGL, or native library could not load | Save the error and setup log. On Linux, check the graphics prerequisites above. For source installs, try repair; for a Mac app, try a fresh matching DMG. |
 | `Example unavailable` or `bundled worker is missing` | Source: extract a complete new ZIP. Mac app: replace the whole app from a fresh DMG. Keep your saved models. |
-| Weave completes but you cannot find the model | Use **Show in Finder / Show in folder** in **Your woven model**. The output name ends in `_woven.3mf`, in the folder you chose. |
+| Export exceeds the sampling limit | Open **Advanced export settings → Sampling budget**. This limits work in millions of cells, independently of memory. Consider coarser XY sampling first; raise the limit only for work you intend to run. |
+| Export says its estimated memory budget is exceeded | Check **Advanced export settings → Export memory budget** and the displayed estimate. The supplied Benchy uses 4,096 MiB; cubes and ordinary imports use 2,048 MiB. Consider coarser XY sampling first, and leave memory for the model, app and other programs if increasing the budget. |
+| Export completes but you cannot find the model | The completion message shows the full `.3mf` path you chose. `.llpaint` files are editable projects; open the exported `.3mf` in your slicer. |
 | `layerloom-gui` or another command is not found | Beginner launchers do not add commands to your PATH. Reopen the launcher, or use the developer instructions below. |
 
 ### Collect useful information for support

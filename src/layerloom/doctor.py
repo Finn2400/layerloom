@@ -171,6 +171,19 @@ def _check_palettes() -> int:
     return failures
 
 
+def _check_gui_assets() -> int:
+    print("\nPackaged viewer artwork")
+    path = _module_root() / "assets" / "benchy_ascii_with_text.txt"
+    try:
+        if not path.read_text(encoding="utf-8").strip():
+            raise ValueError("artwork is empty")
+    except (OSError, ValueError) as exc:
+        _fail(f"{path.name}: {exc}")
+        return 1
+    _ok(path.name)
+    return 0
+
+
 def _check_native() -> int:
     print("\nNative 3MF library")
     try:
@@ -246,6 +259,7 @@ def main(argv: list[str] | None = None) -> int:
         failures += _check_imports(GUI_IMPORTS, label="GUI imports")
         failures += _check_native()
         failures += _check_palettes()
+        failures += _check_gui_assets()
         if args.render:
             failures += _check_render()
 

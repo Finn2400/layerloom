@@ -1,13 +1,8 @@
 # First open on a Mac
 
-This guide is for **LayerLoom.app from a desktop DMG**. The standalone release
-is currently an **unpublished draft**, visible only to maintainers with
-repository write access. Public users can use the [source launcher](install.md#download-and-run-the-source).
-
-Desktop builds have an ad-hoc signature without Apple notarization. First-open
-approval may be needed for each downloaded release. These instructions do not
-mean that browser-quarantine or first-time-user testing has already passed;
-maintainers must record those checks before publishing the draft.
+Download the **[Mac app](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a6)**,
+copy it to Applications, and open it. No Python or Terminal setup is needed.
+This guide covers the standalone app; [source users have separate instructions](install.md#download-and-run-the-source).
 
 ![Three first-open steps: copy and open the app, find Privacy and Security in System Settings, then approve LayerLoom with Open Anyway.](images/mac-first-open.svg)
 
@@ -47,20 +42,52 @@ Button wording can vary with the exact macOS update.
 If approval remains unavailable, a managed-computer policy may prevent it;
 contact the administrator. An **app is damaged** or **will damage your computer**
 message is different: stop, obtain a fresh project download, and report the
-exact message if it persists. Do not disable Gatekeeper or remove quarantine
-attributes to make the test pass.
+exact message if it persists. Do not disable macOS security protections to open it.
+
+On the first launch, allow roughly half a minute for bundled libraries and
+font caches to initialize. After approval, wait for the window instead of
+opening another copy.
 
 ## Make your first woven model
 
-1. Click **Try the example**. Four preassigned CMY cubes appear; the layer
-   height is set to **0.16 mm**.
-2. Click **Weave**, select an output folder such as Documents, and confirm the
-   folder selection. Wait for **Your woven model**.
-3. Click **Show in Finder** to reveal `tutorial_cmy_cubes_woven.3mf`.
+1. LayerLoom starts in Arrange, showing a pixelated Benchy design on
+   the empty build plate. Click **Try the example** to load four CMY cubes.
+   Examples keep the mode you are using.
+2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
+   colors** and **0.16 mm** automatically. Check those values and click **Choose save location…**.
+   The first export may take longer while geometry search code compiles.
+3. Choose a `.3mf` filename and folder. The example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel.
+   Use **Show in Finder** to locate the output.
 4. Open it in your slicer, keep its parts aligned, and assign the `all_…`
    objects to the corresponding filaments. For this first example, use
    **0.16 mm for both normal and first layers**, with adaptive layers disabled.
 
+## Try painting
+
+With the cubes open, turn on **Paint** in the main toolbar, choose **Surface
+select**, click a surface, pick a color, and click **Apply paint**. Try Undo
+and Redo. Choose **Save paint…** to keep an editable `.llpaint` project, then
+reopen it with **Open…**. Export a separate
+`.3mf` for slicing: it contains the physical filament geometry generated from
+those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
+for selection tools, the larger Benchy example, and export limits.
+
+These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
+confirm the build and follow the instructions supplied with that download.
+
 Python and the required libraries are inside the app. Once first-open approval
 is complete, you can run the example offline. Outputs go to the folder you
 choose. For help, use **Help → Copy diagnostics** or **Help → Open logs**.
+
+## Choosing files and folders
+
+The Mac app uses a simple file chooser without Finder’s cloud-provider sidebar.
+The example suggests the local **LayerLoom** folder in your home folder. You can
+navigate to another folder or enter a path in the chooser. Technical export
+settings are under **Advanced export settings**.
+
+macOS may ask for access if you choose Documents, Desktop, Downloads, an external
+drive, or cloud storage. Only allow a location you intended to use; the example
+does not require Google Drive or OneDrive. Replacing an ad-hoc-signed test build
+may require approval again. Report unexpected requests rather than granting
+Full Disk Access.

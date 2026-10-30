@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerloom"
-version = "0.6.3"
+version = "0.6.4a6"
 description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -28,9 +28,12 @@ classifiers = [
 dependencies = [
   "lxml>=4.9",
   "mapbox-earcut>=1.0",
-  "manifold3d>=3.0",
+  "manifold3d>=3.2",
   "networkx>=2.8",
   "numpy>=1.23",
+  # Numba's macOS Intel wheels stop at 0.61; other targets use its current NumPy support.
+  "numba>=0.61.2,<0.62; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+  "numba>=0.64; sys_platform != 'darwin' or platform_machine != 'x86_64'",
   "Pillow>=9.0",
   "rtree>=1.0",
   "shapely>=2.0",
@@ -107,6 +110,7 @@ namespaces = false
 
 [tool.setuptools.package-data]
 layerloom = [
+  "assets/*.txt",
   "palettes/*.json",
 ]
 "layerloom.examples" = [

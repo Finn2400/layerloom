@@ -1,0 +1,213 @@
+{
+  "reviewed_at": "2026-10-30T12:11:18.479614-05:00",
+  "original_export": {
+    "file": "/Users/finn/LayerLoom Fresh User Test/Outputs/painted-benchy.3mf",
+    "sha256": "54de87cdf8b13f830abd6049e6af828f69e8ccc57c665b50c2be5a30dd2e50ea",
+    "mtime": "2026-10-30T11:46:50.705767-05:00",
+    "objects": [
+      {
+        "metadata": {
+          "name": "painted-benchy",
+          "extruder": "1"
+        },
+        "parts": [
+          {
+            "id": "1",
+            "metadata": {
+              "name": "all_cyan",
+              "extruder": "1"
+            }
+          },
+          {
+            "id": "2",
+            "metadata": {
+              "name": "all_magenta",
+              "extruder": "2"
+            }
+          },
+          {
+            "id": "3",
+            "metadata": {
+              "name": "all_yellow",
+              "extruder": "3"
+            }
+          }
+        ]
+      }
+    ],
+    "plates": [
+      {
+        "plater_name": ""
+      }
+    ],
+    "project_settings": {
+      "filament_colour": [
+        "#3ac8dc",
+        "#c31996",
+        "#ffdf00"
+      ]
+    }
+  },
+  "bambu_recovery_snapshot": {
+    "file": "/var/folders/y6/30y4_6m171g7b2mczs5c9h140000gn/T/bamboo_model/Fri_Oct_30/11_48_45#38053#59/.3mf",
+    "sha256": "2ca728e4cabf2496856f7ce043a2e2496ba350172af090da74a24eba1e359a04",
+    "mtime": "2026-10-30T12:08:56.594246-05:00",
+    "objects": [
+      {
+        "metadata": {
+          "name": "Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1)))))))))))))",
+          "extruder": "1"
+        },
+        "parts": [
+          {
+            "id": "65537",
+            "metadata": {
+              "name": "Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1))))))))))))))))))",
+              "extruder": "1"
+            }
+          },
+          {
+            "id": "131073",
+            "metadata": {
+              "name": "all_magenta",
+              "extruder": "1"
+            }
+          },
+          {
+            "id": "196609",
+            "metadata": {
+              "name": "all_yellow",
+              "extruder": "1"
+            }
+          }
+        ]
+      }
+    ],
+    "plates": [
+      {
+        "plater_name": "Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1 (Plate 1)))))))))))))))))))"
+      }
+    ],
+    "project_settings": {
+      "filament_colour": [
+        "#FFFF0A",
+        "#EC008C",
+        "#00FFFF",
+        "#55AAFF",
+        "#8080FF"
+      ],
+      "initial_layer_print_height": "0.16",
+      "layer_height": "0.16"
+    }
+  },
+  "bambu_recovery_gcode": {
+    "path": "/var/folders/y6/30y4_6m171g7b2mczs5c9h140000gn/T/bamboo_model/Fri_Oct_30/11_48_45#38053#59/Metadata/.39211.0.gcode",
+    "sha256": "3d69614f098a408102f94360597f88432bc54256eb138c8cbed51107c82e2bab",
+    "mtime": "2026-10-30T12:07:09.706058-05:00",
+    "header": [
+      "; HEADER_BLOCK_START",
+      "; BambuStudio 02.08.02.61",
+      "; model printing time: 8h 59m 55s; total estimated time: 9h 7m 18s",
+      "; total layer number: 227",
+      "; total filament length [mm] : 33041.58,18556.46",
+      "; total filament volume [cm^3] : 79474.32,44633.53",
+      "; total filament weight [g] : 98.55,56.24",
+      "; filament_density: 1.24,1.26,1.26,1.26,1.26",
+      "; filament_diameter: 1.75,1.75,1.75,1.75,1.75",
+      "; max_z_height: 36.48",
+      "; filament: 1,2",
+      "; support_material_on_wipe_tower: 0"
+    ],
+    "tool_command_counts": {
+      "T1000": 2,
+      "T1100": 1,
+      "T1": 110,
+      "T0": 109,
+      "T255": 1
+    },
+    "ams_selection_counts": {
+      "0": 110,
+      "1": 110
+    },
+    "config_fields": [
+      "; filament_colour = #FFFF0A;#EC008C;#00FFFF;#55AAFF;#8080FF",
+      "; initial_layer_print_height = 0.16",
+      "; layer_height = 0.16"
+    ]
+  },
+  "export_color_assignments": {
+    "#00FFFF": {
+      "token": "c",
+      "hex": "#3ac8dc",
+      "distinct_colors": 1,
+      "fractions": {
+        "C": 1.0,
+        "M": 0.0,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "source_hex": "#00FFFF"
+    },
+    "#7E70B9": {
+      "token": "cm",
+      "hex": "#7e70b9",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.5,
+        "Y": 0.0,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "source_hex": "#7E70B9"
+    },
+    "#9CD36E": {
+      "token": "cy",
+      "hex": "#9cd36e",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.5,
+        "M": 0.0,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "source_hex": "#9CD36E"
+    },
+    "#A9957B": {
+      "token": "cmy",
+      "hex": "#a9957b",
+      "distinct_colors": 3,
+      "fractions": {
+        "C": 0.3333333333333333,
+        "M": 0.3333333333333333,
+        "Y": 0.3333333333333333,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "source_hex": "#A9957B"
+    },
+    "#E17C4B": {
+      "token": "my",
+      "hex": "#e17c4b",
+      "distinct_colors": 2,
+      "fractions": {
+        "C": 0.0,
+        "M": 0.5,
+        "Y": 0.5,
+        "K": 0.0,
+        "W": 0.0
+      },
+      "source_hex": "#E17C4B"
+    }
+  },
+  "paint_policy": "nearest_surface_full_depth",
+  "conclusions": [
+    "Original export has stable material names and three distinct extruder indices.",
+    "Recovery metadata contains changed plate/object/cyan names and all extruders set to 1; snapshot may precede final visible assignments.",
+    "Retained G-code header lists filaments 1,2; actual physical tool selections are T0,T1, with no T2. Current screenshot assignments therefore cannot validate this retained slice.",
+    "Cyan contributes to four of five color recipes; selecting all_cyan is not selecting only the newly painted patch.",
+    "Cause of Bambu name/assignment mutation is not established; controlled fresh-import comparison still needed."
+  ]
+}

@@ -1,0 +1,9 @@
+# Application source downloads do not need manuscript PDFs and figure trees.
+# These remain tracked and available in a Git clone; no working files are deleted.
+src/layerloom/manuscript_* export-ignore
+src/layerloom/submission_* export-ignore
+
+# ZIPs built on Windows must still contain runnable Mac/Linux shell scripts.
+*.sh text eol=lf
+*.command text eol=lf
+scripts/runtime-pins.txt text eol=lf

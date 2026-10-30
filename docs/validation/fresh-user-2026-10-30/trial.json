@@ -1,0 +1,55 @@
+{
+  "artifact": "LayerLoom-0.6.4a5-macos-arm64.dmg",
+  "sha256": "fef6eed441b9233df92b2319d395de65e02810f84c4d5d7993142a5139d67056",
+  "quarantine": null,
+  "macOS": "14.6.1",
+  "architecture": "arm64",
+  "download_step": "BLOCKED: saved browser permission denies github.com; preexisting local artifact used for separate post-download GUI test",
+  "fresh_account": false,
+  "latest_ci": "41003528879 all builds and validation jobs passed; draft-release skipped",
+  "isolated_app": "LayerLoom.app",
+  "build_info": {
+    "version": "0.6.4a5",
+    "architecture": "arm64",
+    "minimum_macos": "14.0",
+    "build_macos": "15.8.2",
+    "python": "3.12.15",
+    "pyinstaller": "6.22.3",
+    "lock_sha256": "416e4b671ccb11232b06d291fce6cf493408da16a28fb6567f14e7dcafafcb65",
+    "signing": "ad-hoc",
+    "notarized": false,
+    "source_revision": "6935fcdc497e429d76b1d591689dbae9d7a41743",
+    "source_tree": "640a475c690be1da507231e08e1b2b8e56c3ee2b",
+    "source_dirty": false,
+    "workflow_revision": "6935fcdc497e429d76b1d591689dbae9d7a41743",
+    "workflow_run_id": "40982690862"
+  },
+  "gui_checks": {
+    "startup_arrange": true,
+    "cubes_export_reopen": true,
+    "finder_reveal": true,
+    "benchy_source_faces": 253176,
+    "painted_faces": 6658,
+    "undo_redo_visual_check": true,
+    "project_reopen": true,
+    "benchy_export_reopen": true,
+    "benchy_output_faces": 1431342,
+    "permission_prompts_observed": 0
+  },
+  "slicer": {
+    "version": "02.08.02.61",
+    "action": "File > Open Project",
+    "message": "The 3mf file has invalid config, load geometry data only",
+    "status": "User clicked OK; geometry import visually verified, 1,431,342 triangles; not sliced or printed",
+    "normal_layer_mm": 0.16,
+    "initial_layer_mm": 0.2,
+    "filament_assignment": "existing slicer list retained; not validated"
+  },
+  "remaining": [
+    "browser download/quarantine",
+    "graphical Gatekeeper",
+    "independent slicer completion",
+    "physical offline",
+    "unfamiliar human trial"
+  ]
+}

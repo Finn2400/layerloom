@@ -23,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14, windows-latest, ubuntu-latest]
+        os: [macos-15, windows-latest, ubuntu-latest]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -49,33 +49,17 @@ jobs:
       - name: Diagnose runtime and packaged resources
         run: uv run --no-sync layerloom-doctor
       - name: Run tests, including bootstrap recovery and worker processes
-        run: uv run --no-sync pytest
-      - name: Real Unix source bootstrap
-        if: runner.os != 'Windows'
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-        run: bash "Launch LayerLoom.sh" --doctor-only
-      - name: Real Unix bootstrap offline reopening
-        if: runner.os != 'Windows'
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-          LAYERLOOM_OFFLINE: '1'
-        run: bash "Launch LayerLoom.sh" --doctor-only
-      - name: Real Windows source bootstrap in Windows PowerShell
-        if: runner.os == 'Windows'
-        shell: cmd
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-        run: call "Launch LayerLoom.bat" --doctor-only < NUL
-      - name: Real Windows bootstrap offline reopening
-        if: runner.os == 'Windows'
-        shell: cmd
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-          LAYERLOOM_OFFLINE: '1'
-        run: call "Launch LayerLoom.bat" --doctor-only < NUL
+        run: uv run --no-sync pytest tests src/layerloom/paint_tests
       - name: Build source and wheel distributions
-        run: uv run --no-sync python -m build
+        run: |
+          uv run --no-sync python -m build
+          uv run --no-sync python scripts/build_source_zip.py dist
+      - name: Validate source and wheel contents
+        run: uv run --no-sync python scripts/validate_distributions.py dist
+      - name: Install the downloaded source ZIP and reopen offline
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+        run: uv run --no-sync python scripts/smoke_source_archive.py dist
       - name: Install the built wheel
         shell: bash
         run: uv pip install --no-deps --reinstall dist/*.whl
@@ -83,8 +67,10 @@ jobs:
         shell: bash
         run: |
           PYTHON_EXECUTABLE=$(uv run --no-sync python -c 'import sys; print(sys.executable)')
+          PAINT_SMOKE="$PWD/scripts/installed_paint_smoke.py"
           cd "$RUNNER_TEMP"
           "$PYTHON_EXECUTABLE" -I -X utf8 -m layerloom.doctor
+          "$PYTHON_EXECUTABLE" -I -X utf8 "$PAINT_SMOKE"
           "$PYTHON_EXECUTABLE" -I -X utf8 - <<'PY'
           import os
           from pathlib import Path
@@ -129,3 +115,141 @@ jobs:
         with:
           name: python-distributions-${{ matrix.os }}
           path: LayerLoom café source/dist/*
+
+  paint-gui:
+    name: Linux native Paint UI / Python 3.10
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      LAYERLOOM_GUI_TESTS: "1"
+      LAYERLOOM_RUN_DESKTOP_INTEGRATION: "1"
+      QT_API: pyqt5
+      QT_QPA_PLATFORM: xcb
+      LIBGL_ALWAYS_SOFTWARE: "1"
+      MPLBACKEND: Agg
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: Install virtual display and Qt rendering libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes xvfb xauth openbox x11-utils libgl1 libegl1 libopengl0 libgl1-mesa-dri \
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-cursor0 libxkbcommon-x11-0
+
+      - name: Install LayerLoom
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[gui,dev]"
+
+      - name: Verify Qt xcb startup before tests
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1200x24" python -u - <<'PY'
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+          from PyQt5.QtCore import QLibraryInfo
+
+          plugin = Path(QLibraryInfo.location(QLibraryInfo.PluginsPath)) / "platforms/libqxcb.so"
+          dependencies = subprocess.run(["ldd", str(plugin)], capture_output=True, text=True)
+          print(dependencies.stdout, end="", flush=True)
+          print(dependencies.stderr, end="", file=sys.stderr, flush=True)
+          if dependencies.returncode or "not found" in dependencies.stdout:
+              raise SystemExit("Qt xcb plugin has missing runtime libraries")
+
+          probe = "from PyQt5.QtWidgets import QApplication; app = QApplication([]); print('Qt platform:', app.platformName(), flush=True)"
+          result = subprocess.run([sys.executable, "-u", "-c", probe])
+          if result.returncode:
+              # pytest captures Qt's fatal message, so diagnose startup separately.
+              subprocess.run(
+                  [sys.executable, "-u", "-c", probe],
+                  env={**os.environ, "QT_DEBUG_PLUGINS": "1"},
+              )
+              raise SystemExit("Qt application startup failed")
+          PY
+
+      - name: Exercise native Paint and Arrange controls
+        run: |
+          xvfb-run -a -s "-screen 0 1920x1200x24" bash -e <<'SH'
+          # Native popup focus requires an active X11 window manager.
+          openbox > paint-window-manager.log 2>&1 &
+          window_manager_pid=$!
+          trap 'kill "$window_manager_pid" 2>/dev/null || true' EXIT
+          window_manager_ready=0
+          for attempt in {1..50}; do
+            if [[ "$(xprop -root _NET_SUPPORTING_WM_CHECK 2>/dev/null)" == *"window id #"* ]]; then
+              window_manager_ready=1
+              break
+            fi
+            kill -0 "$window_manager_pid" 2>/dev/null || break
+            sleep 0.1
+          done
+          if [[ "$window_manager_ready" != 1 ]]; then
+            cat paint-window-manager.log
+            exit 1
+          fi
+          xprop -root _NET_SUPPORTING_WM_CHECK
+          python -u -m pytest \
+            src/layerloom/paint_tests/test_paint_gui.py \
+            src/layerloom/paint_tests/test_main_paint.py \
+            tests/test_desktop_ui.py \
+            --junitxml=paint-gui-results.xml
+          SH
+
+      - name: Save GUI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paint-gui-results
+          path: |
+            paint-gui-results.xml
+            paint-window-manager.log
+          if-no-files-found: ignore
+
+
+  paint-gui-windows:
+    if: github.event.repository.private == false
+    name: Windows native Paint UI / locked Python
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      LAYERLOOM_GUI_TESTS: "1"
+      LAYERLOOM_RUN_DESKTOP_INTEGRATION: "1"
+      QT_API: pyqt5
+      MPLBACKEND: Agg
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+          enable-cache: true
+      - name: Install locked GUI and test dependencies
+        run: uv sync --managed-python --locked --extra gui --extra dev --no-editable
+      - name: Provide a native Windows OpenGL renderer
+        uses: pyvista/setup-headless-display-action@v3
+        with:
+          pyvista: false
+          install-mesa3d-offscreen: false
+          mesa3d-release: '24.3.0'
+      - name: Exercise native Paint, Arrange and desktop controls
+        run: >-
+          uv run --no-sync python -u -m pytest -vv -s -o faulthandler_timeout=120
+          src/layerloom/paint_tests/test_paint_gui.py
+          src/layerloom/paint_tests/test_main_paint.py
+          tests/test_desktop_ui.py
+          --junitxml=paint-gui-windows-results.xml
+      - name: Save GUI test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: paint-gui-windows-results
+          path: paint-gui-windows-results.xml
+          if-no-files-found: ignore
