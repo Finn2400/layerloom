@@ -1,0 +1,33 @@
+{
+  "file": "fresh-user-2026-10-30-painted-benchy_geometry.3mf",
+  "bytes": 13940337,
+  "sha256": "8adf04059cf1ef86024e2f7a4d15112d788f5de59fad4c43f166a02490f0a85a",
+  "validation": "direct XML mesh parsing to avoid loader component-path ambiguity",
+  "parts": [
+    {
+      "object_id": "1",
+      "name": "all_cyan",
+      "faces": 447052,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 1878.6334102044875
+    },
+    {
+      "object_id": "2",
+      "name": "all_magenta",
+      "faces": 494314,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 1900.9264699425785
+    },
+    {
+      "object_id": "3",
+      "name": "all_yellow",
+      "faces": 489976,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 1711.5029423038152
+    }
+  ],
+  "zip_crc_ok": true
+}

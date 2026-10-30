@@ -1,0 +1,33 @@
+{
+  "file": "fresh-user-2026-10-30-cubes.3mf",
+  "bytes": 35031,
+  "sha256": "ced6d22399fe6f9e65a2f38b57d1c675c6b0e87d42656e10ac2b57274d07c0f1",
+  "validation": "direct XML mesh parsing to avoid loader component-path ambiguity",
+  "parts": [
+    {
+      "object_id": "1",
+      "name": "all_cyan",
+      "faces": 1834,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 1600.0000353999997
+    },
+    {
+      "object_id": "2",
+      "name": "all_magenta",
+      "faces": 700,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 399.9999820999999
+    },
+    {
+      "object_id": "3",
+      "name": "all_yellow",
+      "faces": 1132,
+      "watertight": true,
+      "winding_consistent": true,
+      "volume": 1199.9999823
+    }
+  ],
+  "zip_crc_ok": true
+}
