@@ -47,7 +47,7 @@ does not establish the first-download experience.
 - [ ] Both architecture builds pass native minimum-OS, signature and relocation checks.
 - [ ] All four standard hosted OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
 - [ ] This exact ARM artifact also passes `validate_macos.py --gui` on macOS 14, using the optional hosted job before retirement or a local Mac afterward. Record its checksum and report; this remains required for publication.
-- [ ] A fresh launch shows Arrange, the empty build plate and pixelated Benchy artwork with Paint off. Loading either example preserves the selected mode. Toggle Paint on to expose surface-editing controls, then off to confirm model, colors and placement are retained. Verify the bundled first-open illustration ends at “Try the example”.
+- [ ] A fresh launch shows Arrange, the empty build plate and pixelated Benchy artwork with Paint off. Loading either example preserves the selected mode. Enter Paint, apply a brush stroke, and use the highlighted Back to build plate action. Verify Keep, Discard and Cancel, including retained colors and placement. Verify Load example opens Benchy and the first-open instructions match the bundled UI.
 - [ ] All hosted jobs and the required macOS 14 acceptance run render the actual GUI and export the packaged cubes from Arrange at 0.16 mm, then explicitly enable Paint. They must select and paint a surface, undo and redo the edit, save and reopen an editable project, and switch between Paint and Arrange. Their real asynchronous export worker must complete the painted-cube geometry proof at 0.16 mm, including the bundled Numba/LLVM search, then reopen its exported 3MF. Inspect example, edited-paint, Arrange, export, and reopened-output screenshots; a process exit alone is insufficient.
 - [ ] Inspect frozen GUI stage timings, heartbeat/progress logs and any near-deadline traceback. A valid output file alone does not pass the test: worker completion, editing, saved-project reopening and exported-model reopening must all succeed.
 - [ ] Native Paint, Arrange, and desktop integration tests pass on Linux and Windows, including mode switching, shared placement, cancellation, and export controls.
@@ -56,7 +56,7 @@ does not establish the first-download experience.
 
 - [ ] Download each DMG with a browser so the normal quarantine attribute is applied. Keep quarantine intact; do not use `xattr` as an installation workaround.
 - [ ] On a Mac without a user-installed Python, Git, Node or Homebrew, drag LayerLoom to Applications and launch it from Finder. Follow Read Me First's graphical Open Anyway instructions. Record OS, architecture and the observed prompts.
-- [ ] Have a person unfamiliar with Python load the example, use Export geometry 3MF with 0.16 mm layers, and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
+- [ ] Have a person unfamiliar with Python load the example, use Weave with 0.16 mm layers, and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
 - [ ] Open the result in a slicer; verify the preassigned parts, common alignment and the 0.16 mm layer instructions.
 - [ ] Reopen while offline, move the app to another folder containing spaces/non-ASCII characters, and repeat the example.
 - [ ] Replace an older app with this build, verify the new version starts, and record any renewed approval prompt. Do not delete user output or application logs.

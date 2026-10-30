@@ -50,7 +50,7 @@ def run(args):
     def configure_dialog():
         dialog = app.activeModalWidget()
         try:
-            assert isinstance(dialog, QtWidgets.QDialog) and dialog.windowTitle() == "Export geometry 3MF"
+            assert isinstance(dialog, QtWidgets.QDialog) and dialog.windowTitle() == "Weave — create printable 3MF"
             advanced = next(button for button in dialog.findChildren(QtWidgets.QToolButton)
                             if button.text() == "Advanced export settings")
             QtTest.QTest.mouseClick(advanced, QtCore.Qt.LeftButton)

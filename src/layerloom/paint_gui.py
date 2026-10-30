@@ -91,7 +91,8 @@ class PaintInteractor(QtInteractor):
             self._dismissed_settings_press = True
             event.accept()
             return
-        if event.button() == QtCore.Qt.LeftButton and event.modifiers() & QtCore.Qt.AltModifier:
+        if (event.button() == QtCore.Qt.RightButton or
+                (event.button() == QtCore.Qt.LeftButton and event.modifiers() & QtCore.Qt.AltModifier)):
             self._orbit_last = event.pos()
             event.accept()
             return
@@ -147,7 +148,7 @@ class PaintInteractor(QtInteractor):
             self._dismissed_settings_press = False
             event.accept()
             return
-        if event.button() == QtCore.Qt.LeftButton and self._orbit_last is not None:
+        if event.button() in (QtCore.Qt.LeftButton, QtCore.Qt.RightButton) and self._orbit_last is not None:
             self._orbit_to(event.pos())
             self._orbit_last = None
             event.accept()
@@ -260,7 +261,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.redo_action = toolbar.addAction("Redo", self.redo)
         self.redo_action.setShortcut(QtGui.QKeySequence.Redo)
         toolbar.addSeparator()
-        self.export_action = toolbar.addAction("Export geometry 3MF…", self.export_dialog)
+        self.export_action = toolbar.addAction("Weave", self.export_dialog)
         file_menu.addAction(self.export_action)
         toolbar.addSeparator()
         toolbar.addAction("Fit view", self.fit_view)
@@ -276,8 +277,8 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.controls_scroll.setWidgetResizable(True)
         self.controls_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.controls_scroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.controls_scroll.setMinimumWidth(280)
-        self.controls_scroll.setMaximumWidth(330)
+        self.controls_scroll.setMinimumWidth(330)
+        self.controls_scroll.setMaximumWidth(380)
         self.controls_panel = QtWidgets.QWidget()
         self.controls_panel.setObjectName("paintControls")
         layout = QtWidgets.QVBoxLayout(self.controls_panel)
@@ -355,10 +356,15 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.tool_hint.setWordWrap(True)
         self.tool_hint.setStyleSheet("font-size: 12px;")
         layout.addWidget(self.tool_hint)
-        camera_hint = QtWidgets.QLabel("Alt+drag rotates · middle pans · right zooms")
+        paint_help = QtWidgets.QLabel(
+            "Yellow highlights are selections, not paint. Weave converts applied colors "
+            "into filament layers, using the nearest surface color through the interior.")
+        paint_help.setObjectName("paintWeaveHelp")
+        paint_help.setWordWrap(True)
+        layout.addWidget(paint_help)
+        self.camera_hint = camera_hint = QtWidgets.QLabel()
         camera_hint.setWordWrap(True)
         camera_hint.setStyleSheet("font-size: 12px;")
-        layout.addWidget(camera_hint)
 
         self.mapping_toggle = QtWidgets.QToolButton()
         self.mapping_toggle.setObjectName("paintMappingToggle")
@@ -414,12 +420,13 @@ class PaintWindow(QtWidgets.QMainWindow):
         layout.addWidget(self.mapping_section)
         self.mapping_section.hide()
         layout.addStretch(1)
+        layout.addWidget(camera_hint)
 
         split.addWidget(self.controls_scroll)
         self.plotter = PaintInteractor(self, split)
         self.plotter.setObjectName("paintViewport")
         split.addWidget(self.plotter)
-        split.setSizes([300, 950])
+        split.setSizes([350, 950])
         self.plotter.set_background("#222831")
         self.plotter.show_axes()
         self.progress = QtWidgets.QProgressBar()
@@ -548,7 +555,13 @@ class PaintWindow(QtWidgets.QMainWindow):
             "Erase": "Drag to restore imported colors inside the brush radius.",
         }
         self.tool_hint.setText(hints[tool])
-        self.statusBar().showMessage(f"{tool} · Alt+left rotates, middle pans, right zooms")
+        left = ("Left-click selects; Apply paint colors the selection" if "select" in tool
+                else "Left-drag rotates" if tool == "Navigate"
+                else "Left-click restores original paint" if tool == "Erase"
+                else "Left-click / drag applies paint")
+        navigation = f"Right-click drag to rotate · {left} · Scroll to zoom"
+        self.camera_hint.setText(navigation)
+        self.statusBar().showMessage(navigation)
 
     def set_paint_color(self, hx):
         self.paint_rgba = np.append(_rgb(hx), np.uint8(255)).astype(np.uint8)
@@ -1114,7 +1127,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         if self.document is None or self._export_thread is not None:
             return
         dialog = QtWidgets.QDialog(self)
-        dialog.setWindowTitle("Export geometry 3MF")
+        dialog.setWindowTitle("Weave — create printable 3MF")
         layout = QtWidgets.QFormLayout(dialog)
         mode = QtWidgets.QComboBox()
         mode.setObjectName("geometryExportMode")

@@ -1,5 +1,8 @@
 # LayerLoom Paint and Weave Tutorial
 
+This guide describes the current source build. For the published 0.6.4a6 Mac app,
+use the [downloaded-app guide](mac_first_open.md).
+
 Start with the small CMY cubes bundled with LayerLoom. You do not need a separate
 model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
@@ -7,17 +10,22 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
 1. Open LayerLoom using the [installation guide](install.md). LayerLoom
    starts in **Arrange**, with a pixelated Benchy design on the empty build plate.
-2. Click **Try the example**, or **Help → Try the CMY cubes example**, to load
-   the cubes. Loading an example keeps your current mode.
+2. Click **Load example** for the colored Benchy, or **Help → Try the CMY cubes example**
+   for a smaller, faster first test. Loading an example keeps your current mode.
 3. Move, rotate, and scale the model in Arrange. Turn on **Paint** in the main
    toolbar when you want surface-selection and painting controls.
-4. Turn Paint off to return to Arrange. Both views keep the same model, colors,
+4. Click **Back to build plate**, then **Keep paint** to retain your edits or
+   **Discard changes** to restore the colors from this Paint visit. **Cancel** stays in Paint.
+   Both views keep the same model, colors,
    and placement; exporting is available in either mode.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 
 ## Paint a surface or area
+
+Paint starts with **Brush**: choose a color and left-click or drag to apply it.
+Right-click drag rotates the model; scroll zooms. For precise selection:
 
 1. Turn on **Paint** in the main toolbar. Choose **Surface select** and click a
    face to select a connected surface.
@@ -30,6 +38,10 @@ GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
    from Arrange.
 5. Expand **Color mapping**, choose a palette, and assign colors to preview how
    those colors map to printable filament recipes.
+
+Click **Weave** in either mode to use your applied paint; no separate transfer is
+needed. Yellow selection highlights are not paint. Each interior region uses
+its nearest surface color, so painting is not a thin surface coating.
 
 Woven recipes alternate physical filaments through the model's height. Their
 screen color is an approximation of the apparent printed color. Actual results
@@ -47,7 +59,7 @@ model in the workspace.
 
 ## Export printable geometry
 
-1. Click **Export geometry 3MF…** in the main toolbar.
+1. Click **Weave** in the main toolbar.
 2. Choose **Woven apparent colors** for LayerLoom's layered color recipes.
    **Direct physical filament colors** uses the available single filaments;
    **Exact colors — one material each** creates a material for each paint color.
@@ -108,7 +120,7 @@ preview, walls, thin features, and filament assignments before printing.
 ## Try the Benchy or your own model
 
 Use **Help → Load the Benchy example** for the larger bundled model. It keeps
-the current mode; turn on **Paint** for surface editing and Color mapping.
+the current mode; click **Paint** for surface editing and Color mapping.
 Its eight parts appear in several colors, with four woven recipes using cyan,
 magenta and yellow. Follow the same save and export workflow. Its example
 settings include the larger memory budget described above. Larger models or fine

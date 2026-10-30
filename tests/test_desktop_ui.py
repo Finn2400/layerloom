@@ -33,6 +33,7 @@ def application():
 def desktop(application, monkeypatch):
     module = _load_current_gui_module()
     window = module.QtAssignColorsApp()
+    monkeypatch.setattr(window, "_ask_keep_paint", lambda: "keep")
     controller = install_desktop_ui(window)
     errors = []
     monkeypatch.setattr(window, "_error", lambda title, text: errors.append((title, text)))
@@ -342,3 +343,16 @@ def test_example_save_and_export_defaults_outlive_private_copy(desktop, monkeypa
     assert controller.try_example()
     assert not private.exists()
     assert project.read_bytes() == saved and not errors
+
+
+def test_welcome_loads_benchy_with_equal_buttons(desktop, application, tmp_path):
+    window, controller, errors, _ = desktop
+    panel = window.viewer_empty_hint
+    buttons = panel.actions.findChildren(QtWidgets.QPushButton)
+    assert [button.text() for button in buttons] == ["Load example", "Open a model"]
+    assert abs(buttons[0].width() - buttons[1].width()) <= 1
+    assert window.grab().save(str(tmp_path / "welcome.png"))
+    QtTest.QTest.mouseClick(buttons[0], QtCore.Qt.LeftButton)
+    application.processEvents()
+    assert Path(window.paint_panel.editor.document.source_path).name == "tutorial_cmy_benchy_cutup.3mf"
+    assert not window._paint_active() and not errors

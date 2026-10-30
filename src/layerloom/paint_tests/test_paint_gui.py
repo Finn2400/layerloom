@@ -139,7 +139,9 @@ def test_palette_preview_is_nondestructive_and_save_reopen_keeps_erase_source(wi
     assert "paint_mapping" not in window.document.metadata
 
 
-def test_direct_mapping_and_alt_drag_navigation(window):
+@pytest.mark.parametrize("button, modifiers", [(QtCore.Qt.LeftButton, QtCore.Qt.AltModifier),
+                                               (QtCore.Qt.RightButton, QtCore.Qt.NoModifier)])
+def test_direct_mapping_and_alt_drag_navigation(window, button, modifiers):
     window.mapping_mode_combo.setCurrentIndex(window.mapping_mode_combo.findData("direct"))
     assert window.assign_colors()
     assert all(len(entry["token"]) == 1 for entry in window._mapping.values())
@@ -152,9 +154,9 @@ def test_direct_mapping_and_alt_drag_navigation(window):
     # QTest.mouseClick does not move the native macOS cursor. Move it to the
     # start first so the drag's mouseMove always generates a native move event.
     QtTest.QTest.mouseMove(window.plotter, first, delay=20)
-    QtTest.QTest.mousePress(window.plotter, QtCore.Qt.LeftButton, QtCore.Qt.AltModifier, pos=first)
+    QtTest.QTest.mousePress(window.plotter, button, modifiers, pos=first)
     QtTest.QTest.mouseMove(window.plotter, last, delay=5)
-    QtTest.QTest.mouseRelease(window.plotter, QtCore.Qt.LeftButton, QtCore.Qt.AltModifier, pos=last)
+    QtTest.QTest.mouseRelease(window.plotter, button, modifiers, pos=last)
     np.testing.assert_array_equal(window.document.meshes[0].face_rgba, original)
     assert not np.allclose(window.plotter.camera.position, camera_before)
 
@@ -315,12 +317,12 @@ def test_embedded_panel_defaults_surface_selection_and_woven_color_mode(app):
 @pytest.mark.parametrize("color_mode", ["woven", "direct", "source"])
 def test_export_action_offers_only_material_geometry_for_every_color_mode(window, monkeypatch, tmp_path, color_mode):
     assert window.mapping_mode_combo.currentData() == "woven"
-    assert window.export_action.text() == "Export geometry 3MF…"
+    assert window.export_action.text() == "Weave"
     assert not hasattr(window, "surface_export_action")
     assert not hasattr(window, "export_surface_dialog")
     captured = {}
     def choose_mode(dialog):
-        assert dialog.windowTitle() == "Export geometry 3MF"
+        assert dialog.windowTitle() == "Weave — create printable 3MF"
         mode = dialog.findChild(QtWidgets.QComboBox, "geometryExportMode")
         assert [mode.itemData(i) for i in range(mode.count())] == ["woven", "direct", "source"]
         assert all(spin.isEnabled() for spin in dialog.findChildren(QtWidgets.QDoubleSpinBox))

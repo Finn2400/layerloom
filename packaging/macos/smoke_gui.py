@@ -234,10 +234,15 @@ def main(directory: str) -> int:
         welcome_button = next((button for button in window.findChildren(qt.QPushButton, "tryExampleButton")
                                if button.isVisible()), None)
         assert welcome_button is not None, "The active workspace has no visible example action"
-        diagnostics.mark("load_cubes")
+        from layerloom.example_assets import find_example_file
+        benchy_source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
+        benchy_hash = hashlib.sha256(benchy_source.read_bytes()).hexdigest()
+        diagnostics.mark("load_welcome_benchy")
         welcome_button.click()
         app.processEvents()
-        diagnostics.mark("cubes_loaded")
+        diagnostics.mark("welcome_benchy_loaded")
+        assert Path(editor.document.source_path).name == "tutorial_cmy_benchy_cutup.3mf"
+        report["startup_ui"]["welcome_example"] = "Benchy"
         assert editor.document is not None and window._shared_paint_active()
         assert window.model_objects and not errors, errors
         assert not window._paint_active() and not window._paint_action.isChecked()
@@ -245,6 +250,29 @@ def main(directory: str) -> int:
         for name, actor in decoration.items():
             assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
         assert window.grab().save(str(output / "example-arrange-window.png"))
+        # Verify the real multipart tutorial once, through the welcome action.
+        # Re-loading and re-rendering it at the end duplicates this coverage and
+        # consumes minutes on software-rendered hosted Intel Macs.
+        benchy = editor.document
+        recipes = sorted({entry["token"] for entry in editor._mapping.values()})
+        assert len(benchy.meshes) == 8 and sum(len(mesh.faces) for mesh in benchy.meshes) == 253176
+        assert len(editor._mapping) == 4 and recipes == ["cm", "cmy", "cy", "my"], recipes
+        assert set("".join(recipes)) == {"c", "m", "y"}
+        assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+        toggle_paint(True)
+        image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))
+        assert image is not None and image.std() > 5, "Benchy example render is blank"
+        assert window.grab().save(str(output / "benchy-example-window.png"))
+        report["benchy_example"] = {"parts": 8, "faces": 253176, "paint_colors": 4,
+                                   "recipes": recipes, "filaments": ["c", "m", "y"],
+                                   "source_sha256": benchy_hash, "source_unchanged": True}
+        diagnostics.mark("benchy_rendered_and_recipes_verified")
+        # Exercise example loading in Paint too, then use the small tutorial
+        # for repeated worker checks on every OS/architecture combination.
+        assert window._desktop_controller.try_example()
+        assert window._paint_active() and window._paint_action.isChecked()
+        report["startup_ui"]["example_preserves_paint"] = True
+        diagnostics.mark("cubes_loaded")
         tutorial_document = editor.document
         tutorial_vertices = [mesh.vertices.copy() for mesh in tutorial_document.meshes]
         tutorial_colors = [mesh.face_rgba.copy() for mesh in tutorial_document.meshes]
@@ -276,7 +304,6 @@ def main(directory: str) -> int:
         assert contrast >= 4.5, f"Paint sidebar labels are unreadable: {report['paint_ui']}"
         image = editor.plotter.screenshot(str(output / "example-render.png"))
         assert image is not None and image.std() > 5, "Paint example render is blank"
-        assert window.grab().save(str(output / "example-window.png"))
         diagnostics.mark("cubes_rendered")
         report["renderer"] = {"qt_platform": app.platformName(),
                               "device_pixel_ratio": float(editor.plotter.devicePixelRatioF())}
@@ -380,7 +407,6 @@ def main(directory: str) -> int:
             assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
         report["startup_ui"]["plate_art_and_rulers_survive_import_and_toggles"] = True
         window.viewer.plotter.render()
-        window.viewer.plotter.screenshot(str(output / "arrange-render.png"))
         assert window.grab().save(str(output / "arrange-window.png"))
         target = model_output / "painted_cube_geometry.3mf"
         diagnostics.mark("painted_export:start")
@@ -406,31 +432,7 @@ def main(directory: str) -> int:
         assert window.grab().save(str(output / "reopened-export-window.png"))
         diagnostics.mark("export_reopened")
         reopened_objects = len(window.model_objects)
-        # The real multipart tutorial carries PAT tags in 3MF object names,
-        # while slicer metadata supplies different friendly display names.
-        # Check the exact packaged asset, not another synthetic cube.
-        from layerloom.example_assets import find_example_file
-        benchy_source = find_example_file("tutorial_cmy_benchy_cutup.3mf")
-        benchy_hash = hashlib.sha256(benchy_source.read_bytes()).hexdigest()
-        diagnostics.mark("load_benchy")
-        assert window._paint_active(), "Explicit paint-path open should enter Paint"
-        assert controller.try_benchy_example(), errors
-        app.processEvents()
-        assert window._paint_active() and window._paint_action.isChecked(), "Example must retain Paint mode"
-        benchy = editor.document
-        recipes = sorted({entry["token"] for entry in editor._mapping.values()})
-        assert len(benchy.meshes) == 8 and sum(len(mesh.faces) for mesh in benchy.meshes) == 253176
-        assert len(editor._mapping) == 4 and recipes == ["cm", "cmy", "cy", "my"], recipes
-        assert set("".join(recipes)) == {"c", "m", "y"}
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
-        assert not errors, errors
-        image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))
-        assert image is not None and image.std() > 5, "Benchy example render is blank"
-        assert window.grab().save(str(output / "benchy-example-window.png"))
-        diagnostics.mark("benchy_rendered_and_recipes_verified")
-        report["benchy_example"] = {"parts": 8, "faces": 253176, "paint_colors": 4,
-                                   "recipes": recipes, "filaments": ["c", "m", "y"],
-                                   "source_sha256": benchy_hash, "source_unchanged": True}
         report.update(status="passed", output=str(target), objects=reopened_objects,
                       notices=notices, paint_export=exported_report, exported_3mf_reopened=True)
         diagnostics.mark("assertions_passed")

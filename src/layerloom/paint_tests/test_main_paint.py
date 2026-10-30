@@ -25,8 +25,9 @@ def app():
 
 
 @pytest.fixture
-def main_window(main_module, app):
+def main_window(main_module, app, monkeypatch):
     window = main_module.QtAssignColorsApp()
+    monkeypatch.setattr(window, "_ask_keep_paint", lambda: "keep")
     window.show()
     app.processEvents()
     yield window
@@ -74,6 +75,7 @@ def set_paint_mode(window, enabled):
         click_main_action(window, window._paint_action)
     assert window._paint_active() == enabled
     assert window._paint_action.isChecked() == enabled
+    assert window._paint_action.text() == ("Back to build plate" if enabled else "Paint")
 
 
 @pytest.mark.parametrize("edges", [False, True])
@@ -168,7 +170,7 @@ def test_arrange_is_default_with_plate_art_and_secondary_paint_toggle(main_windo
     assert not main_window._paint_action.isChecked()
     set_paint_mode(main_window, True)
     assert main_window.paint_panel.isVisible()
-    assert main_window.paint_panel.editor.tool_combo.currentText() == "Surface select"
+    assert main_window.paint_panel.editor.tool_combo.currentText() == "Brush"
     assert main_window.paint_panel.editor.document is None
     set_paint_mode(main_window, False)
     assert main_window.viewer.plotter.isVisible()
@@ -209,6 +211,7 @@ def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monk
     assert main_window.open_paint_path(str(source))
     editor = main_window.paint_panel.editor
     original = editor.document.meshes[0].face_rgba.copy()
+    editor.tool_combo.setCurrentText("Surface select")
     editor.view("top")
     editor.set_paint_color("#DC2832")
     QtWidgets.QApplication.processEvents()
@@ -236,7 +239,10 @@ def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monk
     assert calls == ["save", "export", "open"]
     set_paint_mode(main_window, False)
     assert all(bar.isVisible() for bar in main_window._arrange_toolbars)
-    assert toolbar_actions["Weave"].text() == "Export geometry 3MF…"
+    assert toolbar_actions["Weave"].text() == "Weave"
+    button = main_window._main_toolbar.widgetForAction(toolbar_actions["Weave"])
+    assert button.objectName() == "primaryWeaveButton"
+    assert "#e89b2f" in button.styleSheet()
     assert all(not action.shortcut().isEmpty() for action in main_window._paint_history_actions)
     click_main_action(main_window, toolbar_actions["Save Labeled 3MF"])
     click_main_action(main_window, toolbar_actions["Weave"])
@@ -769,3 +775,33 @@ def test_real_startup_keeps_paint_controls_readable(main_module, app, tmp_path,
             app.processEvents()
         app.setStyle(previous_style)
         app.setPalette(previous_palette)
+
+
+@pytest.mark.parametrize("choice", ["keep", "discard", "cancel"])
+def test_leave_paint_preserves_or_restores_shared_face_colors(main_window, monkeypatch, choice):
+    editor = main_window.paint_panel.editor
+    editor.set_document(example_document("cube", 8))
+    original = editor.document.meshes[0].face_rgba.copy()
+    set_paint_mode(main_window, True)
+    editor.document.meshes[0].face_rgba[0] = [210, 40, 80, 255]
+    editor._after_edit()
+    painted = editor.document.meshes[0].face_rgba.copy()
+    monkeypatch.setattr(main_window, "_ask_keep_paint", lambda: choice)
+    main_window._set_paint_mode(False)
+    assert main_window._paint_active() == (choice == "cancel")
+    expected = original if choice == "discard" else painted
+    np.testing.assert_array_equal(editor.document.meshes[0].face_rgba, expected)
+    np.testing.assert_array_equal(main_window._shared_paint_workspace.polys[0].cell_data["paint_rgba"], expected)
+    if choice != "cancel":
+        set_paint_mode(main_window, True)
+        np.testing.assert_array_equal(editor.document.meshes[0].face_rgba, expected)
+
+
+@pytest.mark.parametrize("label, choice", [("Keep paint", "keep"), ("Discard changes", "discard"), ("Cancel", "cancel")])
+def test_paint_exit_dialog_buttons(main_window, main_module, label, choice):
+    def choose():
+        dialog = QtWidgets.QApplication.activeModalWidget()
+        assert isinstance(dialog, QtWidgets.QMessageBox)
+        next(button for button in dialog.buttons() if button.text() == label).click()
+    QtCore.QTimer.singleShot(0, choose)
+    assert main_module.QtAssignColorsApp._ask_keep_paint(main_window) == choice
