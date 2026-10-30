@@ -30,6 +30,12 @@ on:
 permissions:
   contents: read
 
+# Superseded PR builds should not occupy the free Mac runner pool. Preserve
+# manually requested and tagged builds, which may be validation/release evidence.
+concurrency:
+  group: mac-desktop-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 # Tagged builds are deliberately disabled until the initial manual release gates
 # in packaging/macos/RELEASE_CHECKLIST.md have passed. Manual builds work now.
 jobs:

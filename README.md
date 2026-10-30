@@ -41,8 +41,9 @@ The source launchers now install a private, pinned Python and the GUI dependenci
 for you. **You do not need to install Python, Git, Node, or Homebrew first.**
 The first setup needs an internet connection; later launches work offline.
 
-1. Choose **Code → Download ZIP** on this GitHub page. In Downloads, double-click
-   the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
+1. [Download the source preview ZIP](https://github.com/Finn2400/layerloom/archive/refs/heads/codex/paint-release-integration.zip).
+   This link selects the installation fixes described here; no GitHub account is needed.
+   In Downloads, double-click the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
    Open the extracted folder containing this README and the launchers.
    **START_HERE.html** in that folder is a short guide you can open in your browser.
 2. Open the launcher in the extracted folder:

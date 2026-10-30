@@ -63,7 +63,7 @@ does not establish the first-download experience.
 - [ ] Review `THIRD_PARTY_NOTICES`, the GPL/LGPL terms of the bundled PyQt/Qt components and availability of required corresponding sources for the exact versions. Include or link corresponding source downloads alongside the draft; do not assume the LayerLoom MIT license replaces dependency obligations.
 - [ ] Match the version shown in Help → Copy diagnostics to the DMG/source archive and instructions. In the private preview release body, link the source guide to the recorded commit, not the default branch. A new candidate needs newly built source distributions and both DMGs.
 - [ ] Verify draft assets include both DMGs, their SHA-256 files, source archive, wheel, architecture-specific notices/build-info files, first-run HTML plus SVG, and `VALIDATION.txt` with results for that exact candidate. Confirm the tag equals the app version and all artifacts correspond to the recorded commit.
-- [ ] Before publication, update draft-status notices in README, install/first-open docs, release notes and DMG HTML; add the actual validated public download link. Rebuild the DMGs if their bundled instructions change.
+- [ ] Before publication, update draft-status notices in README, install/first-open docs, release notes and DMG HTML; replace the preview-branch source link with the validated release's curated ZIP and add the validated public DMG links. Rebuild the DMGs if their bundled instructions change.
 
 Private complex-model input files and screenshots stay outside public release assets; the validation record may summarize appropriate aggregate measurements.
 

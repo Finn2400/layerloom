@@ -77,9 +77,11 @@ it contains the application, examples, launchers and instructions without
 manuscript materials. For a standalone Mac installation, choose the matching
 DMG instead. Draft release files remain visible only to maintainers.
 
-1. On the [LayerLoom repository](https://github.com/Finn2400/layerloom), choose
-   **Code → Download ZIP**. This downloads the branch currently selected on the
-   page. Keep the launchers and all files from the same download together.
+1. [Download the source preview ZIP](https://github.com/Finn2400/layerloom/archive/refs/heads/codex/paint-release-integration.zip).
+   This selects the preview containing the installation fixes in this guide;
+   no GitHub account is needed. Keep the launchers and all files from the same
+   download together. GitHub's **Code → Download ZIP** uses whichever branch is
+   selected on that page, which may contain an older version.
 2. Open Downloads. On macOS, double-click the ZIP to extract it. On Windows,
    right-click the ZIP, choose **Extract All**, and finish extraction. On Linux,
    use your archive manager's **Extract** action.
