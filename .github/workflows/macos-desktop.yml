@@ -17,6 +17,7 @@ on:
       - 'src/**'
       - 'examples/**'
       - 'scripts/build_macos.py'
+      - 'scripts/macos_icon.py'
       - 'scripts/validate_macos.py'
       - 'scripts/macos_validation_matrix.py'
       - 'scripts/runtime-pins.txt'

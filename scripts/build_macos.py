@@ -152,8 +152,12 @@ def main(argv=None):
     stage = build / "dist"
     # PyInstaller owns this exact build directory; it never shares source/user outputs.
     stage.mkdir(parents=True, exist_ok=True)
+    from macos_icon import write_icon
+    icon = build / "LayerLoom.icns"
+    write_icon(icon)
     env = os.environ.copy()
     env.update(
+        LAYERLOOM_BUILD_ICON=str(icon),
         LAYERLOOM_BUILD_ARCH=arch, LAYERLOOM_BUILD_VERSION=version,
         MACOSX_DEPLOYMENT_TARGET=MINIMUM[arch],
         PYINSTALLER_CONFIG_DIR=str(build / "pyinstaller-cache"),
@@ -194,9 +198,8 @@ def main(argv=None):
         shutil.copytree(final_app, dmg_stage / "LayerLoom.app", symlinks=True)
         (dmg_stage / "Applications").symlink_to("/Applications")
         shutil.copy2(ROOT / "packaging/macos/Read Me First.html", dmg_stage / "Read Me First.html")
-        shutil.copy2(ROOT / "docs/images/mac-first-open.svg", dmg_stage / "mac-first-open.svg")
         dmg = output / f"LayerLoom-{version}-macos-{arch}.dmg"
-        run(["/usr/bin/hdiutil", "create", "-volname", f"LayerLoom {version}", "-srcfolder", dmg_stage,
+        run(["/usr/bin/hdiutil", "create", "-volname", f"LayerLoom {version} - Drag to Applications", "-srcfolder", dmg_stage,
              "-ov", "-format", "UDZO", dmg])
         digest = hashlib.sha256(dmg.read_bytes()).hexdigest()
         dmg.with_suffix(".dmg.sha256").write_text(f"{digest}  {dmg.name}\n")

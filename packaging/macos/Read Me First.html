@@ -1,57 +1,29 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Start LayerLoom</title>
-<style>
-body{max-width:800px;margin:40px auto;padding:0 24px;font:18px/1.6 system-ui,sans-serif;color:#222;background:#fff}
-h1,h2{color:#246e82;line-height:1.2}li{margin:14px 0}.note{background:#eef5f7;padding:18px 22px;border-radius:12px}
-img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:.9em}a{color:#175a99}table{border-collapse:collapse;width:100%;font-size:16px}td,th{text-align:left;border-bottom:1px solid #ccd6dc;padding:10px}
-</style>
-</head>
-<body>
-<h1>Start LayerLoom</h1>
-<p><strong>Version 0.6.4a5 — Mac test candidate</strong></p>
-<p>This disk image contains the Mac app and its required libraries. You do not need to install Python, Git, Node, or Homebrew.</p>
-<div class="note"><strong>Draft build for testing.</strong> This release is unpublished and available only to maintainers with repository write access. Automated checks do not replace the required downloaded-app and first-time-user checks. Public users can use the source launchers until a desktop release is published.</div>
-<h2>1. Check your Mac</h2>
-<p>Choose <strong>Apple menu → About This Mac</strong> and check the chip or processor and macOS version.</p>
-<table><thead><tr><th>Computer</th><th>DMG filename ends with</th><th>Minimum macOS</th></tr></thead>
-<tbody><tr><td>Apple M-series chip</td><td><code>macos-arm64.dmg</code></td><td>14 Sonoma</td></tr>
-<tr><td>Intel processor</td><td><code>macos-x86_64.dmg</code></td><td>15 Sequoia</td></tr></tbody></table>
-<h2>2. Copy and open</h2>
-<ol>
-<li>Drag <strong>LayerLoom.app</strong> onto the <strong>Applications</strong> folder in this disk image. You can copy it to another folder you own if Applications is not writable.</li>
-<li>Open the copied app in Finder. You can eject the disk image after copying.</li>
-<li>If macOS says the developer cannot be verified or Apple cannot check the app, dismiss that alert. Open <strong>Apple menu → System Settings → Privacy &amp; Security</strong> and scroll to Security.</li>
-<li>Find the message naming LayerLoom and choose <strong>Open Anyway</strong> (some versions first show <strong>Open</strong>). Confirm the next prompt and enter your Mac login password if asked. Only approve the copy supplied by the LayerLoom project.</li>
-</ol>
-<img src="mac-first-open.svg" alt="Illustration: copy and open the app, find Privacy and Security in System Settings, then approve LayerLoom with Open Anyway">
-<p>If the approval button is missing, try opening the copied app again and return to Settings. The button is offered for about an hour after a launch attempt. This Settings route applies to macOS 14 Sonoma, 15 Sequoia, and 26 Tahoe; labels can vary by update.</p>
-<p>This free build is ad-hoc signed without Apple notarization. Approval may be required again after an update. A managed Mac may prohibit approval; contact its administrator. If the alert says the app is damaged or will damage your computer, stop and obtain a fresh copy from the project. Report the exact message if it persists.</p>
-<p>On the first launch, allow roughly half a minute for bundled libraries and font caches to initialize. After approval, wait for the window instead of opening another copy.</p>
-<h2>3. Make your first model</h2>
-<ol>
-<li>LayerLoom starts in <strong>Arrange</strong>, with a pixelated Benchy design on the empty build plate. Click <strong>Try the example</strong> to load four CMY cubes. Loading either example keeps your current mode.</li>
-<li>Click <strong>Export geometry 3MF…</strong>. The tutorial selects <strong>Woven apparent colors</strong> and <strong>0.16 mm</strong> automatically. Check those values and click <strong>Choose save location…</strong>.</li>
-<li>Choose a <code>.3mf</code> filename and folder. The example suggests <strong>LayerLoom</strong> in your home folder. Wait for the <strong>Export complete</strong> panel. Use <strong>Show in Finder</strong> to locate it. The first export may take longer while geometry search code compiles.</li>
-<li>Open that file in your slicer as one model with multiple parts. Keep the parts aligned and match the cyan, magenta, and yellow objects to your filaments. Use <strong>0.16 mm for both normal and first layers</strong>, with adaptive layers disabled.</li>
-</ol>
-<h2>4. Try painting</h2>
-<ol>
-<li>With the cubes open, turn on <strong>Paint</strong> in the main toolbar. Choose <strong>Surface select</strong>, click a surface, choose a color, and click <strong>Apply paint</strong>. You can turn Paint off to return to Arrange; the model and its edits stay in place.</li>
-<li>Try <strong>Undo</strong> and <strong>Redo</strong>. Choose <strong>Save paint…</strong> and save a <code>.llpaint</code> project in the folder you choose. Use <strong>Open…</strong> to reopen it and check your edit.</li>
-<li>Export a separate <code>.3mf</code> for printing. The project retains editable paint; the printable output converts those colors into separate physical filament geometry.</li>
-</ol>
-<p>These instructions accompany <strong>0.6.4a5</strong>. Use <strong>Help → Copy diagnostics</strong> to confirm your build.</p>
-<p>Start with the cubes. <strong>Help → Load the Benchy example</strong> opens the larger eight-part model. It keeps your current mode. Turn on Paint to see its four CMY recipes in Color mapping; the model should appear in several colors. It selects a 4,096 MiB estimated export budget. Cubes and ordinary models use 2,048 MiB. <strong>Advanced export settings</strong> shows the budget; it is not a hard limit on total memory, and larger models take longer.</p>
-<p>In the tested Bambu Classic slicer profile, enable <strong>Detect thin walls</strong> to retain the Benchy's narrow top cap. Keep first and normal layers at 0.16 mm and adaptive layers off. Inspect narrow tips in preview; other models and profiles need their own checks.</p>
-<p>For a larger model, <strong>Advanced export settings → Sampling budget</strong> limits work in millions of cells; <strong>Export memory budget</strong> is an additional-memory estimate in MiB. Consider coarser XY sampling first if either limit is exceeded. Increase only the relevant limit when the computer has capacity; a higher budget does not guarantee speed or success.</p>
-<p>After first-open approval, the example works offline. Outputs stay in the folder you choose. To update, quit LayerLoom and replace the app; keep your models outside the app.</p>
-<p>The Mac file chooser does not use Finder’s cloud-provider sidebar. You do not need to grant Google Drive or OneDrive access to run the example. macOS may ask for access when you deliberately select a protected or cloud folder.</p>
-<h2>If something goes wrong</h2>
-<p>Use <strong>Help → Copy diagnostics</strong> and <strong>Help → Open logs</strong>. If the app cannot start, its error dialog gives details and a log location. Include the exact message, Mac model, macOS version, and the step that failed when reporting the issue.</p>
-<p><a href="https://support.apple.com/en-us/102445">Apple’s first-open instructions</a> · <a href="https://support.apple.com/en-gb/guide/mac-help/mh40617/26/mac/26">Apple’s macOS 26 approval guide</a> · <a href="https://github.com/Finn2400/layerloom/issues">LayerLoom support</a></p>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start LayerLoom</title><style>body{max-width:760px;margin:40px auto;padding:0 24px;font:18px/1.6 system-ui,sans-serif;color:#222;background:white}h1,h2{color:#246e82;line-height:1.2}li{margin:12px 0}details{padding:14px;background:#eef5f7;border-radius:12px;margin:20px 0}summary{cursor:pointer;font-weight:bold}svg{max-width:100%;height:auto}a{color:#175a99}</style></head><body>
+<h1>Start LayerLoom</h1><p>Mac early access · 0.6.4a6</p>
+<p>The app includes everything it needs. No Python, Git, Homebrew, or Terminal setup.</p>
+<h2>1. Copy and open</h2><ol><li>Drag <strong>LayerLoom.app</strong> onto <strong>Applications</strong> in the disk image.</li><li>Open <strong>Applications → LayerLoom</strong>. Allow about half a minute on first launch.</li></ol>
+<details><summary>Mac blocked the app?</summary><p>Dismiss the warning. Open <strong>Apple menu → System Settings → Privacy &amp; Security</strong>, scroll to Security, find LayerLoom and click <strong>Open Anyway</strong>. Confirm and enter your Mac password if asked. If the button is absent, try opening the copied app again, then return to Settings.</p>
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="310" viewBox="0 0 1080 310" role="img" aria-labelledby="title desc">
+<title id="title">Open LayerLoom for the first time</title><desc id="desc">Copy and open LayerLoom. If macOS blocks it, find Privacy and Security in System Settings and approve LayerLoom with Open Anyway. Illustration, not a screenshot.</desc>
+<rect width="1080" height="310" rx="20" fill="#f3f5f8"/>
+<g font-family="Arial, sans-serif" fill="#17212d">
+<text x="28" y="38" font-size="22" font-weight="bold">First open · approve this app if macOS asks</text>
+<g stroke="#d2dae4" fill="white"><rect x="28" y="60" width="320" height="205" rx="14"/><rect x="380" y="60" width="320" height="205" rx="14"/><rect x="732" y="60" width="320" height="205" rx="14"/></g>
+<g font-size="18" font-weight="bold"><text x="48" y="95">1  Copy and open</text><text x="400" y="95">2  Find the approval</text><text x="752" y="95">3  Open LayerLoom</text></g>
+<rect x="48" y="116" width="64" height="64" rx="13" fill="#39526a"/><text x="59" y="158" font-size="28" fill="white" font-weight="bold">LL</text>
+<text x="128" y="150" font-size="18">LayerLoom.app</text><text x="48" y="208" font-size="16">Drag from the DMG to Applications.</text><text x="48" y="234" font-size="16">Open the copied app.</text>
+<text x="400" y="140" font-size="17">System Settings</text><text x="400" y="174" font-size="17">→ Privacy &amp; Security</text><text x="400" y="214" font-size="16">Scroll to the message naming</text><text x="400" y="238" font-size="16">LayerLoom.</text>
+<rect x="752" y="117" width="180" height="44" rx="10" fill="#176cce"/><text x="842" y="145" font-size="18" text-anchor="middle" fill="white">Open Anyway</text>
+<text x="752" y="197" font-size="16">Confirm Open, then choose</text><text x="752" y="222" font-size="16" font-weight="bold">Try the example</text>
+<text x="28" y="291" font-size="13" fill="#5f6c7d">Illustration; macOS labels can vary. Download only from the LayerLoom project. No Terminal commands are needed for this approval.</text>
+</g></svg>
+
+<p>This free build is not Apple-notarized. Approve only the copy from the LayerLoom repository. Managed Macs may prohibit approval. If macOS says <strong>damaged</strong> or <strong>will damage your computer</strong>, stop and report the exact warning.</p></details>
+<h2>2. Try the example</h2><ol><li>Click <strong>Try the example</strong>. Four colored cubes will appear.</li><li>Click <strong>Export geometry 3MF…</strong>. Keep <strong>Woven apparent colors</strong> and <strong>0.16 mm</strong>, then click <strong>Choose save location…</strong>.</li><li>Choose a filename and folder. Wait for <strong>Export complete</strong>, then click <strong>Show in Finder</strong>. The first export may take a little longer.</li></ol>
+<p>You have made a printable model. No printer is needed to try this example. You can eject the installer after copying; the installed app and examples work offline.</p>
+<h2>What next?</h2><p>A <strong>3MF</strong> is a printable model file. A <strong>slicer</strong> turns it into instructions for your printer. <a href="https://github.com/Finn2400/layerloom/blob/main/docs/tutorial.md#open-the-3mf-in-a-slicer">Follow the slicer walkthrough</a> before printing.</p>
+<details><summary>Try painting or a larger model</summary><p>Turn on <strong>Paint</strong>, select a surface, choose a color, then <strong>Apply paint</strong>. Use <strong>Save paint…</strong> to keep an editable project. Export a separate printable 3MF. Turn Paint off to return to Arrange; your edits stay.</p><p>Choose <strong>Help → Load the Benchy example</strong> to try a larger model.</p></details>
+<details><summary>If something goes wrong</summary><p>Use <strong>Help → Copy diagnostics</strong> and <strong>Help → Open logs</strong>. Include the exact message and step that failed. <a href="https://github.com/Finn2400/layerloom/issues">Report a problem</a>.</p><p>Apple Silicon needs macOS 14 or newer; Intel needs macOS 15 or newer. <a href="https://github.com/Finn2400/layerloom/blob/main/docs/mac_first_open.md">Online installation guide</a>.</p></details>
+</body></html>

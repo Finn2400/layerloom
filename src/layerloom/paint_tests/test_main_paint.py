@@ -517,6 +517,8 @@ def test_paint_loaded_model_placement_save_and_reopen_share_exact_geometry(main_
     placed = document.meshes[0].vertices.copy()
     assert not np.allclose(placed, baseline)
     assert "*" in main_window.windowTitle(), "Arrange placement must retain the shared unsaved marker"
+    assert main_window.windowTitle().startswith("LayerLoom — Arrange — ")
+    assert "prototype" not in main_window.windowTitle()
     assert_shared_geometry(main_window)
     for _ in range(3):
         set_paint_mode(main_window, True)

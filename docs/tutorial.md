@@ -132,3 +132,33 @@ uv run --no-sync layerloom-weave \
   --step 0.16 \
   --output tutorial_cmy_cubes_woven.3mf
 ```
+
+### Bambu Studio: check the parts before slicing
+
+A LayerLoom export is geometry, not a saved Bambu printer preset. Bambu Studio
+2.8.2 may say **“invalid config, load geometry data only”** when opening a valid
+geometry-only 3MF. Continuing with geometry does not load printer settings:
+select the profile for your own printer.
+
+Expand the model in **Objects**. Assign `all_cyan`, `all_magenta` and `all_yellow`
+to the corresponding physical filaments. The numbers depend on your existing
+filament list: for example, if yellow is slot 1 and cyan is slot 3, assign
+`all_cyan` to **3**, not automatically to 1. Keep the three parts together.
+
+Use **0.16 mm for both initial and normal layer height** for the example, with
+adaptive layers off. After changing any assignment, **slice again**. Clear the
+selection, inspect the filament-colored preview at several layers, and check
+that the slice actually uses all three intended filaments. An earlier preview
+can be stale after edits.
+
+Why is cyan present outside the area you painted? Each part collects **all of
+that filament**, including its contribution to mixed colors: cyan helps make
+purple and green too. Selecting `all_cyan` highlights those contributions across
+the model. Surface paint also extends inward; it is not a thin surface sticker.
+Use the combined, unselected preview to judge the apparent colors.
+
+If names grow into repeated “Plate 1” labels, or assignments change unexpectedly,
+stop and reimport the untouched export into a new project. Keep the original
+export separate from any slicer project you save. Report the slicer version and
+the last action; do not print a slice with unexplained assignments. This was
+observed during automated Bambu control and is still being isolated.

@@ -40,7 +40,10 @@
     "version": "02.08.02.61",
     "action": "File > Open Project",
     "message": "The 3mf file has invalid config, load geometry data only",
-    "status": "pending manual OK; automated input unsuccessful; no slice/print attempted"
+    "status": "User clicked OK; geometry import visually verified, 1,431,342 triangles; not sliced or printed",
+    "normal_layer_mm": 0.16,
+    "initial_layer_mm": 0.2,
+    "filament_assignment": "existing slicer list retained; not validated"
   },
   "remaining": [
     "browser download/quarantine",

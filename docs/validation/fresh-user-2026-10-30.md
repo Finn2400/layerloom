@@ -47,7 +47,7 @@ macOS account.
 | Reopen paint project | Cyan patch remained visible |
 | Export reopened painted Benchy | Passed with unchanged 0.16/0.5 mm defaults, 0.001 mm precision and preserved 4,096 MiB estimated-memory budget |
 | Reopen printable Benchy | Three parts, 1,431,342 faces; cyan hull patch visible |
-| Independent slicer open | Bambu Studio 02.08.02.61 displayed an invalid-config / geometry-only import notice; see open issue below |
+| Independent slicer open | User dismissed Bambu Studio 02.08.02.61 geometry-only notice; imported Benchy visibly confirmed at 1,431,342 triangles and 37.784 × 25.815 × 36.458 mm. Slicing remains untested. |
 
 The app was responsive enough to show progress and a Cancel export control.
 Cancellation itself was not exercised. No privacy settings, quarantine flags,
@@ -71,9 +71,12 @@ surfaces. These checks do not replace slicer preview or a physical print.
    Project displays: “The 3mf file has invalid config, load geometry data only”.
    The output contains filament color metadata but is not a complete Bambu
    printer/process project. This does not establish corrupt geometry, but a
-   beginner will understandably interpret it as failure. Verify geometry-only
-   continuation and compare File → Import before choosing an export or guide
-   change. Do not claim this trial passed slicing.
+   beginner will understandably interpret it as failure. Geometry-only
+   continuation succeeded after the user clicked OK. Bambu retained 0.16 mm
+   normal layers but 0.20 mm initial layers and the existing filament list;
+   filament assignment and first-layer correction are still required. Compare
+   File → Import before choosing an export or guide change. Do not claim this
+   trial passed slicing.
 2. **Source-specific Mac recovery is missing from the short HTML guide.**
    START_HERE links approval instructions/illustration for a DMG app, although
    source users have a `.command` launcher. Bring the source-specific fallback
@@ -128,3 +131,12 @@ Portable evidence accompanies this report:
 [Benchy meshes](fresh-user-2026-10-30/benchy-validation.json),
 [paint → Undo → Redo → reopen screenshots](fresh-user-2026-10-30/paint-comparison.png),
 and [reopened printable Benchy](fresh-user-2026-10-30/benchy-output-reopened.png).
+
+## Browser download follow-up
+
+The user downloaded the arm64 DMG through Chrome. Its SHA-256 and byte size
+match the exact artifact above, and `com.apple.quarantine` identifies Chrome.
+The agent did not remove or modify quarantine. See [download evidence](fresh-user-2026-10-30/browser-download.json).
+Finder control then timed out on three attempts while application inventory
+remained responsive. Quarantined app copying and graphical first-open approval
+remain pending; the earlier unquarantined local-copy trial does not satisfy them.

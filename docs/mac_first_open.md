@@ -1,13 +1,8 @@
 # First open on a Mac
 
-This guide is for **LayerLoom.app from a desktop DMG**. The standalone release
-is currently an **unpublished draft**, visible only to maintainers with
-repository write access. Public users can use the [source launcher](install.md#download-and-run-the-source).
-
-Desktop builds have an ad-hoc signature without Apple notarization. First-open
-approval may be needed for each downloaded release. These instructions do not
-mean that browser-quarantine or first-time-user testing has already passed;
-maintainers must record those checks before publishing the draft.
+Download the **[Mac app](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a6)**,
+copy it to Applications, and open it. No Python or Terminal setup is needed.
+This guide covers the standalone app; [source users have separate instructions](install.md#download-and-run-the-source).
 
 ![Three first-open steps: copy and open the app, find Privacy and Security in System Settings, then approve LayerLoom with Open Anyway.](images/mac-first-open.svg)
 
@@ -47,8 +42,7 @@ Button wording can vary with the exact macOS update.
 If approval remains unavailable, a managed-computer policy may prevent it;
 contact the administrator. An **app is damaged** or **will damage your computer**
 message is different: stop, obtain a fresh project download, and report the
-exact message if it persists. Do not disable Gatekeeper or remove quarantine
-attributes to make the test pass.
+exact message if it persists. Do not disable macOS security protections to open it.
 
 On the first launch, allow roughly half a minute for bundled libraries and
 font caches to initialize. After approval, wait for the window instead of

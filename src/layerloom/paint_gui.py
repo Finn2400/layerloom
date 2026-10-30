@@ -1048,12 +1048,18 @@ class PaintWindow(QtWidgets.QMainWindow):
             self._mapping = assign_palette(self.document, self.palette_combo.currentText(), mode=self._mapping_mode,
                                            recipe_overrides=self._preferred_recipe_overrides())
             self._populate_mapping_table()
-            self.document.metadata["paint_palette"] = self.palette_combo.currentText()
-            self.document.metadata["paint_mapping_mode"] = self._mapping_mode
-            self.document.metadata["paint_mapping"] = self._mapping
-            self.dirty = True
+            saved_mapping = {
+                "paint_palette": self.palette_combo.currentText(),
+                "paint_mapping_mode": self._mapping_mode,
+                "paint_mapping": self._mapping,
+            }
+            changed = any(self.document.metadata.get(key) != value for key, value in saved_mapping.items())
+            self.document.metadata.update(saved_mapping)
+            self.dirty = self.dirty or changed
             self._update_title()
             self._mapping_preview_changed(self.preview_mapping.isChecked())
+            if changed:
+                self.statusBar().showMessage("Color choices updated. Save paint… to keep them in your editable project.")
             return True
         except Exception as exc:
             traceback.print_exc()

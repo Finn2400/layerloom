@@ -1,123 +1,72 @@
 # LayerLoom
 
-LayerLoom is an experimental Python toolkit for expanding the apparent color
-palette of multi-material FFF prints. It imports 3MF/GLB models, assigns
-palette colors, and generates woven multi-material 3MF files where color is
-encoded as repeated layer schedules rather than as one direct filament per
-visible color.
+Make more apparent print colors from a few filaments. Open a model, choose its
+colors, and export a printable file for your slicer.
 
-The goal is practical: produce more apparent colors from ordinary loaded
-filaments without custom color-mixing hardware, custom filament fabrication, or
-a weaving-aware slicer.
+## Download for Mac
 
-This branch prepares **0.6.4a5**, an unpublished test candidate. Follow the
-instructions supplied with that build. **Help → Copy diagnostics** identifies
-your version; the draft's validation report records completed and pending checks.
+**[Download for Apple Silicon](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg)** — M1/M2/M3/M4 or newer, macOS 14+
 
-LayerLoom starts in **Arrange**, with a pixelated Benchy design on the empty
-build plate. Choose **Try the example** or **Open a model** to load geometry.
-Loading either example keeps the current mode. Turn on **Paint** in the main
-toolbar when you want to edit surfaces; turn it off to return to Arrange.
-Both modes share the same model, colors, and placement. Save `.llpaint` to keep
-editable paint; **Export geometry 3MF…** converts those colors into physical
-filament geometry with no per-face paint in the printable output.
+[Download for Intel](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) — macOS 15+
 
-![LayerLoom application examples](docs/images/layerloom_applications_overview.jpg)
+Not sure? **Apple menu → About This Mac** shows your chip and macOS version.
+You only need the DMG for your Mac. No Python, Git, Homebrew, or Terminal setup.
+This is an **early-access release**; inspect your result in a slicer before printing.
 
-*LayerLoom application examples: GUI assignment, printed multi-material color,
-and scientific visualization workflows.*
+1. Open the downloaded DMG and drag **LayerLoom** onto **Applications**.
+2. Open **Applications → LayerLoom**. Allow about half a minute on first launch.
+3. Click **Try the example**, then **Export geometry 3MF…**.
+4. Keep **Woven apparent colors** and **0.16 mm**, click **Choose save location…**,
+   and choose where to save. Wait for **Export complete**, then **Show in Finder**.
 
-## Status
+You have made your first printable model. No printer is needed to try it.
+A **3MF** is the model file; a **slicer** prepares that file for your printer.
+[Open your result in a slicer](docs/tutorial.md#open-the-3mf-in-a-slicer).
 
-LayerLoom is alpha research software. It is useful, but the public API is not
-stable yet. Expect file-format edge cases and slicer-specific quirks.
+<details>
+<summary><strong>Mac blocked the app?</strong></summary>
 
-LayerLoom outputs are standard 3MF files intended for ordinary slicer workflows,
-but they are not full project round-trips for vendor-specific slicer files.
+Dismiss the warning, then open **Apple menu → System Settings → Privacy & Security**.
+Scroll to **Security**, find LayerLoom and click **Open Anyway**. Confirm and enter
+your Mac password if asked. Then open LayerLoom again if needed.
 
-## Install And Open LayerLoom
+This free app is not Apple-notarized. Approve only the copy downloaded from this
+repository. If the warning says the app is **damaged** or **will damage your computer**,
+stop and [report the exact message](https://github.com/Finn2400/layerloom/issues).
+Some managed Macs do not allow exceptions.
 
-The source launchers now install a private, pinned Python and the GUI dependencies
-for you. **You do not need to install Python, Git, Node, or Homebrew first.**
-The first setup needs an internet connection; later launches work offline.
+[Illustrated first-open guide](docs/mac_first_open.md)
+</details>
 
-1. [Download the source preview ZIP](https://github.com/Finn2400/layerloom/archive/refs/heads/codex/paint-release-integration.zip).
-   This link selects the installation fixes described here; no GitHub account is needed.
-   In Downloads, double-click the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
-   Open the extracted folder containing this README and the launchers.
-   **START_HERE.html** in that folder is a short guide you can open in your browser.
-2. Open the launcher in the extracted folder:
-   - macOS: **Launch LayerLoom.command**
-   - Windows x64: **Launch LayerLoom.bat**
-   - Linux x64: run `bash "Launch LayerLoom.sh"` from the extracted folder.
-3. Wait for setup to finish. The source launcher displays a terminal window;
-   you normally do not need to type commands into it.
-4. Click **Try the example**, then **Export geometry 3MF…**. **Woven apparent
-   colors** and **0.16 mm** are selected for this tutorial. Check those values
-   and confirm the settings. Then
-   choose a `.3mf` filename and folder (the Mac example suggests **LayerLoom** in your home folder). Wait for **Export complete**, then use **Show in Finder** on Mac or **Show in folder** on Windows/Linux.
-   Use that same layer height for first and subsequent layers in your slicer.
+## Try painting
 
-Keep the extracted folder and reopen the same launcher next time. If the Mac
-launcher is blocked or will not execute, the [installation guide](docs/install.md#macos)
-includes a short Terminal fallback that does not require knowing any Python.
+LayerLoom starts with the original build plate in **Arrange** mode. Turn on **Paint**
+when you want to edit a surface: select an area, choose a color, then **Apply paint**.
+Turn Paint off to return to Arrange. **Save paint…** keeps an editable `.llpaint`
+project; **Export geometry 3MF…** creates the separate printable model.
 
-Read the [installation guide](docs/install.md) for first-open security prompts,
-repair, and Linux graphics requirements. Existing system Python installations
-and repository `.venv` folders are not used or changed by these launchers.
+For a larger example, choose **Help → Load the Benchy example**.
+[Full tutorial](docs/tutorial.md) · [Troubleshooting](docs/mac_first_open.md)
 
-### Standalone Mac App — Release Validation In Progress
+## Windows, Linux, and source installation
 
-The standalone Mac release is being prepared as an **unpublished draft**.
-Draft assets are visible only to maintainers with repository write access;
-public users should use the source launchers above until a desktop release is
-published. A draft or a passing build does not establish that the required
-[first-open and beginner checks](packaging/macos/RELEASE_CHECKLIST.md) are complete.
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-v0.6.4a6-source.zip),
+extract it, and open **START_HERE.html**. On Windows, double-click
+**Launch LayerLoom.bat**. The launcher installs its own Python automatically;
+first setup needs internet. [Source installation guide](docs/install.md).
 
-Desktop artifacts are separate DMGs for **Apple Silicon (macOS 14+)** and
-**Intel (macOS 15+)**. To identify your Mac, choose **Apple menu → About This Mac**:
-an Apple M-series chip uses `arm64`; an Intel processor uses `x86_64`.
-The DMGs include Python and required libraries. Copy the app to Applications,
-open it, and follow the illustrated [Mac first-open guide](docs/mac_first_open.md).
-These free builds are ad-hoc signed without Apple notarization, so macOS may
-require approval under **Privacy & Security**. GitHub's **Source code (zip)**
-asset contains scripts and source, not a ready-to-open Mac app.
+The Mac downloads above already include the required software and work offline
+after installation. GitHub's **Source code** ZIP is not the Mac app.
 
-### Contributors And Command-Line Users
+## More information
 
-Use the [source/developer instructions](docs/install.md#developer-installation)
-for a reproducible environment and command-line tools. `layerloom-doctor` checks
-dependencies, native 3MF initialization, palettes, and tutorial files;
-`layerloom-doctor --render` also checks the Qt/VTK graphics stack.
+[Release notes and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a6) ·
+[Developer installation](docs/install.md#developer-installation) ·
+[Report a problem](https://github.com/Finn2400/layerloom/issues)
 
-## Beginner Tutorial And Examples
-
-Start with the walkthrough in [docs/tutorial.md](docs/tutorial.md). It includes
-a first-run checklist and uses two CMY sample inputs in [examples/](examples/):
-
-- [examples/tutorial_cmy_cubes.3mf](examples/tutorial_cmy_cubes.3mf): a basic
-  cyan/magenta/yellow cube example with pre-tagged weave patterns.
-- [examples/tutorial_cmy_benchy_cutup.3mf](examples/tutorial_cmy_benchy_cutup.3mf):
-  a pre-labeled cut-up 3DBenchy example using only cyan, magenta, and yellow
-  tokens.
-
-For a short Paint demonstration, load the cubes, turn on **Paint** in the main
-toolbar, choose **Surface select**, click a surface, choose a color, and click
-**Apply paint**. Try Undo and Redo, then **Save paint…** to a `.llpaint` file
-and reopen it with **Open…**. Export the
-printable `.3mf` at the tutorial's selected **0.16 mm**. The editable project
-keeps your paint; the printable file converts it into separate filament geometry.
-The [tutorial](docs/tutorial.md) explains the slicer settings and limitations.
-
-Start with the cubes before trying larger models. The first export also compiles
-its geometry search code, so leave it running while progress advances.
-Use **Help → Load the Benchy example** for the larger CMY sample. It selects a
-4,096 MiB estimated export budget; the cubes and ordinary models use 2,048 MiB.
-The export summary shows the active budget. This is a planning estimate for
-additional work, not a limit on total app memory or a guarantee of speed. Paint's
-**Save paint…** action saves the editable project, and **Export geometry 3MF…**
-creates the file to slice. The [Paint workflow and limits](src/layerloom/PAINT_PROTOTYPE.md)
-describe selection tools, sampling detail, cancellation, and memory budgeting.
+Use **Help → Copy diagnostics** and **Help → Open logs** when reporting a problem.
+LayerLoom is alpha software; printer-specific project settings are chosen in your
+slicer. Physical print quality depends on your model, filaments and printer.
 
 ## Palette Options
 

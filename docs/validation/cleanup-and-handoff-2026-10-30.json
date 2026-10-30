@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-30",
+  "removed_item_count": 97,
+  "free_bytes_before": 13072543744,
+  "free_bytes_after": 43115388928,
+  "observed_free_space_increase_bytes": 30042845184,
+  "note": "Free-space change is an observed APFS volume reading, not the sum of du sizes; background activity may affect it.",
+  "preserved_installer": {
+    "path": "/Users/finn/Downloads/LayerLoom-0.6.4a5-macos-arm64.dmg",
+    "sha256": "fef6eed441b9233df92b2319d395de65e02810f84c4d5d7993142a5139d67056",
+    "quarantine": "0081;6ae4a1f9;Chrome;11DA5FBC-3C0D-47D0-8559-E5B1B91B7D98"
+  },
+  "preserved": [
+    "Original working tree and all registered worktrees",
+    "User models and existing exports",
+    "Compact logs, screenshots and validation reports",
+    "Small managed Python runtime used for evidence tooling"
+  ],
+  "new_test_workspace": "/Users/finn/LayerLoom Fresh User Test",
+  "cleanup_manifest_local": "/Users/finn/LayerLoom Fresh User Test/Evidence/cleanup-manifest.json"
+}

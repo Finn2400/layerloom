@@ -131,6 +131,8 @@ def test_palette_preview_is_nondestructive_and_save_reopen_keeps_erase_source(wi
     assert window.mapping_table.rowCount() == 1
     assert window._mapping == reopened.metadata["paint_mapping"]
     assert not window.dirty
+    assert window.assign_colors()
+    assert not window.dirty, "Recomputing unchanged color choices must not dirty a saved project"
     window.tool_combo.setCurrentText("Object fill")
     window.set_paint_color("#12E4AB")
     click_surface(window)

@@ -106,7 +106,9 @@ class PaintWorkspaceHostMixin:
 
     def _paint_title_changed(self, title):
         if self._paint_active() or self._shared_paint_active():
-            self.setWindowTitle(title + " — main UI prototype")
+            mode = "Paint" if self._paint_active() else "Arrange"
+            model = title.removeprefix("LayerLoom Paint — ")
+            self.setWindowTitle(f"LayerLoom — {mode} — {model}")
 
     def _paint_status_changed(self, message):
         if self._paint_active() or self._shared_paint_active():
@@ -131,7 +133,7 @@ class PaintWorkspaceHostMixin:
             action.setVisible(False if paint or (shared and legacy_setting)
                               else self._arrange_toolbar_visibility[action])
         for action, original in self._workspace_action_labels:
-            action.setText(_PAINT_ACTION_LABELS[original] if paint or shared else original)
+            action.setText(_PAINT_ACTION_LABELS[original] if paint or shared or original == "Weave" else original)
         for action in self._paint_history_actions:
             action.setVisible(paint or shared)
             action.setShortcut(self._paint_shortcuts[action] if paint or shared else QtGui.QKeySequence())

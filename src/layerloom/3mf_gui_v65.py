@@ -1989,7 +1989,7 @@ def create_main_window():
     except NameError:
         script_dir = os.getcwd()
 
-    _V58.APP_TITLE = "LayerLoom — Color Assigner v65"
+    _V58.APP_TITLE = "LayerLoom — Arrange"
     _V58.PALETTES_DIR = os.path.join(script_dir, "palettes")
     if not os.path.isdir(_V58.PALETTES_DIR):
         _V58._log("WARN", f"'palettes' directory not found at {_V58.PALETTES_DIR}. Using dummy palette data.")

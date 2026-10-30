@@ -28,6 +28,7 @@ exe = EXE(
 coll = COLLECT(exe, a.binaries, a.datas, strip=False, upx=False, name='LayerLoom')
 app = BUNDLE(
     coll, name='LayerLoom.app', bundle_identifier='org.layerloom.LayerLoom',
+    icon=os.environ['LAYERLOOM_BUILD_ICON'],
     info_plist={
         'CFBundleName': 'LayerLoom', 'CFBundleDisplayName': 'LayerLoom',
         'CFBundleShortVersionString': bundle_short_version(version), 'CFBundleVersion': version,
