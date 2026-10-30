@@ -1,0 +1,4 @@
+# Application source downloads do not need manuscript PDFs and figure trees.
+# These remain tracked and available in a Git clone; no working files are deleted.
+src/layerloom/manuscript_* export-ignore
+src/layerloom/submission_* export-ignore

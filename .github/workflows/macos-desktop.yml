@@ -178,6 +178,8 @@ jobs:
         run: |
           uv sync --managed-python --locked --extra dev
           .venv/bin/python -m build
+          .venv/bin/python scripts/build_source_zip.py dist
+          .venv/bin/python scripts/validate_distributions.py dist
           cp packaging/macos/RELEASE_CHECKLIST.md artifacts/RELEASE_CHECKLIST.md
           cp 'packaging/macos/Read Me First.html' artifacts/Read-Me-First.html
           cp docs/images/mac-first-open.svg artifacts/mac-first-open.svg
@@ -186,4 +188,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.ref_name }}
         run: |
-          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl
+          gh release create "$RELEASE_TAG" --draft --verify-tag --title "LayerLoom $RELEASE_TAG" --notes-file packaging/macos/RELEASE_NOTES.md artifacts/*.dmg artifacts/*.sha256 artifacts/THIRD_PARTY_NOTICES-*.tar.gz artifacts/*-build-info.json artifacts/Read-Me-First.html artifacts/mac-first-open.svg artifacts/RELEASE_CHECKLIST.md dist/*.tar.gz dist/*.whl dist/*-source.zip

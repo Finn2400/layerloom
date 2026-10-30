@@ -72,6 +72,11 @@ use LayerLoom.
 
 ## Download and run the source
 
+If a release supplies **LayerLoom-&lt;version&gt;-source.zip**, prefer that file:
+it contains the application, examples, launchers and instructions without
+manuscript materials. For a standalone Mac installation, choose the matching
+DMG instead. Draft release files remain visible only to maintainers.
+
 1. On the [LayerLoom repository](https://github.com/Finn2400/layerloom), choose
    **Code → Download ZIP**. This downloads the branch currently selected on the
    page. Keep the launchers and all files from the same download together.
@@ -80,6 +85,7 @@ use LayerLoom.
    use your archive manager's **Extract** action.
 3. Open the extracted folder containing `README.md`, `scripts`, and the
    **Launch LayerLoom** files. Do not run files from inside an archive preview.
+   Double-click **START_HERE.html** for the short, offline-readable instructions.
 4. Use the launcher for your computer below. Keep the extracted folder for
    future launches; moving it after setup requires a new environment download.
 
@@ -112,6 +118,11 @@ The standalone `.app` uses the graphical installation above.
 Double-click **Launch LayerLoom.bat** in the extracted folder. File Explorer may
 hide the `.bat` extension; its file type is **Windows Batch File**. A setup
 window stays visible during installation.
+
+If Windows shows **Open File – Security Warning** with **Unknown Publisher**,
+check that the file is **Launch LayerLoom.bat** from the LayerLoom ZIP you
+downloaded, then click **Run**. You can leave **Always ask before opening this
+file** checked; Windows may show the same prompt on later launches.
 
 If Windows shows **Windows protected your PC**, check that this is the launcher
 from the LayerLoom download, then use **More info → Run anyway** if offered.
@@ -185,6 +196,8 @@ project's DMG instead of installing packages inside it.
 | Mac says this application is not supported | Check About This Mac against the architecture and minimum OS table. Use `arm64` for Apple Silicon and `x86_64` for Intel. |
 | `python: command not found`, Python 3.9, or an activation error | Use the included launcher. You do not need a `python` command or a manually activated environment. |
 | Download failed, checksum failed, connection error, or interrupted setup | Restore internet access and reopen the same launcher. It retries incomplete setup. Do not install extra Python versions to fix a download failure. |
+| “The LayerLoom folder is incomplete” | Extract the entire ZIP, then open the launcher inside that extracted folder. Do not copy just the launcher to your Desktop. If files are still missing, download and extract a fresh ZIP. |
+| Setup cannot write its logs or create its folders | Check free disk space and that your account can write to the reported folder. On a managed computer, ask your administrator; changing Python versions will not fix folder access. |
 | `Another LayerLoom setup is running` | Let the first setup finish. If two launchers are open, keep the one doing the installation. A crashed process releases its lock automatically. |
 | Setup needs a download while offline | Reconnect and reopen it. First setup, repair, a moved source folder, or changed runtime files needs a fresh environment. |
 | A Qt platform plugin, OpenGL, or native library could not load | Save the error and setup log. On Linux, check the graphics prerequisites above. For source installs, try repair; for a Mac app, try a fresh matching DMG. |

@@ -43,7 +43,7 @@ does not establish the first-download experience.
 
 - [ ] All installation/bootstrap tests pass on Windows, Linux and macOS.
 - [ ] Source and wheel content validation passes, including Paint modules, palettes, both examples, helper scripts, source tests, and Paint documentation. The installed wheel exports a painted cube from an unrelated directory.
-- [ ] The real source launchers pass first setup, offline reopening and Unicode-path worker tests on native Windows, macOS and Linux CI.
+- [ ] The curated source ZIP matches the sdist file-for-file and contains START_HERE.html plus every launcher/runtime manifest. The real source launchers install from this extracted ZIP and reopen offline on native Windows, macOS and Linux CI, from an unrelated working directory with spaces/non-ASCII paths and an untouched existing `.venv`. Unicode-path worker tests also pass.
 - [ ] Both architecture builds pass native minimum-OS, signature and relocation checks.
 - [ ] All four standard hosted OS/architecture jobs complete the frozen worker → weave → bake path and GLB import with optional repair absent.
 - [ ] This exact ARM artifact also passes `validate_macos.py --gui` on macOS 14, using the optional hosted job before retirement or a local Mac afterward. Record its checksum and report; this remains required for publication.

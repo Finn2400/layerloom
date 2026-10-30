@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 import tarfile
 import zipfile
@@ -33,13 +34,31 @@ def validate(distributions: Path) -> None:
         raise RuntimeError(f"Wheel is missing runtime files: {sorted(missing)}")
     with tarfile.open(sources[0]) as archive:
         source_names = {name.split("/", 1)[1] for name in archive.getnames() if "/" in name}
+        source_hashes = {member.name: hashlib.sha256(archive.extractfile(member).read()).digest()
+                         for member in archive.getmembers() if member.isfile()}
+    # The ZIP is the novice-facing source download. It must contain exactly the
+    # same files as the tested sdist, not an independently maintained file list.
+    zips = sorted(distributions.glob("LayerLoom-*-source.zip"))
+    if len(zips) != 1:
+        raise RuntimeError("Expected exactly one beginner source ZIP; run scripts/build_source_zip.py first.")
+    with zipfile.ZipFile(zips[0]) as archive:
+        zip_hashes = {name: hashlib.sha256(archive.read(name)).digest()
+                      for name in archive.namelist() if not name.endswith("/")}
+    if zip_hashes != source_hashes:
+        raise RuntimeError("The beginner source ZIP does not match the source archive.")
     source_root = Path(__file__).resolve().parents[1]
     source_required = {
+        ".python-version", "pyproject.toml", "uv.lock", "README.md", "START_HERE.html", "LICENSE",
+        "Launch LayerLoom.bat", "Launch LayerLoom.command", "Launch LayerLoom.sh",
+        "scripts/bootstrap.sh", "scripts/bootstrap.ps1", "scripts/runtime-pins.txt",
+        "docs/install.md", "docs/tutorial.md", "docs/mac_first_open.md",
+        "docs/images/mac-first-open.svg",
         "src/layerloom/PAINT_PROTOTYPE.md", "src/layerloom/PROTEIN_PRINT_VISUALIZATION_STANDARD.md",
         "scripts/chimerax_prepare_layerloom.py", "scripts/chimerax_make_1e27_pmhc_presentation.py",
         "scripts/installed_paint_smoke.py", "scripts/validate_distributions.py",
-        "scripts/bootstrap.py", "scripts/build_macos.py", "scripts/validate_macos.py",
+        "scripts/bootstrap.py", "scripts/build_macos.py", "scripts/validate_macos.py", "scripts/build_source_zip.py",
         "scripts/macos_validation_matrix.py",
+        "scripts/smoke_source_archive.py",
         "packaging/macos/bundle_config.py", "packaging/macos/smoke_gui.py",
     }
     for directory in ("tests", "src/layerloom/paint_tests"):

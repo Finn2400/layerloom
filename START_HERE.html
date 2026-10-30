@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Start here — LayerLoom source download</title>
+<style>
+body{font:18px/1.6 system-ui,sans-serif;color:#182635;background:#f6f8fa;margin:0}
+main{max-width:760px;margin:auto;padding:36px 24px 64px}h1,h2{line-height:1.2}
+li{margin:14px 0}code{font-size:.94em;overflow-wrap:anywhere}
+.card{background:white;border:1px solid #ccd6df;border-radius:12px;padding:20px 24px;margin:24px 0}
+a{color:#005ca8}small{color:#455464}dt{font-weight:650}dd{margin:0 0 14px}
+</style>
+<main>
+<h1>Open LayerLoom</h1>
+<p>This is the <strong>source download</strong>. Its launcher sets up Python for
+you. You do not need Git, a GitHub account, or programming experience.</p>
+<div class="card">
+<ol>
+<li><strong>Extract the whole ZIP.</strong> On Windows, right-click it and choose
+<strong>Extract All</strong>. On Mac, double-click it. Open the extracted folder;
+keep all its files together.</li>
+<li><strong>Open the launcher for your computer.</strong>
+<p>Windows x64: double-click <code>Launch LayerLoom.bat</code> (its type may say
+Windows Batch File). Mac: double-click <code>Launch LayerLoom.command</code>.</p>
+<p>Linux x64: in a terminal in this folder, run
+<code>bash "Launch LayerLoom.sh"</code>. Linux needs working desktop graphics
+libraries; see the installation guide below.</p></li>
+<li><strong>Wait for the app to open.</strong> First setup needs internet and may
+take several minutes. Keep its setup window open, including while LayerLoom is
+running. You do not need to type Python commands.</li>
+<li><strong>Try the example.</strong> Choose <strong>Try the example</strong> on
+the build plate, then <strong>Export geometry 3MF…</strong>. Keep
+<strong>Woven apparent colors</strong> and <strong>0.16 mm</strong>, choose a save
+location, and wait for <strong>Export complete</strong>.</li>
+</ol>
+</div>
+<h2>If something stops you</h2>
+<p><strong>Windows security prompt:</strong> for the launcher from your LayerLoom
+download, choose <strong>Run</strong> in “Open File – Security Warning.” If you
+see “Windows protected your PC,” use <strong>More info → Run anyway</strong> if
+available. Managed computers may need administrator approval.</p>
+<p><strong>Mac blocked launch:</strong> see the
+<a href="docs/images/mac-first-open.svg">graphical approval illustration</a> and
+<a href="docs/install.md">installation guide</a>. A standalone Mac DMG, when
+available from the project, includes everything and uses Finder instead of this
+source setup window. Apple Silicon desktop builds need macOS 14+, Intel 15+.</p>
+<p><strong>Interrupted setup:</strong> reconnect to the internet and open the same
+launcher again. Keep the extracted folder for future launches. Do not move it
+after setup unless you are prepared to repeat the installation.</p>
+<h2>What are these files?</h2>
+<dl>
+<dt>3MF (.3mf)</dt><dd>A 3D-printing model. LayerLoom exports one with separate
+filament parts. Open it in your slicer, keep the parts aligned, assign their
+filaments, and use the same 0.16 mm layer height for this example.</dd>
+<dt>GLB (.glb)</dt><dd>A 3D model that can include colors. You can import one later;
+you do not need one to try the included examples.</dd>
+<dt>LayerLoom project (.llpaint)</dt><dd>Your editable model and surface paint.
+Save this if you want to edit the paint later; export a separate 3MF to print.</dd>
+</dl>
+<p><small>More help: <a href="docs/install.md">installation and recovery</a> ·
+<a href="docs/tutorial.md">tutorial</a>. These guides are plain-text files if your
+browser does not format them. In the app, Help → Copy diagnostics records the
+version and setup details; review local file paths before sharing them.</small></p>
+</main>
+</html>

@@ -2,6 +2,12 @@
 # No preinstalled Python, pip, Git, or shell-profile changes are needed.
 set -eu
 APP_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+for required in .python-version pyproject.toml uv.lock scripts/runtime-pins.txt scripts/bootstrap.py src/layerloom/gui_app.py; do
+  if [ ! -f "$APP_DIR/$required" ]; then
+    printf 'The LayerLoom folder is incomplete. Extract the entire ZIP, then open the launcher inside the extracted folder. Keep its files together.\nMissing: %s\n' "$required" >&2
+    exit 1
+  fi
+done
 PINS="$APP_DIR/scripts/runtime-pins.txt"
 PYTHON_VERSION="$(awk '$1 == "python" {print $2}' "$PINS")"
 UV_VERSION="$(awk '$1 == "uv" {print $2}' "$PINS")"
@@ -31,8 +37,15 @@ EXPECTED="$(awk -v target="$TARGET" '$1 == "asset" && $2 == target {print $3}' "
 if [ "${#EXPECTED}" -ne 64 ] || [ -z "$PYTHON_VERSION" ] || [ -z "$UV_VERSION" ]; then
   printf 'The download is missing its runtime manifest. Download a fresh LayerLoom ZIP.\n' >&2; exit 1
 fi
-mkdir -p "$APP_HOME/tools" "$APP_HOME/logs"
+if ! mkdir -p "$APP_HOME/tools" "$APP_HOME/logs"; then
+  printf 'LayerLoom cannot create its setup folders in %s. Check folder permissions and free disk space.\n' "$APP_HOME" >&2
+  exit 1
+fi
 LOG="$APP_HOME/logs/bootstrap-$(date +%Y%m%d-%H%M%S)-$$.log"
+if ! : > "$LOG"; then
+  printf 'LayerLoom cannot write its setup log in %s. Check folder permissions and free disk space.\n' "$APP_HOME/logs" >&2
+  exit 1
+fi
 exec > >(tee -a "$LOG") 2>&1
 trap 'status=$?; if [ "$status" -ne 0 ]; then printf "\nSetup stopped. Reopen the launcher to retry. Log: %s\n" "$LOG"; fi' EXIT
 printf 'LayerLoom: preparing its private Python %s.\n' "$PYTHON_VERSION"

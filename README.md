@@ -44,6 +44,7 @@ The first setup needs an internet connection; later launches work offline.
 1. Choose **Code → Download ZIP** on this GitHub page. In Downloads, double-click
    the ZIP on a Mac, or right-click it and choose **Extract All** on Windows.
    Open the extracted folder containing this README and the launchers.
+   **START_HERE.html** in that folder is a short guide you can open in your browser.
 2. Open the launcher in the extracted folder:
    - macOS: **Launch LayerLoom.command**
    - Windows x64: **Launch LayerLoom.bat**
@@ -53,7 +54,7 @@ The first setup needs an internet connection; later launches work offline.
 4. Click **Try the example**, then **Export geometry 3MF…**. **Woven apparent
    colors** and **0.16 mm** are selected for this tutorial. Check those values
    and confirm the settings. Then
-   choose a `.3mf` filename and folder (the Mac example suggests **LayerLoom** in your home folder). Wait for **Export complete**, then use **Show in Finder**.
+   choose a `.3mf` filename and folder (the Mac example suggests **LayerLoom** in your home folder). Wait for **Export complete**, then use **Show in Finder** on Mac or **Show in folder** on Windows/Linux.
    Use that same layer height for first and subsequent layers in your slicer.
 
 Keep the extracted folder and reopen the same launcher next time. If the Mac

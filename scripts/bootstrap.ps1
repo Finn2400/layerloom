@@ -16,6 +16,13 @@ foreach ($argument in $args) {
 [Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 $OutputEncoding = [Console]::OutputEncoding
 $appDirectory = Split-Path -Parent $PSScriptRoot
+foreach ($required in @('.python-version','pyproject.toml','uv.lock','scripts/runtime-pins.txt','scripts/bootstrap.py','src/layerloom/gui_app.py')) {
+    if (-not (Test-Path -LiteralPath (Join-Path $appDirectory $required) -PathType Leaf)) {
+        Write-Host 'The LayerLoom folder is incomplete. Right-click the ZIP and choose Extract All, then open the launcher inside the extracted folder. Keep its files together.'
+        Write-Host ('Missing: ' + $required)
+        exit 1
+    }
+}
 $pins = @{}
 $assets = @{}
 Get-Content -LiteralPath (Join-Path $PSScriptRoot 'runtime-pins.txt') | ForEach-Object {
@@ -31,10 +38,16 @@ $appHome = if ($env:LAYERLOOM_HOME) { $env:LAYERLOOM_HOME } else { Join-Path $en
 $toolDirectory = Join-Path $appHome ('tools\uv-' + $pins.uv + '-' + $target)
 $uv = Join-Path $toolDirectory 'uv.exe'
 $logDirectory = Join-Path $appHome 'logs'
-New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
 $logPath = Join-Path $logDirectory ('bootstrap-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + $PID + '.log')
-Start-Transcript -Path $logPath | Out-Null
+$transcriptStarted = $false
 try {
+    try {
+        New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
+        Start-Transcript -Path $logPath | Out-Null
+        $transcriptStarted = $true
+    } catch {
+        throw ('Cannot write setup logs in ' + $logDirectory + '. Check folder permissions and free disk space. ' + $_.Exception.Message)
+    }
     if (-not $pins.python -or -not $pins.uv -or $assets[$target].Length -ne 64) {
         throw 'The runtime manifest is incomplete. Download a fresh LayerLoom ZIP.'
     }
@@ -113,9 +126,10 @@ try {
     $result = $LASTEXITCODE
 } catch {
     Write-Host ('LayerLoom setup stopped: ' + $_.Exception.Message)
-    Write-Host ('Reopen the launcher to retry. Log: ' + $logPath)
+    Write-Host 'Reopen the launcher to retry.'
+    if ($transcriptStarted) { Write-Host ('Log: ' + $logPath) }
     $result = 1
 } finally {
-    Stop-Transcript | Out-Null
+    if ($transcriptStarted) { Stop-Transcript | Out-Null }
 }
 exit $result

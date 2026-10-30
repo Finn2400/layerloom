@@ -50,34 +50,16 @@ jobs:
         run: uv run --no-sync layerloom-doctor
       - name: Run tests, including bootstrap recovery and worker processes
         run: uv run --no-sync pytest tests src/layerloom/paint_tests
-      - name: Real Unix source bootstrap
-        if: runner.os != 'Windows'
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-        run: bash "Launch LayerLoom.sh" --doctor-only
-      - name: Real Unix bootstrap offline reopening
-        if: runner.os != 'Windows'
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-          LAYERLOOM_OFFLINE: '1'
-        run: bash "Launch LayerLoom.sh" --doctor-only
-      - name: Real Windows source bootstrap in Windows PowerShell
-        if: runner.os == 'Windows'
-        shell: cmd
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-        run: call "Launch LayerLoom.bat" --doctor-only < NUL
-      - name: Real Windows bootstrap offline reopening
-        if: runner.os == 'Windows'
-        shell: cmd
-        env:
-          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
-          LAYERLOOM_OFFLINE: '1'
-        run: call "Launch LayerLoom.bat" --doctor-only < NUL
       - name: Build source and wheel distributions
-        run: uv run --no-sync python -m build
+        run: |
+          uv run --no-sync python -m build
+          uv run --no-sync python scripts/build_source_zip.py dist
       - name: Validate source and wheel contents
         run: uv run --no-sync python scripts/validate_distributions.py dist
+      - name: Install the downloaded source ZIP and reopen offline
+        env:
+          LAYERLOOM_HOME: ${{ runner.temp }}/LayerLoom café bootstrap
+        run: uv run --no-sync python scripts/smoke_source_archive.py dist
       - name: Install the built wheel
         shell: bash
         run: uv pip install --no-deps --reinstall dist/*.whl

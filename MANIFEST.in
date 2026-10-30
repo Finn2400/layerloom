@@ -1,4 +1,5 @@
 include README.md
+include START_HERE.html
 include CHANGELOG.md
 include LICENSE
 include pyproject.toml
@@ -15,6 +16,8 @@ include scripts/build_macos.py
 include scripts/validate_macos.py
 include scripts/macos_validation_matrix.py
 include scripts/validate_distributions.py
+include scripts/build_source_zip.py
+include scripts/smoke_source_archive.py
 include scripts/installed_paint_smoke.py
 include scripts/chimerax*.py
 recursive-include src/layerloom/paint_tests *.py
@@ -22,6 +25,7 @@ include src/layerloom/PAINT_PROTOTYPE.md
 include src/layerloom/PROTEIN_PRINT_VISUALIZATION_STANDARD.md
 recursive-include packaging/macos *.py *.spec *.txt *.html *.md
 include docs/*.md
+recursive-include docs/validation *.md
 include docs/images/layerloom_applications_overview.jpg
 include docs/images/mac-first-open.svg
 include examples/*.md
