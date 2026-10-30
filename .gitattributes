@@ -6,3 +6,4 @@ src/layerloom/submission_* export-ignore
 # ZIPs built on Windows must still contain runnable Mac/Linux shell scripts.
 *.sh text eol=lf
 *.command text eol=lf
+scripts/runtime-pins.txt text eol=lf

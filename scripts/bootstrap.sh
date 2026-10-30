@@ -9,8 +9,8 @@ for required in .python-version pyproject.toml uv.lock scripts/runtime-pins.txt 
   fi
 done
 PINS="$APP_DIR/scripts/runtime-pins.txt"
-PYTHON_VERSION="$(awk '$1 == "python" {print $2}' "$PINS")"
-UV_VERSION="$(awk '$1 == "uv" {print $2}' "$PINS")"
+PYTHON_VERSION="$(awk '{sub(/\r$/, "")} $1 == "python" {print $2}' "$PINS")"
+UV_VERSION="$(awk '{sub(/\r$/, "")} $1 == "uv" {print $2}' "$PINS")"
 SYSTEM="$(uname -s)"
 ARCH="$(uname -m)"
 case "$SYSTEM" in
@@ -33,7 +33,7 @@ case "$SYSTEM" in
     ;;
   *) printf 'Use the Windows .bat launcher, or a supported macOS/Linux desktop.\n' >&2; exit 1 ;;
 esac
-EXPECTED="$(awk -v target="$TARGET" '$1 == "asset" && $2 == target {print $3}' "$PINS")"
+EXPECTED="$(awk -v target="$TARGET" '{sub(/\r$/, "")} $1 == "asset" && $2 == target {print $3}' "$PINS")"
 if [ "${#EXPECTED}" -ne 64 ] || [ -z "$PYTHON_VERSION" ] || [ -z "$UV_VERSION" ]; then
   printf 'The download is missing its runtime manifest. Download a fresh LayerLoom ZIP.\n' >&2; exit 1
 fi

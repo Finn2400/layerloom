@@ -283,3 +283,20 @@ def test_real_launcher_explains_unwritable_storage_before_download(tmp_path, blo
     assert "Check folder permissions and free disk space" in result.stdout + result.stderr
     assert obstruction.read_text() == "user file: keep me"
     assert "Downloading" not in result.stdout
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Unix manifest parsing")
+def test_unix_launcher_accepts_windows_manifest_line_endings(setup_tree):
+    source, home, _ = setup_tree
+    repo = Path(__file__).parents[1]
+    shutil.copyfile(repo / "scripts/bootstrap.sh", source / "scripts/bootstrap.sh")
+    (source / "scripts/bootstrap.py").write_text("# not reached while offline\n")
+    pins = (repo / "scripts/runtime-pins.txt").read_text().replace("\n", "\r\n")
+    (source / "scripts/runtime-pins.txt").write_bytes(pins.encode())
+    result = subprocess.run(["bash", str(source / "scripts/bootstrap.sh"), "--doctor-only"],
+                            input="", capture_output=True, text=True, timeout=30,
+                            env={**os.environ, "LAYERLOOM_HOME": str(home), "LAYERLOOM_OFFLINE": "1"})
+    assert result.returncode == 1
+    assert "First setup needs an internet connection" in result.stdout
+    assert "missing its runtime manifest" not in result.stdout
+    assert "Downloading" not in result.stdout
