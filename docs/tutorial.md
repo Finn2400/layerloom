@@ -1,5 +1,8 @@
 # LayerLoom Paint and Weave Tutorial
 
+This guide describes the current source build. For the published 0.6.4a6 Mac app,
+use the [downloaded-app guide](mac_first_open.md).
+
 Start with the small CMY cubes bundled with LayerLoom. You do not need a separate
 model download. A slicer is needed after LayerLoom creates the printable 3MF.
 

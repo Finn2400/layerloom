@@ -51,9 +51,9 @@ opening another copy.
 ## Make your first woven model
 
 1. LayerLoom starts in Arrange, showing a pixelated Benchy design on
-   the empty build plate. Click **Load example** to load the colored Benchy.
+   the empty build plate. Click **Try the example** to load four CMY cubes.
    Examples keep the mode you are using.
-2. Click **Weave**. The tutorial selects **Woven apparent
+2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
    colors** and **0.16 mm** automatically. Check those values and click **Choose save location…**.
    The first export may take longer while geometry search code compiles.
 3. Choose a `.3mf` filename and folder. The example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel.
@@ -64,15 +64,13 @@ opening another copy.
 
 ## Try painting
 
-With the example open, click **Paint**, choose a color, and left-click or drag
-to brush it on. Right-click drag rotates the model. For a precise area, choose
-**Surface select**, select a surface, then click **Apply paint**.
-Click **Back to build plate** and choose **Keep paint** or **Discard changes**.
-Kept paint stays visible on the model and is used by **Weave**. Try Undo and Redo. Choose **Save paint…** to keep an editable `.llpaint` project, then
+With the cubes open, turn on **Paint** in the main toolbar, choose **Surface
+select**, click a surface, pick a color, and click **Apply paint**. Try Undo
+and Redo. Choose **Save paint…** to keep an editable `.llpaint` project, then
 reopen it with **Open…**. Export a separate
 `.3mf` for slicing: it contains the physical filament geometry generated from
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
-for selection tools, the smaller cubes example, and export limits.
+for selection tools, the larger Benchy example, and export limits.
 
 These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
 confirm the build and follow the instructions supplied with that download.

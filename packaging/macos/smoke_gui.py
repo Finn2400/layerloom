@@ -234,10 +234,12 @@ def main(directory: str) -> int:
         welcome_button = next((button for button in window.findChildren(qt.QPushButton, "tryExampleButton")
                                if button.isVisible()), None)
         assert welcome_button is not None, "The active workspace has no visible example action"
-        diagnostics.mark("load_cubes")
+        diagnostics.mark("load_welcome_benchy")
         welcome_button.click()
         app.processEvents()
-        diagnostics.mark("cubes_loaded")
+        diagnostics.mark("welcome_benchy_loaded")
+        assert Path(editor.document.source_path).name == "tutorial_cmy_benchy_cutup.3mf"
+        report["startup_ui"]["welcome_example"] = "Benchy"
         assert editor.document is not None and window._shared_paint_active()
         assert window.model_objects and not errors, errors
         assert not window._paint_active() and not window._paint_action.isChecked()
@@ -245,6 +247,10 @@ def main(directory: str) -> int:
         for name, actor in decoration.items():
             assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
         assert window.grab().save(str(output / "example-arrange-window.png"))
+        # Keep a proof of the larger welcome model, then use the small tutorial
+        # for repeated worker checks on every OS/architecture combination.
+        assert window._desktop_controller.try_example()
+        diagnostics.mark("cubes_loaded")
         tutorial_document = editor.document
         tutorial_vertices = [mesh.vertices.copy() for mesh in tutorial_document.meshes]
         tutorial_colors = [mesh.face_rgba.copy() for mesh in tutorial_document.meshes]
