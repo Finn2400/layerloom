@@ -42,7 +42,14 @@ $logPath = Join-Path $logDirectory ('bootstrap-' + (Get-Date -Format 'yyyyMMdd-H
 $transcriptStarted = $false
 try {
     try {
-        New-Item -ItemType Directory -Force -Path $logDirectory | Out-Null
+        foreach ($directory in @($appHome, $logDirectory)) {
+            if ((Test-Path -LiteralPath $directory) -and -not (Test-Path -LiteralPath $directory -PathType Container)) {
+                throw ('A file already occupies the required folder: ' + $directory)
+            }
+        }
+        # Directory.CreateDirectory throws for file collisions. Do not use
+        # New-Item -Force, which can mask provider errors on Windows PowerShell.
+        [System.IO.Directory]::CreateDirectory($logDirectory) | Out-Null
         Start-Transcript -Path $logPath | Out-Null
         $transcriptStarted = $true
     } catch {
