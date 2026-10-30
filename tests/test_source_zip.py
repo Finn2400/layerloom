@@ -12,10 +12,10 @@ builder = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(builder)
 
 
-def source_archive(tmp_path, name="layerloom-1.0/Launch LayerLoom.command", link=False):
+def source_archive(tmp_path, name="layerloom-1.0/Launch LayerLoom.command", link=False, mode=0o755):
     with tarfile.open(tmp_path / "layerloom-1.0.tar.gz", "w:gz") as archive:
         member = tarfile.TarInfo(name)
-        member.mode = 0o755
+        member.mode = mode
         payload = b"#!/bin/bash\n"
         member.size = len(payload)
         if link:
@@ -25,8 +25,9 @@ def source_archive(tmp_path, name="layerloom-1.0/Launch LayerLoom.command", link
         archive.addfile(member, io.BytesIO(payload))
 
 
-def test_source_zip_preserves_bytes_and_executable_mode(tmp_path):
-    source_archive(tmp_path)
+@pytest.mark.parametrize("mode", [0o755, 0o666])
+def test_source_zip_preserves_bytes_and_provides_executable_launcher_on_every_builder(tmp_path, mode):
+    source_archive(tmp_path, mode=mode)
     output = builder.build(tmp_path)
     with zipfile.ZipFile(output) as archive:
         info = archive.infolist()[0]

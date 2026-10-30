@@ -44,6 +44,12 @@ def validate(distributions: Path) -> None:
     with zipfile.ZipFile(zips[0]) as archive:
         zip_hashes = {name: hashlib.sha256(archive.read(name)).digest()
                       for name in archive.namelist() if not name.endswith("/")}
+        for name in archive.namelist():
+            if name.endswith((".command", ".sh")) and b"\r" in archive.read(name):
+                raise RuntimeError(f"Unix launcher contains Windows line endings: {name}")
+            if name.endswith(("/Launch LayerLoom.command", "/Launch LayerLoom.sh")):
+                if not (archive.getinfo(name).external_attr >> 16) & 0o111:
+                    raise RuntimeError(f"Unix launcher is not executable: {name}")
     if zip_hashes != source_hashes:
         raise RuntimeError("The beginner source ZIP does not match the source archive.")
     source_root = Path(__file__).resolve().parents[1]

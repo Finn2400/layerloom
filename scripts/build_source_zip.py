@@ -29,7 +29,10 @@ def build(distributions: Path) -> Path:
                 assert stream is not None
                 info = zipfile.ZipInfo(member.name)
                 info.create_system = 3
-                info.external_attr = (0o100000 | member.mode) << 16
+                # Windows sdists cannot retain POSIX executable bits. Supply
+                # them explicitly for the two Unix entrypoints in the ZIP.
+                mode = 0o755 if path.name in {"Launch LayerLoom.command", "Launch LayerLoom.sh"} else member.mode
+                info.external_attr = (0o100000 | mode) << 16
                 info.compress_type = zipfile.ZIP_DEFLATED
                 target.writestr(info, stream.read())
         pending.replace(output)
