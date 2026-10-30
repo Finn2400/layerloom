@@ -8,6 +8,7 @@ if os.environ.get("LAYERLOOM_GUI_TESTS") != "1":
     pytest.skip("Native GUI checks require LAYERLOOM_GUI_TESTS=1", allow_module_level=True)
 
 from qtpy import QtCore, QtGui, QtWidgets, QtTest
+from layerloom import file_dialogs
 from layerloom.gui_app import _load_current_gui_module
 from layerloom.paint_examples import example_document, _write_source_color_fixture_3mf
 
@@ -268,7 +269,7 @@ def test_arrange_import_then_paint_uses_original_source_colors(main_window, monk
     _write_source_color_fixture_3mf(original, source)
     source_bytes = source.read_bytes()
     monkeypatch.setattr(main_window, "_error", lambda title, message: pytest.fail(f"{title}: {message}"))
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
     assert not main_window._paint_active() and not main_window._paint_action.isChecked()
@@ -292,7 +293,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
     source = tmp_path / "reloaded.3mf"
     _write_source_color_fixture_3mf(example_document("cube", 8), source)
     monkeypatch.setattr(main_window, "_error", lambda title, message: pytest.fail(f"{title}: {message}"))
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
     set_paint_mode(main_window, True)
@@ -336,7 +337,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
 def test_unsuccessful_arrange_open_does_not_replace_existing_paint(main_window, monkeypatch, tmp_path, failed):
     source = tmp_path / "unchanged_path.3mf"
     _write_source_color_fixture_3mf(example_document("cube", 8), source)
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
     set_paint_mode(main_window, True)
@@ -354,7 +355,7 @@ def test_unsuccessful_arrange_open_does_not_replace_existing_paint(main_window, 
     if failed:
         source.write_bytes(b"not a 3MF archive")
     else:
-        monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: ("", ""))
+        monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: ("", ""))
     main_window._on_open()
     assert bool(errors) == failed
     assert main_window._paint_pending_source is None
@@ -367,7 +368,7 @@ def test_unsuccessful_arrange_open_does_not_replace_existing_paint(main_window, 
 def test_arrange_open_and_placement_never_serialize_or_reparse_geometry(main_window, main_module, monkeypatch, tmp_path):
     source = tmp_path / "arrange.3mf"
     _write_source_color_fixture_3mf(example_document("cube", 8), source)
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     monkeypatch.setattr(main_window, "_normalize_incoming_3mf", lambda *a: pytest.fail("Shared Open must preserve original paint"))
     monkeypatch.setattr(main_window, "_export_ply_cache", lambda: pytest.fail("Shared viewer must use arrays"))
     monkeypatch.setattr(main_module._V58, "compute_transform_plan", lambda *a, **k: pytest.fail("Placement must use arrays"))
@@ -416,7 +417,7 @@ def test_arrange_save_scrubs_paint_even_when_input_has_normalized_marker(main_wi
     main_window.source_file_path = str(source)
     assert main_window.source_file_path == str(source)
     output = tmp_path / "saved_geometry.3mf"
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(output), ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda *a, **k: (str(output), ""))
     main_window._on_save()
     assert output.exists(), "The real Arrange Save action must write geometry"
     _assert_geometry_only(output)
@@ -464,7 +465,7 @@ def test_return_to_arrange_focuses_viewport_so_escape_cancels_tool(main_window, 
     source = tmp_path / "arrange_cube.3mf"
     _write_source_color_fixture_3mf(example_document("cube", 8), source)
     monkeypatch.setattr(main_window, "_error", lambda title, message: pytest.fail(f"{title}: {message}"))
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     main_window.activateWindow()
     set_paint_mode(main_window, False)
     main_window._on_open()
@@ -524,7 +525,7 @@ def test_paint_loaded_model_placement_save_and_reopen_share_exact_geometry(main_
         np.testing.assert_array_equal(document.meshes[0].vertices, placed)
     np.testing.assert_array_equal(document.meshes[0].face_rgba, original_colors)
     saved = tmp_path / "placed.llpaint"
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(saved), ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda *a, **k: (str(saved), ""))
     main_window._on_save()
     assert saved.exists() and not editor.dirty
     reopened = load_paint_document(saved)
@@ -551,7 +552,7 @@ def test_arrange_open_uses_same_paint_aware_parser_for_glb_and_project(main_wind
         mesh = trimesh.creation.box(extents=(.008, .006, .004))
         mesh.visual.face_colors = [30, 180, 70, 255]
         source.write_bytes(trimesh.Scene(mesh).export(file_type="glb"))
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
     monkeypatch.setattr(main_window, "_run_glb_import_pipeline", lambda *a: pytest.fail("Shared GLB import must retain its paint"))
     set_paint_mode(main_window, False)
     main_window._on_open_glb()

@@ -4,14 +4,14 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 import shutil
-import subprocess
-import sys
 import tempfile
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from .app_logging import diagnostic_text, log_dir
 from .example_assets import find_example_file
+from .file_dialogs import default_output_directory
+from .export_feedback import ExportResultDock, slicer_instruction
 
 
 class _WelcomePanel(QtWidgets.QFrame):
@@ -67,7 +67,9 @@ class DesktopController(QtCore.QObject):
             self.paint_welcome = _WelcomePanel(self, self.paint_editor)
             self.paint_editor.plotter.installEventFilter(self)
             self.paint_editor.documentChanged.connect(self._sync_paint_welcome)
+            self.paint_editor.external_export_feedback = True
             self.paint_editor.exportCompleted.connect(self.paint_export_complete)
+            self.paint_editor.documentChanged.connect(self.result_dock.hide)
             self._sync_paint_welcome()
         example_action = getattr(window, "_load_example_action", None)
         if example_action is not None:
@@ -109,23 +111,8 @@ class DesktopController(QtCore.QObject):
         return super().eventFilter(watched, event)
 
     def _install_result_panel(self):
-        dock = QtWidgets.QDockWidget("Exported model", self.window)
-        dock.setObjectName("weaveResultDock")
-        dock.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable)
-        content = QtWidgets.QWidget()
-        layout = QtWidgets.QHBoxLayout(content)
-        self.result_text = QtWidgets.QLabel()
-        self.result_text.setTextFormat(QtCore.Qt.PlainText)
-        self.result_text.setWordWrap(True)
-        self.result_text.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        layout.addWidget(self.result_text, 1)
-        reveal = QtWidgets.QPushButton("Show in Finder" if sys.platform == "darwin" else "Show in folder")
-        reveal.clicked.connect(self.reveal_output)
-        layout.addWidget(reveal)
-        dock.setWidget(content)
-        self.window.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
-        dock.hide()
-        self.result_dock = dock
+        self.result_dock = ExportResultDock(self.window)
+        self.result_text = self.result_dock.message
 
     def try_example(self):
         return self._load_packaged_example("tutorial_cmy_cubes.3mf")
@@ -203,43 +190,24 @@ class DesktopController(QtCore.QObject):
             "paint_mapping": assign_palette(document, "Normal", recipe_overrides=preferences),
         })
         editor.set_document(document)
-        editor.suggested_output_directory = Path(
-            QtCore.QStandardPaths.writableLocation(QtCore.QStandardPaths.DocumentsLocation) or Path.home()
-        )
+        editor.suggested_output_directory = default_output_directory()
 
     def open_model(self):
         return self.window._on_open()
 
     def paint_export_complete(self, report):
-        self.output_path = Path(report["output_3mf"]).resolve()
-        step = report["layer_height_mm"]
-        self.result_text.setText(
-            f"Saved: {self.output_path}\n"
-            "Open all material parts together in your slicer and keep their alignment. "
-            f"Use {step:g} mm for both first and subsequent layers; disable adaptive layer height."
-        )
-        self.result_dock.show()
+        self.output_path = Path(report.get("output_3mf") or report["output_path"]).absolute()
+        self.result_dock.show_result(self.output_path, slicer_instruction(report), report.get("warnings", []))
 
     def weave_complete(self, path):
         self.output_path = Path(path).resolve()
         step = self.window.layer_height_spin.value()
-        self.result_text.setText(
-            f"Saved: {self.output_path}\n"
+        self.result_dock.show_result(self.output_path,
             f"Open this 3MF in your slicer. Match the all_… objects to your loaded filaments. "
-            f"Use {step:g} mm layers; the first layer must be an integer multiple of this height."
-        )
-        self.result_dock.show()
+            f"Use {step:g} mm layers; the first layer must be an integer multiple of this height.")
 
     def reveal_output(self):
-        if self.output_path is None:
-            return
-        try:
-            if sys.platform == "darwin":
-                subprocess.Popen(["/usr/bin/open", "-R", str(self.output_path)])
-            else:
-                QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(self.output_path.parent)))
-        except OSError as exc:
-            self.window._error("Could not open output folder", f"Your woven model is saved at:\n{self.output_path}\n\n{exc}")
+        self.result_dock.reveal()
 
     def copy_diagnostics(self):
         QtWidgets.QApplication.clipboard().setText(diagnostic_text())

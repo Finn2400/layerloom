@@ -60,9 +60,9 @@ opening another copy.
    the empty build plate. Click **Try the example** to load four CMY cubes.
    Examples keep the mode you are using.
 2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
-   colors** and **0.16 mm** automatically. Check those values and confirm.
+   colors** and **0.16 mm** automatically. Check those values and click **Choose save location…**.
    The first export may take longer while geometry search code compiles.
-3. Choose a `.3mf` filename in Documents and wait for the completion message.
+3. Choose a `.3mf` filename and folder. The example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel.
    Use **Show in Finder** to locate the output.
 4. Open it in your slicer, keep its parts aligned, and assign the `all_…`
    objects to the corresponding filaments. For this first example, use
@@ -78,9 +78,22 @@ reopen it with **Open…**. Export a separate
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
 for selection tools, the larger Benchy example, and export limits.
 
-These instructions accompany **0.6.4a4**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a5**. Use **Help → Copy diagnostics** to
 confirm the build and follow the instructions supplied with that download.
 
 Python and the required libraries are inside the app. Once first-open approval
 is complete, you can run the example offline. Outputs go to the folder you
 choose. For help, use **Help → Copy diagnostics** or **Help → Open logs**.
+
+## Choosing files and folders
+
+The Mac app uses a simple file chooser without Finder’s cloud-provider sidebar.
+The example suggests the local **LayerLoom** folder in your home folder. You can
+navigate to another folder or enter a path in the chooser. Technical export
+settings are under **Advanced export settings**.
+
+macOS may ask for access if you choose Documents, Desktop, Downloads, an external
+drive, or cloud storage. Only allow a location you intended to use; the example
+does not require Google Drive or OneDrive. Replacing an ad-hoc-signed test build
+may require approval again. Report unexpected requests rather than granting
+Full Disk Access.

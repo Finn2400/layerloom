@@ -18,6 +18,8 @@ from pyvistaqt import QtInteractor
 from qtpy import QtCore, QtGui, QtWidgets
 import vtk
 
+from . import file_dialogs
+from .export_feedback import ExportResultDock, slicer_instruction
 from .paint_model import PaintDocument
 from .paint_export_control import DEFAULT_MEMORY_BUDGET_BYTES, ExportCancelled, estimate_export_resources
 from .paint_io import load_paint_document, save_paint_document
@@ -575,7 +577,7 @@ class PaintWindow(QtWidgets.QMainWindow):
     def open_dialog(self):
         if not self._confirm_discard():
             return
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open model or paint project", "", MODEL_FILTER)
+        path, _ = file_dialogs.get_open_file_name(self, "Open model or paint project", "", MODEL_FILTER)
         if path:
             self.open_path(path)
 
@@ -605,6 +607,8 @@ class PaintWindow(QtWidgets.QMainWindow):
             QtWidgets.QApplication.restoreOverrideCursor()
 
     def set_document(self, document):
+        if hasattr(self, "export_result_dock"):
+            self.export_result_dock.hide()
         document.validate()
         # Prepare VTK data before replacing the current project and its history.
         # Invalid mesh/array input must leave the existing edit session intact.
@@ -1075,7 +1079,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             return False
         self.end_stroke()
         default = self.default_save_path(".llpaint")
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save editable paint project", default, "LayerLoom paint (*.llpaint)")
+        path, _ = file_dialogs.get_save_file_name(self, "Save editable paint project", default, "LayerLoom paint (*.llpaint)")
         if not path:
             return False
         if not path.lower().endswith(".llpaint"):
@@ -1182,7 +1186,13 @@ class PaintWindow(QtWidgets.QMainWindow):
         estimate_label.setObjectName("geometryExportEstimate")
         estimate_label.setWordWrap(True)
         estimate_label.setMaximumWidth(440)
-        layout.addRow(estimate_label)
+        advanced_form.addRow(estimate_label)
+        validation_label = QtWidgets.QLabel()
+        validation_label.setObjectName("geometryExportValidation")
+        validation_label.setWordWrap(True)
+        validation_label.setMaximumWidth(440)
+        validation_label.hide()
+        layout.addRow(validation_label)
         note = QtWidgets.QLabel(
             "Exports separate material geometry with no surface paint. Paint guides the "
             "material assignment through the full volume from the nearest surface; there is no "
@@ -1193,8 +1203,13 @@ class PaintWindow(QtWidgets.QMainWindow):
         )
         note.setWordWrap(True)
         note.setMaximumWidth(440)
-        layout.addRow(note)
+        advanced_form.addRow(note)
+        summary = QtWidgets.QLabel("Next, choose a filename and folder. Use this layer height in your slicer.")
+        summary.setWordWrap(True)
+        summary.setMaximumWidth(440)
+        layout.addRow(summary)
         buttons = QtWidgets.QDialogButtonBox(QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel)
+        buttons.button(QtWidgets.QDialogButtonBox.Ok).setText("Choose save location…")
         buttons.accepted.connect(dialog.accept)
         buttons.rejected.connect(dialog.reject)
         layout.addRow(buttons)
@@ -1211,8 +1226,11 @@ class PaintWindow(QtWidgets.QMainWindow):
                     "This is a planning estimate, not a hard limit on total application memory."
                 )
                 buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(True)
+                validation_label.hide()
             except (ValueError, OverflowError) as exc:
                 estimate_label.setText(budget_summary + str(exc))
+                validation_label.setText(str(exc) + " Adjust the sampling size or open Advanced export settings.")
+                validation_label.show()
                 buttons.button(QtWidgets.QDialogButtonBox.Ok).setEnabled(False)
 
         for control in (layer, pitch, memory, cells):
@@ -1225,7 +1243,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             return
         self.preview_mapping.setChecked(mode.currentData() != "source")
         default = self.default_save_path("_geometry.3mf")
-        output, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save geometry 3MF", default, "3MF (*.3mf)")
+        output, _ = file_dialogs.get_save_file_name(self, "Save geometry 3MF", default, "3MF (*.3mf)")
         if not output:
             return
         if not output.lower().endswith(".3mf"):
@@ -1315,13 +1333,12 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.last_export_report = report
         path = report.get("output_path", report.get("output_3mf", ""))
         warnings = report.get("warnings", [])
-        detail = "\n\n" + "\n".join(warnings) if warnings else ""
         self.statusBar().showMessage(f"Geometry export complete. {path}" + (" — audit report warning" if warnings else ""))
         self.exportCompleted.emit(report)
-        QtWidgets.QMessageBox.information(
-            self, "Export complete", f"Geometry 3MF written.\n{path}\n\n"
-            "Inspect the material parts in your slicer using the selected layer height." + detail
-        )
+        if not getattr(self, "external_export_feedback", False):
+            if not hasattr(self, "export_result_dock"):
+                self.export_result_dock = ExportResultDock(self)
+            self.export_result_dock.show_result(path, slicer_instruction(report), warnings)
 
     @QtCore.Slot(str)
     def _export_failure(self, message):

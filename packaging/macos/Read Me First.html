@@ -12,7 +12,7 @@ img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:.9em}a{color:#1
 </head>
 <body>
 <h1>Start LayerLoom</h1>
-<p><strong>Version 0.6.4a4 — Mac test candidate</strong></p>
+<p><strong>Version 0.6.4a5 — Mac test candidate</strong></p>
 <p>This disk image contains the Mac app and its required libraries. You do not need to install Python, Git, Node, or Homebrew.</p>
 <div class="note"><strong>Draft build for testing.</strong> This release is unpublished and available only to maintainers with repository write access. Automated checks do not replace the required downloaded-app and first-time-user checks. Public users can use the source launchers until a desktop release is published.</div>
 <h2>1. Check your Mac</h2>
@@ -34,21 +34,22 @@ img{width:100%;height:auto}code{overflow-wrap:anywhere;font-size:.9em}a{color:#1
 <h2>3. Make your first model</h2>
 <ol>
 <li>LayerLoom starts in <strong>Arrange</strong>, with a pixelated Benchy design on the empty build plate. Click <strong>Try the example</strong> to load four CMY cubes. Loading either example keeps your current mode.</li>
-<li>Click <strong>Export geometry 3MF…</strong>. The tutorial selects <strong>Woven apparent colors</strong> and <strong>0.16 mm</strong> automatically. Check those values and confirm.</li>
-<li>Choose a <code>.3mf</code> filename in Documents and wait for the completion message. Use <strong>Show in Finder</strong> to locate it. The first export may take longer while geometry search code compiles.</li>
+<li>Click <strong>Export geometry 3MF…</strong>. The tutorial selects <strong>Woven apparent colors</strong> and <strong>0.16 mm</strong> automatically. Check those values and click <strong>Choose save location…</strong>.</li>
+<li>Choose a <code>.3mf</code> filename and folder. The example suggests <strong>LayerLoom</strong> in your home folder. Wait for the <strong>Export complete</strong> panel. Use <strong>Show in Finder</strong> to locate it. The first export may take longer while geometry search code compiles.</li>
 <li>Open that file in your slicer as one model with multiple parts. Keep the parts aligned and match the cyan, magenta, and yellow objects to your filaments. Use <strong>0.16 mm for both normal and first layers</strong>, with adaptive layers disabled.</li>
 </ol>
 <h2>4. Try painting</h2>
 <ol>
 <li>With the cubes open, turn on <strong>Paint</strong> in the main toolbar. Choose <strong>Surface select</strong>, click a surface, choose a color, and click <strong>Apply paint</strong>. You can turn Paint off to return to Arrange; the model and its edits stay in place.</li>
-<li>Try <strong>Undo</strong> and <strong>Redo</strong>. Choose <strong>Save paint…</strong> and save a <code>.llpaint</code> project in Documents. Use <strong>Open…</strong> to reopen it and check your edit.</li>
+<li>Try <strong>Undo</strong> and <strong>Redo</strong>. Choose <strong>Save paint…</strong> and save a <code>.llpaint</code> project in the folder you choose. Use <strong>Open…</strong> to reopen it and check your edit.</li>
 <li>Export a separate <code>.3mf</code> for printing. The project retains editable paint; the printable output converts those colors into separate physical filament geometry.</li>
 </ol>
-<p>These instructions accompany <strong>0.6.4a4</strong>. Use <strong>Help → Copy diagnostics</strong> to confirm your build.</p>
-<p>Start with the cubes. <strong>Help → Load the Benchy example</strong> opens the larger eight-part model. It keeps your current mode. Turn on Paint to see its four CMY recipes in Color mapping; the model should appear in several colors. It selects a 4,096 MiB estimated export budget. Cubes and ordinary models use 2,048 MiB. The export summary shows the budget; it is not a hard limit on total memory, and larger models take longer.</p>
+<p>These instructions accompany <strong>0.6.4a5</strong>. Use <strong>Help → Copy diagnostics</strong> to confirm your build.</p>
+<p>Start with the cubes. <strong>Help → Load the Benchy example</strong> opens the larger eight-part model. It keeps your current mode. Turn on Paint to see its four CMY recipes in Color mapping; the model should appear in several colors. It selects a 4,096 MiB estimated export budget. Cubes and ordinary models use 2,048 MiB. <strong>Advanced export settings</strong> shows the budget; it is not a hard limit on total memory, and larger models take longer.</p>
 <p>In the tested Bambu Classic slicer profile, enable <strong>Detect thin walls</strong> to retain the Benchy's narrow top cap. Keep first and normal layers at 0.16 mm and adaptive layers off. Inspect narrow tips in preview; other models and profiles need their own checks.</p>
 <p>For a larger model, <strong>Advanced export settings → Sampling budget</strong> limits work in millions of cells; <strong>Export memory budget</strong> is an additional-memory estimate in MiB. Consider coarser XY sampling first if either limit is exceeded. Increase only the relevant limit when the computer has capacity; a higher budget does not guarantee speed or success.</p>
 <p>After first-open approval, the example works offline. Outputs stay in the folder you choose. To update, quit LayerLoom and replace the app; keep your models outside the app.</p>
+<p>The Mac file chooser does not use Finder’s cloud-provider sidebar. You do not need to grant Google Drive or OneDrive access to run the example. macOS may ask for access when you deliberately select a protected or cloud folder.</p>
 <h2>If something goes wrong</h2>
 <p>Use <strong>Help → Copy diagnostics</strong> and <strong>Help → Open logs</strong>. If the app cannot start, its error dialog gives details and a log location. Include the exact message, Mac model, macOS version, and the step that failed when reporting the issue.</p>
 <p><a href="https://support.apple.com/en-us/102445">Apple’s first-open instructions</a> · <a href="https://support.apple.com/en-gb/guide/mac-help/mh40617/26/mac/26">Apple’s macOS 26 approval guide</a> · <a href="https://github.com/Finn2400/layerloom/issues">LayerLoom support</a></p>

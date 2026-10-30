@@ -10,6 +10,7 @@ import pytest
 pytest.importorskip("pyvistaqt")
 from PyQt5 import QtCore, QtTest, QtWidgets
 
+from layerloom import file_dialogs
 from layerloom.desktop_ui import install_desktop_ui
 from layerloom.example_assets import find_example_file
 from layerloom.gui_app import _load_current_gui_module
@@ -161,7 +162,7 @@ def test_example_export_uses_tutorial_height_after_project_reopen_without_affect
         return QtWidgets.QDialog.Accepted
 
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", accept_export)
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName",
+    monkeypatch.setattr(file_dialogs, "get_save_file_name",
                         lambda *args: (str(tmp_path / "tutorial.3mf"), ""))
     monkeypatch.setattr(editor, "start_export", lambda output, **settings: exports.append(settings))
     assert controller.try_example()
@@ -298,13 +299,13 @@ def test_paint_completion_uses_report_layer_height_in_result_panel(desktop, appl
     window.layer_height_spin.setValue(.16)
     output = tmp_path / "painted geometry.3mf"
     report = {"output_3mf": str(output), "layer_height_mm": .24}
-    monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args: None)
+    monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args: pytest.fail("Success must not open a modal alert"))
     window.paint_panel.editor._export_success(report)
     application.processEvents()
     assert controller.result_dock.isVisible()
     assert controller.output_path == output.resolve()
     text = controller.result_text.text()
-    assert str(output) in text
+    assert output.name in text and str(output.parent) in text
     assert "0.24 mm for both first and subsequent layers" in text
     assert "disable adaptive layer height" in text
     assert "0.16" not in text and not errors
@@ -323,8 +324,9 @@ def test_legacy_weave_completion_hook_remains_available(desktop, application, tm
 
 def test_example_save_and_export_defaults_outlive_private_copy(desktop, monkeypatch, tmp_path):
     window, controller, errors, _ = desktop
-    documents = tmp_path / "Documents"
-    monkeypatch.setattr(QtCore.QStandardPaths, "writableLocation", lambda _location: str(documents))
+    documents = tmp_path / "LayerLoom"
+    documents.mkdir()
+    monkeypatch.setattr("layerloom.desktop_ui.default_output_directory", lambda: documents)
     assert controller.try_example()
     private = Path(controller.example_directory.name).resolve()
     editor = window.paint_panel.editor
@@ -334,7 +336,7 @@ def test_example_save_and_export_defaults_outlive_private_copy(desktop, monkeypa
     assert project.name == "tutorial_cmy_cubes.llpaint"
     assert geometry.name == "tutorial_cmy_cubes_geometry.3mf"
     assert private not in project.parents and private not in geometry.parents
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda _parent, _title, default, _filter: (default, ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda _parent, _title, default, _filter: (default, ""))
     assert editor.save_dialog() and project.is_file()
     saved = project.read_bytes()
     assert controller.try_example()

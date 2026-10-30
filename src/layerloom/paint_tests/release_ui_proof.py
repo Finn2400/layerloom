@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from qtpy import QtCore, QtWidgets, QtTest
 
+from layerloom import file_dialogs
 from layerloom.desktop_ui import install_desktop_ui
 from layerloom.gui_app import _load_current_gui_module
 from layerloom.paint_tests.gui_proof import click_action, digest, screenshot
@@ -75,14 +76,14 @@ def run(args):
     try:
         with patch.object(QtWidgets.QMessageBox, "information", side_effect=notice), \
                 patch.object(QtWidgets.QMessageBox, "critical", side_effect=notice):
-            with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(args.project), "")):
+            with patch.object(file_dialogs, "get_open_file_name", return_value=(str(args.project), "")):
                 click_action(editor, editor.open_action)
             assert editor.project_path == str(args.project), notices
             assert_shared(host)
             screenshot(CaptureView(host, editor, editor.plotter), args.output / "loaded_dragon.png", host=host)
             editor.progress.valueChanged.connect(lambda value: progress.append({"layer": value, "elapsed_s": time.monotonic() - started}))
             QtCore.QTimer.singleShot(100, configure_dialog)
-            with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(destination), "")):
+            with patch.object(file_dialogs, "get_save_file_name", return_value=(str(destination), "")):
                 click_action(editor, editor.export_action)
             assert not dialog_errors, dialog_errors
             assert editor._export_thread is not None, notices

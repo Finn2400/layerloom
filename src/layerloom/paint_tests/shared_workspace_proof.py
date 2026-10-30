@@ -18,6 +18,7 @@ from xml.etree import ElementTree as ET
 import numpy as np
 from qtpy import QtCore, QtWidgets, QtTest
 
+from layerloom import file_dialogs
 from layerloom.gui_app import _load_current_gui_module
 from layerloom.paint_examples import assert_roundtrip, example_document
 from layerloom.paint_io import load_paint_document
@@ -106,7 +107,7 @@ def enter_number(spin, value):
 
 def open_via_main(host, path):
     editor = host.paint_panel.editor
-    with patch.object(QtWidgets.QFileDialog, "getOpenFileName", return_value=(str(path), "")):
+    with patch.object(file_dialogs, "get_open_file_name", return_value=(str(path), "")):
         click_action(editor, editor.open_action)
     assert editor.project_path == str(path)
     assert_shared(host)

@@ -10,7 +10,7 @@ The goal is practical: produce more apparent colors from ordinary loaded
 filaments without custom color-mixing hardware, custom filament fabrication, or
 a weaving-aware slicer.
 
-This branch prepares **0.6.4a4**, an unpublished test candidate. Follow the
+This branch prepares **0.6.4a5**, an unpublished test candidate. Follow the
 instructions supplied with that build. **Help → Copy diagnostics** identifies
 your version; the draft's validation report records completed and pending checks.
 
@@ -53,7 +53,7 @@ The first setup needs an internet connection; later launches work offline.
 4. Click **Try the example**, then **Export geometry 3MF…**. **Woven apparent
    colors** and **0.16 mm** are selected for this tutorial. Check those values
    and confirm the settings. Then
-   choose a `.3mf` filename in Documents, and wait for the completion message.
+   choose a `.3mf` filename and folder (the Mac example suggests **LayerLoom** in your home folder). Wait for **Export complete**, then use **Show in Finder**.
    Use that same layer height for first and subsequent layers in your slicer.
 
 Keep the extracted folder and reopen the same launcher next time. If the Mac

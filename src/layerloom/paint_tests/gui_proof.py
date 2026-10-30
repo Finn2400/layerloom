@@ -16,6 +16,7 @@ from unittest.mock import patch
 import numpy as np
 from qtpy import QtCore, QtGui, QtWidgets, QtTest
 
+from layerloom import file_dialogs
 from layerloom.paint_gui import PaintWindow
 from layerloom.paint_io import load_paint_document
 from layerloom.paint_examples import assert_roundtrip
@@ -70,7 +71,7 @@ def click_action(window, action):
 
 
 def save_via_ui(window, output):
-    with patch.object(QtWidgets.QFileDialog, "getSaveFileName", return_value=(str(output), "LayerLoom paint (*.llpaint)")):
+    with patch.object(file_dialogs, "get_save_file_name", return_value=(str(output), "LayerLoom paint (*.llpaint)")):
         click_action(window, window.save_action)
     assert output.is_file() and not window.dirty
 

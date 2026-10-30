@@ -3496,6 +3496,7 @@ class AssignColorsApp(tk.Tk if tk is not None else object):
 # ─────────────────────────────────────────────────────────────────────
 try:
     from qtpy import QtCore, QtGui, QtWidgets
+    from layerloom import file_dialogs
     from pyvistaqt import QtInteractor
 
     _QT_OK = True
@@ -5010,7 +5011,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return _stamp_ids_only(path, output_path=output_path)
 
     def _on_open(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open 3MF", "", "3MF Files (*.3mf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open 3MF", "", "3MF Files (*.3mf)")
         if not path:
             return
         self._pending_source_hex_by_name = {}
@@ -5081,7 +5082,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         return import_3mf, manifest_map, repair_warning, color_levels
 
     def _on_open_glb(self):
-        path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
+        path, _ = file_dialogs.get_open_file_name(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
         if not path:
             return
         try:
@@ -5305,7 +5306,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             return
         if not self._ensure_transform_preview_current(quiet=False):
             return
-        out, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Labeled 3MF", "", "3MF files (*.3mf)")
+        out, _ = file_dialogs.get_save_file_name(self, "Save Labeled 3MF", "", "3MF files (*.3mf)")
         if not out:
             return
         try:
@@ -5395,7 +5396,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             return
         if not self._ensure_transform_preview_current(quiet=False):
             return
-        out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
+        out_dir = file_dialogs.get_existing_directory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
         output_source = self.source_file_path or self.base_file

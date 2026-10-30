@@ -46,8 +46,8 @@ open the Mac app.
 4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
    build plate. Click **Try the example**, then **Export geometry 3MF…**.
    The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
-   confirm, and choose a `.3mf` filename in Documents. Wait for the completion
-   message, then use **Show in Finder** to locate it. The first export can take
+   click **Choose save location…**, and choose a `.3mf` filename and folder.
+   The Mac example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel, then use **Show in Finder** to locate it. The first export can take
    longer while its geometry search code compiles.
 
 Loading an example keeps the current mode. To demonstrate surface painting,
@@ -57,14 +57,14 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-These instructions accompany **0.6.4a4**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a5**. Use **Help → Copy diagnostics** to
 confirm your build. Keep the instructions and download from the same release
 together. Draft downloads require repository write access.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
 new copy; macOS may ask you to approve the new download. Keep saved models
-in Documents or another folder outside the app.
+in the suggested LayerLoom folder or another folder outside the app.
 
 These builds use free ad-hoc signing and are **not notarized by Apple**. A
 managed Mac may prohibit local approval. No paid Apple account is required to

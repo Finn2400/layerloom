@@ -14,6 +14,7 @@ if os.environ.get("LAYERLOOM_GUI_TESTS") != "1":
 
 pytest.importorskip("pyvistaqt")
 from qtpy import QtCore, QtGui, QtWidgets, QtTest
+from layerloom import file_dialogs
 from layerloom.paint_gui import PaintWindow, PaintPanel
 from layerloom.paint_model import PaintDocument, PaintMesh
 from layerloom.paint_io import load_paint_document, save_paint_document
@@ -224,7 +225,7 @@ def test_surface_select_preview_apply_undo_save_preserves_source(window, monkeyp
     np.testing.assert_array_equal(mesh.face_rgba, source)
     click_toolbar(window, window.redo_action)
     output = tmp_path / "selected_surface.llpaint"
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(output), ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda *a, **k: (str(output), ""))
     click_toolbar(window, window.save_action)
     assert output.exists() and not window.dirty
     assert window.open_path(output)
@@ -329,7 +330,7 @@ def test_export_action_offers_only_material_geometry_for_every_color_mode(window
         return True
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", choose_mode)
     output = tmp_path / f"{color_mode}_geometry.3mf"
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(output), ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda *a, **k: (str(output), ""))
     monkeypatch.setattr(window, "start_export", capture_export)
     click_toolbar(window, window.export_action)
     assert captured["output"] == str(output)
@@ -703,7 +704,9 @@ def test_export_report_warning_is_visible_without_claiming_geometry_failure(wind
     assert window.last_export_report is report
     assert "Geometry export complete" in window.statusBar().currentMessage()
     assert "audit report warning" in window.statusBar().currentMessage()
-    assert "Geometry saved; audit report is locked." in notices[0][2]
+    assert not notices
+    assert window.export_result_dock.isVisible()
+    assert "Geometry saved; audit report is locked." in window.export_result_dock.warnings.text()
 
 
 def test_memory_preflight_rejects_before_snapshot_or_thread(window, monkeypatch, tmp_path):
@@ -799,14 +802,18 @@ def test_export_dialog_recomputes_estimate_and_blocks_excess_work(window, monkey
         ok = buttons.button(QtWidgets.QDialogButtonBox.Ok)
         assert memory.value() == 2048 and ok.isEnabled()
         assert "additional memory" in label.text() and "planning estimate" in label.text()
+        assert label.parentWidget().isHidden(), "Technical estimates belong under Advanced"
+        validation = dialog.findChild(QtWidgets.QLabel, "geometryExportValidation")
+        assert validation.isHidden()
         layer = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportLayerHeight")
         pitch = dialog.findChild(QtWidgets.QDoubleSpinBox, "geometryExportPitch")
         pitch.setValue(.05)
         layer.setValue(.04)
         assert not ok.isEnabled() and "cells" in label.text()
+        assert not validation.isHidden(), "Budget failures must remain visible with Advanced collapsed"
         pitch.setValue(2)
         layer.setValue(.5)
-        assert ok.isEnabled()
+        assert ok.isEnabled() and validation.isHidden()
         expected = estimate_export_resources(window.document, pitch=2, layer_height=.5)
         assert f"{expected.estimated_cells:,}" in label.text()
         memory.setValue(4096)
@@ -835,7 +842,7 @@ def test_export_advanced_settings_pass_through_without_bypassing_memory_guard(wi
         precision.setCurrentIndex(precision.findData(.00001))
         return QtWidgets.QDialog.Accepted
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", choose_settings)
-    monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", lambda *a, **k: (str(tmp_path / "fine.3mf"), ""))
+    monkeypatch.setattr(file_dialogs, "get_save_file_name", lambda *a, **k: (str(tmp_path / "fine.3mf"), ""))
     monkeypatch.setattr(window, "start_export", lambda output, **settings: captured.update(settings))
     window.export_dialog()
     assert captured["max_cells"] == 20_000_000

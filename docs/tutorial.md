@@ -59,8 +59,9 @@ model in the workspace.
 4. Review the estimated additional memory and sampling work. Smaller sampling
    sizes retain more detail and increase time and memory use. The estimate is
    not a hard cap on total application memory.
-5. Confirm the settings and choose a `.3mf` filename in Documents or another
-   folder outside the app. Wait for the completion message, which gives its path.
+5. Click **Choose save location…** and choose a `.3mf` filename and folder.
+   The Mac example suggests **LayerLoom** in your home folder. The **Export complete**
+   panel shows the filename, folder, and a **Show in Finder** button.
 6. Use **Cancel export** in the footer if needed. Cancellation waits for the
    current geometry operation to finish and leaves any previous output intact.
 
