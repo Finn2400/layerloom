@@ -6,8 +6,11 @@ if not exist "%~dp0scripts\bootstrap.ps1" (
   pause
   exit /b 1
 )
-rem The policy applies only to this child process; no user settings are changed.
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\bootstrap.ps1" %*
+rem PowerShell 7 may pass incompatible modules through cmd/Python to Windows
+rem PowerShell. Let the child reconstruct its own standard module search path.
+rem setlocal keeps this and the execution policy from changing user settings.
+set "PSModulePath="
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\bootstrap.ps1" %*
 if errorlevel 1 (
   echo.
   pause
