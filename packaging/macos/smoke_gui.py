@@ -182,6 +182,7 @@ def main(directory: str) -> int:
         from layerloom.app_logging import initialize_logs
         initialize_logs()
         from layerloom.gui_app import _load_current_gui_module
+        from layerloom import file_dialogs
         from layerloom.paint_examples import example_document
         from layerloom.paint_io import save_paint_document, load_paint_document
         import numpy as np
@@ -342,12 +343,12 @@ def main(directory: str) -> int:
 
         diagnostics.mark("paint_undo_redo_verified")
         saved_project = model_output / "edited paint café.llpaint"
-        old_save_dialog = qt.QFileDialog.getSaveFileName
-        qt.QFileDialog.getSaveFileName = lambda *a, **k: (str(saved_project), "")
+        old_save_dialog = file_dialogs.get_save_file_name
+        file_dialogs.get_save_file_name = lambda *a, **k: (str(saved_project), "")
         try:
             window._on_save()
         finally:
-            qt.QFileDialog.getSaveFileName = old_save_dialog
+            file_dialogs.get_save_file_name = old_save_dialog
             old_save_dialog = None
         assert saved_project.is_file() and not editor.dirty
         saved = load_paint_document(saved_project)
@@ -441,7 +442,7 @@ def main(directory: str) -> int:
     finally:
         (output / "gui-smoke.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         if old_save_dialog is not None:
-            qt.QFileDialog.getSaveFileName = old_save_dialog
+            file_dialogs.get_save_file_name = old_save_dialog
         if old_information is not None:
             qt.QMessageBox.information = old_information
             qt.QMessageBox.critical = old_critical
