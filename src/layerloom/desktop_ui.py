@@ -22,21 +22,27 @@ class _WelcomePanel(QtWidgets.QFrame):
         self.setStyleSheet("#layerloomWelcome { background: #252a31; border: 1px solid #566473; border-radius: 12px; } QLabel { color: #e9e9e9; }")
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(24, 22, 24, 22)
-        self.message = QtWidgets.QLabel("Open a model or try the example. Select or paint the colors, then press Weave.")
+        self.message = QtWidgets.QLabel("Open a model or load the Benchy example. Select or paint the colors, then press Weave.")
         self.message.setAlignment(QtCore.Qt.AlignCenter)
         self.message.setWordWrap(True)
         layout.addWidget(self.message)
         self.actions = QtWidgets.QWidget()
         buttons = QtWidgets.QHBoxLayout(self.actions)
         buttons.setContentsMargins(0, 8, 0, 0)
-        example = QtWidgets.QPushButton("Try the example")
+        example = QtWidgets.QPushButton("Load example")
         example.setObjectName("tryExampleButton")
-        example.clicked.connect(controller.try_example)
-        example.setStyleSheet("background: #39526a; padding: 10px 16px; color: white;")
+        example.clicked.connect(controller.try_benchy_example)
         open_model = QtWidgets.QPushButton("Open a model")
         open_model.clicked.connect(controller.open_model)
-        buttons.addWidget(example)
-        buttons.addWidget(open_model)
+        for button in (example, open_model):
+            button.setMinimumHeight(44)
+            button.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+            button.setStyleSheet(
+                "QPushButton { background: #334756; color: #ffffff; border: 1px solid #647b8c; "
+                "border-radius: 8px; padding: 10px 18px; font-weight: 600; } "
+                "QPushButton:hover { background: #425e73; border-color: #91b4cc; } "
+                "QPushButton:pressed { background: #263744; }")
+            buttons.addWidget(button, 1)
         layout.addWidget(self.actions)
 
     def setText(self, text):
@@ -138,6 +144,10 @@ class DesktopController(QtCore.QObject):
             logging.getLogger("layerloom.example").exception("Example could not load")
             self.window._error("Example could not load", str(exc))
             return False
+        if self.window._paint_active():
+            # Tutorial recipe initialization is part of loading, not a user edit.
+            self.window._paint_session = None
+            self.window._begin_paint_session()
         previous = self.example_directory
         self.example_directory = directory
         if previous:

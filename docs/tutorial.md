@@ -7,17 +7,22 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
 1. Open LayerLoom using the [installation guide](install.md). LayerLoom
    starts in **Arrange**, with a pixelated Benchy design on the empty build plate.
-2. Click **Try the example**, or **Help → Try the CMY cubes example**, to load
-   the cubes. Loading an example keeps your current mode.
+2. Click **Load example** for the colored Benchy, or **Help → Try the CMY cubes example**
+   for a smaller, faster first test. Loading an example keeps your current mode.
 3. Move, rotate, and scale the model in Arrange. Turn on **Paint** in the main
    toolbar when you want surface-selection and painting controls.
-4. Click **Back to build plate** to return to Arrange. Both views keep the same model, colors,
+4. Click **Back to build plate**, then **Keep paint** to retain your edits or
+   **Discard changes** to restore the colors from this Paint visit. **Cancel** stays in Paint.
+   Both views keep the same model, colors,
    and placement; exporting is available in either mode.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 
 ## Paint a surface or area
+
+Paint starts with **Brush**: choose a color and left-click or drag to apply it.
+Right-click drag rotates the model; scroll zooms. For precise selection:
 
 1. Turn on **Paint** in the main toolbar. Choose **Surface select** and click a
    face to select a connected surface.

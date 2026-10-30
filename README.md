@@ -15,7 +15,7 @@ This is an **early-access release**; inspect your result in a slicer before prin
 
 1. Open the downloaded DMG and drag **LayerLoom** onto **Applications**.
 2. Open **Applications → LayerLoom**. Allow about half a minute on first launch.
-3. Click **Try the example**, then **Weave**.
+3. Click **Load example**, then **Weave**.
 4. Keep **Woven apparent colors** and **0.16 mm**, click **Choose save location…**,
    and choose where to save. Wait for **Export complete**, then **Show in Finder**.
 
@@ -41,11 +41,12 @@ Some managed Macs do not allow exceptions.
 ## Try painting
 
 LayerLoom starts with the original build plate in **Arrange** mode. Turn on **Paint**
-when you want to edit a surface: select an area, choose a color, then **Apply paint**.
-Click **Back to build plate** to return to Arrange. **Save paint…** keeps an editable `.llpaint`
+when you want to edit a surface: choose a color, then left-click or drag to brush it on.
+Right-click drag rotates the model. Click **Back to build plate** and choose
+**Keep paint** or **Discard changes** to return to Arrange. **Save paint…** keeps an editable `.llpaint`
 project; **Weave** creates the separate printable model.
 
-For a larger example, choose **Help → Load the Benchy example**.
+For a smaller, faster example, choose **Help → Try the CMY cubes example**.
 [Full tutorial](docs/tutorial.md) · [Troubleshooting](docs/mac_first_open.md)
 
 ## Windows, Linux, and source installation

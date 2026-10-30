@@ -42,8 +42,8 @@ open the Mac app.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
 4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
-   build plate. Click **Try the example**, then **Weave**.
-   The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+   build plate. Click **Load example**, then **Weave**.
+   The example selects **Woven apparent colors** and **0.16 mm** automatically. Check those values,
    click **Choose save location…**, and choose a `.3mf` filename and folder.
    The Mac example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel, then use **Show in Finder** to locate it. The first export can take
    longer while its geometry search code compiles.

@@ -8,6 +8,9 @@ Arrange implementation. It deliberately does not import any versioned GUI module
 from __future__ import annotations
 
 import os
+from copy import deepcopy
+
+import numpy as np
 
 from qtpy import QtCore, QtGui, QtWidgets
 
@@ -32,6 +35,7 @@ class PaintWorkspaceHostMixin:
     """
 
     def __init__(self):
+        self._paint_session = None
         self.paint_panel = None
         self.workspace_tabs = None
         self._paint_pending_source = None
@@ -78,6 +82,7 @@ class PaintWorkspaceHostMixin:
         self.setCentralWidget(workspace)
         tabs.currentChanged.connect(self._workspace_changed)
         editor = self.paint_panel.editor
+        editor.tool_combo.setCurrentText("Brush")
         editor.windowTitleChanged.connect(self._paint_title_changed)
         editor.statusBar().messageChanged.connect(self._paint_status_changed)
         # Both controls belong to the host footer so an export remains
@@ -150,15 +155,23 @@ class PaintWorkspaceHostMixin:
         if hasattr(self, "_paint_action"):
             self._paint_action.setChecked(paint)
             self._paint_action.setText("Back to build plate" if paint else "Paint")
+            button = self._main_toolbar.widgetForAction(self._paint_action)
+            if button is not None:
+                button.setStyleSheet(
+                    "QToolButton { background: #28648c; color: white; border: 1px solid #80bce5; "
+                    "border-radius: 5px; padding: 5px 14px; font-weight: 700; } "
+                    "QToolButton:hover { background: #347fab; }"
+                    if paint else "")
             self._paint_action.setToolTip(
-                "Return to the build plate. Your paint is kept and will be used by Weave."
+                "Return to the build plate and choose whether to keep or discard your paint changes."
                 if paint else "Paint areas of the model before weaving.")
         self.workflow_hint.setText(
-            "Select an area → choose a color → Apply paint → Weave. "
-            "Brush strokes apply immediately. Back to build plate keeps your paint."
+            "Choose a color and paint the model, then press Weave. "
+            "Back to build plate lets you keep or discard your edits."
             if paint else
             "Select or paint the colors, then press Weave to create your printable 3MF.")
         if paint:
+            self._begin_paint_session()
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
             message = self.paint_panel.editor.statusBar().currentMessage()
             self.status_bar.showMessage(message or "Paint · select an area, choose a color, then Apply paint")
@@ -265,7 +278,63 @@ class PaintWorkspaceHostMixin:
         if enabled:
             self._open_paint_editor()
         elif self.workspace_tabs is not None:
+            if not self._finish_paint_session():
+                self._paint_action.setChecked(True)
+                return
             self.workspace_tabs.setCurrentIndex(1)
+            self._shared_paint_workspace.refresh_colors()
+
+    def _begin_paint_session(self):
+        editor = self.paint_panel.editor
+        document = editor.document
+        if document is None or (self._paint_session is not None
+                                and self._paint_session["document"] is document):
+            return
+        self._paint_session = dict(
+            document=document, colors=[mesh.face_rgba.copy() for mesh in document.meshes],
+            metadata=deepcopy(document.metadata), undo=list(editor._undo), redo=list(editor._redo),
+            palette=editor.palette_combo.currentText(), mode=editor.mapping_mode_combo.currentIndex())
+
+    def _ask_keep_paint(self):
+        dialog = QtWidgets.QMessageBox(self)
+        dialog.setWindowTitle("Return to build plate")
+        dialog.setText("Keep your paint changes?")
+        dialog.setInformativeText(
+            "Keep paint shows it on the build plate and uses it when you weave. "
+            "Discard restores the colors from when you entered Paint. Saved files are unchanged.")
+        keep = dialog.addButton("Keep paint", QtWidgets.QMessageBox.AcceptRole)
+        discard = dialog.addButton("Discard changes", QtWidgets.QMessageBox.DestructiveRole)
+        dialog.addButton(QtWidgets.QMessageBox.Cancel)
+        dialog.setDefaultButton(keep)
+        dialog.exec_()
+        return "keep" if dialog.clickedButton() is keep else (
+            "discard" if dialog.clickedButton() is discard else "cancel")
+
+    def _finish_paint_session(self):
+        editor = self.paint_panel.editor
+        editor.plotter.finish_gesture()
+        session = self._paint_session
+        if session is not None and session["document"] is editor.document:
+            changed = any(not np.array_equal(mesh.face_rgba, colors)
+                          for mesh, colors in zip(editor.document.meshes, session["colors"]))
+            if changed:
+                choice = self._ask_keep_paint()
+                if choice == "cancel":
+                    return False
+                if choice == "discard":
+                    for mesh, colors in zip(editor.document.meshes, session["colors"]):
+                        mesh.face_rgba[:] = colors
+                    editor._undo = session["undo"]
+                    editor._redo = session["redo"]
+                    editor.clear_selection()
+                    editor._after_edit()
+                    editor.palette_combo.setCurrentText(session["palette"])
+                    editor.mapping_mode_combo.setCurrentIndex(session["mode"])
+                    editor.document.metadata = deepcopy(session["metadata"])
+                    editor._restore_saved_mapping()
+                    editor.paintChanged.emit()
+        self._paint_session = None
+        return True
 
     def _open_paint_editor(self):
         if self.paint_panel is not None:
