@@ -50,7 +50,7 @@ For a larger example, choose **Help → Load the Benchy example**.
 
 ## Windows, Linux, and source installation
 
-[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-v0.6.4a6-source.zip),
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip),
 extract it, and open **START_HERE.html**. On Windows, double-click
 **Launch LayerLoom.bat**. The launcher installs its own Python automatically;
 first setup needs internet. [Source installation guide](docs/install.md).

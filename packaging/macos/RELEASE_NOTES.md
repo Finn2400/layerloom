@@ -28,7 +28,7 @@ These free builds are not Apple-notarized and need graphical approval; managed
 Macs may prohibit it. Do not bypass a damaged/malware warning. This is alpha
 software: inspect geometry, part-to-filament assignments and layers before printing.
 
-Windows/Linux: download **LayerLoom-v0.6.4a6-source.zip**, extract it and open
+Windows/Linux: download **LayerLoom-0.6.4a6-source.zip**, extract it and open
 **START_HERE.html**. First source setup needs internet. GitHub's generic Source
 code downloads are not Mac apps.
 

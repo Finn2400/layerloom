@@ -4,20 +4,18 @@
 launchers.** They install a private Python and the required packages for you.
 LayerLoom and its installation tools are free.
 
-The standalone Mac release is currently an **unpublished draft**. Only
-maintainers with repository write access can download draft assets. Until a
-desktop release is published, public users should follow **Download and run the
-source** below. The [release checklist](../packaging/macos/RELEASE_CHECKLIST.md)
-records the checks required before publication.
+**Mac users:** start with the [standalone app and four-step quick start](../README.md#download-for-mac).
+It includes Python and its libraries. The source launchers below are intended
+for Windows/Linux users and developers.
 
 ## Choose your installation
 
-| Computer | Current public installation | Standalone Mac draft |
-| --- | --- | --- |
-| Mac with an Apple M-series chip | Source ZIP, `.command` launcher | `arm64` DMG; macOS 14 or newer |
-| Mac with an Intel processor | Source ZIP, `.command` launcher | `x86_64` DMG; macOS 15 or newer |
-| Windows x64 | Source ZIP, `.bat` launcher | Not included |
-| Linux x86_64 desktop | Source ZIP, `.sh` launcher | Not included |
+| Computer | Recommended installation |
+| --- | --- |
+| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg) |
+| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) |
+| Windows x64 | Source ZIP, `.bat` launcher |
+| Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
 On a Mac, **Apple menu → About This Mac** shows the chip or processor and macOS
 version. Windows ARM, Linux ARM, and older Mac systems are not validated targets
@@ -57,9 +55,9 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-These instructions accompany **0.6.4a5**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
 confirm your build. Keep the instructions and download from the same release
-together. Draft downloads require repository write access.
+together. No GitHub account is needed for the public release.
 
 The app includes Python and its required libraries. After first-open approval,
 the example works offline. To update, quit LayerLoom and replace the app with a
@@ -75,10 +73,10 @@ use LayerLoom.
 If a release supplies **LayerLoom-&lt;version&gt;-source.zip**, prefer that file:
 it contains the application, examples, launchers and instructions without
 manuscript materials. For a standalone Mac installation, choose the matching
-DMG instead. Draft release files remain visible only to maintainers.
+DMG instead.
 
-1. [Download the source preview ZIP](https://github.com/Finn2400/layerloom/archive/refs/heads/codex/paint-release-integration.zip).
-   This selects the preview containing the installation fixes in this guide;
+1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip).
+   This selects the release containing the installation fixes in this guide;
    no GitHub account is needed. Keep the launchers and all files from the same
    download together. GitHub's **Code → Download ZIP** uses whichever branch is
    selected on that page, which may contain an older version.
@@ -192,7 +190,7 @@ project's DMG instead of installing packages inside it.
 
 | What you see | What to do |
 | --- | --- |
-| No DMG on the public Releases page | The desktop release may still be an unpublished draft. Use the source ZIP instructions above. |
+| Unsure which download to choose | Use the direct Mac download links in the README; choose the DMG matching your chip. Windows/Linux users choose the source ZIP. |
 | Mac says the developer cannot be verified or Apple cannot check the app | Follow [Mac first-open](mac_first_open.md). Attempt to open the copied app before looking for the approval button. |
 | Mac says the app is damaged, or will damage your computer | Stop and obtain a fresh copy from the project. If it persists, report the exact message; this differs from the ordinary verification prompt. |
 | Mac says this application is not supported | Check About This Mac against the architecture and minimum OS table. Use `arm64` for Apple Silicon and `x86_64` for Intel. |

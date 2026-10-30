@@ -72,7 +72,7 @@ reopen it with **Open…**. Export a separate
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
 for selection tools, the larger Benchy example, and export limits.
 
-These instructions accompany **0.6.4a5**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
 confirm the build and follow the instructions supplied with that download.
 
 Python and the required libraries are inside the app. Once first-open approval
