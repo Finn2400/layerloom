@@ -53,7 +53,7 @@ opening another copy.
 1. LayerLoom starts in Arrange, showing a pixelated Benchy design on
    the empty build plate. Click **Try the example** to load four CMY cubes.
    Examples keep the mode you are using.
-2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
+2. Click **Weave**. The tutorial selects **Woven apparent
    colors** and **0.16 mm** automatically. Check those values and click **Choose save location…**.
    The first export may take longer while geometry search code compiles.
 3. Choose a `.3mf` filename and folder. The example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel.

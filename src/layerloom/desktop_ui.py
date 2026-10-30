@@ -22,7 +22,7 @@ class _WelcomePanel(QtWidgets.QFrame):
         self.setStyleSheet("#layerloomWelcome { background: #252a31; border: 1px solid #566473; border-radius: 12px; } QLabel { color: #e9e9e9; }")
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(24, 22, 24, 22)
-        self.message = QtWidgets.QLabel("Start with a small example, or open your own model.")
+        self.message = QtWidgets.QLabel("Open a model or try the example. Select or paint the colors, then press Weave.")
         self.message.setAlignment(QtCore.Qt.AlignCenter)
         self.message.setWordWrap(True)
         layout.addWidget(self.message)
@@ -147,7 +147,7 @@ class DesktopController(QtCore.QObject):
             message = ("Benchy ready — larger example. Export uses 0.16 mm layers and a "
                        "4,096 MiB memory budget. Allow extra time for conversion.")
         else:
-            message = ("Example ready. Choose Export geometry 3MF… to create printable material parts, "
+            message = ("Example ready. Choose Weave to create printable material parts, "
                        "or turn on Paint to color a surface.")
         self.window.status_bar.showMessage(message)
         return True

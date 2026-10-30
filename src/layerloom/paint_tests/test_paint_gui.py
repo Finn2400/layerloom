@@ -315,12 +315,12 @@ def test_embedded_panel_defaults_surface_selection_and_woven_color_mode(app):
 @pytest.mark.parametrize("color_mode", ["woven", "direct", "source"])
 def test_export_action_offers_only_material_geometry_for_every_color_mode(window, monkeypatch, tmp_path, color_mode):
     assert window.mapping_mode_combo.currentData() == "woven"
-    assert window.export_action.text() == "Export geometry 3MF…"
+    assert window.export_action.text() == "Weave"
     assert not hasattr(window, "surface_export_action")
     assert not hasattr(window, "export_surface_dialog")
     captured = {}
     def choose_mode(dialog):
-        assert dialog.windowTitle() == "Export geometry 3MF"
+        assert dialog.windowTitle() == "Weave — create printable 3MF"
         mode = dialog.findChild(QtWidgets.QComboBox, "geometryExportMode")
         assert [mode.itemData(i) for i in range(mode.count())] == ["woven", "direct", "source"]
         assert all(spin.isEnabled() for spin in dialog.findChildren(QtWidgets.QDoubleSpinBox))

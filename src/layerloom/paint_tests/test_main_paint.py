@@ -74,6 +74,7 @@ def set_paint_mode(window, enabled):
         click_main_action(window, window._paint_action)
     assert window._paint_active() == enabled
     assert window._paint_action.isChecked() == enabled
+    assert window._paint_action.text() == ("Back to build plate" if enabled else "Paint")
 
 
 @pytest.mark.parametrize("edges", [False, True])
@@ -236,7 +237,10 @@ def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monk
     assert calls == ["save", "export", "open"]
     set_paint_mode(main_window, False)
     assert all(bar.isVisible() for bar in main_window._arrange_toolbars)
-    assert toolbar_actions["Weave"].text() == "Export geometry 3MF…"
+    assert toolbar_actions["Weave"].text() == "Weave"
+    button = main_window._main_toolbar.widgetForAction(toolbar_actions["Weave"])
+    assert button.objectName() == "primaryWeaveButton"
+    assert "#e89b2f" in button.styleSheet()
     assert all(not action.shortcut().isEmpty() for action in main_window._paint_history_actions)
     click_main_action(main_window, toolbar_actions["Save Labeled 3MF"])
     click_main_action(main_window, toolbar_actions["Weave"])

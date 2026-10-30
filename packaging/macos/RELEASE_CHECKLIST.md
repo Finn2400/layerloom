@@ -56,7 +56,7 @@ does not establish the first-download experience.
 
 - [ ] Download each DMG with a browser so the normal quarantine attribute is applied. Keep quarantine intact; do not use `xattr` as an installation workaround.
 - [ ] On a Mac without a user-installed Python, Git, Node or Homebrew, drag LayerLoom to Applications and launch it from Finder. Follow Read Me First's graphical Open Anyway instructions. Record OS, architecture and the observed prompts.
-- [ ] Have a person unfamiliar with Python load the example, use Export geometry 3MF with 0.16 mm layers, and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
+- [ ] Have a person unfamiliar with Python load the example, use Weave with 0.16 mm layers, and locate the resulting 3MF without Terminal or coaching. Record any confusing step.
 - [ ] Open the result in a slicer; verify the preassigned parts, common alignment and the 0.16 mm layer instructions.
 - [ ] Reopen while offline, move the app to another folder containing spaces/non-ASCII characters, and repeat the example.
 - [ ] Replace an older app with this build, verify the new version starts, and record any renewed approval prompt. Do not delete user output or application logs.

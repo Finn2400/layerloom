@@ -19,7 +19,7 @@ _PAINT_ACTION_LABELS = {
     "Open 3MF": "Open…",
     "Open GLB": "Open model…",
     "Save Labeled 3MF": "Save paint…",
-    "Weave": "Export geometry 3MF…",
+    "Weave": "Weave",
     "Preview 3D": "Fit view",
 }
 
@@ -67,7 +67,15 @@ class PaintWorkspaceHostMixin:
         tabs.addTab(self.paint_panel, "Paint surfaces")
         tabs.addTab(arrange, "Arrange & weave")
         tabs.tabBar().hide()
-        self.setCentralWidget(tabs)
+        workspace = QtWidgets.QWidget(self)
+        layout = QtWidgets.QVBoxLayout(workspace)
+        layout.setContentsMargins(8, 4, 8, 0)
+        self.workflow_hint = QtWidgets.QLabel()
+        self.workflow_hint.setObjectName("weaveWorkflowHint")
+        self.workflow_hint.setWordWrap(True)
+        layout.addWidget(self.workflow_hint)
+        layout.addWidget(tabs, 1)
+        self.setCentralWidget(workspace)
         tabs.currentChanged.connect(self._workspace_changed)
         editor = self.paint_panel.editor
         editor.windowTitleChanged.connect(self._paint_title_changed)
@@ -90,6 +98,7 @@ class PaintWorkspaceHostMixin:
         self.viewer._ensure_plotter()
         self.viewer._set_default_loaded_camera()
         self.workspace_tabs.setCurrentIndex(1)
+        self._promote_weave_button()
         # Fit after Qt has laid out the real viewport, including narrow screens.
         QtCore.QTimer.singleShot(0, self._fit_initial_build_plate)
 
@@ -140,6 +149,15 @@ class PaintWorkspaceHostMixin:
         self._sync_paint_host_actions()
         if hasattr(self, "_paint_action"):
             self._paint_action.setChecked(paint)
+            self._paint_action.setText("Back to build plate" if paint else "Paint")
+            self._paint_action.setToolTip(
+                "Return to the build plate. Your paint is kept and will be used by Weave."
+                if paint else "Paint areas of the model before weaving.")
+        self.workflow_hint.setText(
+            "Select an area → choose a color → Apply paint → Weave. "
+            "Brush strokes apply immediately. Back to build plate keeps your paint."
+            if paint else
+            "Select or paint the colors, then press Weave to create your printable 3MF.")
         if paint:
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
             message = self.paint_panel.editor.statusBar().currentMessage()

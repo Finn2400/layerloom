@@ -14,7 +14,7 @@ Check **Apple menu → About This Mac** if unsure. You only need the matching DM
 
 1. Open the DMG. Drag **LayerLoom** to **Applications**, then open the copied app.
 2. If macOS blocks it, dismiss the alert and choose **System Settings → Privacy & Security → Open Anyway**. Confirm when prompted. [Illustrated help](https://github.com/Finn2400/layerloom/blob/main/docs/mac_first_open.md).
-3. Click **Try the example**, then **Export geometry 3MF…**. Keep **Woven apparent colors** and **0.16 mm**, choose a save location, and wait for **Export complete**.
+3. Click **Try the example**, then **Weave**. Keep **Woven apparent colors** and **0.16 mm**, choose a save location, and wait for **Export complete**.
 4. Click **Show in Finder**. [Follow the slicer walkthrough](https://github.com/Finn2400/layerloom/blob/main/docs/tutorial.md#open-the-3mf-in-a-slicer) before printing.
 
 No printer is needed to try the example. Turn on **Paint** to edit surfaces;

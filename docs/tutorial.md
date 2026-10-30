@@ -11,7 +11,7 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
    the cubes. Loading an example keeps your current mode.
 3. Move, rotate, and scale the model in Arrange. Turn on **Paint** in the main
    toolbar when you want surface-selection and painting controls.
-4. Turn Paint off to return to Arrange. Both views keep the same model, colors,
+4. Click **Back to build plate** to return to Arrange. Both views keep the same model, colors,
    and placement; exporting is available in either mode.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
@@ -31,6 +31,10 @@ GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 5. Expand **Color mapping**, choose a palette, and assign colors to preview how
    those colors map to printable filament recipes.
 
+Click **Weave** in either mode to use your applied paint; no separate transfer is
+needed. Yellow selection highlights are not paint. Each interior region uses
+its nearest surface color, so painting is not a thin surface coating.
+
 Woven recipes alternate physical filaments through the model's height. Their
 screen color is an approximation of the apparent printed color. Actual results
 depend on the loaded filaments, layer height, geometry, and viewing direction.
@@ -47,7 +51,7 @@ model in the workspace.
 
 ## Export printable geometry
 
-1. Click **Export geometry 3MF…** in the main toolbar.
+1. Click **Weave** in the main toolbar.
 2. Choose **Woven apparent colors** for LayerLoom's layered color recipes.
    **Direct physical filament colors** uses the available single filaments;
    **Exact colors — one material each** creates a material for each paint color.
@@ -108,7 +112,7 @@ preview, walls, thin features, and filament assignments before printing.
 ## Try the Benchy or your own model
 
 Use **Help → Load the Benchy example** for the larger bundled model. It keeps
-the current mode; turn on **Paint** for surface editing and Color mapping.
+the current mode; click **Paint** for surface editing and Color mapping.
 Its eight parts appear in several colors, with four woven recipes using cyan,
 magenta and yellow. Follow the same save and export workflow. Its example
 settings include the larger memory budget described above. Larger models or fine
