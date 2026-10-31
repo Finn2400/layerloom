@@ -248,11 +248,15 @@ class PerformanceDialog(QtWidgets.QDialog):
                                f"Longest render: {max(frames):.0f} ms · "
                                f"Longest UI delay: {data['ui_timer_delay'].get('max_ms', 0):.0f} ms")
         elif self.recorder.report_data is not None:
-            self.status.setText('Recording complete. Copy the report, or change smoothing and record a comparison.')
+            data = self.recorder.report_data
+            longest = max(x.get('max_ms_entire_recording', 0) for x in data['render_calls'].values())
+            self.status.setText(f"Complete ({data['elapsed_seconds']:.0f} s) · Longest render: {longest:.0f} ms · "
+                               f"Longest UI delay: {data['ui_timer_delay'].get('max_ms', 0):.0f} ms")
 
     def copy_report(self):
         QtWidgets.QApplication.clipboard().setText(self.recorder.text())
-        self.status.setText('Report copied. Paste it into your message.')
+        self.copy_button.setText('Copied')
+        QtCore.QTimer.singleShot(2000, lambda: self.copy_button.setText('Copy report'))
 
     def _quality(self, reduced):
         if reduced:

@@ -56,6 +56,7 @@ def test_dialog_restores_quality_and_copies_report_without_model_contents():
         d.effects.setChecked(True)
         assert p.ren_win.GetMultiSamples()==0
         d.start();QtTest.QTest.qWait(450);d.recorder.stop()
+        assert 'Longest UI delay:' in d.status.text()
         d.copy_report();report=json.loads(app.clipboard().text())
         assert report['reduced_smoothing'] is True
         assert 'source_path' not in report

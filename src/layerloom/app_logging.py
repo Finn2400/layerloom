@@ -149,7 +149,7 @@ def diagnostic_text() -> str:
         f"Executable: {sys.executable}",
         f"Logs: {_active_log_path if _active_log_path is not None else 'not initialized or unavailable'}",
     ]
-    for name in ("PyQt5", "pyvista", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
+    for name in ("PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         try:
             version = importlib.metadata.version(name)
         except (importlib.metadata.PackageNotFoundError, OSError, ValueError):

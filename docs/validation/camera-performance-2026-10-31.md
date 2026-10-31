@@ -62,6 +62,13 @@ original display settings on closing the panel. It does not simplify geometry.
 
 ## Wednesday comparison
 
+The DMG app uses PyInstaller's bundled Python; its worker is addressed inside
+`Contents/Helpers`, without looking up a system interpreter. Current source
+launchers also explicitly acquire managed Python 3.12.15. Check the report's
+Installation, Python, and Executable fields before ruling out an older source
+installation on the friend's Mac. Bundling prevents system-Python selection
+problems; it does not rule out defects in the bundled graphics dependencies.
+
 1. Record exact build and Mac/macOS/display configuration first.
 2. Restart the same app; load bundled Benchy, then record camera rotation/zoom.
 3. Repeat with reduced smoothing. Keep model, window size, and mode identical.
@@ -80,3 +87,5 @@ artifact still needs testing; the public download does not yet have this panel.
 Validation: 24 targeted native diagnostics, desktop UI, and logging tests passed;
 the two recorder tests passed again after bounding watchdog lifetime and adding
 slow-stack log persistence. A live Benchy camera-rotation recording also completed.
+The 11 recorder/logging checks passed after retaining completed timing summaries
+and including PyVistaQt in the runtime version report.
