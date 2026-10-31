@@ -12,8 +12,8 @@ for Windows/Linux users and developers.
 
 | Computer | Recommended installation |
 | --- | --- |
-| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg) |
-| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) |
+| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg) |
+| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-x86_64.dmg) |
 | Windows x64 | Source ZIP, `.bat` launcher |
 | Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
@@ -42,8 +42,8 @@ open the Mac app.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
 4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
-   build plate. Click **Try the example**, then **Export geometry 3MF…**.
-   The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+   build plate. Click **Load example**, then **Weave**.
+   The example selects **Woven apparent colors** and **0.16 mm** automatically. Check those values,
    click **Choose save location…**, and choose a `.3mf` filename and folder.
    The Mac example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel, then use **Show in Finder** to locate it. The first export can take
    longer while its geometry search code compiles.
@@ -55,7 +55,7 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a7**. Use **Help → Copy diagnostics** to
 confirm your build. Keep the instructions and download from the same release
 together. No GitHub account is needed for the public release.
 
@@ -75,7 +75,7 @@ it contains the application, examples, launchers and instructions without
 manuscript materials. For a standalone Mac installation, choose the matching
 DMG instead.
 
-1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip).
+1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip).
    This selects the release containing the installation fixes in this guide;
    no GitHub account is needed. Keep the launchers and all files from the same
    download together. GitHub's **Code → Download ZIP** uses whichever branch is

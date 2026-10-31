@@ -547,7 +547,7 @@ def test_paint_loaded_model_placement_save_and_reopen_share_exact_geometry(main_
     assert_shared_geometry(main_window)
 
 
-@pytest.mark.parametrize("extension", [".glb", ".llpaint"])
+@pytest.mark.parametrize("extension", [".llpaint"])
 def test_arrange_open_uses_same_paint_aware_parser_for_glb_and_project(main_window, monkeypatch, tmp_path, extension):
     from layerloom.paint_io import save_paint_document
     source = tmp_path / ("shared" + extension)
@@ -805,3 +805,82 @@ def test_paint_exit_dialog_buttons(main_window, main_module, label, choice):
         next(button for button in dialog.buttons() if button.text() == label).click()
     QtCore.QTimer.singleShot(0, choose)
     assert main_module.QtAssignColorsApp._ask_keep_paint(main_window) == choice
+
+
+def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, tmp_path):
+    import trimesh
+    from layerloom.paint_io import load_paint_document
+    cyan = trimesh.creation.box(extents=[8, 6, 4])
+    cyan.visual.vertex_colors = [0, 255, 255, 255]
+    magenta = trimesh.creation.box(extents=[8, 6, 4])
+    magenta.apply_translation([12, 0, 0])
+    magenta.visual.vertex_colors = [255, 0, 255, 255]
+    source = tmp_path / "two colored regions.glb"
+    source.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
+    original = source.read_bytes()
+    # Replace an existing shared model, as well as exercising the normal Open action.
+    main_window.paint_panel.editor.set_document(example_document("cube", 8))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
+    main_window._on_open()
+    assert not main_window._paint_active()
+    assert not main_window._shared_paint_active()
+    assert len(main_window.model_objects) == 2
+    assert len(main_window.assignments) == 2
+    assert all(main_window.assignments.values())
+    assert main_window.paint_panel.document is None
+    staged = tmp_path / "assigned.3mf"
+    main_window._materialize_current_model(str(staged), include_assignments=True)
+    before = load_paint_document(staged)
+    assert sum(len(mesh.faces) for mesh in before.meshes) == 24
+    set_paint_mode(main_window, True)
+    assert main_window._shared_paint_active()
+    assert len(main_window.paint_panel.document.meshes) == 2
+    for actual, expected in zip(main_window.paint_panel.document.meshes, before.meshes):
+        np.testing.assert_allclose(actual.vertices, expected.vertices)
+        np.testing.assert_array_equal(actual.face_rgba, expected.face_rgba)
+    set_paint_mode(main_window, False)
+    assert source.read_bytes() == original
+    # Opening it again in Arrange must use the region-based weave, not the
+    # surface-paint exporter. Exercise the real worker and reopen its output.
+    assert main_window.open_model_path(str(source))
+    main_window.layer_height_spin.setValue(0.16)
+    monkeypatch.setattr(file_dialogs, "get_existing_directory", lambda *a, **k: str(tmp_path))
+    monkeypatch.setattr(main_window.paint_panel.editor, "export_dialog",
+                        lambda: pytest.fail("GLB regions must use the geometry weave path"))
+    monkeypatch.setattr(main_window, "_error", lambda title, message: pytest.fail(f"{title}: {message}"))
+    main_window._on_weave()
+    output = tmp_path / "two colored regions_woven.3mf"
+    assert output.exists()
+    woven = load_paint_document(output)
+    assert len(woven.meshes) >= 2
+    assert any("cyan" in mesh.name for mesh in woven.meshes)
+    assert any("magenta" in mesh.name for mesh in woven.meshes)
+    assert source.read_bytes() == original
+
+
+def test_explicit_paint_glb_retains_surface_editing(main_window, monkeypatch, tmp_path):
+    import trimesh
+    mesh = trimesh.creation.box(extents=[.008, .006, .004])
+    mesh.visual.vertex_colors = [0, 255, 255, 255]
+    source = tmp_path / "paint.glb"
+    source.write_bytes(trimesh.Scene(mesh).export(file_type="glb"))
+    monkeypatch.setattr(main_window, "_run_glb_import_pipeline",
+                        lambda *a: pytest.fail("Explicit Paint import should retain its surface geometry"))
+    assert main_window.open_paint_path(source)
+    assert main_window._paint_active() and main_window._shared_paint_active()
+    np.testing.assert_allclose(np.ptp(main_window.paint_panel.document.meshes[0].vertices, axis=0),
+                               [8, 6, 4], atol=1e-5)
+
+
+def test_failed_region_import_keeps_existing_document(main_window, monkeypatch, tmp_path):
+    editor = main_window.paint_panel.editor
+    editor.set_document(example_document("cube", 8))
+    original = editor.document
+    def fail(path):
+        raise ValueError("Invalid GLB")
+    errors = []
+    monkeypatch.setattr(main_window, "_run_glb_import_pipeline", fail)
+    monkeypatch.setattr(main_window, "_error", lambda *args: errors.append(args))
+    assert not main_window.open_model_path(tmp_path / "broken.glb")
+    assert errors
+    assert editor.document is original and main_window._shared_paint_active()

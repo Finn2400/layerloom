@@ -1,7 +1,6 @@
 # LayerLoom Paint and Weave Tutorial
 
-This guide describes the current source build. For the published 0.6.4a6 Mac app,
-use the [downloaded-app guide](mac_first_open.md).
+This guide covers LayerLoom **0.6.4a7** and the current source build.
 
 Start with the small CMY cubes bundled with LayerLoom. You do not need a separate
 model download. A slicer is needed after LayerLoom creates the printable 3MF.
@@ -21,6 +20,12 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
+
+In **Arrange**, colored GLB/GLTF files use the original colored-region importer:
+colors become separate parts that are matched to filament recipes. Select a
+part to adjust its assignment, then click **Weave**. Paint is optional. Opening
+a GLB while already in **Paint** instead keeps its surface colors for brush
+editing. Check the physical size and placement before weaving.
 
 ## Paint a surface or area
 

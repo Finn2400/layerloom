@@ -8,6 +8,8 @@ Arrange implementation. It deliberately does not import any versioned GUI module
 from __future__ import annotations
 
 import os
+import tempfile
+from pathlib import Path
 from copy import deepcopy
 
 import numpy as np
@@ -195,28 +197,67 @@ class PaintWorkspaceHostMixin:
             (plotter if plotter is not None else self.viewer_host).setFocus(QtCore.Qt.OtherFocusReason)
 
     def open_model_path(self, path):
-        """Open a shared model without changing the user's workspace."""
+        """Open in the current mode; Arrange GLBs retain colored-region geometry."""
         if not self.paint_panel.can_close():
             return False
         self._paint_pending_source = None
+        if Path(path).suffix.lower() in {".glb", ".gltf"} and not self._paint_active():
+            return self._open_region_model(path)
         return self.paint_panel.open_path(path)
+
+    def _open_region_model(self, path):
+        old_document = self.paint_panel.editor.document
+        self._opening_region_model = True
+        try:
+            opened = super()._open_glb_regions_path(str(path))
+            if opened:
+                self._region_import_active = True
+                self._workspace_changed(self.workspace_tabs.currentIndex())
+            return opened
+        except Exception as exc:
+            if old_document is not None:
+                self.paint_panel.set_document(old_document)
+            self._error("Open GLB", str(exc))
+            return False
+        finally:
+            self._opening_region_model = False
+
+    def _load_canonical_model(self, path):
+        # Conversion/normalization must succeed before replacing a shared model.
+        if getattr(self, "_opening_region_model", False):
+            editor = self.paint_panel.editor
+            self._shared_paint_workspace.model = None
+            editor.document = None
+            editor.project_path = None
+            editor.dirty = False
+            editor._undo.clear()
+            editor._redo.clear()
+            self._paint_session = None
+        return super()._load_canonical_model(path)
 
     def open_paint_path(self, path):
         """Open a model explicitly in Paint, preserving the existing API."""
-        opened = self.open_model_path(path)
+        if not self.paint_panel.can_close():
+            return False
+        self._paint_pending_source = None
+        opened = self.paint_panel.open_path(path)
         if opened:
             self.workspace_tabs.setCurrentWidget(self.paint_panel)
         return opened
 
     def _on_open(self):
-        if self.paint_panel is not None:
+        if self.paint_panel is None:
+            return super()._on_open()
+        if self._paint_active():
             return self.paint_panel.editor.open_dialog()
-        return super()._on_open()
+        from . import file_dialogs
+        from .paint_gui import MODEL_FILTER
+        path, _ = file_dialogs.get_open_file_name(self, "Open model or paint project", "", MODEL_FILTER)
+        if path:
+            return self.open_model_path(path)
 
     def _on_open_glb(self):
-        if self.paint_panel is not None:
-            return self.paint_panel.editor.open_dialog()
-        return super()._on_open_glb()
+        return self._on_open()
 
     def _on_load_example(self):
         if self.paint_panel is not None:
@@ -340,7 +381,20 @@ class PaintWorkspaceHostMixin:
         if self.paint_panel is not None:
             source = getattr(self, "source_file_path", None) or getattr(self, "base_file", None)
             if self.paint_panel.editor.document is None and source and os.path.exists(source):
-                self._paint_pending_source = source
+                if not getattr(self, "_region_import_active", False):
+                    self._paint_pending_source = source
+                else:
+                    # Bring the placed geometry and assigned recipes into Paint;
+                    # reopening the raw GLB would lose region assignments and scale.
+                    if not self._ensure_transform_preview_current():
+                        return
+                    from .paint_io import load_paint_document
+                    with tempfile.TemporaryDirectory(prefix="layerloom_region_paint_") as folder:
+                        staged = os.path.join(folder, "assigned.3mf")
+                        self._materialize_current_model(staged, include_assignments=True)
+                        document = load_paint_document(staged)
+                    document.source_path = str(source)
+                    self.paint_panel.set_document(document)
             already_active = self._paint_active()
             self.workspace_tabs.setCurrentWidget(self.paint_panel)
             if already_active and self._paint_pending_source:

@@ -5,9 +5,9 @@ colors, and export a printable file for your slicer.
 
 ## Download for Mac
 
-**[Download for Apple Silicon](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg)** — M1/M2/M3/M4 or newer, macOS 14+
+**[Download for Apple Silicon](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg)** — M1/M2/M3/M4 or newer, macOS 14+
 
-[Download for Intel](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) — macOS 15+
+[Download for Intel](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-x86_64.dmg) — macOS 15+
 
 Not sure? **Apple menu → About This Mac** shows your chip and macOS version.
 You only need the DMG for your Mac. No Python, Git, Homebrew, or Terminal setup.
@@ -15,7 +15,7 @@ This is an **early-access release**; inspect your result in a slicer before prin
 
 1. Open the downloaded DMG and drag **LayerLoom** onto **Applications**.
 2. Open **Applications → LayerLoom**. Allow about half a minute on first launch.
-3. Click **Try the example**, then **Export geometry 3MF…**.
+3. Click **Load example**, then **Weave**.
 4. Keep **Woven apparent colors** and **0.16 mm**, click **Choose save location…**,
    and choose where to save. Wait for **Export complete**, then **Show in Finder**.
 
@@ -41,16 +41,18 @@ Some managed Macs do not allow exceptions.
 ## Try painting
 
 LayerLoom starts with the original build plate in **Arrange** mode. Turn on **Paint**
-when you want to edit a surface: select an area, choose a color, then **Apply paint**.
-Turn Paint off to return to Arrange. **Save paint…** keeps an editable `.llpaint`
-project; **Export geometry 3MF…** creates the separate printable model.
+when you want to edit a surface: choose a color and left-click or drag to paint.
+Right-drag rotates the model. Click **Back to build plate**, then **Keep paint**
+to keep your changes (or **Discard changes** to undo this painting session).
+**Weave** turns applied colors into printable filament layers. **Save paint…**
+keeps an editable `.llpaint` project.
 
-For a larger example, choose **Help → Load the Benchy example**.
+For a smaller example, use the CMY cubes in the **Help** menu.
 [Full tutorial](docs/tutorial.md) · [Troubleshooting](docs/mac_first_open.md)
 
 ## Windows, Linux, and source installation
 
-[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip),
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip),
 extract it, and open **START_HERE.html**. On Windows, double-click
 **Launch LayerLoom.bat**. The launcher installs its own Python automatically;
 first setup needs internet. [Source installation guide](docs/install.md).
@@ -60,7 +62,7 @@ after installation. GitHub's **Source code** ZIP is not the Mac app.
 
 ## More information
 
-[Release notes and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a6) ·
+[Release notes and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
 [Developer installation](docs/install.md#developer-installation) ·
 [Report a problem](https://github.com/Finn2400/layerloom/issues)
 
