@@ -23,11 +23,15 @@ mode remain the default. The welcome example is Benchy; the Help menu also offer
 Use **Back to build plate** to leave Paint, then keep or discard your changes.
 
 Colored GLB files opened in **Arrange** become separately assignable color
-regions, using the original geometry-weaving workflow. Paint remains optional.
+regions; Paint remains optional. Advanced import settings let you adjust scale,
+orientation and color sampling. Weaving requires a closed, valid source surface;
+some models need correction in their original modeling program.
 
 ## Need help?
 
 Use **Help → Copy diagnostics** and **Help → Open logs**.
+For a problem that happens during use, choose **Help → Diagnostic logging → Start**,
+use the app normally, then stop logging and open the log folder. There is no timer.
 These free builds are not Apple-notarized and need graphical approval; managed
 Macs may prohibit it. Do not bypass a damaged/malware warning. This is alpha
 software: inspect geometry, part-to-filament assignments and layers before printing.
