@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import os
 import json
+import logging
 from dataclasses import asdict
 import tempfile
 from pathlib import Path
@@ -240,6 +241,7 @@ class PaintWorkspaceHostMixin:
                 self._workspace_changed(self.workspace_tabs.currentIndex())
             return opened
         except Exception as exc:
+            logging.getLogger("layerloom.import").exception("GLB import failed: %s", path)
             if old_document is not None:
                 self.paint_panel.set_document(old_document)
             self._error("Open GLB", str(exc))

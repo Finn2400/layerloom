@@ -101,7 +101,15 @@ LOG_LEVEL = LOG_LEVELS["INFO"]  # default: INFO (was DEBUG)
 def _log(level: str, *args):
     lvl = LOG_LEVELS.get(level.upper(), 999)
     if lvl >= LOG_LEVEL:
-        print(f"[{level}]", *args)
+        message = " ".join((f"[{level}]", *(str(arg) for arg in args)))
+        try:
+            print(message)
+        except UnicodeEncodeError:
+            # Legacy/direct GUI launches can inherit a Windows code-page
+            # console. A diagnostic arrow or model name must not turn a
+            # successful import into an application error.
+            encoding = getattr(sys.stdout, "encoding", None) or "ascii"
+            print(message.encode(encoding, errors="backslashreplace").decode(encoding))
 
 
 def set_log_level(name: str = "INFO"):  # <-- default INFO

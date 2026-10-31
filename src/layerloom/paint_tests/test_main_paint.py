@@ -1,5 +1,7 @@
 """Native integration checks for painting inside LayerLoom's main window."""
 import os
+import io
+import sys
 
 import numpy as np
 import pytest
@@ -29,6 +31,10 @@ def main_window(main_module, app, monkeypatch):
     from layerloom import glb_import_dialog
     from layerloom.desktop_glb_import import ImportSettings
     monkeypatch.setattr(glb_import_dialog, 'choose_settings', lambda *args: ImportSettings())
+    # Unexpected application errors must fail with their message rather than
+    # leaving an unattended CI worker inside a modal dialog until job timeout.
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical",
+                        lambda _parent, title, message: pytest.fail(f"{title}: {message}"))
     window = main_module.QtAssignColorsApp()
     monkeypatch.setattr(window, "_ask_keep_paint", lambda: "keep")
     window.show()
@@ -812,7 +818,8 @@ def test_paint_exit_dialog_buttons(main_window, main_module, label, choice):
     assert main_module.QtAssignColorsApp._ask_keep_paint(main_window) == choice
 
 
-def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, tmp_path):
+@pytest.mark.parametrize("console_encoding", ["utf-8", "cp1252"])
+def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, tmp_path, console_encoding):
     import trimesh
     from layerloom.paint_io import load_paint_document
     cyan = trimesh.creation.box(extents=[.008, .006, .004])
@@ -823,6 +830,11 @@ def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, t
     source = tmp_path / "two colored regions.glb"
     source.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
     original = source.read_bytes()
+    # Exercise the non-UTF-8 console that previously turned a completed Windows
+    # import into an error while printing its final normalization diagnostic.
+    console_bytes = io.BytesIO()
+    console = io.TextIOWrapper(console_bytes, encoding=console_encoding, write_through=True)
+    monkeypatch.setattr(sys, "stdout", console)
     # Replace an existing shared model, as well as exercising the normal Open action.
     main_window.paint_panel.editor.set_document(example_document("cube", 8))
     monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
