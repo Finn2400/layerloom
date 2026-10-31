@@ -8,6 +8,8 @@ Arrange implementation. It deliberately does not import any versioned GUI module
 from __future__ import annotations
 
 import os
+import json
+from dataclasses import asdict
 import tempfile
 from pathlib import Path
 from copy import deepcopy
@@ -38,6 +40,8 @@ class PaintWorkspaceHostMixin:
 
     def __init__(self):
         self._paint_session = None
+        self._glb_geometry_issues = []
+        self._next_glb_settings = None
         self.paint_panel = None
         self.workspace_tabs = None
         self._paint_pending_source = None
@@ -65,6 +69,12 @@ class PaintWorkspaceHostMixin:
             if isinstance(action, QtWidgets.QWidgetAction) or action.isSeparator()
             or action.text() in {"Open GLB", "Load Example"}
         ]
+        # Source-color settings now live in the per-file Advanced tab.
+        for action in self._arrange_toolbar_visibility:
+            widget = action.defaultWidget() if isinstance(action, QtWidgets.QWidgetAction) else None
+            if widget is self.glb_colors_spin or (isinstance(widget, QtWidgets.QLabel) and widget.text() == "GLB colors"):
+                action.setVisible(False)
+                self._arrange_toolbar_visibility[action] = False
         arrange = self.takeCentralWidget()
         tabs = QtWidgets.QTabWidget(self)
         tabs.setObjectName("layerloomWorkspaces")
@@ -172,6 +182,8 @@ class PaintWorkspaceHostMixin:
             "Back to build plate lets you keep or discard your edits."
             if paint else
             "Select or paint the colors, then press Weave to create your printable 3MF.")
+        if not paint and getattr(self, '_glb_geometry_issues', []):
+            self.workflow_hint.setText("Colors imported for inspection. Some regions are open surfaces; weaving is blocked until they form closed solids.")
         if paint:
             self._begin_paint_session()
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
@@ -203,7 +215,10 @@ class PaintWorkspaceHostMixin:
         self._paint_pending_source = None
         if Path(path).suffix.lower() in {".glb", ".gltf"} and not self._paint_active():
             return self._open_region_model(path)
-        return self.paint_panel.open_path(path)
+        opened = self.paint_panel.open_path(path)
+        if opened:
+            self._glb_geometry_issues = []
+        return opened
 
     def _open_region_model(self, path):
         old_document = self.paint_panel.editor.document
@@ -212,6 +227,7 @@ class PaintWorkspaceHostMixin:
             opened = super()._open_glb_regions_path(str(path))
             if opened:
                 self._region_import_active = True
+                self._glb_geometry_issues = getattr(self, "_pending_glb_geometry_issues", [])
                 self._workspace_changed(self.workspace_tabs.currentIndex())
             return opened
         except Exception as exc:
@@ -254,7 +270,16 @@ class PaintWorkspaceHostMixin:
         from .paint_gui import MODEL_FILTER
         path, _ = file_dialogs.get_open_file_name(self, "Open model or paint project", "", MODEL_FILTER)
         if path:
-            return self.open_model_path(path)
+            if Path(path).suffix.lower() in {'.glb', '.gltf'}:
+                from .glb_import_dialog import choose_settings
+                settings = choose_settings(path, self)
+                if settings is None:
+                    return False
+                self._next_glb_settings = settings
+            try:
+                return self.open_model_path(path)
+            finally:
+                self._next_glb_settings = None
 
     def _on_open_glb(self):
         return self._on_open()
@@ -267,7 +292,7 @@ class PaintWorkspaceHostMixin:
                 self._error("Load Example", "The packaged example model could not be found.")
                 return
             if self.paint_panel.can_close():
-                return self.paint_panel.open_path(str(path))
+                return self.open_model_path(str(path))
             return
         return super()._on_load_example()
 
@@ -278,7 +303,37 @@ class PaintWorkspaceHostMixin:
             return self.paint_panel.editor.save_dialog()
         return super()._on_save()
 
+    def _run_glb_import_pipeline(self, glb_path):
+        from .desktop_glb_import import ImportSettings
+        from .runtime import worker_command
+        settings = self._next_glb_settings or ImportSettings()
+        self._pending_glb_geometry_issues = []
+        # Each launch owns a unique directory; simultaneous imports cannot collide.
+        with tempfile.TemporaryDirectory(prefix="layerloom_glb_") as folder:
+            output = Path(folder) / "regions.3mf"
+            manifest = Path(folder) / "regions.colors.json"
+            self._run_external_tool("glb-import", worker_command("glb-import", [
+                str(glb_path), "--out", str(output), "--manifest-out", str(manifest),
+                "--settings", json.dumps(asdict(settings))]))
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            self._pending_glb_geometry_issues = data['geometry_issues']
+            # The legacy canonical loader needs the file after this method returns.
+            if not hasattr(self, '_glb_import_storage'):
+                self._glb_import_storage = tempfile.TemporaryDirectory(prefix='layerloom_imported_')
+            import uuid
+            import shutil
+            persistent = Path(self._glb_import_storage.name) / (uuid.uuid4().hex + '.3mf')
+            shutil.copyfile(output, persistent)
+            source_colors = {item['name']: item['source_hex'] for item in data['objects']}
+        self.glb_colors_spin.setValue(settings.colors)
+        return str(persistent), source_colors, None, settings.colors
+
     def _on_weave(self):
+        if getattr(self, '_glb_geometry_issues', []) and not self._paint_active() and not self._shared_paint_active():
+            self._warn("Model needs closed color regions", "The colors were imported, but some regions are open surfaces. "
+                       "Weaving them could create missing or incorrect material. This import is available for inspection; "
+                       "closed material-region construction is not yet supported for this model.")
+            return
         if self._paint_active() or self._shared_paint_active():
             if self._shared_paint_active() and not self._ensure_transform_preview_current():
                 return

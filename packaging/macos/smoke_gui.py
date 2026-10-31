@@ -435,10 +435,10 @@ def main(directory: str) -> int:
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
         diagnostics.mark("glb_regions:start")
         import trimesh
-        cyan = trimesh.creation.box(extents=[8, 6, 4])
+        cyan = trimesh.creation.box(extents=[.008, .006, .004])
         cyan.visual.vertex_colors = [0, 255, 255, 255]
-        magenta = trimesh.creation.box(extents=[8, 6, 4])
-        magenta.apply_translation([12, 0, 0])
+        magenta = trimesh.creation.box(extents=[.008, .006, .004])
+        magenta.apply_translation([.012, 0, 0])
         magenta.visual.vertex_colors = [255, 0, 255, 255]
         glb = model_output / "two_color_regions.glb"
         glb.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))

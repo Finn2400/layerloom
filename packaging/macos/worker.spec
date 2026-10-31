@@ -10,7 +10,7 @@ a = Analysis(
     [str(Path(SPECPATH) / 'worker_entry.py')], pathex=[str(root / 'src')],
     binaries=native_binaries, datas=native_data,
     hiddenimports=[
-        'layerloom.weave', 'layerloom.bake_in_memory_stlroundtrip',
+        'layerloom.weave', 'layerloom.bake_in_memory_stlroundtrip', 'layerloom.desktop_glb_import',
         'supporting_scripts.glb_split_by_vertexcolor_v3_3mf', 'supporting_scripts.3mf_meshlab_repair_3mf', 'layerloom.repair',
         'lib3mf', 'pygltflib', 'scipy.spatial', 'scipy.spatial.transform',
     ],

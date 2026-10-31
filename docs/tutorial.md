@@ -21,11 +21,23 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 
-In **Arrange**, colored GLB/GLTF files use the original colored-region importer:
-colors become separate parts that are matched to filament recipes. Select a
-part to adjust its assignment, then click **Weave**. Paint is optional. Opening
-a GLB while already in **Paint** instead keeps its surface colors for brush
-editing. Check the physical size and placement before weaving.
+In **Arrange**, open a GLB/GLTF and click **Import**. Automatic import reads
+texture, vertex, and material colors, keeps up to **64 source-color regions**,
+and matches them to your filament recipes. This does not require 64 filaments.
+Select a part to change its assignment; Paint remains optional.
+
+The **Advanced** tab lets you change the source-color limit (2–256), texture
+detail, color source, source units, and up direction. Defaults reset for each
+file. Standard glTF files use metres and Y-up; for older LayerLoom-specific
+exports, choose the legacy scale and Z-up when appropriate. Check size and
+placement on the build plate before weaving. Fine detail uses more memory;
+unsupported texture/material features produce an explanation instead of losing
+colors silently.
+
+Some colored surfaces do not define closed printable parts. Those imports show
+a persistent notice and cannot use region weaving yet. Importing colors is not
+a mesh repair. Opening a GLB while already in **Paint** uses the separate
+surface-editing workflow.
 
 ## Paint a surface or area
 

@@ -16,6 +16,7 @@ WORKER_MODULES = {
     "weave": "layerloom.weave",
     "bake": "layerloom.bake_in_memory_stlroundtrip",
     "glb-split": "supporting_scripts.glb_split_by_vertexcolor_v3_3mf",
+    "glb-import": "layerloom.desktop_glb_import",
     "repair": "supporting_scripts.3mf_meshlab_repair_3mf",
 }
 _LOG = logging.getLogger("layerloom.worker")

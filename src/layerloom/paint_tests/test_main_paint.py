@@ -26,6 +26,9 @@ def app():
 
 @pytest.fixture
 def main_window(main_module, app, monkeypatch):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    monkeypatch.setattr(glb_import_dialog, 'choose_settings', lambda *args: ImportSettings())
     window = main_module.QtAssignColorsApp()
     monkeypatch.setattr(window, "_ask_keep_paint", lambda: "keep")
     window.show()
@@ -810,10 +813,10 @@ def test_paint_exit_dialog_buttons(main_window, main_module, label, choice):
 def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, tmp_path):
     import trimesh
     from layerloom.paint_io import load_paint_document
-    cyan = trimesh.creation.box(extents=[8, 6, 4])
+    cyan = trimesh.creation.box(extents=[.008, .006, .004])
     cyan.visual.vertex_colors = [0, 255, 255, 255]
-    magenta = trimesh.creation.box(extents=[8, 6, 4])
-    magenta.apply_translation([12, 0, 0])
+    magenta = trimesh.creation.box(extents=[.008, .006, .004])
+    magenta.apply_translation([.012, 0, 0])
     magenta.visual.vertex_colors = [255, 0, 255, 255]
     source = tmp_path / "two colored regions.glb"
     source.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
@@ -884,3 +887,35 @@ def test_failed_region_import_keeps_existing_document(main_window, monkeypatch, 
     assert not main_window.open_model_path(tmp_path / "broken.glb")
     assert errors
     assert editor.document is original and main_window._shared_paint_active()
+
+
+def test_advanced_import_defaults_reset_and_cancel(app, tmp_path):
+    from layerloom.glb_import_dialog import GlbImportDialog
+    from layerloom.desktop_glb_import import ImportSettings
+    d = GlbImportDialog(tmp_path / 'test.glb')
+    assert d.settings() == ImportSettings()
+    d.colors.setValue(128); d.detail.setCurrentIndex(1); d.units.setCurrentIndex(1)
+    assert d.settings().colors == 128
+    d.reset_defaults()
+    assert d.settings() == ImportSettings()
+    d.reject(); assert d.result() == QtWidgets.QDialog.Rejected
+    d.deleteLater()
+
+
+def test_open_glb_cancel_keeps_existing_document(main_window, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    original = example_document('cube', 8)
+    main_window.paint_panel.editor.set_document(original)
+    monkeypatch.setattr(file_dialogs, 'get_open_file_name', lambda *a, **k: (str(tmp_path/'other.glb'), ''))
+    monkeypatch.setattr(glb_import_dialog, 'choose_settings', lambda *a: None)
+    assert main_window._on_open() is False
+    assert main_window.paint_panel.document is original
+
+
+def test_open_color_regions_cannot_silently_weave(main_window, monkeypatch):
+    main_window._glb_geometry_issues = ['open_region']
+    warnings = []
+    monkeypatch.setattr(main_window, '_warn', lambda *a: warnings.append(a))
+    monkeypatch.setattr(file_dialogs, 'get_existing_directory', lambda *a, **k: pytest.fail('Should block before asking for output'))
+    main_window._on_weave()
+    assert warnings and 'closed' in warnings[0][0].lower()

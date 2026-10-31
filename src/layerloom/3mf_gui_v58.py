@@ -4263,7 +4263,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.glb_colors_spin = QtWidgets.QSpinBox()
         self.glb_colors_spin.setRange(2, 512)
-        self.glb_colors_spin.setValue(20)
+        self.glb_colors_spin.setValue(64)
         self.glb_colors_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.glb_colors_spin.setFixedWidth(58)
 
