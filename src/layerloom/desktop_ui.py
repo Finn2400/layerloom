@@ -86,6 +86,7 @@ class DesktopController(QtCore.QObject):
         menu.addAction("Try the CMY cubes example", self.try_example)
         menu.addAction("Load the Benchy example", window._on_load_example)
         menu.addSeparator()
+        menu.addAction("Performance diagnostics…", self.performance_diagnostics)
         menu.addAction("Copy diagnostics", self.copy_diagnostics)
         menu.addAction("Open logs", self.open_logs)
 
@@ -219,8 +220,19 @@ class DesktopController(QtCore.QObject):
     def reveal_output(self):
         self.result_dock.reveal()
 
+    def performance_diagnostics(self):
+        if not hasattr(self, '_performance_dialog'):
+            from .performance_diagnostics import PerformanceDialog
+            self._performance_dialog = PerformanceDialog(self.window)
+        self._performance_dialog.show()
+        self._performance_dialog.raise_()
+        self._performance_dialog.activateWindow()
+
     def copy_diagnostics(self):
-        QtWidgets.QApplication.clipboard().setText(diagnostic_text())
+        dialog = getattr(self, '_performance_dialog', None)
+        text = (dialog.recorder.text() if dialog is not None and dialog.recorder.report_data is not None
+                else diagnostic_text())
+        QtWidgets.QApplication.clipboard().setText(text)
         self.window.status_bar.showMessage("Diagnostics copied. You can paste them into a support request.", 5000)
 
     def open_logs(self):
