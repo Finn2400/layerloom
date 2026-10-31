@@ -105,3 +105,14 @@ def test_first_layer_auto_handles_a_sub_layer_component(tmp_path):
     report=weave_regions(src,tmp_path/'out.3mf',layer_height=.5,first_layer_color='auto')
     assert report['resolved_first_layer_color']=='c'
     assert report['saved_geometry']['volume_mm3']==pytest.approx(.1,abs=1e-6)
+
+
+def test_arrange_recipe_order_is_preserved_after_palette_deduplication(tmp_path):
+    from layerloom.paint_export import assign_palette
+    src=tmp_path/'cube.3mf';colored_cube(src,recipe='cyc')
+    document,overrides=prepare_document(src)
+    assignments=assign_palette(document,'Normal',recipe_overrides=overrides)
+    assert {entry['token'] for entry in assignments.values()}=={'cyc','m'}
+    report=weave_regions(src,tmp_path/'out.3mf',layer_height=.5)
+    assert {row['recipe'] for row in report['region_assignments']}=={'cyc','m'}
+    assert report['saved_geometry']['volume_mm3']==pytest.approx(64,abs=1e-4)

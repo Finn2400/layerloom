@@ -46,8 +46,8 @@ centered initial import.
 
 ## Local regression results
 
-268 passed, 1 skipped across the targeted suites:
-- 177 passed / 1 skipped: region weave, desktop GLB import, worker,
+269 passed, 1 skipped across the targeted suites:
+- 178 passed / 1 skipped: region weave, desktop GLB import, worker,
   paint export/control, file IO, and workspace geometry.
 - 78 passed: native main-window and paint-window integration, including
   actual Arrange import → worker weave → preview reload, both centered
@@ -63,3 +63,17 @@ Run the updated frozen worker/app on both Mac architectures; then repeat browser
 download and fresh-account validation. These local source tests do not establish
 that the currently published DMG contains this implementation. Real-world source
 repair and old closed-region cutting precision defects remain separate work.
+
+## Live visual-tour follow-up
+
+The full 64-region textured-sphere GUI walkthrough exposed a recipe-name
+mismatch missed by the two-color GUI regression: Arrange can use `cyc`, while
+the shared palette loader retains only one permutation of each filament-count
+recipe. Export now accepts equivalent-count explicit recipes and preserves the
+exact selected sequence (including its layer phase), rather than rejecting or
+silently reordering it. Recipes with unavailable compositions still fail.
+A new regression exercises `cyc` through actual saved output. All 39 tests in
+the affected export/region suites passed. The full 64-region GUI import → Weave
+→ completed panel → reopened preview then succeeded with three CMY parts.
+Fresh screenshots and the actual saved output are in
+`~/LayerLoom Fresh User Test/Evidence/visual-tour-2026-10-31/`.

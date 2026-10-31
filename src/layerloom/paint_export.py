@@ -8,7 +8,7 @@ resulting exterior is layer-stepped. Source meshes stay intact.
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 import json
 import math
 import os
@@ -128,9 +128,17 @@ def assign_palette(document: Any, palette_name: str = "Normal", *,
         if override is not None:
             if not token_is_valid(override) or (mode == "direct" and len(override) != 1):
                 raise ValueError(f"Invalid {mode} recipe override {override!r} for {source}")
-            if override not in by_token:
+            matched = by_token.get(override)
+            if matched is None:
+                # Arrange may use a different ordering of the same recipe.
+                # The palette loader deduplicates by filament counts. Retain
+                # the explicit sequence so layer phase is not silently changed.
+                matched = next((item for item in entries
+                                if Counter(str(item["token"])) == Counter(override)), None)
+            if matched is None:
                 raise ValueError(f"Recipe {override!r} is not in the selected {mode} palette")
-            entry = dict(by_token[override])
+            entry = dict(matched)
+            entry["token"] = override
         else:
             entry = nearest_palette_entry(entries, source)
             if entry is None:
