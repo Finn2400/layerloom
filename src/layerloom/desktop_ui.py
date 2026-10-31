@@ -251,7 +251,8 @@ class DesktopController(QtCore.QObject):
 
     def copy_diagnostics(self):
         dialog = getattr(self, '_performance_dialog', None)
-        text = (dialog.recorder.text() if dialog is not None and dialog.recorder.report_data is not None
+        text = (dialog.report_text() if dialog is not None and
+                (dialog.recorder.report_data is not None or dialog.installation_report is not None)
                 else diagnostic_text())
         QtWidgets.QApplication.clipboard().setText(text)
         self.window.status_bar.showMessage("Diagnostics copied. You can paste them into a support request.", 5000)

@@ -206,6 +206,11 @@ def main(argv=None):
                                                log=report_dir / "worker-runtime.log"))
             assert worker_runtime["frozen"] and worker_runtime["lib3mf"]["ok"], worker_runtime
             assert Path(worker_runtime["executable"]).resolve() == helper.resolve(), worker_runtime
+            build = json.loads((relocated / "Contents/Resources/build-info.json").read_text())
+            for key in ("version", "python", "architecture"):
+                assert worker_runtime[key] == build[key], (key, worker_runtime, build)
+            for name in ("lib3mf", "numpy", "trimesh", "manifold3d"):
+                assert worker_runtime["packages"][name] == build["runtime_versions"][name], (name, worker_runtime)
             report["worker_runtime"] = worker_runtime
             capabilities = json.loads(command([helper, "--capabilities"], cwd=work, env=env, log=report_dir / "capabilities.log"))
             mark("worker_capabilities_completed")

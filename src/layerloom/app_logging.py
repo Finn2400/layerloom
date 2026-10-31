@@ -140,6 +140,21 @@ def initialize_logs(*, redirect_streams: bool = True) -> Path | None:
     return _active_log_path
 
 
+def packaged_build_info() -> dict:
+    if not getattr(sys, "frozen", False) or sys.platform != "darwin":
+        return {}
+    path = Path(sys.executable).resolve().parent.parent / "Resources" / "build-info.json"
+    try:
+        info = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(info, dict):
+            raise ValueError("expected an object")
+        if not isinstance(info.get("runtime_versions", {}), dict):
+            raise ValueError("runtime_versions must be an object")
+        return info
+    except (OSError, ValueError) as exc:
+        return {"read_error": str(exc)}
+
+
 def diagnostic_text() -> str:
     from .version import __version__
     lines = [
@@ -155,12 +170,25 @@ def diagnostic_text() -> str:
         lines.append(f"Worker command: {json.dumps(_worker_prefix())}")
     except OSError as exc:
         lines.append(f"Worker unavailable: {exc}")
+    build = packaged_build_info()
+    if build:
+        lines.append(f"Packaged build: {json.dumps(build, sort_keys=True)}")
+    mismatches = []
     for name in ("PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         try:
             version = importlib.metadata.version(name)
         except (importlib.metadata.PackageNotFoundError, OSError, ValueError):
             version = "metadata unavailable"
         lines.append(f"{name}: {version}")
+        expected = build.get("runtime_versions", {}).get(name)
+        if expected and version != expected:
+            mismatches.append(f"{name}: expected {expected}, found {version}")
+    if build.get("python") and build["python"] != platform.python_version():
+        mismatches.append(f"Python: expected {build['python']}, found {platform.python_version()}")
+    if build.get("version") and build["version"] != __version__:
+        mismatches.append(f"LayerLoom: expected {build['version']}, found {__version__}")
+    if mismatches:
+        lines.append("Runtime mismatches: " + "; ".join(mismatches))
     return "\n".join(lines)
 
 

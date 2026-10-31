@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib
+import importlib.metadata
 import json
 import platform
 import sys
@@ -18,7 +19,12 @@ def runtime_diagnostics():
     from layerloom.version import __version__
     report = {"version": __version__, "frozen": bool(getattr(sys, "frozen", False)),
               "executable": sys.executable, "python": platform.python_version(),
-              "architecture": platform.machine(), "lib3mf": {"ok": False}}
+              "architecture": platform.machine(), "lib3mf": {"ok": False}, "packages": {}}
+    for name in ("lib3mf", "numpy", "trimesh", "manifold3d"):
+        try:
+            report["packages"][name] = importlib.metadata.version(name)
+        except importlib.metadata.PackageNotFoundError:
+            report["packages"][name] = "metadata unavailable"
     try:
         lib = importlib.import_module("lib3mf")
         model = lib.get_wrapper().CreateModel()

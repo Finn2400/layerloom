@@ -176,6 +176,8 @@ def main(argv=None):
         "version": version, "architecture": arch, "minimum_macos": MINIMUM[arch],
         "build_macos": platform.mac_ver()[0],
         "python": expected_python, "pyinstaller": importlib.metadata.version("pyinstaller"),
+        "runtime_versions": {name: importlib.metadata.version(name) for name in
+                             ("PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d")},
         "lock_sha256": hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
         "signing": "ad-hoc", "notarized": False,
         **source_identity(ROOT),

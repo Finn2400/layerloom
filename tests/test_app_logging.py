@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import json
 import logging
 from pathlib import Path
 import subprocess
@@ -80,6 +81,22 @@ def test_diagnostics_identifies_missing_frozen_worker_without_crashing(tmp_path,
     assert "Installation: standalone app" in text
     assert "Worker unavailable:" in text
     assert "Reinstall" in text
+
+
+def test_packaged_diagnostics_includes_build_identity_and_version_mismatch(tmp_path, monkeypatch):
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "platform", "darwin")
+    root = tmp_path / "LayerLoom.app" / "Contents"
+    monkeypatch.setattr(sys, "executable", str(root / "MacOS" / "LayerLoom"))
+    (root / 'Resources').mkdir(parents=True)
+    manifest = root / 'Resources' / 'build-info.json'
+    manifest.write_text(json.dumps({'source_revision': 'test-commit', 'lock_sha256': 'test-lock',
+                                   'runtime_versions': {'numpy': '0.0.0'}}))
+    text = app_logging.diagnostic_text()
+    assert 'test-commit' in text and 'test-lock' in text
+    assert 'Runtime mismatches: numpy: expected 0.0.0' in text
+    manifest.write_text('{broken')
+    assert 'read_error' in app_logging.diagnostic_text()
 
 
 def test_closed_console_stream_does_not_hide_logs(monkeypatch):

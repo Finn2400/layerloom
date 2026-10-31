@@ -148,3 +148,32 @@ these automated cases do not replace the planned clean-account trial.
 Both architecture DMGs and the hosted cross-OS validation matrix still need to
 pass for this exact commit before release. Friend-specific camera latency and
 his missing-lib3mf installation remain unconfirmed on his actual machine.
+
+## Persistent support evidence and runtime identity
+
+The performance window now offers a nonblocking Check installation action. It
+runs the selected worker's diagnostic command, compares app/Python/architecture
+and core-library versions, and creates a native lib3mf model. Failed launch,
+malformed reports, mismatches and a 15-second timeout are reported without
+blocking Qt. Results are logged and included in Copy report; checking is kept
+separate from timing a camera recording. No tools are installed or changed.
+
+New Mac builds include exact core dependency versions in build-info.json alongside
+commit, tree, lock hash and Python. Diagnostics include that build identity and
+flag available version mismatches. Metadata for those packages is explicitly
+collected into the bundle, including the independent worker. This identifies
+what is actually running, not merely which DMG a user remembers downloading.
+
+A controlled 2.7-second GUI stall wrote a slow-thread sample to disk before Qt
+recovered, then saved the completed timing/graphics report. Native tests also
+exercise a real healthy worker, an intentionally mismatched worker, timeout and
+missing executable. 43 diagnostics/worker/packaging/logging checks passed; the
+14 native diagnostics/logging checks passed again after the final lifecycle and
+identity checks. Small copied evidence logs are stored locally at
+`~/LayerLoom Fresh User Test/Evidence/performance-2026-10-31/log-proof/`.
+The stall is deliberately injected test evidence, not a reproduction of the
+friend's unexplained delay. Detailed timing and stack recording is opt-in; basic
+startup and worker-error logging is automatic. Python sampling cannot guarantee
+a stack during native calls holding the GIL; Activity Monitor sampling remains
+the fallback for a persistent freeze. These additions still require new DMG
+validation and are not in the public a6 download.

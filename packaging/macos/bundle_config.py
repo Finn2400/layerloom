@@ -73,6 +73,6 @@ def native_dependencies():
     for package in ("lib3mf", "manifold3d", "rtree", "shapely"):
         binaries += collect_dynamic_libs(package, search_patterns=["*.dylib", "*.so", "lib*.so.*"])
     datas = []
-    for package in ("layerloom", "pyvista", "pyvistaqt", "trimesh", "lib3mf"):
+    for package in ("layerloom", "PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         datas += copy_metadata(package)
     return datas, binaries

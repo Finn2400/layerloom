@@ -13,7 +13,7 @@ import traceback
 import numpy as np
 from qtpy import QtCore, QtWidgets
 
-from .app_logging import diagnostic_text
+from .app_logging import diagnostic_text, packaged_build_info
 
 
 def _summary(values):
@@ -108,6 +108,7 @@ class PerformanceRecorder(QtCore.QObject):
                                         name='LayerLoom performance watchdog')
         self._thread.start()
         self.timer.start()
+        logging.getLogger('layerloom.performance').info('Recording started: %s', json.dumps(self.environment))
         self.changed.emit()
 
     def eventFilter(self, obj, event):
@@ -209,6 +210,14 @@ class PerformanceDialog(QtWidgets.QDialog):
         self.setModal(False)
         self.resize(570, 360)
         self.recorder = PerformanceRecorder(window)
+        self.installation_report = None
+        self._probe_timed_out = False
+        self.probe = QtCore.QProcess(self)
+        self.probe.finished.connect(self._installation_finished)
+        self.probe.errorOccurred.connect(self._installation_error)
+        self.probe_timer = QtCore.QTimer(self)
+        self.probe_timer.setSingleShot(True)
+        self.probe_timer.timeout.connect(self._installation_timeout)
         self._original_quality = None
         self._window = window
         layout = QtWidgets.QVBoxLayout(self)
@@ -225,21 +234,36 @@ class PerformanceDialog(QtWidgets.QDialog):
         self.start_button.clicked.connect(self.start)
         self.stop_button = QtWidgets.QPushButton('Stop'); self.stop_button.clicked.connect(self.recorder.stop)
         self.copy_button = QtWidgets.QPushButton('Copy report'); self.copy_button.clicked.connect(self.copy_report)
+        self.copy_timer = QtCore.QTimer(self)
+        self.copy_timer.setSingleShot(True)
+        self.copy_timer.timeout.connect(lambda: self.copy_button.setText('Copy report'))
         for button in (self.start_button, self.stop_button, self.copy_button):row.addWidget(button)
         layout.addLayout(row)
+        self.check_button = QtWidgets.QPushButton('Check installation')
+        self.check_button.clicked.connect(self.check_installation)
+        layout.addWidget(self.check_button)
+        self.installation_status = QtWidgets.QLabel('Installation has not been checked in this session.')
+        self.installation_status.setWordWrap(True)
+        layout.addWidget(self.installation_status)
         self.details = QtWidgets.QPlainTextEdit(); self.details.setReadOnly(True); layout.addWidget(self.details)
         self.recorder.changed.connect(self._refresh)
         self.recorder.finished.connect(lambda: self.details.setPlainText(self.recorder.text()))
         self._refresh()
 
     def start(self):
+        if self.probe.state() != QtCore.QProcess.NotRunning:
+            return
         self.details.clear()
         self.recorder.start()
         self.recorder.environment['reduced_smoothing'] = self.effects.isChecked()
+        if self.installation_report is not None:
+            self.recorder.environment['worker_check'] = self.installation_report
 
     def _refresh(self):
         running = self.recorder.running
-        self.start_button.setEnabled(not running); self.stop_button.setEnabled(running)
+        self.check_button.setEnabled(not running and self.probe.state() == QtCore.QProcess.NotRunning)
+        self.start_button.setEnabled(not running and self.probe.state() == QtCore.QProcess.NotRunning)
+        self.stop_button.setEnabled(running)
         self.effects.setEnabled(not running)
         if running:
             data = self.recorder.snapshot()
@@ -253,10 +277,87 @@ class PerformanceDialog(QtWidgets.QDialog):
             self.status.setText(f"Complete ({data['elapsed_seconds']:.0f} s) · Longest render: {longest:.0f} ms · "
                                f"Longest UI delay: {data['ui_timer_delay'].get('max_ms', 0):.0f} ms")
 
+    def report_text(self):
+        report = self.recorder.snapshot()
+        if self.installation_report is not None:
+            report = {**report, 'worker_check': self.installation_report}
+        return json.dumps(report, indent=2)
+
     def copy_report(self):
-        QtWidgets.QApplication.clipboard().setText(self.recorder.text())
+        QtWidgets.QApplication.clipboard().setText(self.report_text())
         self.copy_button.setText('Copied')
-        QtCore.QTimer.singleShot(2000, lambda: self.copy_button.setText('Copy report'))
+        self.copy_timer.start(2000)
+
+    def check_installation(self):
+        if self.recorder.running or self.probe.state() != QtCore.QProcess.NotRunning:
+            return
+        from .runtime import _worker_prefix
+        self._probe_timed_out = False
+        try:
+            command = [*_worker_prefix(), '--diagnostics']
+        except OSError as exc:
+            self._save_installation({'ok': False, 'error': str(exc)})
+            return
+        self.check_button.setEnabled(False)
+        self.start_button.setEnabled(False)
+        self.installation_status.setText('Checking the processing runtime…')
+        self.probe.start(command[0], command[1:])
+        self.probe_timer.start(15000)
+
+    def _installation_timeout(self):
+        self._probe_timed_out = True
+        self.probe.kill()
+
+    def _installation_error(self, error):
+        if error == QtCore.QProcess.FailedToStart:
+            self._save_installation({'ok': False, 'error': self.probe.errorString()})
+
+    def _installation_finished(self, exit_code, *_):
+        stdout = bytes(self.probe.readAllStandardOutput()).decode('utf-8', errors='replace')
+        stderr = bytes(self.probe.readAllStandardError()).decode('utf-8', errors='replace')
+        try:
+            if self._probe_timed_out:
+                raise ValueError('Worker check timed out after 15 seconds.')
+            report = json.loads(stdout)
+            from .version import __version__
+            import importlib.metadata
+            import platform
+            expected = packaged_build_info()
+            mismatches = [line for line in diagnostic_text().splitlines() if line.startswith('Runtime mismatches:')]
+            if expected.get('read_error'):
+                mismatches.append('Packaged build identity could not be read: ' + expected['read_error'])
+            for key, value in [('version', expected.get('version', __version__)), ('python', expected.get('python', platform.python_version())),
+                               ('frozen', bool(getattr(sys, 'frozen', False))), ('architecture', platform.machine())]:
+                if report.get(key) != value:
+                    mismatches.append(f"{key}: expected {value}, found {report.get(key)}")
+            for name in ('lib3mf', 'numpy', 'trimesh', 'manifold3d'):
+                wanted = expected.get('runtime_versions', {}).get(name)
+                if wanted is None:
+                    try:
+                        wanted = importlib.metadata.version(name)
+                    except importlib.metadata.PackageNotFoundError:
+                        wanted = 'metadata unavailable'
+                actual = report.get('packages', {}).get(name)
+                if actual != wanted or actual == 'metadata unavailable':
+                    mismatches.append(f'{name}: expected {wanted}, found {actual}')
+            report.update(mismatches=mismatches, ok=exit_code == 0 and report.get('lib3mf', {}).get('ok') is True and not mismatches)
+            if stderr:
+                report['stderr'] = stderr[-4000:]
+        except (ValueError, TypeError, AttributeError) as exc:
+            report = {'ok': False, 'error': str(exc), 'worker_output': (stderr or stdout)[-4000:]}
+        self._save_installation(report)
+
+    def _save_installation(self, report):
+        self.probe_timer.stop()
+        # Do not put personal home-directory paths into the copyable report.
+        self.installation_report = json.loads(json.dumps(report).replace(json.dumps(str(Path.home()))[1:-1], '<home>'))
+        logging.getLogger('layerloom.performance').info('Worker installation check: %s', json.dumps(self.installation_report))
+        self.installation_status.setText('Worker versions match; native lib3mf initialization passed.' if report['ok'] else
+                                        'Installation check failed. Copy the report and open logs for details.')
+        self.details.setPlainText(json.dumps(self.installation_report, indent=2))
+        if self.recorder.report_data is not None:
+            self.recorder.report_data['worker_check'] = self.installation_report
+        self._refresh()
 
     def _quality(self, reduced):
         if reduced:
@@ -276,6 +377,10 @@ class PerformanceDialog(QtWidgets.QDialog):
             self._original_quality = None
 
     def closeEvent(self, event):
+        if self.probe.state() != QtCore.QProcess.NotRunning:
+            self.probe.kill()
+            self.probe.waitForFinished(100)
+        self.probe_timer.stop()
         self.recorder.stop()
         self.effects.setChecked(False)
         event.accept()
