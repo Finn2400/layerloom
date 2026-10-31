@@ -42,11 +42,12 @@ requests; do not interpret them as a steady-state idle rendering rate.
 
 ## Opt-in diagnostics
 
-Help → Performance diagnostics… opens a modeless panel. Load a model first,
-start a 60-second recording, then reproduce normal rotation and zooming.
-Stop or wait for automatic completion, then Copy report. The screenshot-friendly
-status shows longest render call and longest UI delay. Existing Copy diagnostics
-includes the last completed performance report when one exists.
+Help → Diagnostic logging… opens a modeless panel. Start diagnostic logging,
+then use any application workflow normally. There is no automatic time cutoff.
+Closing the panel keeps logging on, with a permanent indicator in the main
+window. Stop logging or quit the app to finish. Open log folder exposes the
+diagnostic-session.log file and its rotated copies; Copy summary and existing
+Copy diagnostics include the session summary and worker check when available.
 
 Records package/app versions, architecture, active graphics vendor/renderer,
 framebuffer/display scaling, actor/cell counts, bounded render timing samples,
@@ -80,7 +81,7 @@ problems; it does not rule out defects in the bundled graphics dependencies.
    Persistent hangs may require macOS Activity Monitor → Sample Process.
 
 Local tests inject a 2.7-second UI stall to verify delay detection, main-thread
-sampling, auto-stop, restart, observer cleanup, clipboard reporting, restoration
+sampling, restart, observer cleanup, clipboard reporting, restoration
 of smoothing, and preservation of model vertices. A new signed/ad-hoc packaged
 artifact still needs testing; the public download does not yet have this panel.
 
@@ -172,8 +173,28 @@ missing executable. 43 diagnostics/worker/packaging/logging checks passed; the
 identity checks. Small copied evidence logs are stored locally at
 `~/LayerLoom Fresh User Test/Evidence/performance-2026-10-31/log-proof/`.
 The stall is deliberately injected test evidence, not a reproduction of the
-friend's unexplained delay. Detailed timing and stack recording is opt-in; basic
+friend's unexplained delay. Detailed session logging is opt-in; basic
 startup and worker-error logging is automatic. Python sampling cannot guarantee
 a stack during native calls holding the GIL; Activity Monitor sampling remains
 the fallback for a persistent freeze. These additions still require new DMG
 validation and are not in the public a6 download.
+
+## General session logging (replaces the timed-recorder interface)
+
+At the user's request, the diagnostic UI now starts a general log session rather
+than a timed camera recording. It attaches a rotating diagnostic-session.log
+handler (2 MB threshold, three backups), captures application/worker logging and
+model/action/status signals, and saves periodic responsiveness checkpoints.
+Import attempts, paint edits, export settings, export stages/failures and mode
+changes are included. Closing the panel does not stop logging; accepted app exit
+does. Technical summaries and the smoothing comparison are secondary controls.
+Full model contents and text-field contents are not captured; operation paths
+can appear. Basic startup/error logging remains on independently.
+
+Native tests exercise a session beyond the former 60-second boundary, hide the
+panel, load a model, apply paint, provoke an export-budget failure, and verify
+those events in the saved log. They check file rotation, stopping on accepted
+app close, disconnecting activity listeners, restoring the previous log level,
+and leaving no extra handler attached.
+Validation: all 33 native session/desktop/logging checks passed; the four native
+session tests passed again after moving shutdown ahead of viewer disposal.

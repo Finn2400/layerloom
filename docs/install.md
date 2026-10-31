@@ -215,14 +215,22 @@ error, your operating system, whether you used a DMG or source ZIP, and which
 step failed. **Help → Open logs** opens the app's logs. If the app cannot open,
 the source setup window or native error dialog shows the log location.
 
-For camera lag in a build with **Help → Performance diagnostics…**:
+To collect a diagnostic session in a build with **Help → Diagnostic logging…**:
 
-1. Open the affected model, then open Performance diagnostics and click **Check installation**. This checks the actual processing worker and native lib3mf; it does not install or change anything.
-2. Click **Start 60-second recording**, then rotate and zoom until the delay occurs. Click **Stop**, or let the recording finish.
-3. Click **Copy report**. Include what you were doing and whether an external monitor was connected. **Open logs** provides the saved recording and any slow-thread samples, including after restarting the app.
+1. Click **Start diagnostic logging**, then use LayerLoom normally. You can close the panel; the main window shows that logging is on.
+2. Import models, paint, weave, or repeat whatever caused the problem. Logging continues until you choose **Stop logging** or quit the app. There is no time limit.
+3. Choose **Open log folder** and share `diagnostic-session.log` plus any numbered copies (`.1`, `.2`, `.3`). Include what went wrong and approximately when. **Copy summary** provides runtime and responsiveness information too.
 
-Ordinary startup/error logs are automatic. Detailed camera recording is opt-in;
-start it before reproducing the delay. A hard native freeze may prevent Python
+The session log includes imports, edits, operation settings/stages, errors,
+worker output and periodic responsiveness information. It rotates at about 2 MB
+per file and retains three previous files, so old entries eventually expire.
+Logs remain available after restarting. Paths can appear in logs; model contents
+and typed text are not recorded, and nothing is uploaded automatically.
+**Check installation** separately checks the actual worker, dependency versions
+and native lib3mf without installing or changing anything.
+
+Ordinary startup/error logs remain automatic even when session logging is off.
+A hard native freeze may prevent Python
 stack sampling. If the app stays frozen, macOS Activity Monitor → select
 LayerLoom → Sample Process can provide additional evidence. Older builds without
 this menu still have Copy diagnostics and Open logs.

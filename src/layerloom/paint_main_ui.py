@@ -400,6 +400,10 @@ class PaintWorkspaceHostMixin:
             if not panel.can_close():
                 event.ignore()
                 return
+        recorder = getattr(self, '_diagnostic_recorder', None)
+        if recorder is not None:
+            recorder.stop()
+        if panel is not None:
             panel.shutdown()
         return super().closeEvent(event)
 

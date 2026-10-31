@@ -32,7 +32,7 @@ def test_recording_captures_ui_stall_and_stack_then_detaches(tmp_path, performan
     w=_load_current_gui_module().QtAssignColorsApp();w.show();app.processEvents()
     recorder=PerformanceRecorder(w)
     try:
-        recorder.start(duration=10)
+        recorder.start()
         w.viewer.plotter.ren_win.Render()
         # Releases the GIL so the watchdog can sample a blocked GUI thread.
         time.sleep(2.7)
@@ -48,15 +48,15 @@ def test_recording_captures_ui_stall_and_stack_then_detaches(tmp_path, performan
         assert any('renderer' in s for s in report['viewports']['build_plate']['graphics'])
         assert 'test_recording' in json.dumps(report['slow_main_thread_samples'])
         text = performance_log.read_text()
-        assert 'Recording started:' in text and 'layerloom-performance-v1' in text
+        assert 'Session environment:' in text and 'layerloom-diagnostic-session-v1' in text
         assert 'ui_timer_delay' in text and 'OpenGL renderer' in text
         assert not recorder._observers and not recorder._widgets and not recorder._thread.is_alive()
         count=report['render_calls']['build_plate']['total_frames']
         w.viewer.plotter.ren_win.Render()
         assert recorder.snapshot()['render_calls']['build_plate']['total_frames']==count
-        recorder.start(duration=.2);QtTest.QTest.qWait(450)
-        assert not recorder.running
-        assert recorder.snapshot()['elapsed_seconds']<2
+        recorder.start(); recorder.started -= 75; recorder._tick()
+        assert recorder.running  # No 60-second cutoff.
+        recorder.stop()
     finally:
         recorder.stop();w.close();w.deleteLater();app.processEvents()
 
@@ -105,6 +105,56 @@ def test_installation_button_checks_real_worker_and_handles_timeout(monkeypatch,
         dialog.close();window.close();window.deleteLater();app.processEvents()
 
 
+def test_general_session_survives_hidden_panel_logs_work_and_stops_on_exit(monkeypatch, performance_log, tmp_path):
+    import logging
+    import numpy as np
+    from qtpy import QtWidgets
+    from layerloom.gui_app import _load_current_gui_module
+    from layerloom.desktop_ui import install_desktop_ui
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    window = _load_current_gui_module().QtAssignColorsApp()
+    controller = install_desktop_ui(window)
+    window.show(); app.processEvents()
+    controller.performance_diagnostics(); dialog = controller._performance_dialog
+    recorder = dialog.recorder
+    logger = logging.getLogger('layerloom')
+    initial_level = logger.level
+    initial_handlers = len(logger.handlers)
+    monkeypatch.setattr(QtWidgets.QMessageBox, 'critical', lambda *_: None)
+    try:
+        dialog.start(); dialog.close(); app.processEvents()
+        assert recorder.running and dialog.indicator.isVisible()
+        assert controller.try_example()
+        window._set_paint_mode(True)
+        editor = window.paint_panel.editor
+        editor.paint_rgba = np.array([255, 0, 0, 255], dtype=np.uint8)
+        editor.begin_stroke(); editor.apply_faces(0, [0]); editor.end_stroke()
+        assert not editor.start_export(tmp_path / 'blocked.3mf', max_cells=1)
+        recorder.started -= 75
+        recorder._last_checkpoint -= 75
+        recorder._tick()
+        assert recorder.running
+        log = recorder.session_path
+        text = log.read_text()
+        for entry in ('Opening model:', 'Document loaded:', 'Workspace: Paint', 'paintChanged',
+                      'Export requested:', 'Export failed:', 'Session checkpoint:'):
+            assert entry in text, entry
+        # Bounded log rotation, even when activity is verbose.
+        recorder._session_handler.maxBytes = 1000
+        for _ in range(12): logger.info('rotation test %s', 'x' * 600)
+        assert len(list(log.parent.glob('diagnostic-session.log*'))) == 4
+        editor.dirty = False
+        window.close(); app.processEvents()
+        assert not recorder.running and not recorder._connections
+        assert recorder._session_handler is None
+        assert logger.level == initial_level and len(logger.handlers) == initial_handlers
+        assert 'Diagnostic session stopped' in log.read_text()
+    finally:
+        recorder.stop(); window.paint_panel.editor.dirty = False; window.close()
+        if controller.example_directory: controller.example_directory.cleanup()
+        window.deleteLater(); app.processEvents()
+
+
 def test_dialog_restores_quality_and_copies_report_without_model_contents():
     from qtpy import QtWidgets,QtTest
     from layerloom.gui_app import _load_current_gui_module
@@ -121,7 +171,7 @@ def test_dialog_restores_quality_and_copies_report_without_model_contents():
         d.effects.setChecked(True)
         assert p.ren_win.GetMultiSamples()==0
         d.start();QtTest.QTest.qWait(450);d.recorder.stop()
-        assert 'Longest UI delay:' in d.status.text()
+        assert 'Logging stopped' in d.status.text()
         d.copy_report();report=json.loads(app.clipboard().text())
         assert report['reduced_smoothing'] is True
         assert 'source_path' not in report
@@ -132,7 +182,7 @@ def test_dialog_restores_quality_and_copies_report_without_model_contents():
         assert p.ren_win.GetMultiSamples()==samples
         assert (p.renderer._render_passes._ssaa_pass is not None)==ssaa
         c.copy_diagnostics()
-        assert json.loads(app.clipboard().text())['format']=='layerloom-performance-v1'
+        assert json.loads(app.clipboard().text())['format']=='layerloom-diagnostic-session-v1'
         d.installation_report = {'ok': False, 'error': 'test missing worker'}
         c.copy_diagnostics()
         assert json.loads(app.clipboard().text())['worker_check']['error'] == 'test missing worker'

@@ -90,7 +90,7 @@ class DesktopController(QtCore.QObject):
         menu.addAction("Try the CMY cubes example", self.try_example)
         menu.addAction("Load the Benchy example", window._on_load_example)
         menu.addSeparator()
-        menu.addAction("Performance diagnostics…", self.performance_diagnostics)
+        menu.addAction("Diagnostic logging…", self.performance_diagnostics)
         menu.addAction("Copy diagnostics", self.copy_diagnostics)
         menu.addAction("Open logs", self.open_logs)
 
@@ -252,7 +252,7 @@ class DesktopController(QtCore.QObject):
     def copy_diagnostics(self):
         dialog = getattr(self, '_performance_dialog', None)
         text = (dialog.report_text() if dialog is not None and
-                (dialog.recorder.report_data is not None or dialog.installation_report is not None)
+                (dialog.recorder.running or dialog.recorder.report_data is not None or dialog.installation_report is not None)
                 else diagnostic_text())
         QtWidgets.QApplication.clipboard().setText(text)
         self.window.status_bar.showMessage("Diagnostics copied. You can paste them into a support request.", 5000)
