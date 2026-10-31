@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import io
+import json
 import logging
 from logging.handlers import RotatingFileHandler
 import os
@@ -149,6 +150,11 @@ def diagnostic_text() -> str:
         f"Executable: {sys.executable}",
         f"Logs: {_active_log_path if _active_log_path is not None else 'not initialized or unavailable'}",
     ]
+    from .runtime import _worker_prefix
+    try:
+        lines.append(f"Worker command: {json.dumps(_worker_prefix())}")
+    except OSError as exc:
+        lines.append(f"Worker unavailable: {exc}")
     for name in ("PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         try:
             version = importlib.metadata.version(name)

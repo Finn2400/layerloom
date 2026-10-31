@@ -73,6 +73,15 @@ def test_no_writable_log_location_does_not_prevent_startup(tmp_path, monkeypatch
     assert "not initialized or unavailable" in app_logging.diagnostic_text()
 
 
+def test_diagnostics_identifies_missing_frozen_worker_without_crashing(tmp_path, monkeypatch):
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(tmp_path / "LayerLoom"))
+    text = app_logging.diagnostic_text()
+    assert "Installation: standalone app" in text
+    assert "Worker unavailable:" in text
+    assert "Reinstall" in text
+
+
 def test_closed_console_stream_does_not_hide_logs(monkeypatch):
     closed = io.StringIO()
     closed.close()

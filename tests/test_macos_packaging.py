@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "packaging/macos"))
 from bundle_config import EXCLUDES, GUI_FILES, bundle_short_version, gui_hidden_imports, resource_files
 from build_macos import is_license_file
-from validate_macos import command, deployment_versions, write_test_glb
+from validate_macos import command, deployment_versions, write_test_glb, validate_desktop_glb
 
 
 def test_explicit_desktop_resources_are_present():
@@ -59,6 +59,17 @@ def test_smoke_glb_has_matching_buffers(tmp_path):
     binary_size, kind = struct.unpack_from("<I4s", data, 20 + json_size)
     assert kind == b"BIN\x00"
     assert document["buffers"][0]["byteLength"] == binary_size
+
+
+def test_desktop_validation_runs_new_import_and_weave_workers(tmp_path):
+    work, logs = tmp_path / "unrelated é directory", tmp_path / "logs"
+    work.mkdir(); logs.mkdir()
+    env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    result = validate_desktop_glb([sys.executable, "-m", "layerloom.worker"],
+                                  work=work, env=env, report_dir=logs)
+    assert result["imported"]["objects"] >= 2
+    assert result["woven"]["triangles"] > 0
+    assert result["saved_geometry"]["overlap_mm3"] < 1e-5
 
 
 def test_license_inventory_does_not_ship_native_test_binaries():

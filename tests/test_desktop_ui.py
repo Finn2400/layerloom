@@ -132,6 +132,32 @@ def test_drop_rejects_multiple_remote_and_unsupported_files(desktop, application
     assert not errors
 
 
+def test_cancelled_or_failed_drop_keeps_editable_model(desktop, application, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    window, controller, errors, _ = desktop
+    controller.try_example()
+    editor = window.paint_panel.editor
+    previous = editor.document
+    editor.dirty = True
+    vertices = [mesh.vertices.copy() for mesh in previous.meshes]
+    assignments = dict(window.assignments)
+    source = tmp_path / "broken.glb"
+    source.write_bytes(b"invalid GLB")
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", lambda *_: ImportSettings())
+    monkeypatch.setattr(window.paint_panel, "can_close", lambda: False)
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert editor.document is previous and editor.dirty and not errors
+    monkeypatch.setattr(window.paint_panel, "can_close", lambda: True)
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert errors and "Failed to import GLB" in errors[-1][1]
+    assert editor.document is previous and editor.dirty
+    assert window.assignments == assignments
+    for expected, mesh in zip(vertices, previous.meshes):
+        np.testing.assert_array_equal(mesh.vertices, expected)
+    assert window._next_glb_settings is None
+
+
 def test_welcome_actions_follow_visible_workspace_and_open_model(desktop, application, monkeypatch):
     window, controller, errors, _ = desktop
     assert install_desktop_ui(window) is controller

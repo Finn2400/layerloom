@@ -118,3 +118,33 @@ remote, and unsupported files. Browser/Finder testing of the finished DMG is
 still required; this change is not in public a6 downloads.
 All 17 native desktop checks passed after the drop fix (including the four new
 drop cases); two existing XML-element truthiness deprecation warnings remain.
+
+## Additional robustness checks
+
+The worker now has an explicit `--diagnostics` probe that records its version,
+Python, architecture, frozen status and executable, then actually creates a
+native lib3mf model. A missing/broken library produces structured failure data
+and a nonzero exit. Normal Copy diagnostics identifies the resolved worker
+command or a missing bundled helper without launching a background operation.
+Missing-module errors from import workers give source-repair or app-replacement
+instructions; the full traceback remains in the existing logs.
+
+The Mac verifier previously exercised only legacy `glb-split`. It now also runs
+the current desktop `glb-import` on a multicolor intact surface, applies explicit
+filament recipes to its generated regions, runs `region-weave`, and checks the
+saved output and material-volume validation report. In artifact runs these
+operations use the relocated frozen helper with external Python paths removed.
+The same verifier chain passed locally through source worker subprocesses in an
+unrelated folder with spaces and Unicode; this is not frozen-artifact evidence.
+
+Local validation after these changes: 39 worker/packaging/logging checks, 20
+native desktop/performance checks, and 40 bootstrap/desktop-import checks passed
+(99 total). The native cases include refusing replacement with unsaved edits
+and a real malformed GLB failure: document identity, geometry, assignments and
+dirty state survive. Bootstrap coverage includes stale environments, interrupted
+setup, repair failure, offline reuse, source relocation and lock contention;
+these automated cases do not replace the planned clean-account trial.
+
+Both architecture DMGs and the hosted cross-OS validation matrix still need to
+pass for this exact commit before release. Friend-specific camera latency and
+his missing-lib3mf installation remain unconfirmed on his actual machine.

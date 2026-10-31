@@ -40,10 +40,11 @@ def validate_3mf(path: Path) -> dict:
         return {"objects": objects, "triangles": triangles, "bytes": path.stat().st_size}
 
 
-def write_test_glb(path: Path):
+def write_test_glb(path: Path, *, multicolor=False):
     positions = struct.pack("<12f", 0, 0, 0, 10, 0, 0, 0, 10, 0, 0, 0, 10)
     indices = struct.pack("<12H", 0, 2, 1, 0, 1, 3, 1, 2, 3, 2, 0, 3)
-    colors = bytes([0, 255, 255, 255] * 4)
+    colors = bytes(([0, 255, 255, 255, 255, 0, 255, 255, 255, 255, 0, 255, 0, 255, 255, 255])
+                   if multicolor else [0, 255, 255, 255] * 4)
     blob = positions + indices + colors
     document = {
         "asset": {"version": "2.0"}, "scene": 0, "scenes": [{"nodes": [0]}],
@@ -105,6 +106,47 @@ def deployment_versions(output: str) -> list[tuple[int, ...]]:
     return versions
 
 
+def validate_desktop_glb(worker_prefix, *, work, env, report_dir):
+    """Exercise the current desktop importer and region weaver in the worker."""
+    source = work / "colored regions é.glb"
+    write_test_glb(source, multicolor=True)
+    original = source.read_bytes()
+    imported, manifest = work / "desktop regions.3mf", work / "desktop colors.json"
+    command([*worker_prefix, "glb-import", source, "--out", imported, "--manifest-out", manifest,
+             "--settings", json.dumps({"units": "millimeters", "detail": "original"})],
+            cwd=work, env=env, log=report_dir / "desktop-glb.log")
+    colors = json.loads(manifest.read_text())
+    assert len(colors["objects"]) >= 2, "Desktop import lost distinct source colors"
+    assert colors["surface_partition_supported"], colors
+    # Emulate explicit GUI recipe assignments without importing source code into
+    # the validator. Preserve the worker-produced archive and all metadata.
+    assigned = work / "assigned regions.3mf"
+    count = 0
+    with zipfile.ZipFile(imported) as src, zipfile.ZipFile(assigned, "w") as dst:
+        for info in src.infolist():
+            data = src.read(info.filename)
+            if info.filename.lower().endswith(".model"):
+                root = ET.fromstring(data)
+                for obj in root.findall(".//{*}object"):
+                    if obj.find("{*}mesh") is not None:
+                        token = "cyc" if count % 2 == 0 else "m"
+                        obj.set("name", obj.get("name", "region") + f"__PAT_{token}__")
+                        count += 1
+                data = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+            dst.writestr(info, data)
+    assert count >= 2
+    output = work / "desktop regions woven.3mf"
+    command([*worker_prefix, "region-weave", assigned, "--out", output,
+             "--layer-height", "0.5", "--pitch", "0.5"],
+            cwd=work, env=env, log=report_dir / "desktop-region-weave.log")
+    report = json.loads(output.with_suffix(".region-report.json").read_text())
+    assert report["saved_geometry"]["volume_mm3"] > 0
+    assert len(report["saved_geometry"]["parts"]) >= 2
+    assert source.read_bytes() == original
+    return {"imported": validate_3mf(imported), "woven": validate_3mf(output),
+            "saved_geometry": report["saved_geometry"]}
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("app", type=Path)
@@ -160,6 +202,11 @@ def main(argv=None):
             work = Path(directory) / "unrelated working directory"
             work.mkdir()
             helper = relocated / "Contents/Helpers/LayerLoomWorker.app/Contents/MacOS/layerloom-worker"
+            worker_runtime = json.loads(command([helper, "--diagnostics"], cwd=work, env=env,
+                                               log=report_dir / "worker-runtime.log"))
+            assert worker_runtime["frozen"] and worker_runtime["lib3mf"]["ok"], worker_runtime
+            assert Path(worker_runtime["executable"]).resolve() == helper.resolve(), worker_runtime
+            report["worker_runtime"] = worker_runtime
             capabilities = json.loads(command([helper, "--capabilities"], cwd=work, env=env, log=report_dir / "capabilities.log"))
             mark("worker_capabilities_completed")
             assert capabilities["repair"] is False, "First desktop bundle must not include PyMeshLab"
@@ -178,6 +225,8 @@ def main(argv=None):
             command([helper, "glb-split", glb, "--scale", "1", "--out", imported], cwd=work, env=env, log=report_dir / "glb.log")
             report["glb_import"] = validate_3mf(imported)
             mark("glb_import_validated")
+            report["desktop_glb"] = validate_desktop_glb([helper], work=work, env=env, report_dir=report_dir)
+            mark("desktop_glb_to_woven_validated")
             if args.gui:
                 executable = relocated / "Contents/MacOS/LayerLoom"
                 mark("gui_started")

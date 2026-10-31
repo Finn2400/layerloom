@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import logging
+import re
 import subprocess
 import sys
 from functools import lru_cache
@@ -69,6 +70,20 @@ def log_worker_result(label: str, result: subprocess.CompletedProcess) -> None:
         _LOG.info("%s stdout:\n%s", label, result.stdout.rstrip())
     if result.stderr:
         _LOG.info("%s stderr:\n%s", label, result.stderr.rstrip())
+
+
+def worker_failure_message(label: str, result: subprocess.CompletedProcess) -> str:
+    """Keep missing-installation errors actionable; callers log the full output."""
+    detail = (result.stderr or "").strip() or (result.stdout or "").strip()
+    missing = re.search(r"ModuleNotFoundError: No module named ['\"]([^'\"]+)['\"]", detail)
+    if missing:
+        remedy = ("Download a fresh LayerLoom app and replace this copy."
+                  if getattr(sys, "frozen", False) else
+                  "Run the included source launcher with --repair, or use the standalone Mac app.")
+        return (f"LayerLoom's processing environment is missing {missing[1]}.\n\n"
+                f"{remedy}\n\nUse Help → Copy diagnostics and Open logs for support. "
+                "The full error is recorded in the log.")
+    return detail or f"{label} failed (exit status {result.returncode})"
 
 
 def local_repair_available() -> bool:

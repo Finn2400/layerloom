@@ -23,9 +23,9 @@ import tempfile, subprocess
 import shutil, glob  # <-- Added for PLY Roundtrip
 
 try:
-    from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options
+    from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options, worker_failure_message
 except ImportError:
-    from runtime import log_worker_result, repair_available, worker_command, worker_process_options
+    from runtime import log_worker_result, repair_available, worker_command, worker_process_options, worker_failure_message
 
 try:
     import resource
@@ -2320,7 +2320,7 @@ class AssignColorsApp(tk.Tk if tk is not None else object):
             _log("DEBUG", f"[{label} stderr]\n{proc.stderr}")
         _perf_log(f"subprocess {label}", t0, level="INFO", extra=f"returncode={proc.returncode}")
         if proc.returncode != 0:
-            raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"{label} failed")
+            raise RuntimeError(worker_failure_message(label, proc))
         return proc
 
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
@@ -5033,7 +5033,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             _log("DEBUG", f"[{label} stderr]\n{proc.stderr}")
         _perf_log(f"subprocess {label}", t0, level="INFO", extra=f"returncode={proc.returncode}")
         if proc.returncode != 0:
-            raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"{label} failed")
+            raise RuntimeError(worker_failure_message(label, proc))
         return proc
 
     def _run_glb_import_pipeline(self, glb_path: str):
