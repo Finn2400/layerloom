@@ -17,6 +17,43 @@ EXPORT_TIMEOUT_MS = 300_000
 GUI_TIMEOUT_SECONDS = 900
 
 
+def verify_camera_presentation(plotter, qtcore, *, timeout_ms=5000):
+    """Require camera renders to reach Qt without screenshots forcing a paint."""
+    def wait(ms):
+        loop = qtcore.QEventLoop()
+        qtcore.QTimer.singleShot(ms, loop.quit)
+        loop.exec_()
+
+    # Drain startup/layout repaints before testing the render bridge itself.
+    wait(300)
+    swaps = []
+    plotter.frameSwapped.connect(on_swap := lambda: swaps.append(time.monotonic()))
+    original = plotter.camera_position
+    delays = []
+    try:
+        for _ in range(3):
+            before = len(swaps)
+            started = time.monotonic()
+            plotter.camera.Azimuth(4)
+            plotter.ren_win.Render()
+            # Hosted software renderers may spend seconds inside Render. Give
+            # the queued Qt repaint its own bounded chance to run afterward;
+            # record the full duration without calling that interactive speed.
+            deadline = time.monotonic() + timeout_ms / 1000
+            while len(swaps) == before and time.monotonic() < deadline:
+                wait(20)
+            if len(swaps) == before:
+                raise AssertionError('Camera rendered but Qt did not present a frame; viewport update bridge is broken')
+            delays.append(round((swaps[before] - started) * 1000, 2))
+        return {'camera_steps': 3, 'qt_presented_steps': len(delays),
+                'render_request_to_qt_swap_ms': delays,
+                'note': 'Qt composition notification; not physical display latency'}
+    finally:
+        plotter.frameSwapped.disconnect(on_swap)
+        plotter.camera_position = original
+        plotter.render()
+
+
 class _SmokeDiagnostics:
     """Persist stage and Qt-loop evidence even if the outer verifier kills us."""
     def __init__(self, output, report):
@@ -247,6 +284,8 @@ def main(directory: str) -> int:
         assert window.model_objects and not errors, errors
         assert not window._paint_active() and not window._paint_action.isChecked()
         assert not window.viewer_empty_hint.isVisible()
+        report['camera_presentation'] = {
+            'arrange_benchy': verify_camera_presentation(window.viewer.plotter, qtcore)}
         for name, actor in decoration.items():
             assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
         assert window.grab().save(str(output / "example-arrange-window.png"))
@@ -260,6 +299,7 @@ def main(directory: str) -> int:
         assert set("".join(recipes)) == {"c", "m", "y"}
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
         toggle_paint(True)
+        report['camera_presentation']['paint_benchy'] = verify_camera_presentation(editor.plotter, qtcore)
         image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))
         assert image is not None and image.std() > 5, "Benchy example render is blank"
         assert window.grab().save(str(output / "benchy-example-window.png"))

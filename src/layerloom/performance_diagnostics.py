@@ -28,12 +28,68 @@ def _plotters(window):
             "paint": window.paint_panel.editor.plotter}
 
 
+class _ViewportActivity:
+    """Bounded correlation of delivered input, camera changes and Qt swaps.
+
+    A swap is a top-level composition notification, not proof that a particular
+    input reached the physical display. Keep those limits explicit in reports.
+    """
+
+    def __init__(self, swap_supported):
+        self.swap_supported = swap_supported
+        self.counts = dict.fromkeys(('hover_moves', 'drag_moves', 'button_presses',
+                                    'wheel_events', 'gesture_events',
+                                    'camera_changes', 'qt_frame_swaps'), 0)
+        self.pending_input = None
+        self.pending_camera = None
+        self.input_waits = deque(maxlen=4096)
+        self.camera_waits = deque(maxlen=4096)
+        self.max_input_wait = self.max_camera_wait = 0.0
+
+    def input(self, kind):
+        self.counts[kind] += 1
+        if kind != 'hover_moves' and self.pending_input is None:
+            self.pending_input = time.monotonic()
+
+    def camera_changed(self, *_):
+        self.counts['camera_changes'] += 1
+        if self.pending_camera is None:
+            self.pending_camera = time.monotonic()
+
+    def swapped(self):
+        self.counts['qt_frame_swaps'] += 1
+        now = time.monotonic()
+        if self.pending_input is not None:
+            elapsed = (now - self.pending_input) * 1000
+            self.input_waits.append(elapsed)
+            self.max_input_wait = max(self.max_input_wait, elapsed)
+            self.pending_input = None
+        if self.pending_camera is not None:
+            elapsed = (now - self.pending_camera) * 1000
+            self.camera_waits.append(elapsed)
+            self.max_camera_wait = max(self.max_camera_wait, elapsed)
+            self.pending_camera = None
+
+    def snapshot(self):
+        now = time.monotonic()
+        def age(start):
+            return round((now - start) * 1000, 2) if start is not None else None
+        return {**self.counts, 'qt_frame_swap_signal_available': self.swap_supported,
+                'oldest_input_to_next_qt_swap': {
+                    **_summary(self.input_waits), 'max_ms_entire_recording': round(self.max_input_wait, 2)},
+                'oldest_camera_change_to_next_qt_swap': {
+                    **_summary(self.camera_waits), 'max_ms_entire_recording': round(self.max_camera_wait, 2)},
+                'pending_input_age_ms': age(self.pending_input),
+                'pending_camera_change_age_ms': age(self.pending_camera)}
+
+
 def _environment(window):
     result = {"installation": diagnostic_text().replace(str(Path.home()), "<home>"),
               "viewports": {}}
     for name, plotter in _plotters(window).items():
         rw = plotter.ren_win
         screen = plotter.screen()
+        handle = plotter.window().windowHandle()
         cells = 0
         for actor in plotter.renderer.actors.values():
             mapper = actor.GetMapper() if hasattr(actor, 'GetMapper') else None
@@ -42,6 +98,8 @@ def _environment(window):
                 cells += data.GetNumberOfCells()
         result['viewports'][name] = {
             "visible": plotter.isVisible(), "render_pixels": list(rw.GetSize()),
+            "qt_window_exposed": handle.isExposed() if handle else False,
+            "qt_widget_valid": plotter.isValid() if hasattr(plotter, 'isValid') else None,
             "device_pixel_ratio": plotter.devicePixelRatioF(),
             "screen_pixels": [screen.size().width(), screen.size().height()] if screen else None,
             "actors": len(plotter.renderer.actors), "display_cells_including_overlays": cells,
@@ -112,6 +170,8 @@ class PerformanceRecorder(QtCore.QObject):
         self.max_lag = 0.0
         self.stacks = deque(maxlen=6)
         self.input_counts = {'mouse_moves': 0, 'wheel_events': 0}
+        self.viewport_activity = {}
+        self._widget_activity = {}
         self.report_data = None
         self.running = True
         self._connect_activity()
@@ -119,6 +179,15 @@ class PerformanceRecorder(QtCore.QObject):
         stop_event = self._stop_event
         for name, plotter in _plotters(self.window).items():
             rw = plotter.ren_win
+            swap_signal = getattr(plotter, 'frameSwapped', None)
+            activity = _ViewportActivity(swap_signal is not None)
+            self.viewport_activity[name] = activity
+            self._widget_activity[plotter] = activity
+            camera = plotter.camera
+            self._observers.append((camera, camera.AddObserver('ModifiedEvent', activity.camera_changed)))
+            if swap_signal is not None:
+                swap_signal.connect(activity.swapped)
+                self._connections.append((swap_signal, activity.swapped))
             start_time = [None]
             def begin(*_, holder=start_time):
                 holder[0] = time.monotonic()
@@ -160,10 +229,19 @@ class PerformanceRecorder(QtCore.QObject):
 
     def eventFilter(self, obj, event):
         if self.running:
+            activity = self._widget_activity.get(obj)
             if event.type() == QtCore.QEvent.MouseMove:
                 self.input_counts['mouse_moves'] += 1
+                if activity:
+                    activity.input('drag_moves' if event.buttons() else 'hover_moves')
             elif event.type() == QtCore.QEvent.Wheel:
                 self.input_counts['wheel_events'] += 1
+                if activity:
+                    activity.input('wheel_events')
+            elif activity and event.type() == QtCore.QEvent.MouseButtonPress:
+                activity.input('button_presses')
+            elif activity and event.type() in (QtCore.QEvent.Gesture, QtCore.QEvent.NativeGesture):
+                activity.input('gesture_events')
         return False
 
     def _watch(self, stop_event):
@@ -213,6 +291,9 @@ class PerformanceRecorder(QtCore.QObject):
             "session_log": str(self.session_path),
             "elapsed_seconds": round(time.monotonic()-self.started, 1), **self.environment,
             "input_events_delivered": dict(self.input_counts),
+            "viewport_activity": {name: activity.snapshot() for name, activity in self.viewport_activity.items()},
+            "workspace": "Paint" if self.window._paint_active() else "Arrange",
+            "build_plate_tool": getattr(self.window.viewer, 'tool_mode', None),
             "render_calls": {name: {**_summary(values), "total_frames": self.frame_counts[name],
                             "max_ms_entire_recording": round(self.frame_max[name], 2)}
                              for name, values in self.frames.items()},
@@ -220,6 +301,8 @@ class PerformanceRecorder(QtCore.QObject):
             "process_peak_memory_mib": round(peak, 1) if peak else None,
             "python_threads": threading.active_count(), "slow_main_thread_samples": list(self.stacks),
             "notes": ["Render timings are VTK call durations, not GPU frame completion or mouse-to-screen latency.",
+                      "Qt swaps are window composition notifications, not proof of physical display latency or which input a frame contains.",
+                      "Input/camera waits start at the oldest event since the previous swap; idle hover is excluded. Pending ages also include hidden/occluded time.",
                       "UI delay measures a 200 ms timer arriving late; includes deliberate busy operations.",
                       "Render percentiles retain the last 4096 frames per viewport; maximum covers the whole recording.",
                       "Stack samples may be unavailable during native calls holding Python's GIL.",
@@ -245,6 +328,7 @@ class PerformanceRecorder(QtCore.QObject):
             except RuntimeError:
                 pass
         self._widgets.clear()
+        self._widget_activity.clear()
         for signal, slot in self._connections:
             try:
                 signal.disconnect(slot)

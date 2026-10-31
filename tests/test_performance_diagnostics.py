@@ -190,3 +190,51 @@ def test_dialog_restores_quality_and_copies_report_without_model_contents():
         d.close();w.paint_panel.editor.dirty=False;w.close()
         if c.example_directory:c.example_directory.cleanup()
         w.deleteLater();app.processEvents()
+
+
+def test_delivered_drag_changes_camera_and_reaches_qt_swap(performance_log):
+    from qtpy import QtCore, QtGui, QtWidgets, QtTest
+    from layerloom.gui_app import _load_current_gui_module
+    from layerloom.performance_diagnostics import PerformanceRecorder
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    window = _load_current_gui_module().QtAssignColorsApp()
+    window.resize(800, 600)
+    window.show()
+    window.raise_()
+    assert QtTest.QTest.qWaitForWindowExposed(window, 5000)
+    QtTest.QTest.qWait(500)
+    plotter = window.viewer.plotter
+    recorder = PerformanceRecorder(window)
+    try:
+        recorder.start()
+        before = tuple(plotter.camera.position)
+        def mouse(kind, x, y, button, buttons):
+            event = QtGui.QMouseEvent(kind, QtCore.QPointF(x, y), button, buttons, QtCore.Qt.NoModifier)
+            app.sendEvent(plotter, event)
+        mouse(QtCore.QEvent.MouseButtonPress, 160, 150, QtCore.Qt.LeftButton, QtCore.Qt.LeftButton)
+        for x in (180, 200, 220):
+            mouse(QtCore.QEvent.MouseMove, x, 180, QtCore.Qt.NoButton, QtCore.Qt.LeftButton)
+            QtTest.QTest.qWait(30)
+        mouse(QtCore.QEvent.MouseButtonRelease, 220, 180, QtCore.Qt.LeftButton, QtCore.Qt.NoButton)
+        QtTest.QTest.qWait(250)
+        assert tuple(plotter.camera.position) != before
+        recorder.stop()
+        report = recorder.snapshot()
+        activity = report['viewport_activity']['build_plate']
+        assert activity['drag_moves'] == 3
+        assert activity['camera_changes'] > 0
+        assert activity['qt_frame_swap_signal_available']
+        assert activity['qt_frame_swaps'] > 0
+        assert activity['oldest_camera_change_to_next_qt_swap']['samples'] > 0
+        assert activity['pending_camera_change_age_ms'] is None
+        assert report['workspace'] == 'Arrange'
+        # No observers/signals may leak into subsequent sessions.
+        frozen_count = activity['camera_changes']
+        plotter.camera.Azimuth(10)
+        QtTest.QTest.qWait(250)
+        assert recorder.viewport_activity['build_plate'].snapshot()['camera_changes'] == frozen_count
+        recorder.start()
+        assert recorder.snapshot()['viewport_activity']['build_plate']['drag_moves'] == 0
+    finally:
+        recorder.stop()
+        window.close(); window.deleteLater(); app.processEvents()

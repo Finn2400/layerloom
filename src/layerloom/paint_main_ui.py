@@ -78,8 +78,14 @@ class PaintWorkspaceHostMixin:
             if widget is self.glb_colors_spin or (isinstance(widget, QtWidgets.QLabel) and widget.text() == "GLB colors"):
                 action.setVisible(False)
                 self._arrange_toolbar_visibility[action] = False
-        arrange = self.takeCentralWidget()
+        arrange = self.centralWidget()
         tabs = QtWidgets.QTabWidget(self)
+        # Move directly between parents in the same top-level window. Detaching
+        # via takeCentralWidget() first makes an already initialized GL widget
+        # temporarily top-level, destroying its context. PyVistaQt 0.13.1 then
+        # drops its render-to-repaint observers and does not restore them when
+        # Qt recreates the context: camera motion renders but the screen stalls.
+        arrange.setParent(tabs)
         tabs.setObjectName("layerloomWorkspaces")
         self.workspace_tabs = tabs
         self.paint_panel = PaintPanel(parent=tabs, compact=True)

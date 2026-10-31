@@ -53,13 +53,15 @@ Records package/app versions, architecture, active graphics vendor/renderer,
 framebuffer/display scaling, actor/cell counts, bounded render timing samples,
 200 ms GUI timer delays, process peak memory where available, and bounded
 main-thread stack locations for >2-second stalls. Stack sampling may fail while
-native code holds the GIL. No model contents, local variables, model filenames,
-or uploads are collected. Slow samples and the finished report also go to the
+native code holds the GIL. No model contents or local variables are collected;
+operation paths may appear in logs. Nothing is uploaded. Slow samples and the finished report also go to the
 existing rotating application log.
 
 A temporary Reduce display smoothing checkbox supports an A/B recording. It
 changes antialiasing only, is fixed during each recording, and restores the
-original display settings on closing the panel. It does not simplify geometry.
+original display settings when recording stops (or when closing the panel while
+not recording). Closing the panel while recording preserves the comparison.
+It does not simplify geometry.
 
 ## Wednesday comparison
 
@@ -198,3 +200,88 @@ app close, disconnecting activity listeners, restoring the previous log level,
 and leaving no extra handler attached.
 Validation: all 33 native session/desktop/logging checks passed; the four native
 session tests passed again after moving shutdown ahead of viewer disposal.
+
+## Release hold: live a7 viewport delay
+
+On October 31, the user reported multi-second delay for rotation and zoom using
+the MacBook's built-in trackpad in the exact arm64 a7 candidate (build revision
+`6d6a11d38ca116c032d925ceb223ffb7866c3837`). Other applications were responsive.
+The running executable was the staged CI app, not the copy in Applications.
+Both copies have the same build identity. Do not treat this as completed
+quarantined-first-launch validation or claim the candidate is ready to publish.
+
+The completed 175-second baseline confirms bundled Python 3.12.15 and expected
+dependency versions. Build-plate framebuffer: 1986×1782, Apple M1 Pro, 255,813
+display cells including overlays. CPU-side VTK calls: median 4.97 ms, p95 7.13 ms,
+maximum 28.73 ms. The GUI timer's session maximum delay was 112.37 ms.
+265 mouse moves and zero wheel events were recorded; the old counters cannot
+distinguish hovering, dragging, or pinch gestures. These results do not disprove
+the user's visible delay. Both pasted reports show supersampling enabled and
+`reduced_smoothing: false`; the requested A/B comparison is not yet verified.
+
+Added opt-in diagnostics distinguish hover, drag, button, wheel and gesture
+delivery for each viewport, observe camera modifications, and record Qt
+`frameSwapped` notifications. Bounded timing samples retain the oldest pending
+input/camera change until the next swap, plus lifetime maxima and outstanding
+ages. These correlate stages, not physical display latency or proof that a
+specific frame contains a particular input. Hidden/occluded windows may defer
+presentation. Window exposure and OpenGL widget validity are recorded too.
+Qt's signal semantics: https://doc.qt.io/qt-6/qopenglwidget.html#frameSwapped
+
+Validation: eight targeted tests passed, including an actual exposed native
+window receiving drag events, changing its camera, emitting Qt swaps, and
+detaching observers on stop. The first version of this test saw no swaps while
+the test window was not raised; explicitly exposing it resolved that test
+failure. This is not evidence that visibility causes the user's lag. Controlled
+12-second pending intervals verify that new input cannot hide an older delayed
+event, and bounded buffers preserve maximum delays across long recordings.
+No rendering defaults or dependency versions have been changed. These additional
+diagnostics are source-only until a new build is produced and validated.
+
+## Root cause reproduced and candidate repair
+
+The additional live recording reproduced delayed presentation while input and
+camera callbacks continued: 225 drag moves, 112 wheel events and 664 camera
+changes. Qt reported no frame swaps during a long interval containing input;
+the maximum outstanding-camera interval was 92.4 seconds (including time between
+the user's gestures). The timer's maximum delay was 81.81 ms. This is a missing
+presentation/update path, not evidence of a 92-second rendering computation.
+Correction: the first instrumented launcher loaded the small cubes, not Benchy.
+The subsequent controlled comparisons explicitly load the 253,176-face Benchy.
+
+Controlled a6 and a7 source runs, using the same locked runtime and 60 camera
+steps at 50 ms intervals, both reproduce the issue. a6 produced 5 incidental Qt
+swaps; a7 produced 4–5. Explicitly asking the widget to update produced 59 swaps.
+Tracing OpenGL context cleanup locates the destructive transition at
+`PaintWorkspaceHostMixin._install_paint_workspace → takeCentralWidget()`.
+PyVistaQt 0.13.1 removes six VTK/Qt bridge observers during context cleanup and
+does not reattach them in `initializeGL()`. After startup the observer list is
+empty: VTK still renders, but its WindowFrameEvent no longer schedules a paint.
+Unrelated layout/exposure updates can repaint the widget, masking the defect.
+
+The detach was introduced in commit `4d60b0fb` (Paint GUI hosting refactor) and
+is present in a5 source, a6 and a7. a6-to-a7 lock changes only the LayerLoom
+version, not dependency versions; a5's saved bundle also contains PyVista 0.49.1
+and PyVistaQt 0.13.1. The exact previously smooth executable the user replaced
+has not been established, so this is not claimed as an a7-only regression.
+
+Repair: retain the original central widget and reparent it directly to the new
+tab widget under the same top-level window. Avoid the temporary top-level
+detach, preserving the OpenGL context and all six bridge observers. No graphics
+defaults, dependency versions, model geometry or camera controls change.
+The same Benchy test now produces 69 Qt swaps for 60 camera steps, without any
+explicit widget-update workaround. Callback count remains six.
+
+The new production-startup regression test FAILS against unmodified a6 with
+“Camera rendered but Qt did not present a frame” and passes with the repair.
+It uses the production window factory (including styling/context creation),
+checks Benchy in Arrange → Paint → Arrange, then loads cubes and checks again.
+Bare main-window construction and screenshots had masked the fault: screenshots
+force a render, so image validity alone cannot verify interactive presentation.
+The same camera-to-Qt-swap gate is now in the frozen Mac smoke test before
+screenshots, for both Arrange and Paint Benchy. Nine targeted local tests passed.
+Human confirmation and newly built, validated DMGs are still required.
+The broader native main-Paint, desktop-UI and Mac-packaging test suite also
+passed after the repair; only the existing XML element-truthiness deprecation
+warnings were reported. CI now runs the new presentation and diagnostic tests
+alongside the existing Windows/Linux native GUI cases.
