@@ -41,6 +41,8 @@ class PaintWorkspaceHostMixin:
     def __init__(self):
         self._paint_session = None
         self._glb_geometry_issues = []
+        self._glb_surface_partition_supported = False
+        self._glb_surface_partition_error = None
         self._next_glb_settings = None
         self.paint_panel = None
         self.workspace_tabs = None
@@ -183,7 +185,10 @@ class PaintWorkspaceHostMixin:
             if paint else
             "Select or paint the colors, then press Weave to create your printable 3MF.")
         if not paint and getattr(self, '_glb_geometry_issues', []):
-            self.workflow_hint.setText("Colors imported for inspection. Some regions are open surfaces; weaving is blocked until they form closed solids.")
+            self.workflow_hint.setText(
+                "Select colors, then press Weave. Surface colors extend into the solid; the exterior follows printer layers."
+                if self._glb_surface_partition_supported else
+                "Colors imported for inspection. The original model needs a closed, valid surface before weaving.")
         if paint:
             self._begin_paint_session()
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
@@ -218,6 +223,8 @@ class PaintWorkspaceHostMixin:
         opened = self.paint_panel.open_path(path)
         if opened:
             self._glb_geometry_issues = []
+            self._glb_surface_partition_supported = False
+            self._glb_surface_partition_error = None
         return opened
 
     def _open_region_model(self, path):
@@ -228,6 +235,8 @@ class PaintWorkspaceHostMixin:
             if opened:
                 self._region_import_active = True
                 self._glb_geometry_issues = getattr(self, "_pending_glb_geometry_issues", [])
+                self._glb_surface_partition_supported = self._pending_glb_surface_partition_supported
+                self._glb_surface_partition_error = self._pending_glb_surface_partition_error
                 self._workspace_changed(self.workspace_tabs.currentIndex())
             return opened
         except Exception as exc:
@@ -239,6 +248,12 @@ class PaintWorkspaceHostMixin:
             self._opening_region_model = False
 
     def _load_canonical_model(self, path):
+        if getattr(self, "_region_woven_preview_pending", False):
+            # Printable exports use one component assembly. Flatten only the
+            # disposable preview so Arrange can identify the individual parts.
+            from .normalize_3mf_import import normalize_3mf_import
+            path = self._stamp_for_preview(normalize_3mf_import(path).normalized_path)
+            self._region_woven_preview_pending = False
         # Conversion/normalization must succeed before replacing a shared model.
         if getattr(self, "_opening_region_model", False):
             editor = self.paint_panel.editor
@@ -308,6 +323,8 @@ class PaintWorkspaceHostMixin:
         from .runtime import worker_command
         settings = self._next_glb_settings or ImportSettings()
         self._pending_glb_geometry_issues = []
+        self._pending_glb_surface_partition_supported = False
+        self._pending_glb_surface_partition_error = None
         # Each launch owns a unique directory; simultaneous imports cannot collide.
         with tempfile.TemporaryDirectory(prefix="layerloom_glb_") as folder:
             output = Path(folder) / "regions.3mf"
@@ -317,6 +334,8 @@ class PaintWorkspaceHostMixin:
                 "--settings", json.dumps(asdict(settings))]))
             data = json.loads(manifest.read_text(encoding="utf-8"))
             self._pending_glb_geometry_issues = data['geometry_issues']
+            self._pending_glb_surface_partition_supported = data.get('surface_partition_supported', False)
+            self._pending_glb_surface_partition_error = data.get('surface_partition_error')
             # The legacy canonical loader needs the file after this method returns.
             if not hasattr(self, '_glb_import_storage'):
                 self._glb_import_storage = tempfile.TemporaryDirectory(prefix='layerloom_imported_')
@@ -328,11 +347,34 @@ class PaintWorkspaceHostMixin:
         self.glb_colors_spin.setValue(settings.colors)
         return str(persistent), source_colors, None, settings.colors
 
+    def _run_weave_subprocess(self, input_3mf, *, step, output_path, first_layer_color="auto"):
+        if not self._glb_surface_partition_supported:
+            return super()._run_weave_subprocess(input_3mf, step=step, output_path=output_path,
+                                                first_layer_color=first_layer_color)
+        from .runtime import worker_command
+        try:
+            self._run_external_tool("region-weave", worker_command("region-weave", [
+                str(input_3mf), "--out", str(output_path), "--layer-height", str(step),
+                "--palette", self.current_palette_name, "--first-layer-color", first_layer_color]))
+            if not Path(output_path).is_file():
+                raise RuntimeError("No validated output was produced.")
+            self._region_woven_preview_pending = True
+            # The parent loads the finished physical-material solids next.
+            self._glb_geometry_issues = []
+            self._glb_surface_partition_supported = False
+            self._glb_surface_partition_error = None
+            self._workspace_changed(self.workspace_tabs.currentIndex())
+            return output_path
+        except Exception as exc:
+            self._error("Weave", str(exc))
+            return None
+
     def _on_weave(self):
-        if getattr(self, '_glb_geometry_issues', []) and not self._paint_active() and not self._shared_paint_active():
-            self._warn("Model needs closed color regions", "The colors were imported, but some regions are open surfaces. "
-                       "Weaving them could create missing or incorrect material. This import is available for inspection; "
-                       "closed material-region construction is not yet supported for this model.")
+        if (self._glb_geometry_issues and not self._glb_surface_partition_supported
+                and not self._paint_active() and not self._shared_paint_active()):
+            self._warn("Model needs a closed surface", "The original model cannot yet form a valid solid. "
+                       "Correct the source geometry before weaving.\n\n" +
+                       (self._glb_surface_partition_error or "Some color regions are open surfaces."))
             return
         if self._paint_active() or self._shared_paint_active():
             if self._shared_paint_active() and not self._ensure_transform_preview_current():

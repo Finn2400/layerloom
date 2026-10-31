@@ -34,10 +34,20 @@ placement on the build plate before weaving. Fine detail uses more memory;
 unsupported texture/material features produce an explanation instead of losing
 colors silently.
 
-Some colored surfaces do not define closed printable parts. Those imports show
-a persistent notice and cannot use region weaving yet. Importing colors is not
-a mesh repair. Opening a GLB while already in **Paint** uses the separate
-surface-editing workflow.
+When color regions are surface patches on a closed solid, **Weave** extends
+those assignments inward from the nearest surface and builds closed material
+volumes one printer layer at a time. The exterior follows the chosen layer
+height; XY color detail uses 0.5 mm sampling. You stay in Arrange and can change
+region assignments before weaving. Separate closed material parts retain their
+existing weaving workflow.
+
+A source with holes, duplicate walls, or overlapping solids needs correction
+before weaving; importing colors does not repair it. Opening a GLB while
+already in **Paint** uses the separate surface-editing workflow.
+
+New models and bundled examples start centered on the plate and resting on it.
+Their size and the spacing between parts are preserved. Saved `.llpaint`
+projects reopen at their saved placement.
 
 ## Paint a surface or area
 

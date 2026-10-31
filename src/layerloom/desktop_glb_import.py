@@ -225,6 +225,10 @@ def import_model(source, output, manifest_path, settings=ImportSettings()):
         if collapsed or duplicate or not trimesh.Trimesh(v, f, process=False).is_volume:
             if part.name not in manifest['geometry_issues']:
                 manifest['geometry_issues'].append(part.name)
+    from .region_weave import source_status
+    supported, reason = source_status(output) if manifest['geometry_issues'] else (False, None)
+    manifest['surface_partition_supported'] = supported
+    manifest['surface_partition_error'] = reason
     Path(manifest_path).write_text(json.dumps(manifest, indent=2), encoding='utf-8')
     return manifest
 

@@ -219,7 +219,9 @@ def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monk
     editor.set_paint_color("#DC2832")
     QtWidgets.QApplication.processEvents()
     renderer = editor.plotter.renderer
-    renderer.SetWorldPoint(1.0, 0.0, 8.0, 1.0)
+    vertices = editor.document.meshes[0].vertices
+    center = (vertices.min(axis=0) + vertices.max(axis=0)) / 2
+    renderer.SetWorldPoint(center[0] + 1.0, center[1], vertices[:, 2].max(), 1.0)
     renderer.WorldToDisplay()
     x, y, _ = renderer.GetDisplayPoint()
     ratio = float(editor.plotter.devicePixelRatioF())
@@ -335,7 +337,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
     assert main_window.source_file_path == str(source)
     set_paint_mode(main_window, True)
     assert editor.document is not previous
-    np.testing.assert_allclose(editor.document.meshes[0].vertices, replacement.meshes[0].vertices)
+    np.testing.assert_allclose(editor.document.meshes[0].vertices, replacement.meshes[0].vertices + [128, 128, 0])
     np.testing.assert_array_equal(editor.document.meshes[0].face_rgba, replacement.meshes[0].face_rgba)
     assert not editor.dirty and not editor._undo
     assert main_window._paint_pending_source is None
@@ -919,3 +921,55 @@ def test_open_color_regions_cannot_silently_weave(main_window, monkeypatch):
     monkeypatch.setattr(file_dialogs, 'get_existing_directory', lambda *a, **k: pytest.fail('Should block before asking for output'))
     main_window._on_weave()
     assert warnings and 'closed' in warnings[0][0].lower()
+
+
+def test_closed_surface_colors_weave_in_arrange(main_window, monkeypatch, tmp_path):
+    import trimesh
+    from layerloom.desktop_glb_import import ImportSettings
+    from layerloom.region_weave import validate_written_output
+    mesh=trimesh.creation.box(extents=[4,4,4])
+    mesh.visual.face_colors=np.where((mesh.face_normals[:,0]>.9)[:,None],
+                                    [0,255,255,255],[255,0,255,255]).astype(np.uint8)
+    mesh.unmerge_vertices()
+    source=tmp_path/'surface cube.glb'
+    source.write_bytes(trimesh.Scene(mesh).export(file_type='glb'))
+    original=source.read_bytes()
+    main_window._next_glb_settings=ImportSettings(units='millimeters',up_axis='z')
+    assert main_window.open_model_path(source)
+    assert main_window._glb_surface_partition_supported
+    assert not main_window._shared_paint_active() and not main_window._paint_active()
+    assert len(main_window.assignments)==2
+    main_window.layer_height_spin.setValue(.5)
+    monkeypatch.setattr(file_dialogs,'get_existing_directory',lambda *a,**k:str(tmp_path))
+    monkeypatch.setattr(main_window,'_error',lambda title,message:pytest.fail(f'{title}: {message}'))
+    monkeypatch.setattr(main_window.paint_panel.editor,'export_dialog',lambda:pytest.fail('Must remain in Arrange'))
+    main_window._on_weave()
+    output=tmp_path/'surface cube_woven.3mf'
+    result=validate_written_output(output)
+    assert result['volume_mm3']==pytest.approx(64,abs=1e-4)
+    assert len(result['parts'])==2
+    assert not main_window._glb_geometry_issues
+    assert source.read_bytes()==original
+
+
+@pytest.mark.parametrize('filename', ['tutorial_cmy_cubes.3mf','tutorial_cmy_benchy_cutup.3mf'])
+def test_bundled_examples_start_centered_without_changing_shape(main_window, filename):
+    from layerloom.example_assets import find_example_file
+    from layerloom.paint_io import load_paint_document
+    path=find_example_file(filename); before=path.read_bytes()
+    original=load_paint_document(path)
+    assert main_window.open_model_path(path)
+    actual=main_window.paint_panel.document
+    source_points=np.concatenate([m.vertices for m in original.meshes])
+    points=np.concatenate([m.vertices for m in actual.meshes])
+    np.testing.assert_allclose((points.min(axis=0)+points.max(axis=0))[:2]/2,[128,128],atol=1e-6)
+    assert points[:,2].min()==pytest.approx(0,abs=1e-6)
+    delta=points[0]-source_points[0]
+    np.testing.assert_allclose(points-source_points,np.broadcast_to(delta,points.shape),atol=1e-9)
+    for a,b in zip(actual.meshes,original.meshes):
+        np.testing.assert_array_equal(a.faces,b.faces)
+        np.testing.assert_array_equal(a.face_rgba,b.face_rgba)
+    main_window._reset_transform_to_default()
+    np.testing.assert_allclose(np.concatenate([m.vertices for m in actual.meshes]),points)
+    assert not main_window.paint_panel.editor.dirty
+    assert path.read_bytes()==before

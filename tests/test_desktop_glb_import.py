@@ -36,6 +36,7 @@ def test_texture_recovers_color_and_marks_open_regions(tmp_path):
     assert len(result['objects']) == 2
     assert {x['source_hex'] for x in result['objects']} == {'#ff0000', '#00ff00'}
     assert result['geometry_issues']
+    assert result['surface_partition_supported'], result['surface_partition_error']
     assert result['sampled_triangles'] <= 200000
     assert result['sampled_triangles'] > 12
 

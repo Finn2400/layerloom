@@ -600,6 +600,9 @@ class PaintWindow(QtWidgets.QMainWindow):
         QtWidgets.QApplication.processEvents()
         try:
             document = load_paint_document(str(path))
+            if Path(path).suffix.lower() != ".llpaint":
+                from .paint_model import center_document_on_plate
+                center_document_on_plate(document)
             self.set_document(document)
             self.project_path = str(path) if Path(path).suffix.lower() == ".llpaint" else None
             self._update_title()

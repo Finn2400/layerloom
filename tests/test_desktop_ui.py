@@ -109,6 +109,9 @@ def test_example_preserves_mode_source_and_shared_paint_recipes(desktop, applica
     application.processEvents()
     editor = window.paint_panel.editor
     document = editor.document
+    points = np.concatenate([mesh.vertices for mesh in document.meshes])
+    np.testing.assert_allclose((points.min(axis=0)+points.max(axis=0))[:2]/2, [128, 128], atol=1e-6)
+    assert points[:, 2].min() == pytest.approx(0, abs=1e-6)
     assert window._paint_active() == initial_paint
     assert window._paint_action.isChecked() == initial_paint
     for name, actor in decoration.items():
