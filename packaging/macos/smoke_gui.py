@@ -433,6 +433,39 @@ def main(directory: str) -> int:
         diagnostics.mark("export_reopened")
         reopened_objects = len(window.model_objects)
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+        diagnostics.mark("glb_regions:start")
+        import trimesh
+        cyan = trimesh.creation.box(extents=[8, 6, 4])
+        cyan.visual.vertex_colors = [0, 255, 255, 255]
+        magenta = trimesh.creation.box(extents=[8, 6, 4])
+        magenta.apply_translation([12, 0, 0])
+        magenta.visual.vertex_colors = [255, 0, 255, 255]
+        glb = model_output / "two_color_regions.glb"
+        glb.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
+        glb_hash = hashlib.sha256(glb.read_bytes()).hexdigest()
+        toggle_paint(False)
+        assert window.open_model_path(str(glb))
+        assert not window._shared_paint_active() and not window._paint_active()
+        assert len(window.model_objects) == 2 and len(window.assignments) == 2
+        assert all(window.assignments.values())
+        diagnostics.mark("glb_regions:imported")
+        window.layer_height_spin.setValue(.16)
+        choose_folder = file_dialogs.get_existing_directory
+        file_dialogs.get_existing_directory = lambda *a, **k: str(model_output)
+        try:
+            window._on_weave()
+        finally:
+            file_dialogs.get_existing_directory = choose_folder
+        glb_output = model_output / "two_color_regions_woven.3mf"
+        assert glb_output.is_file() and not errors, errors
+        glb_woven = load_paint_document(glb_output)
+        assert any("cyan" in mesh.name for mesh in glb_woven.meshes)
+        assert any("magenta" in mesh.name for mesh in glb_woven.meshes)
+        assert hashlib.sha256(glb.read_bytes()).hexdigest() == glb_hash
+        report["glb_regions"] = {"input_regions": 2, "separate_assigned_parts": True,
+                                 "legacy_weave_completed": True, "output_reopened": True,
+                                 "output_parts": len(glb_woven.meshes), "source_unchanged": True}
+        diagnostics.mark("glb_regions:weave_reopened")
         report.update(status="passed", output=str(target), objects=reopened_objects,
                       notices=notices, paint_export=exported_report, exported_3mf_reopened=True)
         diagnostics.mark("assertions_passed")

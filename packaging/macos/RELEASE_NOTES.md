@@ -22,6 +22,9 @@ No printer is needed to try the example. Turn on **Paint** to edit surfaces;
 mode remain the default. The welcome example is Benchy; the Help menu also offers small CMY cubes.
 Use **Back to build plate** to leave Paint, then keep or discard your changes.
 
+Colored GLB files opened in **Arrange** become separately assignable color
+regions, using the original geometry-weaving workflow. Paint remains optional.
+
 ## Need help?
 
 Use **Help → Copy diagnostics** and **Help → Open logs**.

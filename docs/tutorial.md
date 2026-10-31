@@ -21,6 +21,12 @@ model download. A slicer is needed after LayerLoom creates the printable 3MF.
 The packaged source examples remain unchanged. Use **Open…** for your own 3MF,
 GLB, or supported mesh file, or to reopen a saved `.llpaint` project.
 
+In **Arrange**, colored GLB/GLTF files use the original colored-region importer:
+colors become separate parts that are matched to filament recipes. Select a
+part to adjust its assignment, then click **Weave**. Paint is optional. Opening
+a GLB while already in **Paint** instead keeps its surface colors for brush
+editing. Check the physical size and placement before weaving.
+
 ## Paint a surface or area
 
 Paint starts with **Brush**: choose a color and left-click or drag to apply it.
