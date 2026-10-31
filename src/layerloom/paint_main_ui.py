@@ -285,16 +285,20 @@ class PaintWorkspaceHostMixin:
         from .paint_gui import MODEL_FILTER
         path, _ = file_dialogs.get_open_file_name(self, "Open model or paint project", "", MODEL_FILTER)
         if path:
-            if Path(path).suffix.lower() in {'.glb', '.gltf'}:
-                from .glb_import_dialog import choose_settings
-                settings = choose_settings(path, self)
-                if settings is None:
-                    return False
-                self._next_glb_settings = settings
-            try:
-                return self.open_model_path(path)
-            finally:
-                self._next_glb_settings = None
+            return self.open_selected_model(path)
+
+    def open_selected_model(self, path):
+        """Use identical import settings for file dialogs and viewport drops."""
+        if not self._paint_active() and Path(path).suffix.lower() in {'.glb', '.gltf'}:
+            from .glb_import_dialog import choose_settings
+            settings = choose_settings(path, self)
+            if settings is None:
+                return False
+            self._next_glb_settings = settings
+        try:
+            return self.open_model_path(path)
+        finally:
+            self._next_glb_settings = None
 
     def _on_open_glb(self):
         return self._on_open()

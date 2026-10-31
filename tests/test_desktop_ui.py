@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 pytest.importorskip("pyvistaqt")
-from PyQt5 import QtCore, QtTest, QtWidgets
+from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 
 from layerloom import file_dialogs
 from layerloom.desktop_ui import install_desktop_ui
@@ -58,6 +58,78 @@ def _click_paint_mode(window, enabled):
         QtWidgets.QApplication.processEvents()
     assert window._paint_active() == enabled
     assert window._paint_action.isChecked() == enabled
+
+
+def _drop_files(application, viewport, urls):
+    mime = QtCore.QMimeData()
+    mime.setUrls(urls)
+    enter = QtGui.QDragEnterEvent(QtCore.QPoint(10, 10), QtCore.Qt.CopyAction,
+                                  mime, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+    application.sendEvent(viewport, enter)
+    drop = QtGui.QDropEvent(QtCore.QPointF(10, 10), QtCore.Qt.CopyAction,
+                           mime, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+    if enter.isAccepted():
+        application.sendEvent(viewport, drop)
+    application.processEvents()
+    return enter.isAccepted(), drop.isAccepted()
+
+
+@pytest.mark.parametrize("paint", [False, True])
+def test_drop_registers_real_model_instead_of_viewer_only_mesh(desktop, application, monkeypatch, paint):
+    import pyvista
+    window, controller, errors, _ = desktop
+    _click_paint_mode(window, paint)
+    monkeypatch.setattr(pyvista, "read", lambda *_: pytest.fail("Generic viewer drop bypassed LayerLoom"))
+    viewport = window.paint_panel.editor.plotter if paint else window.viewer.plotter
+    source = find_example_file("tutorial_cmy_cubes.3mf")
+    assert _drop_files(application, viewport, [QtCore.QUrl.fromLocalFile(str(source))]) == (True, True)
+    assert window.paint_panel.editor.document is not None
+    assert window._shared_paint_active()
+    assert len(window.model_objects) == 4
+    assert not errors
+
+
+def test_glb_drop_and_open_share_settings_and_cancel_preserves_model(desktop, application, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    import trimesh
+    window, controller, errors, _ = desktop
+    controller.try_example()
+    previous = window.paint_panel.editor.document
+    source = tmp_path / "colored é model.glb"
+    mesh = trimesh.creation.box()
+    mesh.visual.vertex_colors = [0, 255, 255, 255]
+    source.write_bytes(mesh.export(file_type="glb"))
+    choices = []
+    def cancel(path, parent):
+        choices.append(str(path))
+        return None
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", cancel)
+    assert _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))]) == (True, True)
+    assert window.paint_panel.editor.document is previous
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *_: (str(source), ""))
+    window._on_open_glb()
+    assert choices == [str(source), str(source)]
+    assert window.paint_panel.editor.document is previous
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", lambda *_: ImportSettings())
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert window._region_import_active
+    assert window.model_objects and window.assignments
+    assert window._next_glb_settings is None
+    assert not errors
+
+
+def test_drop_rejects_multiple_remote_and_unsupported_files(desktop, application, tmp_path):
+    window, controller, errors, _ = desktop
+    source = find_example_file("tutorial_cmy_cubes.3mf")
+    local = QtCore.QUrl.fromLocalFile(str(source))
+    other = tmp_path / "notes.txt"
+    other.write_text("not a model")
+    for urls in ([local, local], [QtCore.QUrl("https://example.com/model.glb")],
+                 [QtCore.QUrl.fromLocalFile(str(other))]):
+        assert _drop_files(application, window.viewer.plotter, urls) == (False, False)
+    assert window.paint_panel.editor.document is None
+    assert not errors
 
 
 def test_welcome_actions_follow_visible_workspace_and_open_model(desktop, application, monkeypatch):

@@ -89,3 +89,32 @@ the two recorder tests passed again after bounding watchdog lifetime and adding
 slow-stack log persistence. A live Benchy camera-rotation recording also completed.
 The 11 recorder/logging checks passed after retaining completed timing summaries
 and including PyVistaQt in the runtime version report.
+
+## Follow-up: missing GLB dependency and viewport drops
+
+The friend's screenshot reports `ModuleNotFoundError: No module named 'lib3mf'`
+at the legacy GLB splitter's top-level import. This occurs before model parsing,
+so it does not diagnose defective source geometry. The user saw version 6 being
+installed and run. Its exact executable and installation type remain unknown;
+traceback source paths alone cannot distinguish source from frozen applications.
+The v0.6.4a6 GUI extras and worker spec already include lib3mf. Check the running
+executable and worker environment rather than attributing this to stale installs
+or system Python without evidence. Other readers/writers and rendering paths do
+not require lib3mf, explaining why some operations can still work.
+
+Current PyVistaQt 0.13.1 enables drops and handles them with
+`add_mesh(pyvista.read(filename))`. LayerLoom inherited that handler in both
+viewports, bypassing document state, assignments, and normal GLB conversion.
+This explains a mechanism for a display-only "import", but the friend's exact
+drop has not been reproduced. Extra actors may add rendering load; there is no
+evidence that this caused his reported 12-second delay.
+
+Desktop drops now consume the inherited handler and open one local supported
+model through LayerLoom's normal import route. GLB drops in Arrange share the
+Open action's settings dialog. Paint retains its intentional surface-import
+route. Native Qt event tests cover both viewports, a real GLB worker import,
+settings cancellation preserving the current model, and rejecting multiple,
+remote, and unsupported files. Browser/Finder testing of the finished DMG is
+still required; this change is not in public a6 downloads.
+All 17 native desktop checks passed after the drop fix (including the four new
+drop cases); two existing XML-element truthiness deprecation warnings remain.
