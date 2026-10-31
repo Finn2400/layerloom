@@ -122,7 +122,11 @@ class PerformanceRecorder(QtCore.QObject):
         self.running = False
         self.report_data = None
         self._stop_event = threading.Event()
-        self.destroyed.connect(lambda: self._stop_event.set())
+        # Destruction callbacks must not retain/access the QObject being torn
+        # down. In particular, a lambda closing over self can run while SIP is
+        # destroying that wrapper on Windows/Linux. Only touch a plain Event.
+        self._destroyed_event = threading.Event()
+        self.destroyed.connect(self._destroyed_event.set)
         self.timer = QtCore.QTimer(self)
         self.timer.setInterval(200)
         self.timer.timeout.connect(self._tick)
@@ -202,7 +206,7 @@ class PerformanceRecorder(QtCore.QObject):
                                     (rw, rw.AddObserver('EndEvent', end))])
             plotter.installEventFilter(self)
             self._widgets.append(plotter)
-        self._thread = threading.Thread(target=self._watch, args=(stop_event,), daemon=True,
+        self._thread = threading.Thread(target=self._watch, args=(stop_event, self._destroyed_event), daemon=True,
                                         name='LayerLoom performance watchdog')
         self._thread.start()
         self.timer.start()
@@ -244,11 +248,13 @@ class PerformanceRecorder(QtCore.QObject):
                 activity.input('gesture_events')
         return False
 
-    def _watch(self, stop_event):
+    def _watch(self, stop_event, destroyed_event):
         # Never call Qt/VTK from this thread. Python may not schedule us during
         # native calls that hold the GIL; the GUI heartbeat still records delay.
         last_sample = 0.0
         while not stop_event.wait(.5):
+            if destroyed_event.is_set():
+                break
             now = time.monotonic()
             if now-self.heartbeat < 2 or now-last_sample < 3:
                 continue
@@ -308,6 +314,7 @@ class PerformanceRecorder(QtCore.QObject):
                       "Stack samples may be unavailable during native calls holding Python's GIL.",
                       "Session logs include actions, paths and errors, but not model contents or local variables. Nothing is uploaded."]}
 
+    @QtCore.Slot()
     def stop(self):
         if not self.running:
             return
@@ -412,9 +419,13 @@ class PerformanceDialog(QtWidgets.QDialog):
         self.advanced_button.toggled.connect(self.details.setVisible)
         self.advanced_button.toggled.connect(self.effects.setVisible)
         self.recorder.changed.connect(self._refresh)
-        self.recorder.finished.connect(lambda: self.details.setPlainText(self.recorder.text()))
-        self.recorder.finished.connect(lambda: self.effects.setChecked(False))
+        self.recorder.finished.connect(self._recording_finished)
         self._refresh()
+
+    @QtCore.Slot()
+    def _recording_finished(self):
+        self.details.setPlainText(self.recorder.text())
+        self.effects.setChecked(False)
 
     def start(self):
         if self.probe.state() != QtCore.QProcess.NotRunning:

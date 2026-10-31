@@ -285,3 +285,27 @@ The broader native main-Paint, desktop-UI and Mac-packaging test suite also
 passed after the repair; only the existing XML element-truthiness deprecation
 warnings were reported. CI now runs the new presentation and diagnostic tests
 alongside the existing Windows/Linux native GUI cases.
+
+## Repair acceptance and shutdown follow-up
+
+The user tested the repaired source window with full Benchy and the built-in
+MacBook trackpad: “buttery smooth. that looks fixed”. The recording contains
+1,019 drag moves, 71 wheel events, 4,419 camera changes and 1,578 Qt swaps.
+Camera-change to Qt-swap time was median 16.38 ms, p95 20.38 ms, maximum 46.25 ms.
+These are composition notifications, not physical display latency.
+
+The arm64 bundle built from branch revision `2827d619` (PR merge `d500501f`)
+passed local macOS 14 signature, native-library, isolated worker and frozen GUI
+acceptance, including the new presentation gates. A separate frozen 64-region,
+20,480-triangle textured sphere import and assigned-fixture weave produced five
+closed, oriented material volumes without non-manifold edges. This is not yet
+human acceptance of a newly downloaded final DMG.
+
+The expanded Windows and Linux CI suites passed the presentation regression but
+crashed during diagnostic-window shutdown. The Windows stack points at an
+anonymous diagnostic callback during Qt teardown. Destruction now signals a
+plain thread event without capturing the QObject, and quit/finished callbacks
+use receiver-owned Qt slots. A regression explicitly destroys logging windows
+three times, flushing deferred Qt deletion. Cross-platform CI must pass before
+this shutdown repair is considered validated. The draft release remains on hold;
+its older assets do not contain the camera repair.

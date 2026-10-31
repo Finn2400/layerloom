@@ -238,3 +238,31 @@ def test_delivered_drag_changes_camera_and_reaches_qt_swap(performance_log):
     finally:
         recorder.stop()
         window.close(); window.deleteLater(); app.processEvents()
+
+
+def test_logging_shutdown_survives_deferred_window_destruction(performance_log):
+    """Exercise real Qt deletion, not just hiding a closed Python-owned window."""
+    import gc
+    from qtpy import QtCore, QtWidgets
+    from layerloom.gui_app import _load_current_gui_module
+    from layerloom.performance_diagnostics import PerformanceDialog
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication([])
+    for _ in range(3):
+        window = _load_current_gui_module().QtAssignColorsApp()
+        window.show(); app.processEvents()
+        dialog = PerformanceDialog(window)
+        dialog.start()
+        recorder = dialog.recorder
+        lifetime = recorder._destroyed_event
+        log_path = recorder.session_path
+        window.close()
+        assert not recorder.running
+        assert not recorder._thread.is_alive()
+        assert 'Diagnostic session stopped' in log_path.read_text()
+        window.deleteLater()
+        QtCore.QCoreApplication.sendPostedEvents(None, QtCore.QEvent.DeferredDelete)
+        app.processEvents()
+        assert lifetime.is_set()
+        del dialog, recorder, window
+        gc.collect()
+        app.processEvents()
