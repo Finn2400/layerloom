@@ -309,3 +309,12 @@ use receiver-owned Qt slots. A regression explicitly destroys logging windows
 three times, flushing deferred Qt deletion. Cross-platform CI must pass before
 this shutdown repair is considered validated. The draft release remains on hold;
 its older assets do not contain the camera repair.
+
+The first shutdown follow-up (`1d0d00ec`) still crashes in the Windows/Linux
+long-suite run at the same close/process-events step, despite passing on macOS.
+Therefore the destruction callback alone was not the cause. Activity logging
+still used anonymous Qt callbacks; these are now receiver-owned slots as well,
+with a running-state guard for queued deliveries after Stop. Dialog utility
+callbacks are also named slots. All six local diagnostic tests pass again;
+Windows/Linux confirmation remains the deciding gate. Do not reuse the earlier
+builds as evidence that this further change passed.

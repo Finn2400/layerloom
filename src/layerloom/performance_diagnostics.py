@@ -217,19 +217,57 @@ class PerformanceRecorder(QtCore.QObject):
         def connect(signal, slot):
             signal.connect(slot)
             self._connections.append((signal, slot))
-        logger = logging.getLogger('layerloom.activity')
+        # Use receiver-owned Qt slots: queued deliveries must be discarded when
+        # the recorder is destroyed, rather than targeting anonymous proxies.
         for action in self.window.findChildren(QtWidgets.QAction):
-            connect(action.triggered, lambda checked=False, action=action:
-                    logger.debug('Action: %s; checked=%s', action.text(), checked))
+            connect(action.triggered, self._log_action)
         editor = self.window.paint_panel.editor
-        for name in ('paintChanged', 'geometryChanged', 'appearanceChanged'):
-            connect(getattr(editor, name), lambda name=name: logger.debug('Model change: %s', name))
-        connect(editor.documentChanged, lambda doc: logger.info('Document loaded: parts=%s; triangles=%s',
-                len(getattr(doc, 'meshes', [])), sum(len(mesh.faces) for mesh in getattr(doc, 'meshes', []))))
+        connect(editor.paintChanged, self._log_paint)
+        connect(editor.geometryChanged, self._log_geometry)
+        connect(editor.appearanceChanged, self._log_appearance)
+        connect(editor.documentChanged, self._log_document)
         for status in (self.window.statusBar(), editor.statusBar()):
-            connect(status.messageChanged, lambda text: logger.debug('Status: %s', text) if text else None)
-        connect(self.window.workspace_tabs.currentChanged, lambda index: logger.info('Workspace: %s',
-                'Paint' if self.window._paint_active() else 'Arrange'))
+            connect(status.messageChanged, self._log_status)
+        connect(self.window.workspace_tabs.currentChanged, self._log_workspace)
+
+    @QtCore.Slot(bool)
+    def _log_action(self, checked):
+        if self.running:
+            action = self.sender()
+            if isinstance(action, QtWidgets.QAction):
+                logging.getLogger('layerloom.activity').debug('Action: %s; checked=%s', action.text(), checked)
+
+    @QtCore.Slot()
+    def _log_paint(self):
+        if self.running:
+            logging.getLogger('layerloom.activity').debug('Model change: paintChanged')
+
+    @QtCore.Slot()
+    def _log_geometry(self):
+        if self.running:
+            logging.getLogger('layerloom.activity').debug('Model change: geometryChanged')
+
+    @QtCore.Slot()
+    def _log_appearance(self):
+        if self.running:
+            logging.getLogger('layerloom.activity').debug('Model change: appearanceChanged')
+
+    @QtCore.Slot(object)
+    def _log_document(self, doc):
+        if self.running:
+            logging.getLogger('layerloom.activity').info('Document loaded: parts=%s; triangles=%s',
+                len(getattr(doc, 'meshes', [])), sum(len(mesh.faces) for mesh in getattr(doc, 'meshes', [])))
+
+    @QtCore.Slot(str)
+    def _log_status(self, text):
+        if self.running and text:
+            logging.getLogger('layerloom.activity').debug('Status: %s', text)
+
+    @QtCore.Slot(int)
+    def _log_workspace(self, index):
+        if self.running:
+            logging.getLogger('layerloom.activity').info('Workspace: %s',
+                'Paint' if self.window._paint_active() else 'Arrange')
 
     def eventFilter(self, obj, event):
         if self.running:
@@ -399,11 +437,11 @@ class PerformanceDialog(QtWidgets.QDialog):
         self.copy_button = QtWidgets.QPushButton('Copy summary'); self.copy_button.clicked.connect(self.copy_report)
         self.copy_timer = QtCore.QTimer(self)
         self.copy_timer.setSingleShot(True)
-        self.copy_timer.timeout.connect(lambda: self.copy_button.setText('Copy summary'))
+        self.copy_timer.timeout.connect(self._reset_copy_label)
         for button in (self.start_button, self.stop_button, self.copy_button):row.addWidget(button)
         layout.addLayout(row)
         self.open_logs_button = QtWidgets.QPushButton('Open log folder')
-        self.open_logs_button.clicked.connect(lambda: QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(log_dir()))))
+        self.open_logs_button.clicked.connect(self._open_log_folder)
         layout.addWidget(self.open_logs_button)
         self.check_button = QtWidgets.QPushButton('Check installation')
         self.check_button.clicked.connect(self.check_installation)
@@ -459,6 +497,14 @@ class PerformanceDialog(QtWidgets.QDialog):
         if self.installation_report is not None:
             report = {**report, 'worker_check': self.installation_report}
         return json.dumps(report, indent=2)
+
+    @QtCore.Slot()
+    def _reset_copy_label(self):
+        self.copy_button.setText('Copy summary')
+
+    @QtCore.Slot()
+    def _open_log_folder(self):
+        QtGui.QDesktopServices.openUrl(QtCore.QUrl.fromLocalFile(str(log_dir())))
 
     def copy_report(self):
         QtWidgets.QApplication.clipboard().setText(self.report_text())
