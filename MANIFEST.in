@@ -13,6 +13,9 @@ include scripts/bootstrap.sh
 include scripts/bootstrap.ps1
 include scripts/runtime-pins.txt
 include scripts/build_macos.py
+include scripts/macos_icon.py
+include scripts/build_windows.py
+include scripts/validate_windows.py
 include scripts/validate_macos.py
 include scripts/macos_validation_matrix.py
 include scripts/validate_distributions.py
@@ -24,6 +27,7 @@ recursive-include src/layerloom/paint_tests *.py
 include src/layerloom/PAINT_PROTOTYPE.md
 include src/layerloom/PROTEIN_PRINT_VISUALIZATION_STANDARD.md
 recursive-include packaging/macos *.py *.spec *.txt *.html *.md
+recursive-include packaging/windows *.py *.spec *.iss *.txt *.html *.md
 include docs/*.md
 recursive-include docs/validation *.md
 include docs/images/layerloom_applications_overview.jpg

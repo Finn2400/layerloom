@@ -64,6 +64,10 @@ def validate(distributions: Path) -> None:
         "scripts/installed_paint_smoke.py", "scripts/validate_distributions.py",
         "scripts/bootstrap.py", "scripts/build_macos.py", "scripts/validate_macos.py", "scripts/build_source_zip.py",
         "scripts/macos_validation_matrix.py",
+        "scripts/macos_icon.py", "scripts/build_windows.py", "scripts/validate_windows.py",
+        "packaging/windows/LayerLoom.spec", "packaging/windows/worker.spec",
+        "packaging/windows/LayerLoom.iss", "packaging/windows/Read Me First.html",
+        "docs/windows_desktop.md",
         "scripts/smoke_source_archive.py",
         "packaging/macos/bundle_config.py", "packaging/macos/smoke_gui.py",
     }
