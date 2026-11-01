@@ -53,6 +53,7 @@ libraries; no Git, Terminal setup, or administrator password is needed.
 3. When it finishes, click **Show in folder**. [Open your result in a slicer](docs/tutorial.md#open-the-3mf-in-a-slicer).
 
 Later, open **LayerLoom** from the Start menu. The installed app works offline.
+The Benchy example can take several minutes to weave; wait for **Export complete**.
 [Windows security prompt or installation help](docs/windows_desktop.md#if-windows-asks-whether-you-trust-it).
 
 ## Try painting
@@ -80,7 +81,8 @@ after installation. GitHub's **Source code** ZIP is not the Mac app.
 
 ## More information
 
-[Release notes and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
+[Mac release and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
+[Windows preview and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview1) ·
 [Developer installation](docs/install.md#developer-installation) ·
 [Report a problem](https://github.com/Finn2400/layerloom/issues)
 

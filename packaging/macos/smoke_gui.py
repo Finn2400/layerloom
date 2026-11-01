@@ -328,7 +328,10 @@ def main(directory: str) -> int:
             finally:
                 qt.QDialog.exec_ = original_exec
                 file_dialogs.get_save_file_name = original_save
-            _wait_for_export(editor, qtcore, diagnostics=diagnostics, label="benchy_export")
+            # On two-core hosted Windows runners this full example reached
+            # serialization at ~295s. Keep the small-model deadline unchanged,
+            # but give this larger regression a bounded ten-minute allowance.
+            _wait_for_export(editor, qtcore, diagnostics=diagnostics, label="benchy_export", timeout_ms=600_000)
             assert not errors and benchy_output.is_file(), errors
             assert editor.last_export_report["layer_height_mm"] == .16
             reopened = load_paint_document(benchy_output)
