@@ -153,10 +153,13 @@ def main(argv=None):
                 for label, folder in [('installed', installed), ('portable', app)]:
                     target = report_dir / label
                     target.mkdir()
-                    command([folder / 'LayerLoom.exe', '--desktop-smoke-test', target], cwd=unrelated, env=env,
+                    gui_env = dict(env, LAYERLOOM_SMOKE_FULL_BENCHY=('1' if label == 'installed' else '0'))
+                    command([folder / 'LayerLoom.exe', '--desktop-smoke-test', target], cwd=unrelated, env=gui_env,
                             log=target / 'gui.log', timeout=900)
                     gui = json.loads((target / 'gui-smoke.json').read_text())
                     assert gui['status'] == 'passed' and gui['frozen'], gui
+                    if label == 'installed':
+                        assert gui['benchy_export']['reopened_faces'] > 0
                     report[label + '_gui'] = gui
             # Examples and the complete installed/portable payload must remain unchanged.
             verify_payload(installed, expected)
