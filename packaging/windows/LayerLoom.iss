@@ -22,7 +22,8 @@ WizardStyle=modern
 CloseApplications=yes
 RestartApplications=no
 SetupLogging=yes
-LicenseFile=..\..\LICENSE
+; Licenses are included in THIRD_PARTY_NOTICES. No separate acceptance page is
+; needed for this open-source app's normal use.
 
 [Files]
 Source: "{#AppDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs

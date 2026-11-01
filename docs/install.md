@@ -1,12 +1,13 @@
 # Installing LayerLoom
 
-**You do not need to install Python, Git, Node, or Homebrew to use the source
-launchers.** They install a private Python and the required packages for you.
-LayerLoom and its installation tools are free.
+**Use the standalone Mac or Windows download below.** It includes Python and the
+required libraries, and works offline after installation. No Git, Node, Homebrew,
+or Terminal setup is needed. LayerLoom and its installation tools are free.
 
 **Mac users:** start with the [standalone app and four-step quick start](../README.md#download-for-mac).
-It includes Python and its libraries. The source launchers below are intended
-for Windows/Linux users and developers.
+**Windows users:** use the [standalone setup and quick start](windows_desktop.md).
+The source launchers below are an alternative for Linux users and developers;
+they install a private Python automatically.
 
 ## Choose your installation
 
@@ -14,7 +15,7 @@ for Windows/Linux users and developers.
 | --- | --- |
 | Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg) |
 | Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-x86_64.dmg) |
-| Windows x64 | Source ZIP, `.bat` launcher |
+| Windows 10 (2004+) / Windows 11, Intel/AMD x64 | [Windows setup preview](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe) |
 | Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
 On a Mac, **Apple menu → About This Mac** shows the chip or processor and macOS
@@ -68,12 +69,26 @@ These builds use free ad-hoc signing and are **not notarized by Apple**. A
 managed Mac may prohibit local approval. No paid Apple account is required to
 use LayerLoom.
 
+## Standalone Windows builds
+
+Download the **Windows setup** `.exe`, open it, and choose **Install → Finish**.
+It installs for your account and creates **LayerLoom** in the Start menu. Then
+click **Load example → Weave**, keep **Woven apparent colors** and **0.16 mm**,
+and choose where to save. Use **Show in folder** when the export completes.
+
+The installer includes its own Python, Qt, VTK and native geometry libraries.
+No setup commands or additional downloads are needed. For security prompts,
+updating, the portable ZIP alternative and current validation limits, see the
+[Windows guide](windows_desktop.md). This Windows preview is unsigned; managed
+PCs may block it. Save models outside the application folder. Updating means
+quitting LayerLoom and running the newer setup file; uninstall through Settings → Apps.
+
 ## Download and run the source
 
 If a release supplies **LayerLoom-&lt;version&gt;-source.zip**, prefer that file:
 it contains the application, examples, launchers and instructions without
-manuscript materials. For a standalone Mac installation, choose the matching
-DMG instead.
+manuscript materials. For the simpler desktop installation, choose the Mac DMG
+or Windows setup instead.
 
 1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip).
    This selects the release containing the installation fixes in this guide;

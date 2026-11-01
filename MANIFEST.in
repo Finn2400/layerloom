@@ -16,6 +16,8 @@ include scripts/build_macos.py
 include scripts/macos_icon.py
 include scripts/build_windows.py
 include scripts/validate_windows.py
+include scripts/windows_native.py
+include scripts/windows-native-requirements.txt
 include scripts/validate_macos.py
 include scripts/macos_validation_matrix.py
 include scripts/validate_distributions.py

@@ -19,6 +19,7 @@ import uuid
 from pathlib import Path
 
 from validate_macos import command, validate_3mf, validate_desktop_glb
+from windows_native import audit_native_tree
 
 
 def payload_hashes(app):
@@ -93,6 +94,7 @@ def main(argv=None):
                 archive.extractall(work)
             app = work / 'LayerLoom'
             expected = payload_hashes(app)
+            report['native_dependencies'] = audit_native_tree(app)
             assert 'worker/layerloom-worker.exe' in expected and '_internal/python312.dll' in expected
             assert not any('pymeshlab' in p or '_tkinter' in p for p in expected)
             info = json.loads((app / 'build-info.json').read_text())

@@ -14,6 +14,7 @@ import tomllib
 from pathlib import Path
 
 from build_macos import ROOT, run, source_identity, write_notices
+from windows_native import audit_native_tree, concurrency_runtime
 
 
 def find_iscc() -> Path:
@@ -58,6 +59,14 @@ def main(argv=None):
     app = stage / "LayerLoom"
     shutil.copytree(stage / "worker", app / "worker")
     write_notices(app / "THIRD_PARTY_NOTICES")
+    (app / 'native-dependencies.json').write_text(json.dumps(audit_native_tree(app), indent=2), encoding='utf-8')
+    (app / 'THIRD_PARTY_NOTICES/Microsoft-Visual-C++-Runtime.txt').write_text(
+        'Microsoft Visual C++ runtime libraries\nCopyright Microsoft Corporation.\n\n'
+        'concrt140.dll is copied unmodified from the Visual Studio x64 redistributable directory.\n'
+        'Other Microsoft runtime DLLs are supplied with the Python and dependency wheels.\n'
+        'Redistribution terms: https://learn.microsoft.com/en-us/visualstudio/releases/2022/redistribution\n'
+        'Local deployment: https://learn.microsoft.com/en-us/cpp/windows/deployment-in-visual-cpp\n'
+        f'Builder source for concrt140.dll: {concurrency_runtime()}\n', encoding='utf-8')
     shutil.copy2(ROOT / "packaging/windows/Read Me First.html", app / "Read Me First.html")
     metadata = {
         "version": version, "architecture": platform.machine(), "platform": "windows",
@@ -67,6 +76,7 @@ def main(argv=None):
                              ("PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d")},
         "lock_sha256": hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
         "signing": "unsigned", **source_identity(ROOT),
+        "native_dependency_audit": "passed; includes PE delay imports",
     }
     (app / "build-info.json").write_text(json.dumps(metadata, indent=2), encoding="utf-8")
     shutil.copy2(app / "build-info.json", output / "LayerLoom-windows-build-info.json")

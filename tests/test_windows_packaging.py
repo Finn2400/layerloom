@@ -53,3 +53,34 @@ def test_installer_stays_per_user_and_never_deletes_unrecognized_files():
     assert '[UninstallDelete]' not in text and '[InstallDelete]' not in text
     assert '{userprograms}\\LayerLoom' in text
     assert 'skipifsilent' in text
+
+
+def test_native_audit_rejects_unbundled_delayed_runtime(tmp_path, monkeypatch):
+    from types import SimpleNamespace
+    spec = importlib.util.spec_from_file_location('windows_native_test', ROOT / 'scripts/windows_native.py')
+    native = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(native)
+    (tmp_path / 'worker').mkdir()
+    (tmp_path / 'LayerLoom.exe').touch()
+    class PE:
+        FILE_HEADER = SimpleNamespace(Machine=0x8664)
+        DIRECTORY_ENTRY_IMPORT = [SimpleNamespace(dll=b'KERNEL32.dll')]
+        def __init__(self, path, **kwargs):
+            self.DIRECTORY_ENTRY_DELAY_IMPORT = ([SimpleNamespace(dll=b'CONCRT140.dll')]
+                                                 if path.endswith('.exe') else [])
+        def __enter__(self): return self
+        def __exit__(self, *args): pass
+        def parse_data_directories(self, **kwargs): pass
+    fake = SimpleNamespace(PE=PE, DIRECTORY_ENTRY={'IMAGE_DIRECTORY_ENTRY_IMPORT': 1, 'IMAGE_DIRECTORY_ENTRY_DELAY_IMPORT': 13})
+    monkeypatch.setitem(sys.modules, 'pefile', fake)
+    with pytest.raises(RuntimeError, match='concrt140.dll'):
+        native.audit_native_tree(tmp_path)
+    # A runtime in the independent worker must not mask a missing GUI runtime.
+    (tmp_path / 'worker/concrt140.dll').touch()
+    with pytest.raises(RuntimeError, match='concrt140.dll'):
+        native.audit_native_tree(tmp_path)
+    (tmp_path / 'concrt140.dll').touch()
+    assert native.audit_native_tree(tmp_path)['gui']['missing_non_system'] == {}
+    PE.FILE_HEADER.Machine = 0x14c
+    with pytest.raises(RuntimeError, match='Non-x64'):
+        native.audit_native_tree(tmp_path)

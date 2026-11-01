@@ -1,11 +1,11 @@
 # Windows standalone app
 
-The standalone Windows installer is being validated. The currently published
-Windows option remains the [source launcher](install.md#windows-x64).
+**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe)**
+for a 64-bit Intel/AMD PC. This is an early-access Windows preview.
 
-The intended first-run steps are:
+To try it:
 
-1. Download the **Windows x64 setup** file from the LayerLoom release page.
+1. Download the **Windows setup** file linked above. You only need that `.exe` file.
 2. Open it, choose **Install**, then **Finish**. It installs for your account;
    no administrator password, Python, Git, or Terminal setup is needed.
 3. Click **Load example**, then **Weave**. Keep **Woven apparent colors** and
@@ -53,7 +53,10 @@ The **Windows desktop** GitHub Actions workflow builds from `uv.lock` with the
 pinned Python, using PyInstaller directory bundles and Inno Setup 6. GUI and worker
 each contain their own Python and native libraries. Optional PyMeshLab is omitted.
 The artifact includes an installer, portable ZIP, SHA-256 checksums and build
-identity; both packages include the examples and third-party notices.
+identity; both packages include the examples and third-party notices. Native
+dependency checks include delayed DLL imports, so a preinstalled developer runtime
+cannot hide a missing Visual C++ DLL. The unused optional Numba TBB backend is
+excluded; the locked runtime's normal CPU backend remains available.
 
 For a local build on Windows with Inno Setup 6 installed:
 

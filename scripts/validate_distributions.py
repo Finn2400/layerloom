@@ -65,6 +65,7 @@ def validate(distributions: Path) -> None:
         "scripts/bootstrap.py", "scripts/build_macos.py", "scripts/validate_macos.py", "scripts/build_source_zip.py",
         "scripts/macos_validation_matrix.py",
         "scripts/macos_icon.py", "scripts/build_windows.py", "scripts/validate_windows.py",
+        "scripts/windows_native.py", "scripts/windows-native-requirements.txt",
         "packaging/windows/LayerLoom.spec", "packaging/windows/worker.spec",
         "packaging/windows/LayerLoom.iss", "packaging/windows/Read Me First.html",
         "docs/windows_desktop.md",

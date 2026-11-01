@@ -15,7 +15,7 @@ a = Analysis([str(shared / 'worker_entry.py')], pathex=[str(root / 'src')],
                  'supporting_scripts.glb_split_by_vertexcolor_v3_3mf',
                  'supporting_scripts.3mf_meshlab_repair_3mf', 'layerloom.repair',
                  'lib3mf', 'pygltflib', 'scipy.spatial', 'scipy.spatial.transform',
-             ], excludes=EXCLUDES + ['pyvista', 'pyvistaqt', 'vtk', 'vtkmodules', 'PyQt5', 'qtpy', 'matplotlib'],
+             ], excludes=EXCLUDES + ['pyvista', 'pyvistaqt', 'vtk', 'vtkmodules', 'PyQt5', 'qtpy', 'matplotlib', 'numba.np.ufunc.tbbpool'],
              hookspath=[], hooksconfig={}, runtime_hooks=[], noarchive=False)
 pyz = PYZ(a.pure)
 exe = EXE(pyz, a.scripts, [], exclude_binaries=True, name='layerloom-worker',
