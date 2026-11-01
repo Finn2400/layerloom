@@ -1,4 +1,4 @@
-"""Auditable resource inventory shared by the macOS specs and their tests."""
+"""Auditable resource inventory shared by the desktop specs and their tests."""
 from __future__ import annotations
 
 import ast
@@ -80,7 +80,7 @@ def native_dependencies():
     from PyInstaller.utils.hooks import collect_dynamic_libs, copy_metadata
     binaries = []
     for package in ("lib3mf", "manifold3d", "rtree", "shapely"):
-        binaries += collect_dynamic_libs(package, search_patterns=["*.dylib", "*.so", "lib*.so.*"])
+        binaries += collect_dynamic_libs(package, search_patterns=["*.dylib", "*.so", "lib*.so.*", "*.dll"])
     datas = []
     for package in ("layerloom", "PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         datas += copy_metadata(package)

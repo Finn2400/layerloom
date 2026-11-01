@@ -2,6 +2,8 @@
 import sys
 
 if __name__ == "__main__":
+    from multiprocessing import freeze_support
+    freeze_support()
     if len(sys.argv) == 3 and sys.argv[1] == "--desktop-smoke-test":
         from layerloom.app_logging import initialize_logs, install_qt_message_logging
         initialize_logs()

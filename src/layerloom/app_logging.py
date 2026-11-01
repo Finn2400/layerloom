@@ -141,9 +141,11 @@ def initialize_logs(*, redirect_streams: bool = True) -> Path | None:
 
 
 def packaged_build_info() -> dict:
-    if not getattr(sys, "frozen", False) or sys.platform != "darwin":
+    if not getattr(sys, "frozen", False):
         return {}
-    path = Path(sys.executable).resolve().parent.parent / "Resources" / "build-info.json"
+    executable = Path(sys.executable).resolve()
+    path = (executable.parent.parent / "Resources" / "build-info.json"
+            if sys.platform == "darwin" else executable.parent / "build-info.json")
     try:
         info = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(info, dict):

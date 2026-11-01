@@ -1,0 +1,79 @@
+name: Windows desktop
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/windows-desktop.yml'
+      - '.python-version'
+      - 'uv.lock'
+      - 'pyproject.toml'
+      - 'src/**'
+      - 'packaging/windows/**'
+      - 'packaging/macos/**'
+      - 'scripts/build_windows.py'
+      - 'scripts/validate_windows.py'
+      - 'scripts/build_macos.py'
+      - 'scripts/validate_macos.py'
+      - 'tests/test_windows_packaging.py'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-desktop-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    if: github.event.repository.private == false
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.0'
+          enable-cache: true
+      - name: Install locked desktop build environment
+        run: uv sync --managed-python --locked --extra gui --extra desktop --no-editable
+      - name: Build standalone app and installer
+        run: .venv/Scripts/python.exe scripts/build_windows.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: dist/windows/*
+          compression-level: 0
+          retention-days: 14
+
+  validate:
+    needs: build
+    name: Validate ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [windows-2022, windows-2025]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-x64
+          path: artifact
+      - name: Provide hosted runner OpenGL driver
+        uses: pyvista/setup-headless-display-action@v3
+        with:
+          pyvista: false
+          mesa3d-release: '24.3.0'
+      - name: Test installer, clean-path frozen app, repair and uninstall
+        run: python scripts/validate_windows.py artifact --gui --offline --report validation
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: windows-validation-${{ matrix.runner }}
+          path: validation
+          retention-days: 30
