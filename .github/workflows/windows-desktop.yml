@@ -73,7 +73,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install locked external PE verifier
-        run: python -m pip install --only-binary=:all: --require-hashes -r scripts/windows-native-requirements.txt
+        run: >-
+          python -m pip install --only-binary=:all: --require-hashes
+          -r scripts/windows-native-requirements.txt
       - uses: actions/download-artifact@v4
         with:
           name: windows-x64
