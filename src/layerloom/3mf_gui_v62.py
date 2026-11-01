@@ -118,7 +118,10 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         self._load_example_action = action
 
         actions = toolbar.actions()
-        open_action = next((act for act in actions if act.text().strip() == "Open 3MF"), None)
+        # Keep both file-open actions together before examples and weaving.
+        open_action = next((act for act in actions if act.text().strip() == "Open GLB"), None)
+        if open_action is None:
+            open_action = next((act for act in actions if act.text().strip() == "Open 3MF"), None)
         weave_action = next((act for act in actions if act.text().strip() == "Weave"), None)
         if open_action is None:
             toolbar.addAction(action)

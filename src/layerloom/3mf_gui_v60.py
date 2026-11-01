@@ -553,14 +553,18 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
         path, _ = file_dialogs.get_open_file_name(self, "Open GLB/GLTF", "", "GLB/GLTF Files (*.glb *.gltf)")
         if not path:
             return
+        return self._open_glb_regions_path(path)
+
+    def _open_glb_regions_path(self, path):
+        """Import colored regions using the established geometry pipeline."""
         try:
             import_3mf, manifest_map, repair_warning, color_levels = self._run_glb_import_pipeline(path)
         except Exception as e:
             self._error("Open GLB", f"Failed to import GLB:\n{e}")
-            return
+            return False
         normalized = self._normalize_incoming_3mf(import_3mf, "Open GLB")
         if not normalized:
-            return
+            return False
         self._pending_source_hex_by_name = manifest_map
         stamped = _V58._stamp_ids_only(normalized)
         placed = self._auto_place_glb_import(stamped)
@@ -590,6 +594,7 @@ class QtAssignColorsApp(_V58.QtAssignColorsApp):
                 f"{status} using palette '{self.current_palette_name}'.",
                 5000,
             )
+        return True
 
     def _build_or_rebuild_viewer(self):
         def _picked(picked):

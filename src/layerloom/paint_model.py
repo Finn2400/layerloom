@@ -93,3 +93,20 @@ class PaintDocument:
         """Copy editable arrays; geometry export can omit unused project data."""
         return PaintDocument([m.copy() for m in self.meshes], self.source_path,
                              deepcopy(self.metadata) if include_metadata else {})
+
+
+def center_document_on_plate(document, center_xy=(128.0, 128.0)):
+    """Place a new import as one assembly, retaining size and part alignment.
+
+    Call before installing it in the editor so Reset restores this placement.
+    Saved projects are deliberately excluded by the caller.
+    """
+    document.validate()
+    lows = np.array([mesh.vertices.min(axis=0) for mesh in document.meshes])
+    highs = np.array([mesh.vertices.max(axis=0) for mesh in document.meshes])
+    low, high = lows.min(axis=0), highs.max(axis=0)
+    delta = np.array([*center_xy, 0.0]) - np.array([
+        (low[0]+high[0])/2, (low[1]+high[1])/2, low[2]])
+    for mesh in document.meshes:
+        mesh.vertices = mesh.vertices + delta
+    return delta

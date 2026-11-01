@@ -1213,7 +1213,7 @@ wheels = [
 
 [[package]]
 name = "layerloom"
-version = "0.6.4a6"
+version = "0.6.4a7"
 source = { editable = "." }
 dependencies = [
     { name = "lxml" },

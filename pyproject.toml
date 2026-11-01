@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "layerloom"
-version = "0.6.4a6"
+version = "0.6.4a7"
 description = "Layer-based 3MF color assignment, normalization, and woven multi-material 3MF generation"
 readme = "README.md"
 requires-python = ">=3.10"

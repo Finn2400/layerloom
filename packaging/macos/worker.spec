@@ -2,15 +2,15 @@ import os
 import sys
 from pathlib import Path
 sys.path.insert(0, SPECPATH)
-from bundle_config import EXCLUDES, bundle_short_version, native_dependencies
+from bundle_config import EXCLUDES, bundle_short_version, native_dependencies, worker_resource_files
 
 root = Path(SPECPATH).parents[1]
 native_data, native_binaries = native_dependencies()
 a = Analysis(
     [str(Path(SPECPATH) / 'worker_entry.py')], pathex=[str(root / 'src')],
-    binaries=native_binaries, datas=native_data,
+    binaries=native_binaries, datas=native_data + worker_resource_files(root),
     hiddenimports=[
-        'layerloom.weave', 'layerloom.bake_in_memory_stlroundtrip',
+        'layerloom.weave', 'layerloom.bake_in_memory_stlroundtrip', 'layerloom.desktop_glb_import', 'layerloom.region_weave',
         'supporting_scripts.glb_split_by_vertexcolor_v3_3mf', 'supporting_scripts.3mf_meshlab_repair_3mf', 'layerloom.repair',
         'lib3mf', 'pygltflib', 'scipy.spatial', 'scipy.spatial.transform',
     ],

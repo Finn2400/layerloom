@@ -74,6 +74,38 @@ def test_missing_frozen_worker_reports_reinstall(tmp_path, monkeypatch):
         runtime.worker_command("weave")
 
 
+@pytest.mark.parametrize("frozen", [False, True])
+def test_missing_dependency_message_explains_recovery_without_traceback(monkeypatch, frozen):
+    monkeypatch.setattr(sys, "frozen", frozen, raising=False)
+    error = "Traceback (most recent call last):\nModuleNotFoundError: No module named 'lib3mf'"
+    result = subprocess.CompletedProcess([], 1, "", error)
+    text = runtime.worker_failure_message("glb-import", result)
+    assert "lib3mf" in text and "Copy diagnostics" in text
+    assert "Traceback" not in text and "pip install" not in text
+    assert ("--repair" in text) is not frozen
+    assert result.stderr == error  # Full details remain available for logging.
+
+
+def test_worker_diagnostics_reports_missing_native_library(monkeypatch, capsys):
+    def unavailable(name):
+        raise ModuleNotFoundError("No module named 'lib3mf'")
+    monkeypatch.setattr(worker.importlib, "import_module", unavailable)
+    assert worker.main(["--diagnostics"]) == 1
+    report = json.loads(capsys.readouterr().out)
+    assert not report["lib3mf"]["ok"]
+    assert "ModuleNotFoundError" in report["lib3mf"]["error"]
+    assert report["executable"] == sys.executable
+
+
+def test_worker_diagnostics_initializes_native_library_in_child(tmp_path):
+    result = subprocess.run([sys.executable, "-m", "layerloom.worker", "--diagnostics"],
+                            cwd=tmp_path, env=_source_environment(), capture_output=True, text=True, timeout=30)
+    assert result.returncode == 0, result.stderr
+    report = json.loads(result.stdout)
+    assert report["lib3mf"]["ok"] and report["python"]
+    assert not report["frozen"]
+
+
 def test_worker_rejects_unknown_task_before_import(monkeypatch):
     def unexpected_import(_name):
         pytest.fail("An invalid task must not import a module")

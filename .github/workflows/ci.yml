@@ -201,6 +201,8 @@ jobs:
             src/layerloom/paint_tests/test_paint_gui.py \
             src/layerloom/paint_tests/test_main_paint.py \
             tests/test_desktop_ui.py \
+            tests/test_viewport_presentation.py \
+            tests/test_performance_diagnostics.py \
             --junitxml=paint-gui-results.xml
           SH
 
@@ -245,6 +247,8 @@ jobs:
           src/layerloom/paint_tests/test_paint_gui.py
           src/layerloom/paint_tests/test_main_paint.py
           tests/test_desktop_ui.py
+          tests/test_viewport_presentation.py
+          tests/test_performance_diagnostics.py
           --junitxml=paint-gui-windows-results.xml
       - name: Save GUI test results
         if: always()

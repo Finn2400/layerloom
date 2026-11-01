@@ -1,6 +1,6 @@
 # First open on a Mac
 
-Download the **[Mac app](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a6)**,
+Download the **[Mac app](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7)**,
 copy it to Applications, and open it. No Python or Terminal setup is needed.
 This guide covers the standalone app; [source users have separate instructions](install.md#download-and-run-the-source).
 
@@ -51,9 +51,9 @@ opening another copy.
 ## Make your first woven model
 
 1. LayerLoom starts in Arrange, showing a pixelated Benchy design on
-   the empty build plate. Click **Try the example** to load four CMY cubes.
+   the empty build plate. Click **Load example** to load the colored Benchy.
    Examples keep the mode you are using.
-2. Click **Export geometry 3MF…**. The tutorial selects **Woven apparent
+2. Click **Weave**. The tutorial selects **Woven apparent
    colors** and **0.16 mm** automatically. Check those values and click **Choose save location…**.
    The first export may take longer while geometry search code compiles.
 3. Choose a `.3mf` filename and folder. The example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel.
@@ -64,7 +64,7 @@ opening another copy.
 
 ## Try painting
 
-With the cubes open, turn on **Paint** in the main toolbar, choose **Surface
+With Benchy open, turn on **Paint** in the main toolbar, choose **Surface
 select**, click a surface, pick a color, and click **Apply paint**. Try Undo
 and Redo. Choose **Save paint…** to keep an editable `.llpaint` project, then
 reopen it with **Open…**. Export a separate
@@ -72,7 +72,7 @@ reopen it with **Open…**. Export a separate
 those colors. It does not retain editable face paint. See the [tutorial](tutorial.md)
 for selection tools, the larger Benchy example, and export limits.
 
-These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a7**. Use **Help → Copy diagnostics** to
 confirm the build and follow the instructions supplied with that download.
 
 Python and the required libraries are inside the app. Once first-open approval

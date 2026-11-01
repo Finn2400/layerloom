@@ -57,6 +57,11 @@ class DesktopController(QtCore.QObject):
         self.example_directory = None
         self.output_path = None
         self.paint_editor = getattr(getattr(window, "paint_panel", None), "editor", None)
+        self._drop_viewports = [window.viewer.plotter]
+        if self.paint_editor is not None:
+            self._drop_viewports.append(self.paint_editor.plotter)
+        for viewport in self._drop_viewports:
+            viewport.installEventFilter(self)
         self.paint_welcome = None
         old_hint = window.viewer_empty_hint
         old_hint.hide()
@@ -71,7 +76,6 @@ class DesktopController(QtCore.QObject):
             # Keep the Arrange hint in its existing host. The Paint welcome is
             # a sibling of the central widget, centered over the VTK viewport.
             self.paint_welcome = _WelcomePanel(self, self.paint_editor)
-            self.paint_editor.plotter.installEventFilter(self)
             self.paint_editor.documentChanged.connect(self._sync_paint_welcome)
             self.paint_editor.external_export_feedback = True
             self.paint_editor.exportCompleted.connect(self.paint_export_complete)
@@ -86,6 +90,7 @@ class DesktopController(QtCore.QObject):
         menu.addAction("Try the CMY cubes example", self.try_example)
         menu.addAction("Load the Benchy example", window._on_load_example)
         menu.addSeparator()
+        menu.addAction("Diagnostic logging…", self.performance_diagnostics)
         menu.addAction("Copy diagnostics", self.copy_diagnostics)
         menu.addAction("Open logs", self.open_logs)
 
@@ -111,6 +116,23 @@ class DesktopController(QtCore.QObject):
         panel.raise_()
 
     def eventFilter(self, watched, event):
+        if watched in self._drop_viewports and event.type() in (
+                QtCore.QEvent.DragEnter, QtCore.QEvent.DragMove, QtCore.QEvent.Drop):
+            # QtInteractor otherwise calls add_mesh(pyvista.read(...)), leaving
+            # a display-only object outside LayerLoom's document and assignments.
+            urls = event.mimeData().urls()
+            path = Path(urls[0].toLocalFile()) if len(urls) == 1 and urls[0].isLocalFile() else None
+            if (path is None or path.suffix.lower() not in
+                    {'.3mf', '.glb', '.gltf', '.llpaint', '.stl', '.obj', '.ply'} or not path.is_file()):
+                event.ignore()
+                if event.type() == QtCore.QEvent.Drop:
+                    self.window.status_bar.showMessage("Drop one supported model or paint project at a time.")
+                return True
+            event.acceptProposedAction()
+            if event.type() == QtCore.QEvent.Drop:
+                # Let Qt finish the native drag before opening a modal dialog.
+                QtCore.QTimer.singleShot(0, lambda path=str(path): self.window.open_selected_model(path))
+            return True
         if (self.paint_editor is not None and watched is self.paint_editor.plotter
                 and event.type() in (QtCore.QEvent.Resize, QtCore.QEvent.Move, QtCore.QEvent.Show)):
             self._sync_paint_welcome()
@@ -219,8 +241,20 @@ class DesktopController(QtCore.QObject):
     def reveal_output(self):
         self.result_dock.reveal()
 
+    def performance_diagnostics(self):
+        if not hasattr(self, '_performance_dialog'):
+            from .performance_diagnostics import PerformanceDialog
+            self._performance_dialog = PerformanceDialog(self.window)
+        self._performance_dialog.show()
+        self._performance_dialog.raise_()
+        self._performance_dialog.activateWindow()
+
     def copy_diagnostics(self):
-        QtWidgets.QApplication.clipboard().setText(diagnostic_text())
+        dialog = getattr(self, '_performance_dialog', None)
+        text = (dialog.report_text() if dialog is not None and
+                (dialog.recorder.running or dialog.recorder.report_data is not None or dialog.installation_report is not None)
+                else diagnostic_text())
+        QtWidgets.QApplication.clipboard().setText(text)
         self.window.status_bar.showMessage("Diagnostics copied. You can paste them into a support request.", 5000)
 
     def open_logs(self):

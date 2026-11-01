@@ -23,9 +23,9 @@ import tempfile, subprocess
 import shutil, glob  # <-- Added for PLY Roundtrip
 
 try:
-    from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options
+    from layerloom.runtime import log_worker_result, repair_available, worker_command, worker_process_options, worker_failure_message
 except ImportError:
-    from runtime import log_worker_result, repair_available, worker_command, worker_process_options
+    from runtime import log_worker_result, repair_available, worker_command, worker_process_options, worker_failure_message
 
 try:
     import resource
@@ -101,7 +101,15 @@ LOG_LEVEL = LOG_LEVELS["INFO"]  # default: INFO (was DEBUG)
 def _log(level: str, *args):
     lvl = LOG_LEVELS.get(level.upper(), 999)
     if lvl >= LOG_LEVEL:
-        print(f"[{level}]", *args)
+        message = " ".join((f"[{level}]", *(str(arg) for arg in args)))
+        try:
+            print(message)
+        except UnicodeEncodeError:
+            # Legacy/direct GUI launches can inherit a Windows code-page
+            # console. A diagnostic arrow or model name must not turn a
+            # successful import into an application error.
+            encoding = getattr(sys.stdout, "encoding", None) or "ascii"
+            print(message.encode(encoding, errors="backslashreplace").decode(encoding))
 
 
 def set_log_level(name: str = "INFO"):  # <-- default INFO
@@ -2320,7 +2328,7 @@ class AssignColorsApp(tk.Tk if tk is not None else object):
             _log("DEBUG", f"[{label} stderr]\n{proc.stderr}")
         _perf_log(f"subprocess {label}", t0, level="INFO", extra=f"returncode={proc.returncode}")
         if proc.returncode != 0:
-            raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"{label} failed")
+            raise RuntimeError(worker_failure_message(label, proc))
         return proc
 
     def _nearest_palette_entry(self, source_hex: str) -> Optional[Dict[str, str]]:
@@ -4263,7 +4271,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.glb_colors_spin = QtWidgets.QSpinBox()
         self.glb_colors_spin.setRange(2, 512)
-        self.glb_colors_spin.setValue(20)
+        self.glb_colors_spin.setValue(64)
         self.glb_colors_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.glb_colors_spin.setFixedWidth(58)
 
@@ -5033,7 +5041,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
             _log("DEBUG", f"[{label} stderr]\n{proc.stderr}")
         _perf_log(f"subprocess {label}", t0, level="INFO", extra=f"returncode={proc.returncode}")
         if proc.returncode != 0:
-            raise RuntimeError(proc.stderr.strip() or proc.stdout.strip() or f"{label} failed")
+            raise RuntimeError(worker_failure_message(label, proc))
         return proc
 
     def _run_glb_import_pipeline(self, glb_path: str):

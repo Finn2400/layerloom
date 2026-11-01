@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 
 pytest.importorskip("pyvistaqt")
-from PyQt5 import QtCore, QtTest, QtWidgets
+from PyQt5 import QtCore, QtGui, QtTest, QtWidgets
 
 from layerloom import file_dialogs
 from layerloom.desktop_ui import install_desktop_ui
@@ -60,6 +60,104 @@ def _click_paint_mode(window, enabled):
     assert window._paint_action.isChecked() == enabled
 
 
+def _drop_files(application, viewport, urls):
+    mime = QtCore.QMimeData()
+    mime.setUrls(urls)
+    enter = QtGui.QDragEnterEvent(QtCore.QPoint(10, 10), QtCore.Qt.CopyAction,
+                                  mime, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+    application.sendEvent(viewport, enter)
+    drop = QtGui.QDropEvent(QtCore.QPointF(10, 10), QtCore.Qt.CopyAction,
+                           mime, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+    if enter.isAccepted():
+        application.sendEvent(viewport, drop)
+    application.processEvents()
+    return enter.isAccepted(), drop.isAccepted()
+
+
+@pytest.mark.parametrize("paint", [False, True])
+def test_drop_registers_real_model_instead_of_viewer_only_mesh(desktop, application, monkeypatch, paint):
+    import pyvista
+    window, controller, errors, _ = desktop
+    _click_paint_mode(window, paint)
+    monkeypatch.setattr(pyvista, "read", lambda *_: pytest.fail("Generic viewer drop bypassed LayerLoom"))
+    viewport = window.paint_panel.editor.plotter if paint else window.viewer.plotter
+    source = find_example_file("tutorial_cmy_cubes.3mf")
+    assert _drop_files(application, viewport, [QtCore.QUrl.fromLocalFile(str(source))]) == (True, True)
+    assert window.paint_panel.editor.document is not None
+    assert window._shared_paint_active()
+    assert len(window.model_objects) == 4
+    assert not errors
+
+
+def test_glb_drop_and_open_share_settings_and_cancel_preserves_model(desktop, application, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    import trimesh
+    window, controller, errors, _ = desktop
+    controller.try_example()
+    previous = window.paint_panel.editor.document
+    source = tmp_path / "colored é model.glb"
+    mesh = trimesh.creation.box()
+    mesh.visual.vertex_colors = [0, 255, 255, 255]
+    source.write_bytes(mesh.export(file_type="glb"))
+    choices = []
+    def cancel(path, parent):
+        choices.append(str(path))
+        return None
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", cancel)
+    assert _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))]) == (True, True)
+    assert window.paint_panel.editor.document is previous
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *_: (str(source), ""))
+    window._on_open_glb()
+    assert choices == [str(source), str(source)]
+    assert window.paint_panel.editor.document is previous
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", lambda *_: ImportSettings())
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert window._region_import_active
+    assert window.model_objects and window.assignments
+    assert window._next_glb_settings is None
+    assert not errors
+
+
+def test_drop_rejects_multiple_remote_and_unsupported_files(desktop, application, tmp_path):
+    window, controller, errors, _ = desktop
+    source = find_example_file("tutorial_cmy_cubes.3mf")
+    local = QtCore.QUrl.fromLocalFile(str(source))
+    other = tmp_path / "notes.txt"
+    other.write_text("not a model")
+    for urls in ([local, local], [QtCore.QUrl("https://example.com/model.glb")],
+                 [QtCore.QUrl.fromLocalFile(str(other))]):
+        assert _drop_files(application, window.viewer.plotter, urls) == (False, False)
+    assert window.paint_panel.editor.document is None
+    assert not errors
+
+
+def test_cancelled_or_failed_drop_keeps_editable_model(desktop, application, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    window, controller, errors, _ = desktop
+    controller.try_example()
+    editor = window.paint_panel.editor
+    previous = editor.document
+    editor.dirty = True
+    vertices = [mesh.vertices.copy() for mesh in previous.meshes]
+    assignments = dict(window.assignments)
+    source = tmp_path / "broken.glb"
+    source.write_bytes(b"invalid GLB")
+    monkeypatch.setattr(glb_import_dialog, "choose_settings", lambda *_: ImportSettings())
+    monkeypatch.setattr(window.paint_panel, "can_close", lambda: False)
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert editor.document is previous and editor.dirty and not errors
+    monkeypatch.setattr(window.paint_panel, "can_close", lambda: True)
+    _drop_files(application, window.viewer.plotter, [QtCore.QUrl.fromLocalFile(str(source))])
+    assert errors and "Failed to import GLB" in errors[-1][1]
+    assert editor.document is previous and editor.dirty
+    assert window.assignments == assignments
+    for expected, mesh in zip(vertices, previous.meshes):
+        np.testing.assert_array_equal(mesh.vertices, expected)
+    assert window._next_glb_settings is None
+
+
 def test_welcome_actions_follow_visible_workspace_and_open_model(desktop, application, monkeypatch):
     window, controller, errors, _ = desktop
     assert install_desktop_ui(window) is controller
@@ -109,6 +207,9 @@ def test_example_preserves_mode_source_and_shared_paint_recipes(desktop, applica
     application.processEvents()
     editor = window.paint_panel.editor
     document = editor.document
+    points = np.concatenate([mesh.vertices for mesh in document.meshes])
+    np.testing.assert_allclose((points.min(axis=0)+points.max(axis=0))[:2]/2, [128, 128], atol=1e-6)
+    assert points[:, 2].min() == pytest.approx(0, abs=1e-6)
     assert window._paint_active() == initial_paint
     assert window._paint_action.isChecked() == initial_paint
     for name, actor in decoration.items():

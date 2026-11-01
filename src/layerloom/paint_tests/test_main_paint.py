@@ -1,5 +1,7 @@
 """Native integration checks for painting inside LayerLoom's main window."""
 import os
+import io
+import sys
 
 import numpy as np
 import pytest
@@ -26,6 +28,13 @@ def app():
 
 @pytest.fixture
 def main_window(main_module, app, monkeypatch):
+    from layerloom import glb_import_dialog
+    from layerloom.desktop_glb_import import ImportSettings
+    monkeypatch.setattr(glb_import_dialog, 'choose_settings', lambda *args: ImportSettings())
+    # Unexpected application errors must fail with their message rather than
+    # leaving an unattended CI worker inside a modal dialog until job timeout.
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical",
+                        lambda _parent, title, message: pytest.fail(f"{title}: {message}"))
     window = main_module.QtAssignColorsApp()
     monkeypatch.setattr(window, "_ask_keep_paint", lambda: "keep")
     window.show()
@@ -216,7 +225,9 @@ def test_main_actions_route_to_paint_and_switches_retain_edits(main_window, monk
     editor.set_paint_color("#DC2832")
     QtWidgets.QApplication.processEvents()
     renderer = editor.plotter.renderer
-    renderer.SetWorldPoint(1.0, 0.0, 8.0, 1.0)
+    vertices = editor.document.meshes[0].vertices
+    center = (vertices.min(axis=0) + vertices.max(axis=0)) / 2
+    renderer.SetWorldPoint(center[0] + 1.0, center[1], vertices[:, 2].max(), 1.0)
     renderer.WorldToDisplay()
     x, y, _ = renderer.GetDisplayPoint()
     ratio = float(editor.plotter.devicePixelRatioF())
@@ -332,7 +343,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
     assert main_window.source_file_path == str(source)
     set_paint_mode(main_window, True)
     assert editor.document is not previous
-    np.testing.assert_allclose(editor.document.meshes[0].vertices, replacement.meshes[0].vertices)
+    np.testing.assert_allclose(editor.document.meshes[0].vertices, replacement.meshes[0].vertices + [128, 128, 0])
     np.testing.assert_array_equal(editor.document.meshes[0].face_rgba, replacement.meshes[0].face_rgba)
     assert not editor.dirty and not editor._undo
     assert main_window._paint_pending_source is None
@@ -547,7 +558,7 @@ def test_paint_loaded_model_placement_save_and_reopen_share_exact_geometry(main_
     assert_shared_geometry(main_window)
 
 
-@pytest.mark.parametrize("extension", [".glb", ".llpaint"])
+@pytest.mark.parametrize("extension", [".llpaint"])
 def test_arrange_open_uses_same_paint_aware_parser_for_glb_and_project(main_window, monkeypatch, tmp_path, extension):
     from layerloom.paint_io import save_paint_document
     source = tmp_path / ("shared" + extension)
@@ -805,3 +816,172 @@ def test_paint_exit_dialog_buttons(main_window, main_module, label, choice):
         next(button for button in dialog.buttons() if button.text() == label).click()
     QtCore.QTimer.singleShot(0, choose)
     assert main_module.QtAssignColorsApp._ask_keep_paint(main_window) == choice
+
+
+@pytest.mark.parametrize("console_encoding", ["utf-8", "cp1252"])
+def test_arrange_glb_restores_separate_color_regions(main_window, monkeypatch, tmp_path, console_encoding):
+    import trimesh
+    from layerloom.paint_io import load_paint_document
+    cyan = trimesh.creation.box(extents=[.008, .006, .004])
+    cyan.visual.vertex_colors = [0, 255, 255, 255]
+    magenta = trimesh.creation.box(extents=[.008, .006, .004])
+    magenta.apply_translation([.012, 0, 0])
+    magenta.visual.vertex_colors = [255, 0, 255, 255]
+    source = tmp_path / "two colored regions.glb"
+    source.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
+    original = source.read_bytes()
+    # Exercise the non-UTF-8 console that previously turned a completed Windows
+    # import into an error while printing its final normalization diagnostic.
+    console_bytes = io.BytesIO()
+    console = io.TextIOWrapper(console_bytes, encoding=console_encoding, write_through=True)
+    monkeypatch.setattr(sys, "stdout", console)
+    # Replace an existing shared model, as well as exercising the normal Open action.
+    main_window.paint_panel.editor.set_document(example_document("cube", 8))
+    monkeypatch.setattr(file_dialogs, "get_open_file_name", lambda *a, **k: (str(source), ""))
+    main_window._on_open()
+    assert not main_window._paint_active()
+    assert not main_window._shared_paint_active()
+    assert len(main_window.model_objects) == 2
+    assert len(main_window.assignments) == 2
+    assert all(main_window.assignments.values())
+    assert main_window.paint_panel.document is None
+    staged = tmp_path / "assigned.3mf"
+    main_window._materialize_current_model(str(staged), include_assignments=True)
+    before = load_paint_document(staged)
+    assert sum(len(mesh.faces) for mesh in before.meshes) == 24
+    set_paint_mode(main_window, True)
+    assert main_window._shared_paint_active()
+    assert len(main_window.paint_panel.document.meshes) == 2
+    for actual, expected in zip(main_window.paint_panel.document.meshes, before.meshes):
+        np.testing.assert_allclose(actual.vertices, expected.vertices)
+        np.testing.assert_array_equal(actual.face_rgba, expected.face_rgba)
+    set_paint_mode(main_window, False)
+    assert source.read_bytes() == original
+    # Opening it again in Arrange must use the region-based weave, not the
+    # surface-paint exporter. Exercise the real worker and reopen its output.
+    assert main_window.open_model_path(str(source))
+    main_window.layer_height_spin.setValue(0.16)
+    monkeypatch.setattr(file_dialogs, "get_existing_directory", lambda *a, **k: str(tmp_path))
+    monkeypatch.setattr(main_window.paint_panel.editor, "export_dialog",
+                        lambda: pytest.fail("GLB regions must use the geometry weave path"))
+    monkeypatch.setattr(main_window, "_error", lambda title, message: pytest.fail(f"{title}: {message}"))
+    main_window._on_weave()
+    output = tmp_path / "two colored regions_woven.3mf"
+    assert output.exists()
+    woven = load_paint_document(output)
+    assert len(woven.meshes) >= 2
+    assert any("cyan" in mesh.name for mesh in woven.meshes)
+    assert any("magenta" in mesh.name for mesh in woven.meshes)
+    assert source.read_bytes() == original
+
+
+def test_explicit_paint_glb_retains_surface_editing(main_window, monkeypatch, tmp_path):
+    import trimesh
+    mesh = trimesh.creation.box(extents=[.008, .006, .004])
+    mesh.visual.vertex_colors = [0, 255, 255, 255]
+    source = tmp_path / "paint.glb"
+    source.write_bytes(trimesh.Scene(mesh).export(file_type="glb"))
+    monkeypatch.setattr(main_window, "_run_glb_import_pipeline",
+                        lambda *a: pytest.fail("Explicit Paint import should retain its surface geometry"))
+    assert main_window.open_paint_path(source)
+    assert main_window._paint_active() and main_window._shared_paint_active()
+    np.testing.assert_allclose(np.ptp(main_window.paint_panel.document.meshes[0].vertices, axis=0),
+                               [8, 6, 4], atol=1e-5)
+
+
+def test_failed_region_import_keeps_existing_document(main_window, monkeypatch, tmp_path):
+    editor = main_window.paint_panel.editor
+    editor.set_document(example_document("cube", 8))
+    original = editor.document
+    def fail(path):
+        raise ValueError("Invalid GLB")
+    errors = []
+    monkeypatch.setattr(main_window, "_run_glb_import_pipeline", fail)
+    monkeypatch.setattr(main_window, "_error", lambda *args: errors.append(args))
+    assert not main_window.open_model_path(tmp_path / "broken.glb")
+    assert errors
+    assert editor.document is original and main_window._shared_paint_active()
+
+
+def test_advanced_import_defaults_reset_and_cancel(app, tmp_path):
+    from layerloom.glb_import_dialog import GlbImportDialog
+    from layerloom.desktop_glb_import import ImportSettings
+    d = GlbImportDialog(tmp_path / 'test.glb')
+    assert d.settings() == ImportSettings()
+    d.colors.setValue(128); d.detail.setCurrentIndex(1); d.units.setCurrentIndex(1)
+    assert d.settings().colors == 128
+    d.reset_defaults()
+    assert d.settings() == ImportSettings()
+    d.reject(); assert d.result() == QtWidgets.QDialog.Rejected
+    d.deleteLater()
+
+
+def test_open_glb_cancel_keeps_existing_document(main_window, monkeypatch, tmp_path):
+    from layerloom import glb_import_dialog
+    original = example_document('cube', 8)
+    main_window.paint_panel.editor.set_document(original)
+    monkeypatch.setattr(file_dialogs, 'get_open_file_name', lambda *a, **k: (str(tmp_path/'other.glb'), ''))
+    monkeypatch.setattr(glb_import_dialog, 'choose_settings', lambda *a: None)
+    assert main_window._on_open() is False
+    assert main_window.paint_panel.document is original
+
+
+def test_open_color_regions_cannot_silently_weave(main_window, monkeypatch):
+    main_window._glb_geometry_issues = ['open_region']
+    warnings = []
+    monkeypatch.setattr(main_window, '_warn', lambda *a: warnings.append(a))
+    monkeypatch.setattr(file_dialogs, 'get_existing_directory', lambda *a, **k: pytest.fail('Should block before asking for output'))
+    main_window._on_weave()
+    assert warnings and 'closed' in warnings[0][0].lower()
+
+
+def test_closed_surface_colors_weave_in_arrange(main_window, monkeypatch, tmp_path):
+    import trimesh
+    from layerloom.desktop_glb_import import ImportSettings
+    from layerloom.region_weave import validate_written_output
+    mesh=trimesh.creation.box(extents=[4,4,4])
+    mesh.visual.face_colors=np.where((mesh.face_normals[:,0]>.9)[:,None],
+                                    [0,255,255,255],[255,0,255,255]).astype(np.uint8)
+    mesh.unmerge_vertices()
+    source=tmp_path/'surface cube.glb'
+    source.write_bytes(trimesh.Scene(mesh).export(file_type='glb'))
+    original=source.read_bytes()
+    main_window._next_glb_settings=ImportSettings(units='millimeters',up_axis='z')
+    assert main_window.open_model_path(source)
+    assert main_window._glb_surface_partition_supported
+    assert not main_window._shared_paint_active() and not main_window._paint_active()
+    assert len(main_window.assignments)==2
+    main_window.layer_height_spin.setValue(.5)
+    monkeypatch.setattr(file_dialogs,'get_existing_directory',lambda *a,**k:str(tmp_path))
+    monkeypatch.setattr(main_window,'_error',lambda title,message:pytest.fail(f'{title}: {message}'))
+    monkeypatch.setattr(main_window.paint_panel.editor,'export_dialog',lambda:pytest.fail('Must remain in Arrange'))
+    main_window._on_weave()
+    output=tmp_path/'surface cube_woven.3mf'
+    result=validate_written_output(output)
+    assert result['volume_mm3']==pytest.approx(64,abs=1e-4)
+    assert len(result['parts'])==2
+    assert not main_window._glb_geometry_issues
+    assert source.read_bytes()==original
+
+
+@pytest.mark.parametrize('filename', ['tutorial_cmy_cubes.3mf','tutorial_cmy_benchy_cutup.3mf'])
+def test_bundled_examples_start_centered_without_changing_shape(main_window, filename):
+    from layerloom.example_assets import find_example_file
+    from layerloom.paint_io import load_paint_document
+    path=find_example_file(filename); before=path.read_bytes()
+    original=load_paint_document(path)
+    assert main_window.open_model_path(path)
+    actual=main_window.paint_panel.document
+    source_points=np.concatenate([m.vertices for m in original.meshes])
+    points=np.concatenate([m.vertices for m in actual.meshes])
+    np.testing.assert_allclose((points.min(axis=0)+points.max(axis=0))[:2]/2,[128,128],atol=1e-6)
+    assert points[:,2].min()==pytest.approx(0,abs=1e-6)
+    delta=points[0]-source_points[0]
+    np.testing.assert_allclose(points-source_points,np.broadcast_to(delta,points.shape),atol=1e-9)
+    for a,b in zip(actual.meshes,original.meshes):
+        np.testing.assert_array_equal(a.faces,b.faces)
+        np.testing.assert_array_equal(a.face_rgba,b.face_rgba)
+    main_window._reset_transform_to_default()
+    np.testing.assert_allclose(np.concatenate([m.vertices for m in actual.meshes]),points)
+    assert not main_window.paint_panel.editor.dirty
+    assert path.read_bytes()==before

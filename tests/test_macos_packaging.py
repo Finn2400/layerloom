@@ -13,9 +13,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "packaging/macos"))
-from bundle_config import EXCLUDES, GUI_FILES, bundle_short_version, gui_hidden_imports, resource_files
+from bundle_config import EXCLUDES, GUI_FILES, bundle_short_version, gui_hidden_imports, resource_files, worker_resource_files
 from build_macos import is_license_file
-from validate_macos import command, deployment_versions, write_test_glb
+from validate_macos import command, deployment_versions, write_test_glb, validate_desktop_glb
 
 
 def test_explicit_desktop_resources_are_present():
@@ -29,6 +29,22 @@ def test_explicit_desktop_resources_are_present():
     assert "layerloom.paint_main_ui" in imports
     assert "PyQt5.QtWidgets" in imports
     assert "tkinter" not in imports and "pymeshlab" in EXCLUDES
+
+
+def test_independent_worker_has_every_named_palette(tmp_path):
+    import shutil
+    from layerloom import palette_assignment
+    package = tmp_path / "layerloom"
+    for source, destination in worker_resource_files(ROOT):
+        folder = tmp_path / destination
+        folder.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, folder / Path(source).name)
+    # Use the real loader against only the explicitly collected worker data.
+    from unittest.mock import patch
+    paths = {name: package / 'palettes' / Path(path).name for name, path in palette_assignment.PALETTE_FILES.items()}
+    with patch.object(palette_assignment, 'PALETTE_FILES', paths):
+        for name in paths:
+            assert palette_assignment.load_palette_entries(name)
 
 
 def test_deployment_versions_ignores_dylib_current_version():
@@ -59,6 +75,17 @@ def test_smoke_glb_has_matching_buffers(tmp_path):
     binary_size, kind = struct.unpack_from("<I4s", data, 20 + json_size)
     assert kind == b"BIN\x00"
     assert document["buffers"][0]["byteLength"] == binary_size
+
+
+def test_desktop_validation_runs_new_import_and_weave_workers(tmp_path):
+    work, logs = tmp_path / "unrelated é directory", tmp_path / "logs"
+    work.mkdir(); logs.mkdir()
+    env = dict(os.environ, PYTHONPATH=str(ROOT / "src"))
+    result = validate_desktop_glb([sys.executable, "-m", "layerloom.worker"],
+                                  work=work, env=env, report_dir=logs)
+    assert result["imported"]["objects"] >= 2
+    assert result["woven"]["triangles"] > 0
+    assert result["saved_geometry"]["overlap_mm3"] < 1e-5
 
 
 def test_license_inventory_does_not_ship_native_test_binaries():

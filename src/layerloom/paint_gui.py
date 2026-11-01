@@ -7,6 +7,7 @@ not split or repair geometry. Printable conversion is performed by paint_export.
 from __future__ import annotations
 
 import argparse
+import logging
 from pathlib import Path
 import sys
 import threading
@@ -595,11 +596,15 @@ class PaintWindow(QtWidgets.QMainWindow):
             self.open_path(path)
 
     def open_path(self, path):
+        logging.getLogger('layerloom.model').info('Opening model: %s', path)
         self.statusBar().showMessage(f"Reading {Path(path).name}…")
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         QtWidgets.QApplication.processEvents()
         try:
             document = load_paint_document(str(path))
+            if Path(path).suffix.lower() != ".llpaint":
+                from .paint_model import center_document_on_plate
+                center_document_on_plate(document)
             self.set_document(document)
             self.project_path = str(path) if Path(path).suffix.lower() == ".llpaint" else None
             self._update_title()
@@ -613,6 +618,7 @@ class PaintWindow(QtWidgets.QMainWindow):
                 self.statusBar().showMessage(" · ".join(str(w) for w in warnings[:3]))
             return True
         except Exception as exc:
+            logging.getLogger('layerloom.model').exception('Model import failed: %s', path)
             traceback.print_exc()
             QtWidgets.QMessageBox.critical(self, "Open failed", str(exc))
             return False
@@ -1111,6 +1117,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             self.statusBar().showMessage(f"Saved {path}")
             return True
         except Exception as exc:
+            logging.getLogger('layerloom.project').exception('Project save failed: %s', path)
             QtWidgets.QMessageBox.critical(self, "Save failed", str(exc))
             return False
 
@@ -1275,6 +1282,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         """Export a snapshot; editing may continue while conversion runs."""
         if self.document is None or self._export_thread is not None:
             return False
+        logging.getLogger('layerloom.export').info('Export requested: %s; settings=%s', output, settings)
         self.end_stroke()
         self.last_export_report = None
         # Refuse expensive settings before duplicating the editable arrays or
@@ -1334,12 +1342,14 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(str)
     def _export_stage(self, message):
+        logging.getLogger('layerloom.export').info('Export stage: %s', message)
         if self._export_cancel_event is not None and not self._export_cancel_event.is_set():
             self.progress.setRange(0, 0)
             self.statusBar().showMessage(message)
 
     @QtCore.Slot()
     def _export_cancelled(self):
+        logging.getLogger('layerloom.export').info('Export cancelled')
         self.statusBar().showMessage("Export cancelled. Existing output files and your paint project are unchanged.")
 
     @QtCore.Slot(int, int)
@@ -1349,6 +1359,7 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(object)
     def _export_success(self, report):
+        logging.getLogger('layerloom.export').info('Export completed: %s', report.get('output_path', report.get('output_3mf', '')))
         self.last_export_report = report
         path = report.get("output_path", report.get("output_3mf", ""))
         warnings = report.get("warnings", [])
@@ -1361,6 +1372,7 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     @QtCore.Slot(str)
     def _export_failure(self, message):
+        logging.getLogger('layerloom.export').error('Export failed: %s', message)
         self.statusBar().showMessage("Printable export failed; paint project is unchanged.")
         QtWidgets.QMessageBox.critical(self, "Printable export failed", message)
 

@@ -17,6 +17,43 @@ EXPORT_TIMEOUT_MS = 300_000
 GUI_TIMEOUT_SECONDS = 900
 
 
+def verify_camera_presentation(plotter, qtcore, *, timeout_ms=5000):
+    """Require camera renders to reach Qt without screenshots forcing a paint."""
+    def wait(ms):
+        loop = qtcore.QEventLoop()
+        qtcore.QTimer.singleShot(ms, loop.quit)
+        loop.exec_()
+
+    # Drain startup/layout repaints before testing the render bridge itself.
+    wait(300)
+    swaps = []
+    plotter.frameSwapped.connect(on_swap := lambda: swaps.append(time.monotonic()))
+    original = plotter.camera_position
+    delays = []
+    try:
+        for _ in range(3):
+            before = len(swaps)
+            started = time.monotonic()
+            plotter.camera.Azimuth(4)
+            plotter.ren_win.Render()
+            # Hosted software renderers may spend seconds inside Render. Give
+            # the queued Qt repaint its own bounded chance to run afterward;
+            # record the full duration without calling that interactive speed.
+            deadline = time.monotonic() + timeout_ms / 1000
+            while len(swaps) == before and time.monotonic() < deadline:
+                wait(20)
+            if len(swaps) == before:
+                raise AssertionError('Camera rendered but Qt did not present a frame; viewport update bridge is broken')
+            delays.append(round((swaps[before] - started) * 1000, 2))
+        return {'camera_steps': 3, 'qt_presented_steps': len(delays),
+                'render_request_to_qt_swap_ms': delays,
+                'note': 'Qt composition notification; not physical display latency'}
+    finally:
+        plotter.frameSwapped.disconnect(on_swap)
+        plotter.camera_position = original
+        plotter.render()
+
+
 class _SmokeDiagnostics:
     """Persist stage and Qt-loop evidence even if the outer verifier kills us."""
     def __init__(self, output, report):
@@ -247,6 +284,8 @@ def main(directory: str) -> int:
         assert window.model_objects and not errors, errors
         assert not window._paint_active() and not window._paint_action.isChecked()
         assert not window.viewer_empty_hint.isVisible()
+        report['camera_presentation'] = {
+            'arrange_benchy': verify_camera_presentation(window.viewer.plotter, qtcore)}
         for name, actor in decoration.items():
             assert window.viewer.plotter.actors.get(name) is actor and actor.GetVisibility(), name
         assert window.grab().save(str(output / "example-arrange-window.png"))
@@ -260,6 +299,7 @@ def main(directory: str) -> int:
         assert set("".join(recipes)) == {"c", "m", "y"}
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
         toggle_paint(True)
+        report['camera_presentation']['paint_benchy'] = verify_camera_presentation(editor.plotter, qtcore)
         image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))
         assert image is not None and image.std() > 5, "Benchy example render is blank"
         assert window.grab().save(str(output / "benchy-example-window.png"))
@@ -433,6 +473,39 @@ def main(directory: str) -> int:
         diagnostics.mark("export_reopened")
         reopened_objects = len(window.model_objects)
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+        diagnostics.mark("glb_regions:start")
+        import trimesh
+        cyan = trimesh.creation.box(extents=[.008, .006, .004])
+        cyan.visual.vertex_colors = [0, 255, 255, 255]
+        magenta = trimesh.creation.box(extents=[.008, .006, .004])
+        magenta.apply_translation([.012, 0, 0])
+        magenta.visual.vertex_colors = [255, 0, 255, 255]
+        glb = model_output / "two_color_regions.glb"
+        glb.write_bytes(trimesh.Scene(trimesh.util.concatenate([cyan, magenta])).export(file_type="glb"))
+        glb_hash = hashlib.sha256(glb.read_bytes()).hexdigest()
+        toggle_paint(False)
+        assert window.open_model_path(str(glb))
+        assert not window._shared_paint_active() and not window._paint_active()
+        assert len(window.model_objects) == 2 and len(window.assignments) == 2
+        assert all(window.assignments.values())
+        diagnostics.mark("glb_regions:imported")
+        window.layer_height_spin.setValue(.16)
+        choose_folder = file_dialogs.get_existing_directory
+        file_dialogs.get_existing_directory = lambda *a, **k: str(model_output)
+        try:
+            window._on_weave()
+        finally:
+            file_dialogs.get_existing_directory = choose_folder
+        glb_output = model_output / "two_color_regions_woven.3mf"
+        assert glb_output.is_file() and not errors, errors
+        glb_woven = load_paint_document(glb_output)
+        assert any("cyan" in mesh.name for mesh in glb_woven.meshes)
+        assert any("magenta" in mesh.name for mesh in glb_woven.meshes)
+        assert hashlib.sha256(glb.read_bytes()).hexdigest() == glb_hash
+        report["glb_regions"] = {"input_regions": 2, "separate_assigned_parts": True,
+                                 "legacy_weave_completed": True, "output_reopened": True,
+                                 "output_parts": len(glb_woven.meshes), "source_unchanged": True}
+        diagnostics.mark("glb_regions:weave_reopened")
         report.update(status="passed", output=str(target), objects=reopened_objects,
                       notices=notices, paint_export=exported_report, exported_3mf_reopened=True)
         diagnostics.mark("assertions_passed")

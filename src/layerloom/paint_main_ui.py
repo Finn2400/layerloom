@@ -8,6 +8,11 @@ Arrange implementation. It deliberately does not import any versioned GUI module
 from __future__ import annotations
 
 import os
+import json
+import logging
+from dataclasses import asdict
+import tempfile
+from pathlib import Path
 from copy import deepcopy
 
 import numpy as np
@@ -36,6 +41,10 @@ class PaintWorkspaceHostMixin:
 
     def __init__(self):
         self._paint_session = None
+        self._glb_geometry_issues = []
+        self._glb_surface_partition_supported = False
+        self._glb_surface_partition_error = None
+        self._next_glb_settings = None
         self.paint_panel = None
         self.workspace_tabs = None
         self._paint_pending_source = None
@@ -63,8 +72,20 @@ class PaintWorkspaceHostMixin:
             if isinstance(action, QtWidgets.QWidgetAction) or action.isSeparator()
             or action.text() in {"Open GLB", "Load Example"}
         ]
-        arrange = self.takeCentralWidget()
+        # Source-color settings now live in the per-file Advanced tab.
+        for action in self._arrange_toolbar_visibility:
+            widget = action.defaultWidget() if isinstance(action, QtWidgets.QWidgetAction) else None
+            if widget is self.glb_colors_spin or (isinstance(widget, QtWidgets.QLabel) and widget.text() == "GLB colors"):
+                action.setVisible(False)
+                self._arrange_toolbar_visibility[action] = False
+        arrange = self.centralWidget()
         tabs = QtWidgets.QTabWidget(self)
+        # Move directly between parents in the same top-level window. Detaching
+        # via takeCentralWidget() first makes an already initialized GL widget
+        # temporarily top-level, destroying its context. PyVistaQt 0.13.1 then
+        # drops its render-to-repaint observers and does not restore them when
+        # Qt recreates the context: camera motion renders but the screen stalls.
+        arrange.setParent(tabs)
         tabs.setObjectName("layerloomWorkspaces")
         self.workspace_tabs = tabs
         self.paint_panel = PaintPanel(parent=tabs, compact=True)
@@ -170,6 +191,11 @@ class PaintWorkspaceHostMixin:
             "Back to build plate lets you keep or discard your edits."
             if paint else
             "Select or paint the colors, then press Weave to create your printable 3MF.")
+        if not paint and getattr(self, '_glb_geometry_issues', []):
+            self.workflow_hint.setText(
+                "Select colors, then press Weave. Surface colors extend into the solid; the exterior follows printer layers."
+                if self._glb_surface_partition_supported else
+                "Colors imported for inspection. The original model needs a closed, valid surface before weaving.")
         if paint:
             self._begin_paint_session()
             self._paint_title_changed(self.paint_panel.editor.windowTitle())
@@ -195,28 +221,95 @@ class PaintWorkspaceHostMixin:
             (plotter if plotter is not None else self.viewer_host).setFocus(QtCore.Qt.OtherFocusReason)
 
     def open_model_path(self, path):
-        """Open a shared model without changing the user's workspace."""
+        """Open in the current mode; Arrange GLBs retain colored-region geometry."""
         if not self.paint_panel.can_close():
             return False
         self._paint_pending_source = None
-        return self.paint_panel.open_path(path)
+        if Path(path).suffix.lower() in {".glb", ".gltf"} and not self._paint_active():
+            return self._open_region_model(path)
+        opened = self.paint_panel.open_path(path)
+        if opened:
+            self._glb_geometry_issues = []
+            self._glb_surface_partition_supported = False
+            self._glb_surface_partition_error = None
+        return opened
+
+    def _open_region_model(self, path):
+        old_document = self.paint_panel.editor.document
+        self._opening_region_model = True
+        try:
+            opened = super()._open_glb_regions_path(str(path))
+            if opened:
+                self._region_import_active = True
+                self._glb_geometry_issues = getattr(self, "_pending_glb_geometry_issues", [])
+                self._glb_surface_partition_supported = self._pending_glb_surface_partition_supported
+                self._glb_surface_partition_error = self._pending_glb_surface_partition_error
+                self._workspace_changed(self.workspace_tabs.currentIndex())
+            return opened
+        except Exception as exc:
+            logging.getLogger("layerloom.import").exception("GLB import failed: %s", path)
+            if old_document is not None:
+                self.paint_panel.set_document(old_document)
+            self._error("Open GLB", str(exc))
+            return False
+        finally:
+            self._opening_region_model = False
+
+    def _load_canonical_model(self, path):
+        if getattr(self, "_region_woven_preview_pending", False):
+            # Printable exports use one component assembly. Flatten only the
+            # disposable preview so Arrange can identify the individual parts.
+            from .normalize_3mf_import import normalize_3mf_import
+            path = self._stamp_for_preview(normalize_3mf_import(path).normalized_path)
+            self._region_woven_preview_pending = False
+        # Conversion/normalization must succeed before replacing a shared model.
+        if getattr(self, "_opening_region_model", False):
+            editor = self.paint_panel.editor
+            self._shared_paint_workspace.model = None
+            editor.document = None
+            editor.project_path = None
+            editor.dirty = False
+            editor._undo.clear()
+            editor._redo.clear()
+            self._paint_session = None
+        return super()._load_canonical_model(path)
 
     def open_paint_path(self, path):
         """Open a model explicitly in Paint, preserving the existing API."""
-        opened = self.open_model_path(path)
+        if not self.paint_panel.can_close():
+            return False
+        self._paint_pending_source = None
+        opened = self.paint_panel.open_path(path)
         if opened:
             self.workspace_tabs.setCurrentWidget(self.paint_panel)
         return opened
 
     def _on_open(self):
-        if self.paint_panel is not None:
+        if self.paint_panel is None:
+            return super()._on_open()
+        if self._paint_active():
             return self.paint_panel.editor.open_dialog()
-        return super()._on_open()
+        from . import file_dialogs
+        from .paint_gui import MODEL_FILTER
+        path, _ = file_dialogs.get_open_file_name(self, "Open model or paint project", "", MODEL_FILTER)
+        if path:
+            return self.open_selected_model(path)
+
+    def open_selected_model(self, path):
+        """Use identical import settings for file dialogs and viewport drops."""
+        if not self._paint_active() and Path(path).suffix.lower() in {'.glb', '.gltf'}:
+            from .glb_import_dialog import choose_settings
+            settings = choose_settings(path, self)
+            if settings is None:
+                return False
+            self._next_glb_settings = settings
+        try:
+            return self.open_model_path(path)
+        finally:
+            self._next_glb_settings = None
 
     def _on_open_glb(self):
-        if self.paint_panel is not None:
-            return self.paint_panel.editor.open_dialog()
-        return super()._on_open_glb()
+        return self._on_open()
 
     def _on_load_example(self):
         if self.paint_panel is not None:
@@ -226,7 +319,7 @@ class PaintWorkspaceHostMixin:
                 self._error("Load Example", "The packaged example model could not be found.")
                 return
             if self.paint_panel.can_close():
-                return self.paint_panel.open_path(str(path))
+                return self.open_model_path(str(path))
             return
         return super()._on_load_example()
 
@@ -237,7 +330,64 @@ class PaintWorkspaceHostMixin:
             return self.paint_panel.editor.save_dialog()
         return super()._on_save()
 
+    def _run_glb_import_pipeline(self, glb_path):
+        from .desktop_glb_import import ImportSettings
+        from .runtime import worker_command
+        settings = self._next_glb_settings or ImportSettings()
+        self._pending_glb_geometry_issues = []
+        self._pending_glb_surface_partition_supported = False
+        self._pending_glb_surface_partition_error = None
+        # Each launch owns a unique directory; simultaneous imports cannot collide.
+        with tempfile.TemporaryDirectory(prefix="layerloom_glb_") as folder:
+            output = Path(folder) / "regions.3mf"
+            manifest = Path(folder) / "regions.colors.json"
+            self._run_external_tool("glb-import", worker_command("glb-import", [
+                str(glb_path), "--out", str(output), "--manifest-out", str(manifest),
+                "--settings", json.dumps(asdict(settings))]))
+            data = json.loads(manifest.read_text(encoding="utf-8"))
+            self._pending_glb_geometry_issues = data['geometry_issues']
+            self._pending_glb_surface_partition_supported = data.get('surface_partition_supported', False)
+            self._pending_glb_surface_partition_error = data.get('surface_partition_error')
+            # The legacy canonical loader needs the file after this method returns.
+            if not hasattr(self, '_glb_import_storage'):
+                self._glb_import_storage = tempfile.TemporaryDirectory(prefix='layerloom_imported_')
+            import uuid
+            import shutil
+            persistent = Path(self._glb_import_storage.name) / (uuid.uuid4().hex + '.3mf')
+            shutil.copyfile(output, persistent)
+            source_colors = {item['name']: item['source_hex'] for item in data['objects']}
+        self.glb_colors_spin.setValue(settings.colors)
+        return str(persistent), source_colors, None, settings.colors
+
+    def _run_weave_subprocess(self, input_3mf, *, step, output_path, first_layer_color="auto"):
+        if not self._glb_surface_partition_supported:
+            return super()._run_weave_subprocess(input_3mf, step=step, output_path=output_path,
+                                                first_layer_color=first_layer_color)
+        from .runtime import worker_command
+        try:
+            self._run_external_tool("region-weave", worker_command("region-weave", [
+                str(input_3mf), "--out", str(output_path), "--layer-height", str(step),
+                "--palette", self.current_palette_name, "--first-layer-color", first_layer_color]))
+            if not Path(output_path).is_file():
+                raise RuntimeError("No validated output was produced.")
+            self._region_woven_preview_pending = True
+            # The parent loads the finished physical-material solids next.
+            self._glb_geometry_issues = []
+            self._glb_surface_partition_supported = False
+            self._glb_surface_partition_error = None
+            self._workspace_changed(self.workspace_tabs.currentIndex())
+            return output_path
+        except Exception as exc:
+            self._error("Weave", str(exc))
+            return None
+
     def _on_weave(self):
+        if (self._glb_geometry_issues and not self._glb_surface_partition_supported
+                and not self._paint_active() and not self._shared_paint_active()):
+            self._warn("Model needs a closed surface", "The original model cannot yet form a valid solid. "
+                       "Correct the source geometry before weaving.\n\n" +
+                       (self._glb_surface_partition_error or "Some color regions are open surfaces."))
+            return
         if self._paint_active() or self._shared_paint_active():
             if self._shared_paint_active() and not self._ensure_transform_preview_current():
                 return
@@ -258,6 +408,10 @@ class PaintWorkspaceHostMixin:
             if not panel.can_close():
                 event.ignore()
                 return
+        recorder = getattr(self, '_diagnostic_recorder', None)
+        if recorder is not None:
+            recorder.stop()
+        if panel is not None:
             panel.shutdown()
         return super().closeEvent(event)
 
@@ -340,7 +494,20 @@ class PaintWorkspaceHostMixin:
         if self.paint_panel is not None:
             source = getattr(self, "source_file_path", None) or getattr(self, "base_file", None)
             if self.paint_panel.editor.document is None and source and os.path.exists(source):
-                self._paint_pending_source = source
+                if not getattr(self, "_region_import_active", False):
+                    self._paint_pending_source = source
+                else:
+                    # Bring the placed geometry and assigned recipes into Paint;
+                    # reopening the raw GLB would lose region assignments and scale.
+                    if not self._ensure_transform_preview_current():
+                        return
+                    from .paint_io import load_paint_document
+                    with tempfile.TemporaryDirectory(prefix="layerloom_region_paint_") as folder:
+                        staged = os.path.join(folder, "assigned.3mf")
+                        self._materialize_current_model(staged, include_assignments=True)
+                        document = load_paint_document(staged)
+                    document.source_path = str(source)
+                    self.paint_panel.set_document(document)
             already_active = self._paint_active()
             self.workspace_tabs.setCurrentWidget(self.paint_panel)
             if already_active and self._paint_pending_source:

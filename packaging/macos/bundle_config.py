@@ -43,11 +43,20 @@ def resource_files(root: Path) -> list[tuple[str, str]]:
     package = root / "src" / "layerloom"
     result = [(str(package / name), "layerloom") for name in GUI_FILES]
     result += [(str(package / "examples" / name), "layerloom/examples") for name in EXAMPLES]
-    result += [(str(package / "palettes" / name), "layerloom/palettes") for name in PALETTES]
+    result += worker_resource_files(root)
     result.append((str(package / "assets" / "benchy_ascii_with_text.txt"), "layerloom/assets"))
     for source, _ in result:
         if not Path(source).is_file():
             raise FileNotFoundError(f"Required desktop resource is missing: {source}")
+    return result
+
+
+def worker_resource_files(root: Path) -> list[tuple[str, str]]:
+    """The independent worker resolves palettes relative to its own package."""
+    result = [(str(root / "src/layerloom/palettes" / name), "layerloom/palettes") for name in PALETTES]
+    for source, _ in result:
+        if not Path(source).is_file():
+            raise FileNotFoundError(f"Required worker palette is missing: {source}")
     return result
 
 
@@ -73,6 +82,6 @@ def native_dependencies():
     for package in ("lib3mf", "manifold3d", "rtree", "shapely"):
         binaries += collect_dynamic_libs(package, search_patterns=["*.dylib", "*.so", "lib*.so.*"])
     datas = []
-    for package in ("layerloom", "pyvista", "pyvistaqt", "trimesh", "lib3mf"):
+    for package in ("layerloom", "PyQt5", "pyvista", "pyvistaqt", "vtk", "numpy", "trimesh", "lib3mf", "manifold3d"):
         datas += copy_metadata(package)
     return datas, binaries

@@ -12,8 +12,8 @@ for Windows/Linux users and developers.
 
 | Computer | Recommended installation |
 | --- | --- |
-| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-arm64.dmg) |
-| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-macos-x86_64.dmg) |
+| Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg) |
+| Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-x86_64.dmg) |
 | Windows x64 | Source ZIP, `.bat` launcher |
 | Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
@@ -42,8 +42,8 @@ open the Mac app.
 3. Open the copied app from Finder. Follow the [Mac first-open guide](mac_first_open.md)
    if macOS blocks it. You can eject the disk image after copying the app.
 4. LayerLoom starts in Arrange, with a pixelated Benchy design on the empty
-   build plate. Click **Try the example**, then **Export geometry 3MF…**.
-   The cubes select **Woven apparent colors** and **0.16 mm** automatically. Check those values,
+   build plate. Click **Load example**, then **Weave**.
+   The example selects **Woven apparent colors** and **0.16 mm** automatically. Check those values,
    click **Choose save location…**, and choose a `.3mf` filename and folder.
    The Mac example suggests **LayerLoom** in your home folder. Wait for the **Export complete** panel, then use **Show in Finder** to locate it. The first export can take
    longer while its geometry search code compiles.
@@ -55,7 +55,7 @@ and reopen it with **Open…**. Export a separate `.3mf` for your slicer; it con
 filament geometry rather than editable face-paint annotations. Follow the
 [Paint tutorial](tutorial.md) for the full sequence.
 
-These instructions accompany **0.6.4a6**. Use **Help → Copy diagnostics** to
+These instructions accompany **0.6.4a7**. Use **Help → Copy diagnostics** to
 confirm your build. Keep the instructions and download from the same release
 together. No GitHub account is needed for the public release.
 
@@ -75,7 +75,7 @@ it contains the application, examples, launchers and instructions without
 manuscript materials. For a standalone Mac installation, choose the matching
 DMG instead.
 
-1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a6/LayerLoom-0.6.4a6-source.zip).
+1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip).
    This selects the release containing the installation fixes in this guide;
    no GitHub account is needed. Keep the launchers and all files from the same
    download together. GitHub's **Code → Download ZIP** uses whichever branch is
@@ -214,6 +214,26 @@ Use **Help → Copy diagnostics**, then paste into a
 error, your operating system, whether you used a DMG or source ZIP, and which
 step failed. **Help → Open logs** opens the app's logs. If the app cannot open,
 the source setup window or native error dialog shows the log location.
+
+To collect a diagnostic session in a build with **Help → Diagnostic logging…**:
+
+1. Click **Start diagnostic logging**, then use LayerLoom normally. You can close the panel; the main window shows that logging is on.
+2. Import models, paint, weave, or repeat whatever caused the problem. Logging continues until you choose **Stop logging** or quit the app. There is no time limit.
+3. Choose **Open log folder** and share `diagnostic-session.log` plus any numbered copies (`.1`, `.2`, `.3`). Include what went wrong and approximately when. **Copy summary** provides runtime and responsiveness information too.
+
+The session log includes imports, edits, operation settings/stages, errors,
+worker output and periodic responsiveness information. It rotates at about 2 MB
+per file and retains three previous files, so old entries eventually expire.
+Logs remain available after restarting. Paths can appear in logs; model contents
+and typed text are not recorded, and nothing is uploaded automatically.
+**Check installation** separately checks the actual worker, dependency versions
+and native lib3mf without installing or changing anything.
+
+Ordinary startup/error logs remain automatic even when session logging is off.
+A hard native freeze may prevent Python
+stack sampling. If the app stays frozen, macOS Activity Monitor → select
+LayerLoom → Sample Process can provide additional evidence. Older builds without
+this menu still have Copy diagnostics and Open logs.
 
 Default setup-log folders:
 

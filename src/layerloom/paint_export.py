@@ -8,7 +8,7 @@ resulting exterior is layer-stepped. Source meshes stay intact.
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 import json
 import math
 import os
@@ -128,9 +128,17 @@ def assign_palette(document: Any, palette_name: str = "Normal", *,
         if override is not None:
             if not token_is_valid(override) or (mode == "direct" and len(override) != 1):
                 raise ValueError(f"Invalid {mode} recipe override {override!r} for {source}")
-            if override not in by_token:
+            matched = by_token.get(override)
+            if matched is None:
+                # Arrange may use a different ordering of the same recipe.
+                # The palette loader deduplicates by filament counts. Retain
+                # the explicit sequence so layer phase is not silently changed.
+                matched = next((item for item in entries
+                                if Counter(str(item["token"])) == Counter(override)), None)
+            if matched is None:
                 raise ValueError(f"Recipe {override!r} is not in the selected {mode} palette")
-            entry = dict(by_token[override])
+            entry = dict(matched)
+            entry["token"] = override
         else:
             entry = nearest_palette_entry(entries, source)
             if entry is None:
@@ -611,7 +619,8 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
                        interface_offset: float = 0.001,
                        cancel_requested: Callable[[], bool] | None = None,
                        memory_budget_bytes: int = DEFAULT_MEMORY_BUDGET_BYTES,
-                       stage: Callable[[str], None] | None = None) -> dict[str, Any]:
+                       stage: Callable[[str], None] | None = None,
+                       first_layer_color: str = "off") -> dict[str, Any]:
     """Export a painted solid as one aligned multipart 3MF; return its audit.
 
     ``pitch`` controls XY material detail, ``layer_height`` controls the stepped
@@ -624,6 +633,10 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     ``ExportCancelled`` before atomic output publication. The memory budget
     limits estimated additional export working memory, not process RSS.
     """
+    if first_layer_color not in {'off', 'auto', *ALL_TOKENS}:
+        raise ValueError('Unknown first-layer filament')
+    if mode == 'source' and first_layer_color != 'off':
+        raise ValueError('First-layer filament overrides require woven or direct mode')
     if not callable(getattr(mf.Manifold, "simplify", None)):
         raise RuntimeError("Paint export requires manifold3d 3.2 or newer. "
                            "Update LayerLoom's dependencies before exporting.")
@@ -671,6 +684,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
     max_interior_gap = 0.0
     sampled_cells = nonempty_layers = 0
     control.stage("Sampling layers")
+    resolved_first_layer = None
     for layer in range(layers):
         control.checkpoint()
         low, high = z0 + layer * layer_height, min(zmax, z0 + (layer + 1) * layer_height)
@@ -682,6 +696,12 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
                 surface, face_recipes, domain, z=z, layer_index=layer, pitch=pitch,
                 origin=bounds[0, :2], precision=precision, interface_offset=interface_offset,
                 source_colors=mode == "source", control=control, nearest_query=nearest.query)
+            if layer == 0 and first_layer_color != 'off':
+                resolved_first_layer = (max(sorted(regions), key=lambda key: regions[key].area)
+                                        if first_layer_color == 'auto' else first_layer_color)
+                regions = {resolved_first_layer: domain}
+                coverage = overlap = interior_gap = 0.0
+                partition_area = float(domain.area)
             sampled_cells += cells
             if sampled_cells > max_cells:
                 raise ValueError("Export exceeded max_cells after splitting disconnected grid pieces")
@@ -702,6 +722,19 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         if progress is not None:
             progress(layer + 1, layers)
         control.checkpoint()
+    if first_layer_color != 'off':
+        first_parts = [part for part in retained if part['audit']['layer_index'] == 0]
+        if resolved_first_layer is None and first_parts:
+            if first_layer_color == 'auto':
+                volumes = defaultdict(float)
+                for part in first_parts:
+                    volumes[part['token']] += abs(float(part['mesh'].volume))
+                resolved_first_layer = max(sorted(volumes), key=volumes.get)
+            else:
+                resolved_first_layer = first_layer_color
+        for part in first_parts:
+            part['token'] = resolved_first_layer
+            part['audit']['filament'] = resolved_first_layer
     if not by_filament and not retained:
         raise ValueError("No printable layers were generated")
 
@@ -788,6 +821,7 @@ def export_painted_3mf(document: Any, path: str | Path, *, layer_height: float =
         "mode": mode, "palette_name": palette_name, "paint_policy": "nearest_surface_full_depth",
         "layer_height_mm": float(layer_height), "paint_pitch_mm": float(pitch),
         "geometry_precision_mm": float(precision), "layers": layers,
+        "first_layer_color": first_layer_color, "resolved_first_layer_color": resolved_first_layer,
         "material_interface_offset_mm": float(interface_offset),
         "material_interface_priority": _material_order(str(entry["token"]) for entry in assignments.values()) if mode == "source" else list(ALL_TOKENS),
         "nonempty_layers": nonempty_layers, "sampled_cells": sampled_cells,
