@@ -70,7 +70,7 @@ For a smaller example, use the CMY cubes in the **Help** menu.
 
 ## Linux and source installation
 
-[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip),
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-source.zip),
 extract it, and open **START_HERE.html**. On Windows, double-click
 **Launch LayerLoom.bat** if you specifically want the source installation instead
 of Windows setup above. The launcher installs its own Python automatically;
