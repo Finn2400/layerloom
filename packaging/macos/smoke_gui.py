@@ -4,6 +4,7 @@ from __future__ import annotations
 import faulthandler
 import hashlib
 import json
+import os
 import sys
 import tempfile
 import time
@@ -298,6 +299,48 @@ def main(directory: str) -> int:
         assert len(editor._mapping) == 4 and recipes == ["cm", "cmy", "cy", "my"], recipes
         assert set("".join(recipes)) == {"c", "m", "y"}
         assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+        if os.environ.get("LAYERLOOM_SMOKE_FULL_BENCHY") == "1":
+            # Exercise the actual beginner action/defaults, not a reduced mesh
+            # or start_export settings chosen independently of the dialog.
+            benchy_output = model_output / "welcome Benchy woven.3mf"
+            export_defaults = {}
+            original_exec = qt.QDialog.exec_
+            original_save = file_dialogs.get_save_file_name
+            def accept_benchy_export(dialog):
+                assert dialog.windowTitle() == "Weave — create printable 3MF"
+                for name, kind in (("Mode", qt.QComboBox), ("LayerHeight", qt.QDoubleSpinBox),
+                                   ("Pitch", qt.QDoubleSpinBox), ("MemoryBudget", qt.QSpinBox),
+                                   ("CellBudget", qt.QDoubleSpinBox), ("Precision", qt.QComboBox)):
+                    control = dialog.findChild(kind, "geometryExport" + name)
+                    assert control is not None, name
+                    export_defaults[name] = (control.currentData() if kind is qt.QComboBox else control.value())
+                assert export_defaults == {"Mode": "woven", "LayerHeight": .16, "Pitch": .5,
+                                           "MemoryBudget": 4096, "CellBudget": 2.0, "Precision": .001}
+                assert dialog.findChild(qt.QDialogButtonBox).button(qt.QDialogButtonBox.Ok).isEnabled()
+                return qt.QDialog.Accepted
+            try:
+                qt.QDialog.exec_ = accept_benchy_export
+                file_dialogs.get_save_file_name = lambda *a, **k: (str(benchy_output), "3MF (*.3mf)")
+                weave_action = next(action for action, label in window._workspace_action_labels if label == "Weave")
+                assert weave_action.isEnabled()
+                diagnostics.mark("benchy_export:start")
+                weave_action.trigger()
+            finally:
+                qt.QDialog.exec_ = original_exec
+                file_dialogs.get_save_file_name = original_save
+            # On two-core hosted Windows runners this full example reached
+            # serialization at ~295s. Keep the small-model deadline unchanged,
+            # but give this larger regression a bounded ten-minute allowance.
+            _wait_for_export(editor, qtcore, diagnostics=diagnostics, label="benchy_export", timeout_ms=600_000)
+            assert not errors and benchy_output.is_file(), errors
+            assert editor.last_export_report["layer_height_mm"] == .16
+            reopened = load_paint_document(benchy_output)
+            faces = sum(len(mesh.faces) for mesh in reopened.meshes)
+            assert len(reopened.meshes) >= 3 and faces > 0
+            assert hashlib.sha256(benchy_source.read_bytes()).hexdigest() == benchy_hash
+            report["benchy_export"] = {"defaults": export_defaults, "output": str(benchy_output),
+                                      "reopened_parts": len(reopened.meshes), "reopened_faces": faces,
+                                      "export": editor.last_export_report, "source_unchanged": True}
         toggle_paint(True)
         report['camera_presentation']['paint_benchy'] = verify_camera_presentation(editor.plotter, qtcore)
         image = editor.plotter.screenshot(str(output / "benchy-example-render.png"))

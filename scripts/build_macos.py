@@ -75,9 +75,12 @@ def write_notices(destination: Path):
                     record["license_files"].append(str(relative))
         (destination / f"{name}-METADATA.txt").write_text(distribution.read_text("METADATA") or json.dumps(dict(metadata)), encoding="utf-8")
         records.append(record)
-    python_license = Path(sysconfig.get_path("stdlib")) / "LICENSE.txt"
-    if not python_license.is_file():
-        raise RuntimeError(f"Python runtime license missing: {python_license}")
+    python_license = next((p for p in (
+        Path(sysconfig.get_path("stdlib")) / "LICENSE.txt",
+        Path(sys.base_prefix) / "LICENSE.txt",
+    ) if p.is_file()), None)
+    if python_license is None:
+        raise RuntimeError("Python runtime license missing from the managed runtime")
     shutil.copy2(python_license, destination / "Python-LICENSE.txt")
     # PyQt5's wheel metadata declares GPLv3 but does not contain its license text.
     shutil.copy2(ROOT / "packaging/macos/GPL-3.0.txt", destination / "PyQt5-GPL-3.0.txt")
@@ -92,7 +95,7 @@ def write_notices(destination: Path):
         "PyQt5 source: https://pypi.org/project/PyQt5/#files\n"
         "Qt source: https://download.qt.io/archive/qt/\n"
         "Python source: https://www.python.org/downloads/source/\n"
-        "A source archive for this LayerLoom release accompanies the DMG.\n"
+        "A source archive for this LayerLoom release accompanies the desktop download.\n"
         "Redistributors must preserve notices and provide all required corresponding source.\n",
         encoding="utf-8",
     )

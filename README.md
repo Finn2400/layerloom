@@ -3,6 +3,8 @@
 Make more apparent print colors from a few filaments. Open a model, choose its
 colors, and export a printable file for your slicer.
 
+**Downloads: [Mac](#download-for-mac) · [Windows](#download-for-windows)**
+
 ## Download for Mac
 
 **[Download for Apple Silicon](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg)** — M1/M2/M3/M4 or newer, macOS 14+
@@ -38,6 +40,22 @@ Some managed Macs do not allow exceptions.
 [Illustrated first-open guide](docs/mac_first_open.md)
 </details>
 
+## Download for Windows
+
+**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe)** — 64-bit Intel/AMD PCs, Windows 10 (2004+) or Windows 11.
+
+This is an **early-access Windows preview**. It includes Python and the required
+libraries; no Git, Terminal setup, or administrator password is needed.
+
+1. Open the setup download, click **Install**, then **Finish** to open LayerLoom.
+2. Click **Load example**, then **Weave**. Keep **Woven apparent colors** and
+   **0.16 mm**, and choose where to save.
+3. When it finishes, click **Show in folder**. [Open your result in a slicer](docs/tutorial.md#open-the-3mf-in-a-slicer).
+
+Later, open **LayerLoom** from the Start menu. The installed app works offline.
+The Benchy example can take several minutes to weave; wait for **Export complete**.
+[Windows security prompt or installation help](docs/windows_desktop.md#if-windows-asks-whether-you-trust-it).
+
 ## Try painting
 
 LayerLoom starts with the original build plate in **Arrange** mode. Turn on **Paint**
@@ -50,19 +68,21 @@ keeps an editable `.llpaint` project.
 For a smaller example, use the CMY cubes in the **Help** menu.
 [Full tutorial](docs/tutorial.md) · [Troubleshooting](docs/mac_first_open.md)
 
-## Windows, Linux, and source installation
+## Linux and source installation
 
-[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-source.zip),
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-source.zip),
 extract it, and open **START_HERE.html**. On Windows, double-click
-**Launch LayerLoom.bat**. The launcher installs its own Python automatically;
+**Launch LayerLoom.bat** if you specifically want the source installation instead
+of Windows setup above. The launcher installs its own Python automatically;
 first setup needs internet. [Source installation guide](docs/install.md).
 
-The Mac downloads above already include the required software and work offline
+The desktop downloads above already include the required software and work offline
 after installation. GitHub's **Source code** ZIP is not the Mac app.
 
 ## More information
 
-[Release notes and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
+[Mac release and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
+[Windows preview and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview1) ·
 [Developer installation](docs/install.md#developer-installation) ·
 [Report a problem](https://github.com/Finn2400/layerloom/issues)
 

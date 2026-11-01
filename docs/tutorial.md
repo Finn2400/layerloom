@@ -2,8 +2,9 @@
 
 This guide covers LayerLoom **0.6.4a7** and the current source build.
 
-Start with the small CMY cubes bundled with LayerLoom. You do not need a separate
-model download. A slicer is needed after LayerLoom creates the printable 3MF.
+Start with the bundled Benchy using **Load example**, or use the smaller CMY cubes
+from the Help menu for a faster test. You do not need a separate model download.
+A slicer is needed after LayerLoom creates the printable 3MF.
 
 ## Open and inspect a model
 
