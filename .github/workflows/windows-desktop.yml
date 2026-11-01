@@ -2,6 +2,11 @@ name: Windows desktop
 
 on:
   workflow_dispatch:
+    inputs:
+      artifact_run:
+        description: 'Optional existing Windows desktop run ID: validate its exact artifact without rebuilding'
+        type: string
+        default: ''
   pull_request:
     paths:
       - '.github/workflows/windows-desktop.yml'
@@ -21,6 +26,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: windows-desktop-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
@@ -28,7 +34,7 @@ concurrency:
 
 jobs:
   build:
-    if: github.event.repository.private == false
+    if: github.event.repository.private == false && inputs.artifact_run == ''
     runs-on: windows-2022
     timeout-minutes: 45
     steps:
@@ -50,6 +56,9 @@ jobs:
 
   validate:
     needs: build
+    if: >-
+      always() && !cancelled() && github.event.repository.private == false &&
+      (needs.build.result == 'success' || inputs.artifact_run != '')
     name: Validate ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -66,6 +75,8 @@ jobs:
         with:
           name: windows-x64
           path: artifact
+          run-id: ${{ inputs.artifact_run || github.run_id }}
+          github-token: ${{ github.token }}
       - name: Provide hosted runner OpenGL driver
         uses: pyvista/setup-headless-display-action@v3
         with:

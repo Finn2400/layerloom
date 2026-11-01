@@ -73,6 +73,15 @@ def main(argv=None):
     def ps(script):
         return subprocess.check_output([str(powershell), '-NoProfile', '-NonInteractive', '-Command',
                                         "$ErrorActionPreference='Stop'; " + script], text=True)
+    blocked = []
+    def block_program(program):
+        # Firewall requires a canonical existing image path. Resolve Windows
+        # short TEMP names only after installation/extraction has created it.
+        resolved = program.resolve(strict=True)
+        quoted = str(resolved).replace("'", "''")
+        ps(f"New-NetFirewallRule -Name '{firewall_group}-{len(blocked)}' -DisplayName '{firewall_group}' "
+           f"-Group '{firewall_group}' -Direction Outbound -Action Block -Enabled True -Profile Any -Program '{quoted}' | Out-Null")
+        blocked.append(str(resolved))
     try:
         with tempfile.TemporaryDirectory(prefix='LayerLoom Windows é ') as directory:
             work = Path(directory)
@@ -91,20 +100,19 @@ def main(argv=None):
             # /DIR is test isolation only: normal setup defaults to LocalAppData.
             installed = work / 'installed café' / 'LayerLoom'
             if args.offline:
-                programs = [installer, installed / 'LayerLoom.exe', installed / 'worker/layerloom-worker.exe',
-                            app / 'LayerLoom.exe', app / 'worker/layerloom-worker.exe']
                 ps("if ((Get-Service MpsSvc).Status -ne 'Running') { throw 'Firewall service is not running' }; "
                    "if (@(Get-NetFirewallProfile | Where-Object {-not $_.Enabled}).Count) { throw 'Firewall profiles must already be enabled' }")
-                for i, program in enumerate(programs):
-                    quoted = str(program).replace("'", "''")
-                    ps(f"New-NetFirewallRule -Name '{firewall_group}-{i}' -DisplayName '{firewall_group}' "
-                       f"-Group '{firewall_group}' -Direction Outbound -Action Block -Enabled True -Profile Any -Program '{quoted}' | Out-Null")
-                count = int(ps(f"@(Get-NetFirewallRule -Group '{firewall_group}' | Where-Object {{$_.Enabled -eq 'True' -and $_.Action -eq 'Block'}}).Count").strip())
-                assert count == len(programs)
-                report['offline'] = 'Installer, installed/portable GUI and workers blocked by enabled outbound firewall rules'
+                block_program(installer)
             setup = [installer, '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/SP-', f'/DIR={installed}']
             command([*setup, f'/LOG={report_dir / "install.log"}'], cwd=work, env=env, log=report_dir / 'setup.log')
             verify_payload(installed, expected)
+            if args.offline:
+                for folder in (installed, app):
+                    block_program(folder / 'LayerLoom.exe')
+                    block_program(folder / 'worker/layerloom-worker.exe')
+                count = int(ps(f"@(Get-NetFirewallRule -Group '{firewall_group}' | Where-Object {{$_.Enabled -eq 'True' -and $_.Action -eq 'Block'}}).Count").strip())
+                assert count == len(blocked)
+                report['offline'] = {'method': 'Enabled outbound firewall block rules', 'programs': blocked}
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, key_name, 0, winreg.KEY_READ | winreg.KEY_WOW64_64KEY) as key:
                 location = winreg.QueryValueEx(key, 'InstallLocation')[0]
                 assert Path(location).resolve() == installed.resolve()
