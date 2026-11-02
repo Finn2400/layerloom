@@ -84,11 +84,39 @@ def get_open_file_name(parent, title, initial="", name_filter=""):
 
 def get_save_file_name(parent, title, initial="", name_filter=""):
     if sys.platform != "darwin":
+        initial = _native_output_initial(parent, initial)
+        if initial is None:
+            return "", ""
         return QtWidgets.QFileDialog.getSaveFileName(parent, title, initial, name_filter)
     return _choose(parent, title, initial, name_filter, save=True)
 
 
 def get_existing_directory(parent, title, initial=""):
     if sys.platform != "darwin":
+        initial = _native_output_initial(parent, initial, directory=True)
+        if initial is None:
+            return ""
         return QtWidgets.QFileDialog.getExistingDirectory(parent, title, initial)
     return _choose(parent, title, initial, "", directory=True)[0]
+
+
+def _native_output_initial(parent, initial, *, directory=False):
+    """Give native choosers an existing output folder, never the app's cwd.
+
+    Windows silently falls back to the executable's directory when the
+    suggested example-output folder does not exist on a first installation.
+    Create only our own output folder, and only when the user opens a chooser.
+    Explicit model/project locations remain the user's choice.
+    """
+    fallback = default_output_directory()
+    target = Path(initial).expanduser() if initial else fallback
+    if not target.is_absolute():
+        target = fallback / target
+    folder = target if directory or target == fallback else target.parent
+    if folder == fallback:
+        try:
+            folder.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            QtWidgets.QMessageBox.critical(parent, "Could not open folder", str(exc))
+            return None
+    return str(target)
