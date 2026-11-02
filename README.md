@@ -42,7 +42,7 @@ Some managed Macs do not allow exceptions.
 
 ## Download for Windows
 
-**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe)** — 64-bit Intel/AMD PCs, Windows 10 (2004+) or Windows 11.
+**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview2/LayerLoom-0.6.4a7-windows-x64-setup.exe)** — 64-bit Intel/AMD PCs, Windows 10 (2004+) or Windows 11.
 
 This is an **early-access Windows preview**. It includes Python and the required
 libraries; no Git, Terminal setup, or administrator password is needed.
@@ -70,7 +70,7 @@ For a smaller example, use the CMY cubes in the **Help** menu.
 
 ## Linux and source installation
 
-[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-source.zip),
+[Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview2/LayerLoom-0.6.4a7-source.zip),
 extract it, and open **START_HERE.html**. On Windows, double-click
 **Launch LayerLoom.bat** if you specifically want the source installation instead
 of Windows setup above. The launcher installs its own Python automatically;
@@ -82,7 +82,7 @@ after installation. GitHub's **Source code** ZIP is not the Mac app.
 ## More information
 
 [Mac release and checksums](https://github.com/Finn2400/layerloom/releases/tag/v0.6.4a7) ·
-[Windows preview and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview1) ·
+[Windows preview and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview2) ·
 [Developer installation](docs/install.md#developer-installation) ·
 [Report a problem](https://github.com/Finn2400/layerloom/issues)
 

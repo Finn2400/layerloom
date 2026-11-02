@@ -1,8 +1,8 @@
 # Windows standalone app
 
-**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe)**
+**[Download Windows setup](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview2/LayerLoom-0.6.4a7-windows-x64-setup.exe)**
 for a 64-bit Intel/AMD PC. This is an early-access Windows preview.
-[Release details and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview1).
+[Release details and checksums](https://github.com/Finn2400/layerloom/releases/tag/windows-0.6.4a7-preview2).
 
 To try it:
 
@@ -10,11 +10,15 @@ To try it:
 2. Open it, choose **Install**, then **Finish**. It installs for your account;
    no administrator password, Python, Git, or Terminal setup is needed.
 3. Click **Load example**, then **Weave**. Keep **Woven apparent colors** and
-   **0.16 mm**, and choose where to save.
+   **0.16 mm**, and choose where to save. The suggested **LayerLoom** folder
+   is in your user folder, separate from the installed app.
 4. Wait for **Export complete**; the Benchy can take several minutes to weave.
    Click **Show in folder**. [Open the 3MF in your slicer](tutorial.md#open-the-3mf-in-a-slicer).
 
 Later, find **LayerLoom** in the Start menu. The installed app works offline.
+To update an earlier preview, quit LayerLoom and run the new setup file; your
+saved models stay in place. Choose setup again even if its filename matches
+the previous download.
 Paint is optional; **Back to build plate** returns to Arrange and lets you keep
 or discard your changes.
 
