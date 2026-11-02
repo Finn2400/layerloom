@@ -78,6 +78,9 @@ def _choose(parent, title, initial, name_filter, **options):
 
 def get_open_file_name(parent, title, initial="", name_filter=""):
     if sys.platform != "darwin":
+        initial = _native_output_initial(parent, initial)
+        if initial is None:
+            return "", ""
         return QtWidgets.QFileDialog.getOpenFileName(parent, title, initial, name_filter)
     return _choose(parent, title, initial, name_filter)
 

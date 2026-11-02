@@ -75,7 +75,7 @@ def test_mac_open_and_directory_modes(application, tmp_path):
 
 
 @pytest.mark.parametrize("platform", ["win32", "linux"])
-@pytest.mark.parametrize("initial_kind", ["example", "filename", "empty", "directory"])
+@pytest.mark.parametrize("initial_kind", ["example", "filename", "empty", "directory", "open"])
 def test_native_first_save_has_existing_user_folder(application, monkeypatch, tmp_path, platform, initial_kind):
     output = tmp_path / "new user é" / "LayerLoom"
     app_folder = tmp_path / "installed app"
@@ -88,16 +88,19 @@ def test_native_first_save_has_existing_user_folder(application, monkeypatch, tm
     def cancel(_parent, _title, initial, *_args):
         target = Path(initial)
         assert target.is_absolute()
-        assert (target if initial_kind in {"empty", "directory"} else target.parent) == output
+        assert (target if initial_kind in {"empty", "directory", "open"} else target.parent) == output
         assert output.is_dir(), "Native Windows chooser needs the folder to exist before opening"
         seen.append(initial)
         return "" if initial_kind == "directory" else ("", "")
 
     monkeypatch.setattr(QtWidgets.QFileDialog, "getSaveFileName", cancel)
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", cancel)
     monkeypatch.setattr(QtWidgets.QFileDialog, "getExistingDirectory", cancel)
     assert not output.exists()
     if initial_kind == "directory":
         assert file_dialogs.get_existing_directory(None, "Choose output") == ""
+    elif initial_kind == "open":
+        assert file_dialogs.get_open_file_name(None, "Open model") == ("", "")
     else:
         initial = {"example": str(output / "Benchy_geometry.3mf"),
                    "filename": "Benchy_geometry.3mf", "empty": ""}[initial_kind]
