@@ -15,7 +15,7 @@ they install a private Python automatically.
 | --- | --- |
 | Mac with an Apple M-series chip, macOS 14+ | [Apple Silicon DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-arm64.dmg) |
 | Mac with an Intel processor, macOS 15+ | [Intel DMG](https://github.com/Finn2400/layerloom/releases/download/v0.6.4a7/LayerLoom-0.6.4a7-macos-x86_64.dmg) |
-| Windows 10 (2004+) / Windows 11, Intel/AMD x64 | [Windows setup preview](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-windows-x64-setup.exe) |
+| Windows 10 (2004+) / Windows 11, Intel/AMD x64 | [Windows setup preview](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview2/LayerLoom-0.6.4a7-windows-x64-setup.exe) |
 | Linux x86_64 desktop | Source ZIP, `.sh` launcher |
 
 On a Mac, **Apple menu → About This Mac** shows the chip or processor and macOS
@@ -90,7 +90,7 @@ it contains the application, examples, launchers and instructions without
 manuscript materials. For the simpler desktop installation, choose the Mac DMG
 or Windows setup instead.
 
-1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview1/LayerLoom-0.6.4a7-source.zip).
+1. [Download the source ZIP](https://github.com/Finn2400/layerloom/releases/download/windows-0.6.4a7-preview2/LayerLoom-0.6.4a7-source.zip).
    This selects the release containing the installation fixes in this guide;
    no GitHub account is needed. Keep the launchers and all files from the same
    download together. GitHub's **Code → Download ZIP** uses whichever branch is
