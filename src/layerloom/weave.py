@@ -45,6 +45,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, Tuple, List
 from collections import Counter, defaultdict
 
+from layerloom.contour_options import ContourOptions, add_contour_arguments, contour_options_from_args
 from layerloom.ingest import read_parts
 from layerloom.normalize_3mf_import import normalize_3mf_import
 from layerloom.strata import slice_interval, slice_repeating
@@ -388,9 +389,24 @@ def weave_pipeline(
     output_path: str | None = None,
     export_stls: bool = True,
     first_layer_color: str | None = "auto",
-) -> None:
+    options: ContourOptions | None = None,
+    weave_mode: str = "legacy",
+) -> dict | None:
     """Execute the full LayerLoom color grouping workflow."""
     _configure_safe_stdout()
+    if weave_mode not in {"legacy", "layer-contour"}:
+        raise ValueError(f"Unknown weaving mode: {weave_mode}")
+    if weave_mode == "layer-contour":
+        from layerloom.contour_weave import weave_contours
+        if stl_out:
+            raise ValueError("Experimental contour weaving exports 3MF only; remove the STL output option")
+        selected = (options or ContourOptions()).validate(step)
+        woven_path = output_path or os.path.splitext(input_path)[0] + "_woven.3mf"
+        return weave_contours(input_path, woven_path, step=step,
+                              first_layer_color=first_layer_color,
+                              options=selected, verbose=verbose)
+    if options is not None:
+        raise ValueError("ContourOptions require weave_mode='layer-contour'")
 
     if not os.path.exists(input_path):
         raise FileNotFoundError(f"Input file not found: {input_path}")
@@ -573,9 +589,14 @@ def main(argv: list[str] | None = None) -> int:
         help="Make the first weave layer one color: auto (largest base footprint), off, or a filament token",
     )
 
+    add_contour_arguments(parser)
     args = parser.parse_args(argv)
 
     try:
+        contour_options = contour_options_from_args(args, step=args.step)
+        backend_kwargs = {}
+        if args.weave_mode == "layer-contour":
+            backend_kwargs = {"weave_mode": args.weave_mode, "options": contour_options}
         weave_pipeline(
             input_path=os.path.abspath(args.input),
             step=args.step,
@@ -584,6 +605,7 @@ def main(argv: list[str] | None = None) -> int:
             output_path=os.path.abspath(args.output) if args.output else None,
             export_stls=not args.no_export_stls,
             first_layer_color=args.first_layer_color,
+            **backend_kwargs,
         )
         return 0
     except Exception as e:

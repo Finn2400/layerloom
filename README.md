@@ -189,6 +189,13 @@ automatically chooses the color with the largest footprint on the model base.
 Use `--first-layer-color c` (or another filament token) to choose it explicitly,
 or `--first-layer-color off` to retain the repeating pattern on the first layer.
 
+For prepared 3MFs, an opt-in **experimental layer-contour backend** streams the
+input and output through disk spools and simplifies only the scheduled layer
+contours. Use `--weave-mode layer-contour` or the GUI's **Tools → Weave prepared
+3MF — experimental…** action. See [configuration and validation](docs/layer_contour_weaving.md)
+before using it: contour tolerance does not certify the slicer's final wall
+paths, and the exact first/subsequent layer heights must be retained.
+
 Run the headless GLB-to-woven workflow, intended for colored GLB/GLTF exports
 from tools such as ChimeraX:
 

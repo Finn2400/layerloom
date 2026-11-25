@@ -44,6 +44,7 @@ src/layerloom/gamut_photo_analysis/analyze_expanded_gamut_photos.py
 src/layerloom/gamut_photo_analysis/manual_register_expanded_gamuts.py
 src/layerloom/gamut_photo_analysis/_archive/
 benchmark_outputs/
+/experiments/layer_contour/
 src/layerloom/sphere_inputs/
 src/layerloom/triangle_inputs/
 src/layerloom/LayerLoomPhotos*/

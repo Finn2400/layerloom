@@ -1434,6 +1434,22 @@ class QtAssignColorsApp(PaintWorkspaceHostMixin, _V62.QtAssignColorsApp):
         self.pending_target_center_xy = None
         self.applied_target_center_xy = None
         super().__init__()
+        # Separate file-based path: no full source or woven mesh is loaded into VTK.
+        tools = next((action.menu() for action in self.menuBar().actions()
+                      if action.menu() is not None and action.text().replace("&", "") == "Tools"), None)
+        if tools is None:
+            tools = self.menuBar().addMenu("Tools")
+        tools.addSeparator()
+        self.contour_weave_action = tools.addAction("Weave prepared 3MF — experimental…", self._open_contour_weave)
+        self._contour_weave_dialog = None
+
+    def _open_contour_weave(self):
+        from layerloom.contour_gui import create_contour_dialog
+        if self._contour_weave_dialog is None:
+            self._contour_weave_dialog = create_contour_dialog(self)
+        self._contour_weave_dialog.show()
+        self._contour_weave_dialog.raise_()
+        self._contour_weave_dialog.activateWindow()
 
     def _copy_xy(self, value):
         if value is None:

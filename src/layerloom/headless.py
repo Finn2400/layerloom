@@ -15,6 +15,7 @@ from typing import Optional
 
 import numpy as np
 
+from layerloom.contour_options import ContourOptions, add_contour_arguments, contour_options_from_args
 from layerloom.transform_3mf import compute_transform_plan, write_transformed_3mf
 
 
@@ -46,6 +47,8 @@ class HeadlessConfig:
     first_layer_color: str = "auto"
     missing_color_mode: str = "group"
     verbose: bool = False
+    weave_mode: str = "legacy"
+    contour_options: Optional[ContourOptions] = None
 
 
 @dataclass(frozen=True)
@@ -254,6 +257,15 @@ def run_headless(config: HeadlessConfig) -> HeadlessResult:
     from layerloom.palette_assignment import assign_palette_to_3mf
     from layerloom.weave import weave_pipeline
 
+    if config.weave_mode not in {"legacy", "layer-contour"}:
+        raise ValueError(f"Unknown weaving mode: {config.weave_mode}")
+    if config.weave_mode == "layer-contour":
+        (config.contour_options or ContourOptions()).validate(config.layer_height)
+        if config.stl_out:
+            raise ValueError("Experimental contour weaving exports 3MF only")
+        print("[memory] Bounded-memory mode applies to prepared-3MF weaving only; GLB conversion, repair, and orientation may load full meshes.")
+    elif config.contour_options is not None:
+        raise ValueError("ContourOptions require weave_mode='layer-contour'")
     if _sizing_mode_count(config) != 1:
         raise ValueError("Choose exactly one sizing mode: --fit-box, --max-dim, or --max-diagonal.")
     input_path = os.path.abspath(os.path.expanduser(config.input_path))
@@ -315,6 +327,10 @@ def run_headless(config: HeadlessConfig) -> HeadlessResult:
         write_transformed_3mf(assigned_3mf, placed_3mf, plan.global_matrix)
 
         _log(config, "[headless] weaving final 3MF")
+        backend_kwargs = {}
+        if config.weave_mode == "layer-contour":
+            backend_kwargs = {"weave_mode": config.weave_mode,
+                              "options": config.contour_options or ContourOptions()}
         weave_pipeline(
             placed_3mf,
             step=config.layer_height,
@@ -323,6 +339,7 @@ def run_headless(config: HeadlessConfig) -> HeadlessResult:
             output_path=output_path,
             export_stls=bool(config.stl_out),
             first_layer_color=config.first_layer_color,
+            **backend_kwargs,
         )
 
         if not os.path.exists(output_path):
@@ -368,6 +385,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--missing-color-mode", choices=["error", "skip", "group"], default="group")
     parser.add_argument("-v", "--verbose", action="store_true")
+    add_contour_arguments(parser)
     return parser
 
 
@@ -396,6 +414,8 @@ def config_from_args(args: argparse.Namespace) -> HeadlessConfig:
         first_layer_color=args.first_layer_color,
         missing_color_mode=args.missing_color_mode,
         verbose=bool(args.verbose),
+        weave_mode=args.weave_mode,
+        contour_options=contour_options_from_args(args, step=float(args.layer_height)),
     )
 
 
