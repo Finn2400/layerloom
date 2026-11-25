@@ -1,0 +1,1999 @@
+{
+  "schema_version": 1,
+  "summary_runtime": {
+    "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+    "platform": "macOS-14.6.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "numpy": "1.26.4",
+    "shapely": "2.1.2",
+    "trimesh": "4.11.5",
+    "psutil": "6.0.0",
+    "lxml": "6.1.1",
+    "geos": "3.13.1",
+    "installed_snapmaker_orca_version": "2.3.5",
+    "implementation_sha256": {
+      "contour_benchmark.py": "f6b2a7d5fd7ca075c524de721cffa98f6fddf161df54891dc46114efc591fe59",
+      "contour_gcode.py": "187fbedb8af0b3d40a28a056aff5ac5e86a3fe507b64500e89530be461b5680c",
+      "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+      "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+      "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+      "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+      "contour_validation.py": "a135c2756c1b09e223596c7ad5065f522b345178deb2d77c0da39ff1463b1df7",
+      "contour_weave.py": "d6f06e2dc8c5700781260c9d27dcc303f4088f7ebe8c89c0b8ce054ffd67b326",
+      "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+    }
+  },
+  "benchmarks": [
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/legacy_008/benchmark.json",
+        "size_bytes": 5837,
+        "sha256": "63a8c5ad0736c068d12394387970a4f0da2b81dd9efc8156c40f3e7e73412fa8"
+      },
+      "runtime": null,
+      "interruption_note": null,
+      "input": {
+        "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/source.3mf",
+        "size_bytes": 3753307,
+        "sha256": "2e3eaf5effccbf5df1d987f00b4429debbc235ff462a396acad4541503980760",
+        "vertices": 126606,
+        "triangles": 253176,
+        "uncompressed_geometry_bytes": 21852286,
+        "zip_valid": true
+      },
+      "step_mm": 0.08,
+      "first_layer_height_mm": 0.16,
+      "repeats": 3,
+      "modes": {
+        "legacy": {
+          "aggregate": {
+            "successful_runs": 3,
+            "median_weave_time_s": 158.32999029097846,
+            "max_observed_weave_rss_bytes": 5518966784,
+            "rss_measurement_complete": true,
+            "wall_comparisons_performed": 0,
+            "all_wall_comparisons_passed": false
+          },
+          "successful_runs": 3,
+          "triangles": [
+            5477678,
+            5477678,
+            5477678
+          ],
+          "compressed_bytes": [
+            82094230,
+            82094230,
+            82094230
+          ],
+          "uncompressed_geometry_bytes": [
+            513899886,
+            513899886,
+            513899886
+          ],
+          "output_sha256": [
+            "ca926a2969f04166cca20b9858ff4feaf738666570dffd293fc96d267d5b9a74",
+            "bb597de65b70accf8d0fb6e80eeb962e3a567ae10ef5e8cb8938b9fe1bf350ac",
+            "675dfcd9941721f3ded1ddaaf9ef30d5d33c6d58945c889d1214b11f04309032"
+          ],
+          "contour_validated": false,
+          "max_contour_distance_mm": null,
+          "peak_scratch_bytes": null,
+          "stage_timings": [],
+          "logs": [
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r1.log",
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r2.log",
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r3.log"
+          ]
+        }
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_reference_008/benchmark.json",
+        "size_bytes": 7454,
+        "sha256": "65768a0d1ab20f8d991e0a311e11105c9999c64771e3abdb790e02960c4e0b7d"
+      },
+      "runtime": {
+        "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+        "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+        "platform": "macOS-14.6.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "numpy": "1.26.4",
+        "shapely": "2.1.2",
+        "trimesh": "4.11.5",
+        "psutil": "6.0.0",
+        "lxml": "6.1.1",
+        "geos": "3.13.1",
+        "installed_snapmaker_orca_version": "2.3.5",
+        "implementation_sha256": {
+          "contour_benchmark.py": "a0646b7906c6956573b7ce237707e62f078feb20067dde905dc01be4d578b46f",
+          "contour_gcode.py": "8521eb1220308897f024b32164b8cb40e887b9719a954e1b499086f6775fa9fc",
+          "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+          "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+          "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+          "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+          "contour_validation.py": "e08e82dbbc445945d31db700cf402a5202a9a65554939d6a9dcc942c67474d47",
+          "contour_weave.py": "dc266fbb60394917a05acdf4b7f4b408bd0db12e75660ecc99601d8db3a1704a",
+          "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+        }
+      },
+      "interruption_note": null,
+      "input": {
+        "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/source.3mf",
+        "size_bytes": 3753307,
+        "sha256": "2e3eaf5effccbf5df1d987f00b4429debbc235ff462a396acad4541503980760",
+        "vertices": 126606,
+        "triangles": 253176,
+        "uncompressed_geometry_bytes": 21852286,
+        "zip_valid": true
+      },
+      "step_mm": 0.08,
+      "first_layer_height_mm": 0.16,
+      "repeats": 1,
+      "modes": {
+        "contour-0": {
+          "aggregate": {
+            "successful_runs": 1,
+            "median_weave_time_s": 114.68211270903703,
+            "max_observed_weave_rss_bytes": 217923584,
+            "rss_measurement_complete": true,
+            "wall_comparisons_performed": 0,
+            "all_wall_comparisons_passed": false
+          },
+          "successful_runs": 1,
+          "triangles": [
+            3551088
+          ],
+          "compressed_bytes": [
+            48451267
+          ],
+          "uncompressed_geometry_bytes": [
+            302625985
+          ],
+          "output_sha256": [
+            "b27c22c128e35a8250fa72926ffdc9a0370e66f0da4bd33208c75dcf874fb482"
+          ],
+          "contour_validated": true,
+          "max_contour_distance_mm": 0.0,
+          "peak_scratch_bytes": 166105884,
+          "stage_timings": [
+            {
+              "stage_seconds": {
+                "ingest_and_index": 4.705839834001381,
+                "layers_and_spools": 95.31877908296883,
+                "export_and_zip_validation": 13.963723250024486
+              },
+              "time_to_first_layer_seconds": 5.786969582957681,
+              "elapsed_seconds": 113.98875883297296
+            }
+          ],
+          "logs": [
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.log"
+          ]
+        }
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_008/benchmark.json",
+        "size_bytes": 17838,
+        "sha256": "a4a3ac4c6303d95416aea434edae0aef7db484d80aa9500d6b7d351fa55a7063"
+      },
+      "runtime": {
+        "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+        "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+        "platform": "macOS-14.6.1-arm64-arm-64bit",
+        "machine": "arm64",
+        "numpy": "1.26.4",
+        "shapely": "2.1.2",
+        "trimesh": "4.11.5",
+        "psutil": "6.0.0",
+        "lxml": "6.1.1",
+        "geos": "3.13.1",
+        "installed_snapmaker_orca_version": "2.3.5",
+        "implementation_sha256": {
+          "contour_benchmark.py": "a0646b7906c6956573b7ce237707e62f078feb20067dde905dc01be4d578b46f",
+          "contour_gcode.py": "8521eb1220308897f024b32164b8cb40e887b9719a954e1b499086f6775fa9fc",
+          "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+          "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+          "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+          "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+          "contour_validation.py": "e08e82dbbc445945d31db700cf402a5202a9a65554939d6a9dcc942c67474d47",
+          "contour_weave.py": "dc266fbb60394917a05acdf4b7f4b408bd0db12e75660ecc99601d8db3a1704a",
+          "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+        }
+      },
+      "interruption_note": null,
+      "input": {
+        "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/source.3mf",
+        "size_bytes": 3753307,
+        "sha256": "2e3eaf5effccbf5df1d987f00b4429debbc235ff462a396acad4541503980760",
+        "vertices": 126606,
+        "triangles": 253176,
+        "uncompressed_geometry_bytes": 21852286,
+        "zip_valid": true
+      },
+      "step_mm": 0.08,
+      "first_layer_height_mm": 0.16,
+      "repeats": 3,
+      "modes": {
+        "contour-0.02": {
+          "aggregate": {
+            "successful_runs": 3,
+            "median_weave_time_s": 160.5860501669813,
+            "max_observed_weave_rss_bytes": 225787904,
+            "rss_measurement_complete": true,
+            "wall_comparisons_performed": 0,
+            "all_wall_comparisons_passed": false
+          },
+          "successful_runs": 3,
+          "triangles": [
+            3318900,
+            3318900,
+            3318900
+          ],
+          "compressed_bytes": [
+            45302531,
+            45302533,
+            45302535
+          ],
+          "uncompressed_geometry_bytes": [
+            282732582,
+            282732582,
+            282732582
+          ],
+          "output_sha256": [
+            "163c3c7b7229bce5cf5e12cbb701bb4e00c49c6be54c9b798768d178bd33e508",
+            "f1f865e663b8ebaafb93fa37065d35ed6761516e818d94c41ea1f75b5e9d6674",
+            "473ba1577c66a68b73f578c0b7e7c6f2b114dc9b30d0c12864149a9d6ba3ac20"
+          ],
+          "contour_validated": true,
+          "max_contour_distance_mm": 0.014944124648090262,
+          "peak_scratch_bytes": 157747195,
+          "stage_timings": [
+            {
+              "stage_seconds": {
+                "ingest_and_index": 4.598965790995862,
+                "layers_and_spools": 130.7240954579902,
+                "export_and_zip_validation": 13.066339417011477
+              },
+              "time_to_first_layer_seconds": 5.414428999996744,
+              "elapsed_seconds": 148.38991899997927
+            },
+            {
+              "stage_seconds": {
+                "ingest_and_index": 4.384292125003412,
+                "layers_and_spools": 142.64955604099669,
+                "export_and_zip_validation": 12.975847082969267
+              },
+              "time_to_first_layer_seconds": 5.190909958968405,
+              "elapsed_seconds": 160.01012637501117
+            },
+            {
+              "stage_seconds": {
+                "ingest_and_index": 4.166426124982536,
+                "layers_and_spools": 167.31887845898746,
+                "export_and_zip_validation": 14.317195416020695
+              },
+              "time_to_first_layer_seconds": 4.993126666988246,
+              "elapsed_seconds": 185.80308729194803
+            }
+          ],
+          "logs": [
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.log",
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r2.log",
+            "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r3.log"
+          ]
+        }
+      }
+    }
+  ],
+  "full_slices": [
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_reference_008/contour-0-r1.slice.json",
+        "size_bytes": 4132,
+        "sha256": "e6749799e6e5e3af3d158f26bf4936275d8898ca86a5a129f419b398c7e0992b"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/orca-contour-0p_faj4h/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/orca-contour-0p_faj4h/validation.3mf"
+        ],
+        "exit_code": 0,
+        "elapsed_s": 11.18691804195987,
+        "peak_process_tree_rss_bytes_observed": 1100464128,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 179,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.orca.log",
+        "staging_elapsed_s": 34.64573712501442,
+        "runtime": {
+          "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+          "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+          "platform": "macOS-14.6.1-arm64-arm-64bit",
+          "machine": "arm64",
+          "numpy": "1.26.4",
+          "shapely": "2.1.2",
+          "trimesh": "4.11.5",
+          "psutil": "6.0.0",
+          "lxml": "6.1.1",
+          "geos": "3.13.1",
+          "installed_snapmaker_orca_version": "2.3.5",
+          "implementation_sha256": {
+            "contour_benchmark.py": "f6b2a7d5fd7ca075c524de721cffa98f6fddf161df54891dc46114efc591fe59",
+            "contour_gcode.py": "187fbedb8af0b3d40a28a056aff5ac5e86a3fe507b64500e89530be461b5680c",
+            "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+            "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+            "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+            "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+            "contour_validation.py": "e08e82dbbc445945d31db700cf402a5202a9a65554939d6a9dcc942c67474d47",
+            "contour_weave.py": "dc266fbb60394917a05acdf4b7f4b408bd0db12e75660ecc99601d8db3a1704a",
+            "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+          }
+        },
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.3mf",
+          "size_bytes": 48451267,
+          "sha256": "b27c22c128e35a8250fa72926ffdc9a0370e66f0da4bd33208c75dcf874fb482",
+          "vertices": 1777784,
+          "triangles": 3551088,
+          "uncompressed_geometry_bytes": 302625985,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.16",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": true,
+        "gcode": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.gcode",
+          "size_bytes": 5331821,
+          "sha256": "90d664c3119c03700c22a2af41ffc985087e360cbfc2e228cdaf6c05179dd365",
+          "motion_commands": 152671,
+          "commands_with_extrusion_parameter": 122980
+        },
+        "slicer_generator": "generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 21:42:20"
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_008/contour-0.02-r1.slice.json",
+        "size_bytes": 4092,
+        "sha256": "908998b5083c75cdeed4c525f309fa4fdf75466e7fd4eccafd5cfe6d719a509a"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/orca-contour-t7hh8a_z/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/orca-contour-t7hh8a_z/validation.3mf"
+        ],
+        "exit_code": 0,
+        "elapsed_s": 9.202447000017855,
+        "peak_process_tree_rss_bytes_observed": 1090060288,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 148,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.orca.log",
+        "staging_elapsed_s": 34.440695208031684,
+        "runtime": {
+          "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+          "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+          "platform": "macOS-14.6.1-arm64-arm-64bit",
+          "machine": "arm64",
+          "numpy": "1.26.4",
+          "shapely": "2.1.2",
+          "trimesh": "4.11.5",
+          "psutil": "6.0.0",
+          "lxml": "6.1.1",
+          "geos": "3.13.1",
+          "installed_snapmaker_orca_version": "2.3.5",
+          "implementation_sha256": {
+            "contour_benchmark.py": "f6b2a7d5fd7ca075c524de721cffa98f6fddf161df54891dc46114efc591fe59",
+            "contour_gcode.py": "187fbedb8af0b3d40a28a056aff5ac5e86a3fe507b64500e89530be461b5680c",
+            "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+            "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+            "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+            "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+            "contour_validation.py": "e08e82dbbc445945d31db700cf402a5202a9a65554939d6a9dcc942c67474d47",
+            "contour_weave.py": "dc266fbb60394917a05acdf4b7f4b408bd0db12e75660ecc99601d8db3a1704a",
+            "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+          }
+        },
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.3mf",
+          "size_bytes": 45302531,
+          "sha256": "163c3c7b7229bce5cf5e12cbb701bb4e00c49c6be54c9b798768d178bd33e508",
+          "vertices": 1661690,
+          "triangles": 3318900,
+          "uncompressed_geometry_bytes": 282732582,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.16",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": true,
+        "gcode": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.gcode",
+          "size_bytes": 5313925,
+          "sha256": "e1a2ab27e0d0ed789597473c9df2bcab6b7965b5026167cbcadea3fa2d34d77b",
+          "motion_commands": 152627,
+          "commands_with_extrusion_parameter": 122946
+        },
+        "slicer_generator": "generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 21:42:15"
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/legacy_008/legacy-r1.slice.json",
+        "size_bytes": 2451,
+        "sha256": "6c09082aebf6995b3d6aa0012a916250d78b28c6a09e5cdcd9e07bebad6b4010"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/orca-contour-11wcgzo5/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/orca-contour-11wcgzo5/validation.3mf"
+        ],
+        "exit_code": 156,
+        "elapsed_s": 15.366955625009723,
+        "peak_process_tree_rss_bytes_observed": 1098432512,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 249,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r1.orca.log",
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r1.3mf",
+          "size_bytes": 82094230,
+          "sha256": "ca926a2969f04166cca20b9858ff4feaf738666570dffd293fc96d267d5b9a74",
+          "vertices": 2744375,
+          "triangles": 5477678,
+          "uncompressed_geometry_bytes": 513899886,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.16",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": false,
+        "files_found": [],
+        "slicer_diagnostics": {},
+        "failure_stage": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r1.failed-stage.3mf"
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/legacy_008/legacy-native.slice.json",
+        "size_bytes": 2722,
+        "sha256": "e597941d369b3543ff63b272234dde667050e4543fc251811a546e6008b8a564"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/orca-contour-3y30crap/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/orca-contour-3y30crap/validation.3mf"
+        ],
+        "exit_code": 0,
+        "elapsed_s": 18.393113334022928,
+        "peak_process_tree_rss_bytes_observed": 1391214592,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 299,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-native.orca.log",
+        "staging_elapsed_s": 65.45859641599236,
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-r1.3mf",
+          "size_bytes": 82094230,
+          "sha256": "ca926a2969f04166cca20b9858ff4feaf738666570dffd293fc96d267d5b9a74",
+          "vertices": 2744375,
+          "triangles": 5477678,
+          "uncompressed_geometry_bytes": 513899886,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.08",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": true,
+        "gcode": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/legacy_008/legacy-native.gcode",
+          "size_bytes": 5335694,
+          "sha256": "d93dfdba7c8e76a72ca12ecb949f3f19acd7fa1005c72bf2fffaa68212b2d45e",
+          "motion_commands": 152829,
+          "commands_with_extrusion_parameter": 123183
+        },
+        "slicer_generator": "generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 21:22:34"
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/contour_008/contour-0.01-r1.slice.json",
+        "size_bytes": 4102,
+        "sha256": "162d221e77b49387c0035744c0047f3413e7be70b1665e528d96e1c00f1ad935"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/orca-contour-rls6xqc3/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/orca-contour-rls6xqc3/validation.3mf"
+        ],
+        "exit_code": 0,
+        "elapsed_s": 8.222364792018197,
+        "peak_process_tree_rss_bytes_observed": 1016528896,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 131,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/contour-0.01-r1.orca.log",
+        "staging_elapsed_s": 20.992782957968302,
+        "runtime": {
+          "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+          "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+          "platform": "macOS-14.6.1-arm64-arm-64bit",
+          "machine": "arm64",
+          "numpy": "1.26.4",
+          "shapely": "2.1.2",
+          "trimesh": "4.11.5",
+          "psutil": "6.0.0",
+          "lxml": "6.1.1",
+          "geos": "3.13.1",
+          "installed_snapmaker_orca_version": "2.3.5",
+          "implementation_sha256": {
+            "contour_benchmark.py": "048dd8991b1536db6213eacec814cc588bb798d1d686b39ba54cb2d44c982189",
+            "contour_gcode.py": "1b58d2359e76bc6f240b32d3cdf853eb4f000eabcf887654178dbca293941da4",
+            "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+            "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+            "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+            "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+            "contour_validation.py": "7a08a9f88e393e072810808cd36ad21882080c7f3e3db077a465af4ef969a3c9",
+            "contour_weave.py": "b1988db7b8fe3b1a655cbe3cab61c5da34af07e35bc8354cfafaecda16fe0cc3",
+            "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+          }
+        },
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/contour-0.01-r1.3mf",
+          "size_bytes": 43263696,
+          "sha256": "c5ead364e362988d097cc247ef82e6741aa95cd16bce1e187b7f10f1de2d26d9",
+          "vertices": 1664888,
+          "triangles": 3325296,
+          "uncompressed_geometry_bytes": 256730867,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.16",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": true,
+        "gcode": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/contour-0.01-r1.gcode",
+          "size_bytes": 5268770,
+          "sha256": "91ea387340369a272c32b1dfd72fdab6eefadf1a14c73f855c157a35bdca5bc8",
+          "motion_commands": 151263,
+          "commands_with_extrusion_parameter": 122001
+        },
+        "slicer_generator": "generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 21:33:39"
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/contour_008/zero-repeat.slice.json",
+        "size_bytes": 4091,
+        "sha256": "a64837801c67fedec170c3fc3e6f33dec207d84e53cd61fc3b93688e6cc92e11"
+      },
+      "result": {
+        "command": [
+          "/Applications/Snapmaker Orca.app/Contents/MacOS/Snapmaker_Orca",
+          "--debug",
+          "4",
+          "--orient",
+          "0",
+          "--arrange",
+          "0",
+          "--slice",
+          "1",
+          "--outputdir",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/orca-contour-31qd1s1b/sliced",
+          "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/orca-contour-31qd1s1b/validation.3mf"
+        ],
+        "exit_code": 0,
+        "elapsed_s": 10.19202266598586,
+        "peak_process_tree_rss_bytes_observed": 1126481920,
+        "rss_poll_interval_s": 0.05,
+        "rss_samples": 163,
+        "rss_measurement_complete": true,
+        "rss_measurement_errors": [],
+        "timed_out": false,
+        "log": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/zero-repeat.orca.log",
+        "staging_elapsed_s": 22.216713208006695,
+        "runtime": {
+          "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+          "python_executable": "/Library/Frameworks/Python.framework/Versions/3.12/bin/python3",
+          "platform": "macOS-14.6.1-arm64-arm-64bit",
+          "machine": "arm64",
+          "numpy": "1.26.4",
+          "shapely": "2.1.2",
+          "trimesh": "4.11.5",
+          "psutil": "6.0.0",
+          "lxml": "6.1.1",
+          "geos": "3.13.1",
+          "installed_snapmaker_orca_version": "2.3.5",
+          "implementation_sha256": {
+            "contour_benchmark.py": "a0646b7906c6956573b7ce237707e62f078feb20067dde905dc01be4d578b46f",
+            "contour_gcode.py": "1b58d2359e76bc6f240b32d3cdf853eb4f000eabcf887654178dbca293941da4",
+            "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+            "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+            "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+            "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+            "contour_validation.py": "8f264bd6b8fbc13662a7586127a112b3082975e2f8b8e7905a0290d27ff6a93b",
+            "contour_weave.py": "ea4e4b7fa1f47921a09c8265cc94c755643f1996b89f620837ca65a47f3f47d2",
+            "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+          }
+        },
+        "input": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/contour-0-r1.3mf",
+          "size_bytes": 46223428,
+          "sha256": "92a9e0c25be7b2c5d2b4f74af7d863801695d73419ae0266a9f9b1a6418bd812",
+          "vertices": 1777784,
+          "triangles": 3551088,
+          "uncompressed_geometry_bytes": 274342642,
+          "zip_valid": true
+        },
+        "profile": {
+          "path": "/Users/finn/Documents/3D printed utilties/models/pam_tcr_pmhc_recovery/woven_original_recipes_26cm/intermediates/u1_settings.json",
+          "size_bytes": 21409,
+          "sha256": "6bf31527d18aba59a86cf0332e6e2827e72feb22c2f233a3bd42b58a27ce4c99"
+        },
+        "placement_translation_mm": [
+          9.483531471232709e-08,
+          3.587226728996029e-07,
+          3.02077838298942e-08
+        ],
+        "slot_map": {
+          "c": 1,
+          "m": 4,
+          "y": 3
+        },
+        "overrides": {
+          "layer_height": "0.08",
+          "first_layer_height": "0.16",
+          "enable_support": "0",
+          "enable_prime_tower": "0",
+          "seam_position": "back",
+          "resolution": "0.012",
+          "wall_generator": "classic",
+          "wall_loops": "3",
+          "elefant_foot_compensation": "0.15",
+          "detect_thin_wall": "0",
+          "initial_layer_line_width": "0.5"
+        },
+        "printer_custom_gcode_changed": false,
+        "thin_wall_fixture": false,
+        "full_slice_completed": true,
+        "gcode": {
+          "path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/contour_008/zero-repeat.gcode",
+          "size_bytes": 5269443,
+          "sha256": "f6c9b0841c29ab3ee26554e4bfd1ec1df432195f8e0322f4ac38a92553fd636d",
+          "motion_commands": 151272,
+          "commands_with_extrusion_parameter": 121992
+        },
+        "slicer_generator": "generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 21:36:20"
+      }
+    }
+  ],
+  "wall_comparisons": [
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_008/zero-vs-020-walls.jsonl.summary.json",
+        "size_bytes": 1655,
+        "sha256": "3dbb86491c910144f3d9c916e6bbfdda5d84d199158f4d536bde53b0f4fa3864"
+      },
+      "result": {
+        "reference": "experiments/layer_contour/upright/final_reference_008/contour-0-r1.gcode",
+        "candidate": "experiments/layer_contour/upright/final_008/contour-0.02-r1.gcode",
+        "tolerance_mm": 0.02,
+        "width_tolerance_mm": 0.02,
+        "layers": 423,
+        "failed_layers": 309,
+        "combined_feature_geometry_failed_layers": 308,
+        "max_displacement_upper_mm": 0.08120692166420775,
+        "max_combined_feature_displacement_upper_mm": 0.08120692166420775,
+        "wall_paths_validated": false,
+        "visuals": {
+          "contact_sheet": "experiments/layer_contour/upright/final_008/zero-vs-020-walls-contact.png",
+          "panels": [
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-1.png",
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-2.png",
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-3.png",
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-4.png",
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-5.png",
+            "experiments/layer_contour/upright/final_008/zero-vs-020-walls-6.png"
+          ],
+          "z_mm": [
+            0.16,
+            11.84,
+            12.48,
+            16.48,
+            25.6,
+            33.92
+          ],
+          "visual_signoff": "pending inspection"
+        },
+        "footprint_diagnostics": {
+          "report": "experiments/layer_contour/upright/final_008/worst-footprint.json",
+          "images": [
+            "experiments/layer_contour/upright/final_008/worst-footprint-1.png",
+            "experiments/layer_contour/upright/final_008/worst-footprint-2.png",
+            "experiments/layer_contour/upright/final_008/worst-footprint-3.png",
+            "experiments/layer_contour/upright/final_008/worst-footprint-4.png"
+          ]
+        }
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/contour_008/zero-vs-010-walls.jsonl.summary.json",
+        "size_bytes": 1226,
+        "sha256": "e21f5bc9c7ab3901d0a3d7b385fe5f23ae438da84f768fd1c6193776213a8781"
+      },
+      "result": {
+        "reference": "experiments/layer_contour/upright/contour_008/contour-0-r1.gcode",
+        "candidate": "experiments/layer_contour/upright/contour_008/contour-0.01-r1.gcode",
+        "tolerance_mm": 0.02,
+        "width_tolerance_mm": 0.02,
+        "layers": 423,
+        "failed_layers": 285,
+        "combined_feature_geometry_failed_layers": 284,
+        "max_displacement_upper_mm": 0.13636141512930833,
+        "max_combined_feature_displacement_upper_mm": 0.13636141512930833,
+        "wall_paths_validated": false,
+        "visuals": {
+          "contact_sheet": "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-contact.png",
+          "panels": [
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-1.png",
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-2.png",
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-3.png",
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-4.png",
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-5.png",
+            "experiments/layer_contour/upright/contour_008/zero-vs-010-walls-6.png"
+          ],
+          "z_mm": [
+            0.16,
+            11.84,
+            12.48,
+            25.12,
+            25.6,
+            33.92
+          ],
+          "visual_signoff": "pending inspection"
+        }
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/contour_008/zero-repeat-vs-original.summary.json",
+        "size_bytes": 677,
+        "sha256": "bcbf58a656ce6ee1d24562de1800cdea0ef4fcba3855999b36b60c9a79b8b15d"
+      },
+      "result": {
+        "reference": "experiments/layer_contour/upright/contour_008/contour-0-r1.gcode",
+        "candidate": "experiments/layer_contour/upright/contour_008/zero-repeat.gcode",
+        "tolerance_mm": 0.02,
+        "width_tolerance_mm": 0.02,
+        "layers": 423,
+        "failed_layers": 0,
+        "combined_feature_geometry_failed_layers": 0,
+        "max_displacement_upper_mm": 0.0,
+        "max_combined_feature_displacement_upper_mm": 0.0,
+        "wall_paths_validated": true,
+        "control_matches": {
+          "placement_translation_mm": true,
+          "slot_map": true,
+          "overrides": true,
+          "thin_wall_fixture": true,
+          "printer_custom_gcode_changed": true,
+          "same_input_sha256": true,
+          "same_profile_sha256": true
+        }
+      }
+    }
+  ],
+  "contour_audits": [
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_reference_008/contour-0-r1.audit.json",
+        "size_bytes": 3306,
+        "sha256": "b9abb9491dd686e492a27cfb124d4ca38747ebc0aeebb949ab5021eabfce88b8"
+      },
+      "result": {
+        "audit_revision": "serialized-contours-2",
+        "source_path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/source.3mf",
+        "candidate_path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.3mf",
+        "source_sha256": "2e3eaf5effccbf5df1d987f00b4429debbc235ff462a396acad4541503980760",
+        "candidate_sha256": "b27c22c128e35a8250fa72926ffdc9a0370e66f0da4bd33208c75dcf874fb482",
+        "source_hash_matches_candidate_reference": true,
+        "candidate_hash_matches_report": true,
+        "candidate_single_token_parts_valid": true,
+        "candidate_coordinate_encoding": "float64-roundtrip-17g",
+        "layer_height_mm": 0.08,
+        "first_layer_height_mm": 0.16,
+        "first_layer_token": "c",
+        "declared_layer_count": 423,
+        "layer_count_matches_report": true,
+        "requested_tolerance_mm": 0.0,
+        "effective_certified_boundary_limit_mm": 3.0517578125e-05,
+        "numerical_policy": {
+          "intersection_grid_mm": 1e-07,
+          "common_binary_grid_mm": 1.52587890625e-05,
+          "minimum_numerical_allowance_mm": 3.0517578125e-05,
+          "boundary_certificate_precision": "Float64 boundary copies with fixed-precision metadata cleared before conservative buffering; coordinates unchanged.",
+          "regularization": "Both independently decoded artifacts use the common binary-grid contour policy before comparison.",
+          "complete_vertical_quad_policy": "Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization.",
+          "sub_grid_debris_cleanup": {
+            "source_area_mm2": 1.6298145055770874e-09,
+            "source_count": 5,
+            "candidate_area_mm2": 0.0,
+            "candidate_count": 0
+          }
+        },
+        "layers": 423,
+        "failed_layers": 0,
+        "per_filament_failures": 0,
+        "union_failures": 0,
+        "overlap_failures": 0,
+        "passed": true,
+        "all_layers_compared": true,
+        "serialized_contours_validated": true,
+        "observed_max_boundary_hausdorff_mm": 0.0,
+        "max_symmetric_difference_area_mm2": 0.0,
+        "first_failed_layers": [],
+        "passthrough": {
+          "passed": true,
+          "parts": [],
+          "legacy_nine_decimal_rounding": false,
+          "method": "Indexed float64 geometry plus source color/extruder provenance; transforms and reflected winding included. Legacy nine-decimal rounding is used only when the candidate predates explicit coordinate encoding."
+        },
+        "toolpaths_validated": false,
+        "method": "Independent serialized-artifact re-slicing; certified two-way boundary-buffer containment plus component/hole and overlap topology checks on every fixed-height slicing plane.",
+        "limitations": [
+          "Shares the slicing kernel with the exporter; not a separate kernel proof.",
+          "Comparison is to numerically regularized source contours; grids and cleanup are disclosed above.",
+          "Wall centerlines, extrusion widths, seams, and supports require downstream slicer/G-code validation.",
+          "Does not certify full-mesh manifold topology away from slicing planes."
+        ],
+        "layers_report": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_reference_008/contour-0-r1.audit.layers.jsonl",
+        "elapsed_seconds": 189.4474006659584
+      }
+    },
+    {
+      "evidence_file": {
+        "path": "experiments/layer_contour/upright/final_008/contour-0.02-r1.audit.json",
+        "size_bytes": 3314,
+        "sha256": "6d71585ef5da9acdcf1a7ca405781b675629af48a33cd20b66960d6c98112576"
+      },
+      "result": {
+        "audit_revision": "serialized-contours-2",
+        "source_path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/source.3mf",
+        "candidate_path": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.3mf",
+        "source_sha256": "2e3eaf5effccbf5df1d987f00b4429debbc235ff462a396acad4541503980760",
+        "candidate_sha256": "163c3c7b7229bce5cf5e12cbb701bb4e00c49c6be54c9b798768d178bd33e508",
+        "source_hash_matches_candidate_reference": true,
+        "candidate_hash_matches_report": true,
+        "candidate_single_token_parts_valid": true,
+        "candidate_coordinate_encoding": "float64-roundtrip-17g",
+        "layer_height_mm": 0.08,
+        "first_layer_height_mm": 0.16,
+        "first_layer_token": "c",
+        "declared_layer_count": 423,
+        "layer_count_matches_report": true,
+        "requested_tolerance_mm": 0.02,
+        "effective_certified_boundary_limit_mm": 0.02,
+        "numerical_policy": {
+          "intersection_grid_mm": 1e-07,
+          "common_binary_grid_mm": 1.52587890625e-05,
+          "minimum_numerical_allowance_mm": 3.0517578125e-05,
+          "boundary_certificate_precision": "Float64 boundary copies with fixed-precision metadata cleared before conservative buffering; coordinates unchanged.",
+          "regularization": "Both independently decoded artifacts use the common binary-grid contour policy before comparison.",
+          "complete_vertical_quad_policy": "Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization.",
+          "sub_grid_debris_cleanup": {
+            "source_area_mm2": 1.6298145055770874e-09,
+            "source_count": 5,
+            "candidate_area_mm2": 0.0,
+            "candidate_count": 0
+          }
+        },
+        "layers": 423,
+        "failed_layers": 0,
+        "per_filament_failures": 0,
+        "union_failures": 0,
+        "overlap_failures": 0,
+        "passed": true,
+        "all_layers_compared": true,
+        "serialized_contours_validated": true,
+        "observed_max_boundary_hausdorff_mm": 0.014944124648090262,
+        "max_symmetric_difference_area_mm2": 0.3816247400827706,
+        "first_failed_layers": [],
+        "passthrough": {
+          "passed": true,
+          "parts": [],
+          "legacy_nine_decimal_rounding": false,
+          "method": "Indexed float64 geometry plus source color/extruder provenance; transforms and reflected winding included. Legacy nine-decimal rounding is used only when the candidate predates explicit coordinate encoding."
+        },
+        "toolpaths_validated": false,
+        "method": "Independent serialized-artifact re-slicing; certified two-way boundary-buffer containment plus component/hole and overlap topology checks on every fixed-height slicing plane.",
+        "limitations": [
+          "Shares the slicing kernel with the exporter; not a separate kernel proof.",
+          "Comparison is to numerically regularized source contours; grids and cleanup are disclosed above.",
+          "Wall centerlines, extrusion widths, seams, and supports require downstream slicer/G-code validation.",
+          "Does not certify full-mesh manifold topology away from slicing planes."
+        ],
+        "layers_report": "/Users/finn/Documents/3D printed utilties/worktrees/layerloom-layer-aware/experiments/layer_contour/upright/final_008/contour-0.02-r1.audit.layers.jsonl",
+        "elapsed_seconds": 180.68933766701957
+      }
+    }
+  ],
+  "visuals": [
+    {
+      "path": "docs/benchmarks/layer-contour/contours.png",
+      "size_bytes": 342337,
+      "sha256": "97e6fee133dbc5a1f0b12c31d1a884ea629e97b9afcbe6d8c1dbd591af96f2fd"
+    },
+    {
+      "path": "docs/benchmarks/layer-contour/silhouettes.png",
+      "size_bytes": 30252,
+      "sha256": "829a56f7fa9c71f9e9d7d75a765a04f3caf135b56e711b070b18c11e79ee4064"
+    },
+    {
+      "path": "docs/benchmarks/layer-contour/walls.png",
+      "size_bytes": 689608,
+      "sha256": "6044de14c8a59e5d2d0da179f2adf90fb6905d156979876cead75930c7394a8a"
+    },
+    {
+      "path": "docs/benchmarks/layer-contour/worst-wall.png",
+      "size_bytes": 178464,
+      "sha256": "9770c5daad667eb9ee30d74cfe55831f85a358df3a72465c281dc926d5bbd255"
+    }
+  ],
+  "visual_review_note": "Inspected the final revision2 color-contour overlays at ten actual planes (including first/last and worst reported contour errors), front/side/top/isometric silhouettes, wall contact sheet, and worst-point close-ups. At displayed raster resolution the hull, lettering, cabin/window sections, roof/chimney holes and recipe boundaries are retained. Dominant wall outlines closely overlay, but close-ups show real inner-loop tip and small-island deposition changes. Geometry visual review is recorded; wall preservation is NOT signed off and physical printing is untested.",
+  "measurement_note": "Fresh subprocesses were used. Validation, audits, rendering and briefly duplicate cancelled workers ran concurrently with some benchmarks; wall-clock values are contextual rather than isolated throughput claims. Process-tree RSS remains individually sampled. Legacy uses .08 mm geometry bands; its .16/.08 native slice failed at the first band boundary, while .08/.08 native slicing succeeded. The final zero/.02 controlled comparison uses .16/.08 in both models and the same unmodified first-width/thin-wall/elephant-foot profile settings.",
+  "scope": "Local file generation and slicing only; no physical print, upload, or printer action.",
+  "gates": {
+    "serialized_contours": "passed",
+    "full_slicing": "failed",
+    "wall_preservation": "failed",
+    "visual_inspection": "recorded",
+    "physical_print": "untested"
+  },
+  "effectiveness": {
+    "reductions": {
+      "triangles_fraction": 0.3941045822700787,
+      "compressed_bytes_fraction": 0.4481642497895406,
+      "weaving_observed_rss_fraction": 0.9590887365630502
+    },
+    "triangle_goal_at_least_50_percent": false,
+    "rss_goal_at_least_50_percent": true
+  },
+  "primary_final_gates": {
+    "serialized_contours": "passed",
+    "full_slicing": "passed",
+    "wall_preservation": "failed",
+    "physical_print": "untested"
+  },
+  "source_orientation": {
+    "evidence_file": {
+      "path": "experiments/layer_contour/upright/source.json",
+      "size_bytes": 1066,
+      "sha256": "b8564ef88d01d8f259be288be9749d8601b3af6c2dba117f41762bf40ef3363a"
+    },
+    "result": {
+      "source": "examples/tutorial_cmy_benchy_cutup.3mf",
+      "source_sha256": "278e21e71ce899cda1dab6b392828729d58a492d9c24ef9d8c91659b0c684d2e",
+      "transform": [
+        [
+          0.8648280259348113,
+          -0.2681890541420092,
+          0.4244374121070285,
+          52.46675844466196
+        ],
+        [
+          0.40297513276538377,
+          0.8750346699480746,
+          -0.2681890541420092,
+          -21.900612118147393
+        ],
+        [
+          -0.2994720820551027,
+          0.40297513276538377,
+          0.8648280259348113,
+          -15.612945060842634
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "method": "Rotate dominant external downward hull-bottom plane to negative Z; center XY at 135 mm and ground minimum Z. Prepared before any weaving; original source unchanged.",
+      "destination": "experiments/layer_contour/upright/source.3mf",
+      "bounds": [
+        [
+          114.26717429506822,
+          120.58245917753806,
+          -3.02077838298942e-08
+        ],
+        [
+          155.73282551526117,
+          149.41754010501657,
+          33.92700081157258
+        ]
+      ],
+      "first_layer_area_mm2": 227.45223245199304
+    }
+  },
+  "memory_scaling": {
+    "evidence_file": {
+      "path": "experiments/layer_contour/stress_final/stress_summary.json",
+      "size_bytes": 9940,
+      "sha256": "53b74aeffc63541bacc6534f6ba5cb51594a72c1f709b0e25c7c0497114b991a"
+    },
+    "result": {
+      "source_density": {
+        "rss_16x_over_1x": 1.5998018821198614,
+        "cases": [
+          {
+            "scale": 1,
+            "source_triangles": 49152,
+            "layers": 10,
+            "peak_observed_rss_bytes": 132317184,
+            "peak_scratch_bytes": 7428240,
+            "successful_runs": 3
+          },
+          {
+            "scale": 4,
+            "source_triangles": 196608,
+            "layers": 10,
+            "peak_observed_rss_bytes": 165003264,
+            "peak_scratch_bytes": 29804688,
+            "successful_runs": 3
+          },
+          {
+            "scale": 16,
+            "source_triangles": 786432,
+            "layers": 10,
+            "peak_observed_rss_bytes": 211681280,
+            "peak_scratch_bytes": 118831248,
+            "successful_runs": 3
+          }
+        ]
+      },
+      "layer_count": {
+        "rss_16x_over_1x": 1.071041030857918,
+        "cases": [
+          {
+            "scale": 1,
+            "source_triangles": 12,
+            "layers": 100,
+            "peak_observed_rss_bytes": 96632832,
+            "peak_scratch_bytes": 82001,
+            "successful_runs": 3
+          },
+          {
+            "scale": 4,
+            "source_triangles": 12,
+            "layers": 400,
+            "peak_observed_rss_bytes": 98353152,
+            "peak_scratch_bytes": 290519,
+            "successful_runs": 3
+          },
+          {
+            "scale": 16,
+            "source_triangles": 12,
+            "layers": 1600,
+            "peak_observed_rss_bytes": 103497728,
+            "peak_scratch_bytes": 1126169,
+            "successful_runs": 3
+          }
+        ]
+      }
+    },
+    "limitations": [
+      "No native slicer or wall-path comparison is run by this stress suite.",
+      "RSS is sampled every 50 ms for the complete weave subprocess tree.",
+      "Fixture generation is streamed, but its RSS is not part of the weave measurements.",
+      "Fresh workers and fixed one-thread math libraries reduce warm-state and concurrency noise."
+    ]
+  },
+  "wall_footprint_diagnostics": {
+    "evidence_file": {
+      "path": "experiments/layer_contour/upright/final_008/worst-footprint.json",
+      "size_bytes": 14778,
+      "sha256": "d4478c3ef4934b7f623c9b924a445f1957f12c8b07939cb4a347c01567db7033"
+    },
+    "result": {
+      "reference": "experiments/layer_contour/upright/final_reference_008/contour-0-r1.gcode",
+      "candidate": "experiments/layer_contour/upright/final_008/contour-0.02-r1.gcode",
+      "strict_gate_unchanged": true,
+      "interpretation": "Nominal wall-only swept footprint uses annotated width/2 round buffers. It excludes infill and is not a measured physical bead or print test.",
+      "layers": [
+        {
+          "z_mm": 11.84,
+          "tool": 2,
+          "worst_sampled_centerline_distance_mm": 0.0786447709641202,
+          "sampling_residual_mm": 0.001,
+          "direction": "reference",
+          "point": [
+            140.691,
+            138.503
+          ],
+          "nearest": [
+            140.632,
+            138.451
+          ],
+          "reference_wall_length_mm": 83.49728919592198,
+          "candidate_wall_length_mm": 83.20965415413592,
+          "reference_swept_area_mm2": 34.93644458834623,
+          "candidate_swept_area_mm2": 34.91279003251676,
+          "missing_swept_area_mm2": 0.030396260895848078,
+          "extra_swept_area_mm2": 0.006741705106005902,
+          "swept_boundary_distance_lower_mm": 0.0564981618789932,
+          "swept_boundary_distance_upper_mm": 0.0569981628789932,
+          "swept_set_distance_lower_mm": 0.056458146682764374,
+          "swept_set_distance_upper_mm": 0.0569768132142727,
+          "local_missing_swept_area_mm2": 0.02752806292894127,
+          "local_extra_swept_area_mm2": 6.641793638077295e-05,
+          "reference_nearby_segments": [
+            {
+              "start": [
+                140.691,
+                138.503
+              ],
+              "end": [
+                140.318,
+                138.327
+              ],
+              "feature": "outer",
+              "width_mm": 0.375688
+            },
+            {
+              "start": [
+                140.318,
+                138.327
+              ],
+              "end": [
+                140.429,
+                138.088
+              ],
+              "feature": "outer",
+              "width_mm": 0.375688
+            },
+            {
+              "start": [
+                140.429,
+                138.088
+              ],
+              "end": [
+                140.67,
+                138.47
+              ],
+              "feature": "outer",
+              "width_mm": 0.375688
+            }
+          ],
+          "candidate_nearby_segments": [
+            {
+              "start": [
+                140.632,
+                138.451
+              ],
+              "end": [
+                140.347,
+                138.316
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                140.347,
+                138.316
+              ],
+              "end": [
+                140.432,
+                138.135
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                140.432,
+                138.135
+              ],
+              "end": [
+                140.61,
+                138.417
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            }
+          ],
+          "image": "experiments/layer_contour/upright/final_008/worst-footprint-1.png"
+        },
+        {
+          "z_mm": 12.48,
+          "tool": 3,
+          "worst_sampled_centerline_distance_mm": 0.051546095875443,
+          "sampling_residual_mm": 0.001,
+          "direction": "candidate",
+          "point": [
+            151.544,
+            136.256
+          ],
+          "nearest": [
+            151.56,
+            136.305
+          ],
+          "reference_wall_length_mm": 184.94575598526478,
+          "candidate_wall_length_mm": 185.09135453932095,
+          "reference_swept_area_mm2": 77.77867502242869,
+          "candidate_swept_area_mm2": 77.81813631377631,
+          "missing_swept_area_mm2": 0.048831181823268614,
+          "extra_swept_area_mm2": 0.08829247317110989,
+          "swept_boundary_distance_lower_mm": 0.07171282372867627,
+          "swept_boundary_distance_upper_mm": 0.07221282472867627,
+          "swept_set_distance_lower_mm": 0.051457999084346416,
+          "swept_set_distance_upper_mm": 0.05198554538593993,
+          "local_missing_swept_area_mm2": 0.00035312494937840837,
+          "local_extra_swept_area_mm2": 0.03544800386837718,
+          "reference_nearby_segments": [
+            {
+              "start": [
+                151.531,
+                136.969
+              ],
+              "end": [
+                151.343,
+                136.399
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.343,
+                136.399
+              ],
+              "end": [
+                151.56,
+                136.305
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.56,
+                136.305
+              ],
+              "end": [
+                151.777,
+                136.701
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.777,
+                136.701
+              ],
+              "end": [
+                152.331,
+                137.871
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.608,
+                135.521
+              ],
+              "end": [
+                152.15,
+                136.511
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            }
+          ],
+          "candidate_nearby_segments": [
+            {
+              "start": [
+                151.531,
+                136.969
+              ],
+              "end": [
+                151.317,
+                136.364
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.317,
+                136.364
+              ],
+              "end": [
+                151.544,
+                136.256
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.544,
+                136.256
+              ],
+              "end": [
+                151.944,
+                137.033
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                151.317,
+                135.037
+              ],
+              "end": [
+                151.944,
+                136.119
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                151.944,
+                136.119
+              ],
+              "end": [
+                152.319,
+                136.849
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            }
+          ],
+          "image": "experiments/layer_contour/upright/final_008/worst-footprint-2.png"
+        },
+        {
+          "z_mm": 16.48,
+          "tool": 2,
+          "worst_sampled_centerline_distance_mm": 0.043036629624210614,
+          "sampling_residual_mm": 0.001,
+          "direction": "reference",
+          "point": [
+            152.446,
+            137.022
+          ],
+          "nearest": [
+            152.42969584956504,
+            136.98217128965175
+          ],
+          "reference_wall_length_mm": 162.9506854928188,
+          "candidate_wall_length_mm": 162.80311686747513,
+          "reference_swept_area_mm2": 67.4945249958409,
+          "candidate_swept_area_mm2": 67.43370555587529,
+          "missing_swept_area_mm2": 0.18808058655937665,
+          "extra_swept_area_mm2": 0.12726114659390256,
+          "swept_boundary_distance_lower_mm": 0.8511746642594227,
+          "swept_boundary_distance_upper_mm": 0.8516746652594226,
+          "swept_set_distance_lower_mm": 0.042966879851915725,
+          "swept_set_distance_upper_mm": 0.04347741784414301,
+          "local_missing_swept_area_mm2": 0.02601359348620555,
+          "local_extra_swept_area_mm2": 0.002574958830842765,
+          "reference_nearby_segments": [
+            {
+              "start": [
+                152.231,
+                137.105
+              ],
+              "end": [
+                151.908,
+                136.501
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.292,
+                136.272
+              ],
+              "end": [
+                152.419,
+                136.535
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.419,
+                136.535
+              ],
+              "end": [
+                152.393,
+                136.614
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.393,
+                136.614
+              ],
+              "end": [
+                152.4,
+                136.844
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.4,
+                136.844
+              ],
+              "end": [
+                152.446,
+                137.022
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.446,
+                137.022
+              ],
+              "end": [
+                152.269,
+                137.091
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.856,
+                136.544
+              ],
+              "end": [
+                152.813,
+                136.675
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                152.813,
+                136.675
+              ],
+              "end": [
+                152.817,
+                136.785
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                152.817,
+                136.785
+              ],
+              "end": [
+                152.883,
+                137.045
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                152.883,
+                137.045
+              ],
+              "end": [
+                153.481,
+                138.345
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            }
+          ],
+          "candidate_nearby_segments": [
+            {
+              "start": [
+                152.227,
+                137.066
+              ],
+              "end": [
+                151.391,
+                135.649
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.293,
+                136.273
+              ],
+              "end": [
+                152.428,
+                136.557
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.428,
+                136.557
+              ],
+              "end": [
+                152.379,
+                136.761
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.379,
+                136.761
+              ],
+              "end": [
+                152.435,
+                136.98
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.435,
+                136.98
+              ],
+              "end": [
+                152.264,
+                137.05
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                152.858,
+                136.554
+              ],
+              "end": [
+                152.81,
+                136.757
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                152.81,
+                136.757
+              ],
+              "end": [
+                152.883,
+                137.045
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                152.883,
+                137.045
+              ],
+              "end": [
+                153.481,
+                138.345
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            }
+          ],
+          "image": "experiments/layer_contour/upright/final_008/worst-footprint-3.png"
+        },
+        {
+          "z_mm": 25.6,
+          "tool": 2,
+          "worst_sampled_centerline_distance_mm": 0.08070692066420025,
+          "sampling_residual_mm": 0.001,
+          "direction": "reference",
+          "point": [
+            141.526,
+            132.962
+          ],
+          "nearest": [
+            141.45238343048132,
+            132.92892118902682
+          ],
+          "reference_wall_length_mm": 153.26487360542572,
+          "candidate_wall_length_mm": 153.00150097024343,
+          "reference_swept_area_mm2": 64.71620582556545,
+          "candidate_swept_area_mm2": 64.62724704098454,
+          "missing_swept_area_mm2": 0.1715759595852568,
+          "extra_swept_area_mm2": 0.08261717500410441,
+          "swept_boundary_distance_lower_mm": 0.09014847539687328,
+          "swept_boundary_distance_upper_mm": 0.09064847639687328,
+          "swept_set_distance_lower_mm": 0.08043812279759507,
+          "swept_set_distance_upper_mm": 0.08096326096289493,
+          "local_missing_swept_area_mm2": 0.053694907761791144,
+          "local_extra_swept_area_mm2": 9.819935863558389e-05,
+          "reference_nearby_segments": [
+            {
+              "start": [
+                133.779,
+                130.313
+              ],
+              "end": [
+                145.273,
+                134.911
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                140.389,
+                132.108
+              ],
+              "end": [
+                141.144,
+                132.504
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                141.144,
+                132.504
+              ],
+              "end": [
+                141.627,
+                132.731
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                141.627,
+                132.731
+              ],
+              "end": [
+                141.526,
+                132.962
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                141.526,
+                132.962
+              ],
+              "end": [
+                133.567,
+                129.778
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            }
+          ],
+          "candidate_nearby_segments": [
+            {
+              "start": [
+                133.779,
+                130.313
+              ],
+              "end": [
+                145.273,
+                134.911
+              ],
+              "feature": "outer",
+              "width_mm": 0.42
+            },
+            {
+              "start": [
+                140.699,
+                132.276
+              ],
+              "end": [
+                141.553,
+                132.705
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                141.553,
+                132.705
+              ],
+              "end": [
+                141.451,
+                132.932
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            },
+            {
+              "start": [
+                141.451,
+                132.932
+              ],
+              "end": [
+                133.567,
+                129.778
+              ],
+              "feature": "inner",
+              "width_mm": 0.45
+            }
+          ],
+          "image": "experiments/layer_contour/upright/final_008/worst-footprint-4.png"
+        }
+      ]
+    }
+  },
+  "prior_precision_failure": {
+    "evidence_file": {
+      "path": "experiments/layer_contour/upright/candidate_008/contour-0.02-r1.audit.json",
+      "size_bytes": 3094,
+      "sha256": "a0bb18bab24ce34b19d5f0fd83d5fd335d5c029bc16eebf908b2f507a9a37a02"
+    },
+    "failed_layers": 5,
+    "resolution": "Nine-decimal serialization and re-rounding exact recovered quads lost very thin holes. Final contour-prisms-2 uses float64-roundtrip .17g coordinates and preserves exact-lattice quad sections; both final artifacts pass the stricter serialized-contours-2 audit."
+  },
+  "diagnostic_scope": {
+    "zero_vs_010": "Prior output-precision revision; keep as a diagnostic, not final-revision certification.",
+    "same_file_repeat_control": "Same prior zero-tolerance 3MF/profile re-sliced: all423 wall layers identical; this argues against native wall nondeterminism as the cause of observed simplification differences."
+  },
+  "test_and_package_validation": {
+    "source_commit": "311620f11f0374a9ca245797e63d1cbda4d9454e",
+    "pytest_passed": 361,
+    "pytest_skipped": 4,
+    "package_build_verified": true,
+    "scope": "Final root/UI-agent local test and package verification; separate from geometry, toolpath and physical-print gates."
+  },
+  "detailed_layer_reports": [
+    {
+      "path": "experiments/layer_contour/upright/final_008/contour-0.02-r1.audit.layers.jsonl",
+      "size_bytes": 700586,
+      "sha256": "0fa7057bace7ed8b4d81a0d343d6f5b60f68397543326ff2b466dc3b82801ba4"
+    },
+    {
+      "path": "experiments/layer_contour/upright/final_reference_008/contour-0-r1.audit.layers.jsonl",
+      "size_bytes": 714034,
+      "sha256": "04e8d4ae80b3b2e29868882210fb0a8985b8e8a6f166d49354007e476cb39226"
+    },
+    {
+      "path": "experiments/layer_contour/upright/final_008/zero-vs-020-walls.jsonl",
+      "size_bytes": 602333,
+      "sha256": "934021df7e0406a960b2d973bd7760eac28a4edb441cdf1d2b997b8f93f09827"
+    },
+    {
+      "path": "experiments/layer_contour/upright/contour_008/zero-vs-010-walls.jsonl",
+      "size_bytes": 601578,
+      "sha256": "0ca87f98b662d1f96a38ed85a0786352b01c677a78dc647158fa910ea637afc5"
+    },
+    {
+      "path": "experiments/layer_contour/upright/contour_008/zero-repeat-vs-original.layers.jsonl",
+      "size_bytes": 559555,
+      "sha256": "8c58ad1f6daa3289aebcb0eb952d1577222be2e6b8afcd8de2e534a998807a7d"
+    }
+  ]
+}

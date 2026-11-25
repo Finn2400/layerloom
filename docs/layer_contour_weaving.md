@@ -5,6 +5,14 @@ instead of retaining all sliced bands and performing a whole-model export.
 Legacy weaving remains the default. This is a geometry/export optimization,
 not a promise that every slicer or printer will use less memory.
 
+The [measured Benchy results](benchmarks/layer-contour/report.md) pass all 423
+serialized contour checks at 0.02 mm with a 0.16 mm first layer and 0.08 mm
+subsequent layers. They **do not pass the 0.02 mm wall-preservation gate**:
+Snapmaker Orca moves some short wall ends by about 0.081 mm. The 0.01 mm contour
+tier also fails. Keep this backend experimental; do not infer wall accuracy
+from the contour setting. Zero tolerance disables discretionary approximation
+and is available as the reconstruction reference.
+
 ## Use
 
 Install the experimental geometry and benchmark extras in the feature checkout:
@@ -25,6 +33,8 @@ layerloom-weave -i examples/tutorial_cmy_benchy_cutup.3mf \
 ```
 
 The input must be a prepared labeled 3MF with its final scale and orientation.
+PAT recipes and `stack_token` metadata determine weaving; untagged parts retain
+the existing `cmy` fallback.
 Use the same first/subsequent layer heights and fixed placement in the slicer;
 do not rotate or rescale the woven model, or enable adaptive layer heights.
 The first-layer color setting retains its existing purpose. A separate first
@@ -190,16 +200,35 @@ The audit does not certify full-mesh topology away from the slicing planes,
 physical printability, or slicer-generated wall centerlines, widths and seams.
 Use the following full-slicing comparison for those toolpath checks.
 
-Local regression evidence for the equal-height Benchy is retained in
-`experiments/layer_contour/benchy/benchy_020_readback.audit.json` and its layer
-JSONL. After fixing precision retention, combined-outline checks and exact
-sidewall pairing, all 182 planes passed at 0.02 mm: no material, union or overlap
-failures, with observed maximum boundary Hausdorff distance 0.0149897 mm.
-The candidate contains 947,848 triangles and is 12,038,388 compressed bytes.
-Earlier generated candidates failed this readback check even though their
-in-process counters passed; their old counters are not validation evidence.
-This case uses 0.20/0.20 mm layers and does not establish the unequal-first-height
-or downstream wall-path results.
+Final local evidence uses the upright Benchy at 0.16/0.08 mm. Both the 0.02 mm
+candidate and the zero-approximation reference pass all 423 planes, including
+material, combined-outline and overlap topology. Their observed maximum boundary
+distances are 0.0149442 mm and zero, respectively. The corrected independent
+certificate is identified as `serialized-contours-2`; aggregate and layer reports
+are beside the 3MFs under `experiments/layer_contour/upright/final_008/` and
+`final_reference_008/`. The compact report links the retained evidence.
+
+Earlier generated candidates failed readback despite passing their in-process
+counters. Those counters are not validation evidence. The separate native
+G-code comparison still fails; successful contour certification cannot replace it.
+
+The final upright Benchy uses a 0.16 mm first layer and 0.08 mm ordinary layers.
+Its two `serialized-contours-2` audits independently passed all 423 planes with
+zero material, combined-outline or overlap failures:
+
+| Candidate | Observed maximum boundary distance | Serialized triangles | Compressed 3MF bytes |
+| --- | ---: | ---: | ---: |
+| Zero intentional simplification | 0 mm | 3,551,088 | 48,451,267 |
+| 0.02 mm tolerance | 0.0149442 mm | 3,318,900 | 45,302,531 |
+
+The zero case declares the numerical allowance described above; its measured
+readback contour difference was zero. The 0.02 mm case certifies that distance
+limit after clearing buffer precision metadata, and uses exact fallback on 347
+of 423 layers. Evidence is under
+`experiments/layer_contour/upright/final_reference_008/contour-0-r1.audit.json`
+and `experiments/layer_contour/upright/final_008/contour-0.02-r1.audit.json`, with
+complete layer JSONL beside each. These are contour results, not wall-path or
+physical-print guarantees; use the separately recorded downstream results.
 
 ### Full slicing and wall-path comparison
 
