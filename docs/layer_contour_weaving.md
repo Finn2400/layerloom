@@ -13,6 +13,14 @@ tier also fails. Keep this backend experimental; do not infer wall accuracy
 from the contour setting. Zero tolerance disables discretionary approximation
 and is available as the reconstruction reference.
 
+The [full-size Pam ribbon-model run](benchmarks/layer-contour/pam/README.md)
+also passes all 2,162 serialized contour planes but fails the downstream wall
+gate. Small contour changes can shorten an acute wall tip substantially; nearby
+infill does not necessarily recover that material. Its exact-contour reference
+and 0.02 mm candidate both complete native slicing with the recorded Normal Lift
+profile. Keep the approximation experimental, and use the exact-contour version
+when preserving this model's wall placement is the priority.
+
 ## Use
 
 Install the experimental geometry and benchmark extras in the feature checkout:
@@ -196,6 +204,11 @@ preserves very narrow lattice holes. If those vertices already lie exactly on
 the export lattice, the precision metadata is attached without another topology
 normalization. Mixed or unmatched sections retain ordinary slicing. Every part
 still undergoes the same contour comparisons.
+Revision `serialized-contours-3` additionally skips a redundant union when the
+only section already carries certified export-lattice precision. Pam exposed a
+case where that second normalization erased a valid, extremely narrow hole.
+The regression fixture is retained, and all Pam source sections were unchanged
+by the fix. Historical Benchy results below retain their original revision IDs.
 The audit does not certify full-mesh topology away from the slicing planes,
 physical printability, or slicer-generated wall centerlines, widths and seams.
 Use the following full-slicing comparison for those toolpath checks.

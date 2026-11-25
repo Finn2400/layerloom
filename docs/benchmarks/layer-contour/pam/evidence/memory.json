@@ -1,0 +1,134 @@
+{
+  "official_release_source": {
+    "official_repository": "https://github.com/Snapmaker/OrcaSlicer",
+    "release_tag": "v2.3.5",
+    "release_url": "https://github.com/Snapmaker/OrcaSlicer/releases/tag/v2.3.5",
+    "tag_commit": "761718a5eaf6f52b818af236653f3807d091a613",
+    "processor_cpp_blob": "a91f17e750d7f3821e5be6ce04ffcf525b816d6e",
+    "processor_hpp_blob": "64dc41e567e7cd4ff41a88e8da2911ccba09bfbe",
+    "circle_cpp_blob": "bcd7fc47c1d3a887453ce1044529f501aa92825e",
+    "confirmed_source_behaviors": [
+      "G2/G3 resizes m_interpolation_points, and the radius<=0.0125mm branch is its only explicit clear in Processor.cpp.",
+      "Ordinary process_G1 and reset do not clear m_interpolation_points.",
+      "store_move_vertex unconditionally copies m_interpolation_points into MoveVertex::interpolation_points for all move types.",
+      "The stored arc vector is owned per MoveVertex, so subsequent G1 moves retain redundant per-record vector payload."
+    ],
+    "source_lines": {
+      "drawing_tolerance": 39,
+      "process_G1": 2591,
+      "arc_interpolation": [
+        3057,
+        3076
+      ],
+      "explicit_zero_resize": 3061,
+      "reset": 1128,
+      "store_move_vertex": [
+        4769,
+        4809
+      ],
+      "unconditional_vector_copy": 4807
+    },
+    "attribution": "Confirmed against official published2.3.5 source, matching installed app version2.3.5; binary behavior still requires controlled measurement. Local source checkout is2.4.1 and was not treated as an exact installed-version source."
+  },
+  "source_based_stale_arc_payload_estimate": {
+    "status": "Source-based payload estimate, not measured allocator or binary behavior. Input is incomplete temporary G-code.",
+    "partial_path": "<local>/plate_1.gcode.tmp",
+    "partial_sha256": "e0a1aed0cb781fb6bc1030ed03b8d91319debc3c26738ea081a0bf0a73741a39",
+    "line_count": 16750583,
+    "arc_commands": 4496,
+    "full_circle_P1_no_XY_arcs": 4496,
+    "unsupported_non_full_arc_commands": 0,
+    "first_arc": {
+      "line": 15428,
+      "layer": 1,
+      "command": "G3 Z.64 I-.716 J.984 P1  F30000"
+    },
+    "radius_mm": {
+      "min": 1.2162902614096687,
+      "max": 1.2176308964542581
+    },
+    "arc_interpolation_count_histogram": {
+      "21": 4496
+    },
+    "following_linear_motion_field_count_by_stale_point_count": {
+      "0": 15009,
+      "21": 14899138
+    },
+    "following_nonzero_E_linear_count_by_stale_point_count": {
+      "0": 14789,
+      "21": 14326834
+    },
+    "stale_point_payload_bytes_for_motion_fields": 3754582776,
+    "stale_point_payload_bytes_for_nonzero_E_lines": 3610362168,
+    "stale_motion_payload_by_feature": {
+      "Custom": 0,
+      "Outer wall": 320569956,
+      "Gap infill": 6574932,
+      "Prime tower": 135208584,
+      "Support": 2360457792,
+      "Inner wall": 505190952,
+      "Overhang wall": 1530900,
+      "Support interface": 7066584,
+      "Internal solid infill": 144018756,
+      "Sparse infill": 273262248,
+      "Bridge": 26712,
+      "Internal Bridge": 602028,
+      "Top surface": 73332
+    },
+    "examples": [
+      {
+        "command": "G3 Z.64 I-.716 J.984 P1  F30000",
+        "radius_mm": 1.216927278024451,
+        "interpolation_points": 21,
+        "payload_bytes_per_subsequent_linear_move": 252
+      },
+      {
+        "command": "G3 Z.64 I1.152 J.393 P1  F30000",
+        "radius_mm": 1.217190617775211,
+        "interpolation_points": 21,
+        "payload_bytes_per_subsequent_linear_move": 252
+      },
+      {
+        "command": "G3 Z.72 I.455 J1.129 P1  F30000",
+        "radius_mm": 1.217237035256486,
+        "interpolation_points": 21,
+        "payload_bytes_per_subsequent_linear_move": 252
+      },
+      {
+        "command": "G3 Z.72 I-.426 J-1.14 P1  F30000",
+        "radius_mm": 1.216994658985815,
+        "interpolation_points": 21,
+        "payload_bytes_per_subsequent_linear_move": 252
+      }
+    ],
+    "formula": "floor(2*pi / (2*acos((r-0.0125)/r))) interpolation points for each P1 full-circle arc; each Vec3f carries three float32 values (12 raw bytes). Every subsequent stored linear MoveVertex copies the latest arc vector in official2.3.5 source. Counts exclude seam/tool-change markers, allocator overhead and vector-capacity overhead; coordinate-bearing G1 commands that are actually zero displacement may be overcounted. Nonzero relative-E commands supply a more conservative subset.",
+    "official_tag": "v2.3.5",
+    "official_commit": "761718a5eaf6f52b818af236653f3807d091a613",
+    "official_cpp_blob": "a91f17e750d7f3821e5be6ce04ffcf525b816d6e",
+    "elapsed_seconds": 43.227813541016076
+  },
+  "failed_auto_lift_slice": {
+    "exit_code": -15,
+    "elapsed_s": 148.29873179201968,
+    "peak_process_tree_rss_bytes_observed": 6850035712,
+    "largest_individual_process_lifetime_max_phys_footprint_bytes": 10749044160,
+    "system_swap_peak_used_increase_from_baseline_bytes": 389414912,
+    "rss_poll_interval_s": 0.05,
+    "rss_measurement_complete": true,
+    "phys_footprint_measurement_complete": true,
+    "stop_reason": "Process-tree physical footprint exceeded 10 GiB",
+    "full_slice_completed": false,
+    "project": {
+      "path": "<local>/Pam_TCR_pMHC_layer_contour_U1.3mf",
+      "size_bytes": 151921647,
+      "sha256": "e6da99e9de2a5a927bbae3afe9440e27acb3f393e6abbcf78211153e527f7837",
+      "vertices": 6426096,
+      "triangles": 12685892,
+      "uncompressed_geometry_bytes": 1107443170,
+      "zip_valid": true
+    },
+    "printer_contacted": false,
+    "print_started": false
+  },
+  "note": "Source-based payload arithmetic is not an allocator measurement. Full Normal Lift native slices are measured separately in slicing.json; GUI transfer was not benchmarked."
+}

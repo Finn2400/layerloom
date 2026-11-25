@@ -1,0 +1,1440 @@
+{
+  "status": "complete",
+  "candidate_strict_wall_gate_failed_in_observed_layers": true,
+  "full_wall_summary": {
+    "reference": "<local>/plate_1.gcode",
+    "candidate": "<local>/plate_1.gcode",
+    "tolerance_mm": 0.02,
+    "reference_artifact": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8"
+    },
+    "candidate_artifact": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 712612309,
+      "sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655"
+    },
+    "width_tolerance_mm": 0.02,
+    "layers": 2161,
+    "failed_layers": 2159,
+    "combined_feature_geometry_failed_layers": 2159,
+    "certified_over_tolerance_layers": 1862,
+    "max_displacement_upper_mm": 20.420691821842436,
+    "max_combined_feature_displacement_upper_mm": 1.2323417606442462,
+    "wall_paths_validated": false,
+    "object_scope": {
+      "reference": {
+        "path": "<local>/plate_1.gcode",
+        "object_starts": 5703,
+        "object_stops": 5703,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 5703
+        },
+        "feature_annotations_inside": {
+          "Brim": 1,
+          "Outer wall": 44737,
+          "Gap infill": 3780,
+          "Support": 2720,
+          "Inner wall": 42429,
+          "Overhang wall": 2112,
+          "Support interface": 646,
+          "Internal solid infill": 24292,
+          "Sparse infill": 36640,
+          "Bridge": 9,
+          "Internal Bridge": 107,
+          "Top surface": 42
+        },
+        "feature_annotations_outside": {
+          "Custom": 2,
+          "Prime tower": 6003
+        },
+        "byte_limit": null,
+        "input_bytes_used": 717448319,
+        "input_prefix_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8"
+      },
+      "candidate": {
+        "path": "<local>/plate_1.gcode",
+        "object_starts": 5704,
+        "object_stops": 5704,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 5704
+        },
+        "feature_annotations_inside": {
+          "Outer wall": 44742,
+          "Gap infill": 3762,
+          "Support": 2697,
+          "Inner wall": 42428,
+          "Overhang wall": 2112,
+          "Support interface": 617,
+          "Internal solid infill": 24272,
+          "Sparse infill": 36606,
+          "Bridge": 9,
+          "Internal Bridge": 107,
+          "Top surface": 42
+        },
+        "feature_annotations_outside": {
+          "Custom": 2,
+          "Prime tower": 6004
+        },
+        "byte_limit": null,
+        "input_bytes_used": 712612309,
+        "input_prefix_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655"
+      }
+    },
+    "exclusions": "Only named print-object Outer/Inner/Overhang walls; supports, prime tower, infill, travels and custom moves excluded by feature annotations.",
+    "method": "Continuous-polyline Hausdorff enclosure; 0.001mm residual. Width compatibility is spatial, not just a min/max check. No entire G-code file is loaded.",
+    "elapsed_seconds": 2157.8592868330306,
+    "layer_report": "<local>/pam_walls.layers.jsonl",
+    "parallel_execution": {
+      "workers": 6,
+      "max_inflight_configured": 8,
+      "peak_inflight_observed": 8,
+      "layer_pairs_submitted": 2161,
+      "parser_passes": 1,
+      "results_reduced_in_input_order": true,
+      "sample_chunk_size": 200000,
+      "histogram_contributions_reduced_in_serial_chunk_order": true,
+      "all_layers_compared": true,
+      "selected_layer_indices": null,
+      "max_layers": null,
+      "memory_scope": "At most eight submitted layer pairs; six worker-local GEOS geometries and sample chunks. No entire G-code or mesh is loaded."
+    }
+  },
+  "full_distribution": {
+    "reference": "<local>/plate_1.gcode",
+    "candidate": "<local>/plate_1.gcode",
+    "spacing_mm": 0.01,
+    "reference_artifact": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8"
+    },
+    "candidate_artifact": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 712612309,
+      "sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655"
+    },
+    "method": "Bidirectional per-filament nearest-wall distances with all wall classes combined; length-weighted midpoint samples. Sampling does not certify exact extrema or entire paths.",
+    "object_scope": {
+      "reference": {
+        "path": "<local>/plate_1.gcode",
+        "object_starts": 5703,
+        "object_stops": 5703,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 5703
+        },
+        "feature_annotations_inside": {
+          "Brim": 1,
+          "Outer wall": 44737,
+          "Gap infill": 3780,
+          "Support": 2720,
+          "Inner wall": 42429,
+          "Overhang wall": 2112,
+          "Support interface": 646,
+          "Internal solid infill": 24292,
+          "Sparse infill": 36640,
+          "Bridge": 9,
+          "Internal Bridge": 107,
+          "Top surface": 42
+        },
+        "feature_annotations_outside": {
+          "Custom": 2,
+          "Prime tower": 6003
+        },
+        "byte_limit": null,
+        "input_bytes_used": 717448319,
+        "input_prefix_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8"
+      },
+      "candidate": {
+        "path": "<local>/plate_1.gcode",
+        "object_starts": 5704,
+        "object_stops": 5704,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 5704
+        },
+        "feature_annotations_inside": {
+          "Outer wall": 44742,
+          "Gap infill": 3762,
+          "Support": 2697,
+          "Inner wall": 42428,
+          "Overhang wall": 2112,
+          "Support interface": 617,
+          "Internal solid infill": 24272,
+          "Sparse infill": 36606,
+          "Bridge": 9,
+          "Internal Bridge": 107,
+          "Top surface": 42
+        },
+        "feature_annotations_outside": {
+          "Custom": 2,
+          "Prime tower": 6004
+        },
+        "byte_limit": null,
+        "input_bytes_used": 712612309,
+        "input_prefix_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655"
+      }
+    },
+    "layer_count": 2161,
+    "worst_samples": [
+      {
+        "z_mm": 145.76,
+        "total_length_mm": 2504.5134833965603,
+        "length_above_002_mm": 8.730914728154232,
+        "max_sample_distance_mm": 1.2280759034873385,
+        "worst_xy_mm": [
+          65.92603846153847,
+          168.82000000000002
+        ],
+        "tool": 3,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 142.0,
+        "total_length_mm": 3322.3231405993974,
+        "length_above_002_mm": 9.695239109310743,
+        "max_sample_distance_mm": 1.0022928912909783,
+        "worst_xy_mm": [
+          166.04547368421055,
+          117.86873684210526
+        ],
+        "tool": 2,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 118.64,
+        "total_length_mm": 3780.395902519048,
+        "length_above_002_mm": 7.458813997060813,
+        "max_sample_distance_mm": 0.871780520548281,
+        "worst_xy_mm": [
+          176.05656468531467,
+          86.53022727272727
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 57.36,
+        "total_length_mm": 5658.156745294835,
+        "length_above_002_mm": 17.009442396986902,
+        "max_sample_distance_mm": 0.7440686627496294,
+        "worst_xy_mm": [
+          136.6344436813187,
+          103.99506456043957
+        ],
+        "tool": 3,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 20.48,
+        "total_length_mm": 4517.312837180847,
+        "length_above_002_mm": 1.9920517567366882,
+        "max_sample_distance_mm": 0.4408153983757426,
+        "worst_xy_mm": [
+          153.26879729729728,
+          145.17765315315316
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 153.44,
+        "total_length_mm": 1540.4669708650636,
+        "length_above_002_mm": 5.780138725235169,
+        "max_sample_distance_mm": 0.4095036465078255,
+        "worst_xy_mm": [
+          228.80322258064515,
+          113.67007096774194
+        ],
+        "tool": 2,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 56.56,
+        "total_length_mm": 5787.154850647606,
+        "length_above_002_mm": 13.564007632381896,
+        "max_sample_distance_mm": 0.3774029094468712,
+        "worst_xy_mm": [
+          55.788366863905324,
+          24.859420118343195
+        ],
+        "tool": 0,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 137.44,
+        "total_length_mm": 3704.505099195152,
+        "length_above_002_mm": 5.047605753539495,
+        "max_sample_distance_mm": 0.35916005132470274,
+        "worst_xy_mm": [
+          185.91511594202896,
+          153.3828260869565
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      }
+    ],
+    "weighted": {
+      "reference_to_candidate": {
+        "length_mm": 4477762.31064749,
+        "samples": 450487410,
+        "above": {
+          "0.005": 67387.13102962401,
+          "0.01": 20481.003807687634,
+          "0.02": 518.4549435737327,
+          "0.04": 234.67366774936676,
+          "0.06": 143.79977383593453,
+          "0.08": 96.6571904014455,
+          "0.1": 68.95600068343906,
+          "0.2": 16.554864154988277
+        },
+        "max_sample_distance_mm": 1.2280759034873385,
+        "mean_distance_mm": 0.00020818895710082665,
+        "fraction_length_above": {
+          "0.005": 0.015049287200749105,
+          "0.01": 0.004573937245169687,
+          "0.02": 0.00011578438237798368,
+          "0.04": 5.2408692438038904e-05,
+          "0.06": 3.211420434130656e-05,
+          "0.08": 2.1586047604985254e-05,
+          "0.1": 1.5399656323756034e-05,
+          "0.2": 3.697128835003844e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.0134
+        }
+      },
+      "candidate_to_reference": {
+        "length_mm": 4477691.16719614,
+        "samples": 450450957,
+        "above": {
+          "0.005": 67326.65959305571,
+          "0.01": 20430.53446270601,
+          "0.02": 497.35228059698716,
+          "0.04": 216.1152593376005,
+          "0.06": 127.41842614635249,
+          "0.08": 82.85890397526518,
+          "0.1": 56.91879672964262,
+          "0.2": 12.204880582732322
+        },
+        "max_sample_distance_mm": 1.0022928912909783,
+        "mean_distance_mm": 0.0002074077955100984,
+        "fraction_length_above": {
+          "0.005": 0.015036021261648247,
+          "0.01": 0.004562738630207785,
+          "0.02": 0.0001110733773335291,
+          "0.04": 4.826488725280455e-05,
+          "0.06": 2.8456278333760103e-05,
+          "0.08": 1.850482779658744e-05,
+          "0.1": 1.2711639683110232e-05,
+          "0.2": 2.7257084347723847e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.013300000000000001
+        }
+      },
+      "both": {
+        "length_mm": 8955453.477843631,
+        "samples": 900938367,
+        "above": {
+          "0.005": 134713.79062267972,
+          "0.01": 40911.53827039365,
+          "0.02": 1015.8072241707199,
+          "0.04": 450.78892708696725,
+          "0.06": 271.21819998228705,
+          "0.08": 179.51609437671067,
+          "0.1": 125.87479741308168,
+          "0.2": 28.7597447377206
+        },
+        "max_sample_distance_mm": 1.2280759034873385,
+        "mean_distance_mm": 0.0002077983794082943,
+        "fraction_length_above": {
+          "0.005": 0.015042654283891968,
+          "0.01": 0.004568337982170465,
+          "0.02": 0.00011342889856821795,
+          "0.04": 5.0336806304923376e-05,
+          "0.06": 3.0285255867086838e-05,
+          "0.08": 2.004544993962004e-05,
+          "0.1": 1.4055658680434668e-05,
+          "0.2": 3.2114224934420195e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.013300000000000001
+        }
+      }
+    },
+    "elapsed_seconds": 2157.8592868330306,
+    "parallel_execution": {
+      "workers": 6,
+      "max_inflight_configured": 8,
+      "peak_inflight_observed": 8,
+      "layer_pairs_submitted": 2161,
+      "parser_passes": 1,
+      "results_reduced_in_input_order": true,
+      "sample_chunk_size": 200000,
+      "histogram_contributions_reduced_in_serial_chunk_order": true,
+      "all_layers_compared": true,
+      "selected_layer_indices": null,
+      "max_layers": null,
+      "memory_scope": "At most eight submitted layer pairs; six worker-local GEOS geometries and sample chunks. No entire G-code or mesh is loaded."
+    }
+  },
+  "complete_wall_interpretation": {
+    "completed": true,
+    "determinism_control_report": "<local>/reference_normal_lift_repeat_determinism.json",
+    "scope": "All named-model wall layers from both completed Normal Lift G-code files, with unchanged strict 0.02mm displacement and width thresholds.",
+    "counts": {
+      "layers": 2161,
+      "strict_failure_but_combined_wall_set_passes": 0,
+      "inner_is_only_failing_class": 2,
+      "outer_or_overhang_class_failed": 2157,
+      "combined_set_failed_with_no_outer_or_overhang_class_failure": 2,
+      "width_compatibility_failed_layers": 2159
+    },
+    "by_feature": {
+      "outer": {
+        "layers_present": 2161,
+        "layers_failed": 2157,
+        "width_failed_layers": 2146,
+        "worst": [
+          {
+            "z_mm": 57.84,
+            "tool": 2,
+            "feature": "outer",
+            "reference_segments": 494,
+            "candidate_segments": 460,
+            "max_displacement_lower_mm": 5.775500831233046,
+            "max_displacement_upper_mm": 5.776000832233046,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 407.3870955173393,
+            "candidate_length_mm": 407.4227710794892,
+            "passed": false
+          },
+          {
+            "z_mm": 43.92,
+            "tool": 2,
+            "feature": "outer",
+            "reference_segments": 338,
+            "candidate_segments": 336,
+            "max_displacement_lower_mm": 0.7356011147354176,
+            "max_displacement_upper_mm": 0.7361011157354175,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 284.0045838638249,
+            "candidate_length_mm": 283.25731794688966,
+            "passed": false
+          },
+          {
+            "z_mm": 135.76,
+            "tool": 3,
+            "feature": "outer",
+            "reference_segments": 533,
+            "candidate_segments": 496,
+            "max_displacement_lower_mm": 0.5222005178871654,
+            "max_displacement_upper_mm": 0.5228688601686811,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 444.53021812889125,
+            "candidate_length_mm": 445.0768268167872,
+            "passed": false
+          },
+          {
+            "z_mm": 55.92,
+            "tool": 3,
+            "feature": "outer",
+            "reference_segments": 672,
+            "candidate_segments": 615,
+            "max_displacement_lower_mm": 0.5031399598976639,
+            "max_displacement_upper_mm": 0.5036399608976638,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 626.2523364916339,
+            "candidate_length_mm": 625.4791655961935,
+            "passed": false
+          },
+          {
+            "z_mm": 20.48,
+            "tool": 2,
+            "feature": "outer",
+            "reference_segments": 613,
+            "candidate_segments": 587,
+            "max_displacement_lower_mm": 0.4777278062695391,
+            "max_displacement_upper_mm": 0.47825701717355845,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 616.5611964072299,
+            "candidate_length_mm": 615.8395151905091,
+            "passed": false
+          }
+        ]
+      },
+      "overhang": {
+        "layers_present": 855,
+        "layers_failed": 68,
+        "width_failed_layers": 60,
+        "worst": [
+          {
+            "z_mm": 23.44,
+            "tool": 0,
+            "feature": "overhang",
+            "reference_segments": 0,
+            "candidate_segments": 1,
+            "passed": false,
+            "reason": "missing wall feature or filament"
+          },
+          {
+            "z_mm": 17.12,
+            "tool": 3,
+            "feature": "overhang",
+            "reference_segments": 7,
+            "candidate_segments": 6,
+            "max_displacement_lower_mm": 20.420191820842437,
+            "max_displacement_upper_mm": 20.420691821842436,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 6.385897385924116,
+            "candidate_length_mm": 6.2275455268233415,
+            "passed": false
+          },
+          {
+            "z_mm": 15.68,
+            "tool": 2,
+            "feature": "overhang",
+            "reference_segments": 22,
+            "candidate_segments": 21,
+            "max_displacement_lower_mm": 14.452698709929582,
+            "max_displacement_upper_mm": 14.453198710929582,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 14.962807572669544,
+            "candidate_length_mm": 14.670780670441193,
+            "passed": false
+          },
+          {
+            "z_mm": 0.32,
+            "tool": 2,
+            "feature": "overhang",
+            "reference_segments": 4,
+            "candidate_segments": 5,
+            "max_displacement_lower_mm": 4.683148086490534,
+            "max_displacement_upper_mm": 4.683648087490534,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 0.7816390532790624,
+            "candidate_length_mm": 0.8665036513161741,
+            "passed": false
+          },
+          {
+            "z_mm": 8.48,
+            "tool": 3,
+            "feature": "overhang",
+            "reference_segments": 10,
+            "candidate_segments": 9,
+            "max_displacement_lower_mm": 1.847626044414824,
+            "max_displacement_upper_mm": 1.848126045414824,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 3.2670604400027248,
+            "candidate_length_mm": 2.871607182261368,
+            "passed": false
+          }
+        ]
+      },
+      "inner": {
+        "layers_present": 2159,
+        "layers_failed": 2151,
+        "width_failed_layers": 2146,
+        "worst": [
+          {
+            "z_mm": 145.76,
+            "tool": 3,
+            "feature": "inner",
+            "reference_segments": 999,
+            "candidate_segments": 967,
+            "max_displacement_lower_mm": 1.2318417596442461,
+            "max_displacement_upper_mm": 1.2323417606442462,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 805.5426937601028,
+            "candidate_length_mm": 802.9261807366554,
+            "passed": false
+          },
+          {
+            "z_mm": 142.0,
+            "tool": 2,
+            "feature": "inner",
+            "reference_segments": 830,
+            "candidate_segments": 794,
+            "max_displacement_lower_mm": 1.0036902906486156,
+            "max_displacement_upper_mm": 1.0044777429073524,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 689.9806007820993,
+            "candidate_length_mm": 692.8350761894412,
+            "passed": false
+          },
+          {
+            "z_mm": 118.64,
+            "tool": 2,
+            "feature": "inner",
+            "reference_segments": 557,
+            "candidate_segments": 553,
+            "max_displacement_lower_mm": 0.8726497596772118,
+            "max_displacement_upper_mm": 0.8731497606772117,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 464.92697158458606,
+            "candidate_length_mm": 462.7131382468535,
+            "passed": false
+          },
+          {
+            "z_mm": 57.36,
+            "tool": 3,
+            "feature": "inner",
+            "reference_segments": 1383,
+            "candidate_segments": 1335,
+            "max_displacement_lower_mm": 0.7440505295930633,
+            "max_displacement_upper_mm": 0.7447508843868341,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 1340.2523041785064,
+            "candidate_length_mm": 1341.835810699942,
+            "passed": false
+          },
+          {
+            "z_mm": 55.92,
+            "tool": 3,
+            "feature": "inner",
+            "reference_segments": 1171,
+            "candidate_segments": 1114,
+            "max_displacement_lower_mm": 0.44643564700266397,
+            "max_displacement_upper_mm": 0.4471341391424349,
+            "widths_known": true,
+            "widths_passed": false,
+            "reference_length_mm": 1119.5809916744543,
+            "candidate_length_mm": 1118.9604981454843,
+            "passed": false
+          }
+        ]
+      }
+    },
+    "by_source_slab_status": {
+      "simplified": {
+        "layers": 826,
+        "strict_failed": 824,
+        "combined_failed": 824,
+        "combined_certified_over_020mm": 751,
+        "total_bidirectional_length_mm": 2070250.6296127308,
+        "length_above_020mm": 1006.034795761481,
+        "max_sample_distance_mm": 1.2280759034873385,
+        "fraction_length_above_020mm": 0.0004859483104949828
+      },
+      "exact_fallback": {
+        "layers": 1335,
+        "strict_failed": 1335,
+        "combined_failed": 1335,
+        "combined_certified_over_020mm": 1111,
+        "total_bidirectional_length_mm": 6885202.848230892,
+        "length_above_020mm": 9.772428409239753,
+        "max_sample_distance_mm": 0.02055816605706347,
+        "fraction_length_above_020mm": 1.4193377631206196e-06
+      },
+      "exact_fallback_plus_both_adjacent_slabs": {
+        "layers": 1034,
+        "strict_failed": 1034,
+        "combined_failed": 1034,
+        "combined_certified_over_020mm": 885,
+        "total_bidirectional_length_mm": 5628480.630616639,
+        "length_above_020mm": 7.883421864499644,
+        "max_sample_distance_mm": 0.02055816605706347,
+        "fraction_length_above_020mm": 1.4006305399039742e-06
+      }
+    },
+    "combined_wall_set_worst": [
+      {
+        "z_mm": 145.76,
+        "tool": 3,
+        "max_displacement_lower_mm": 1.2318417596442461,
+        "max_displacement_upper_mm": 1.2323417606442462,
+        "passed": false
+      },
+      {
+        "z_mm": 142.0,
+        "tool": 2,
+        "max_displacement_lower_mm": 1.0036902906486156,
+        "max_displacement_upper_mm": 1.0044777429073524,
+        "passed": false
+      },
+      {
+        "z_mm": 118.64,
+        "tool": 2,
+        "max_displacement_lower_mm": 0.8726497596772118,
+        "max_displacement_upper_mm": 0.8731497606772117,
+        "passed": false
+      },
+      {
+        "z_mm": 57.36,
+        "tool": 3,
+        "max_displacement_lower_mm": 0.7440505295930633,
+        "max_displacement_upper_mm": 0.7447508843868341,
+        "passed": false
+      },
+      {
+        "z_mm": 20.48,
+        "tool": 2,
+        "max_displacement_lower_mm": 0.4409549693292803,
+        "max_displacement_upper_mm": 0.4414805839242169,
+        "passed": false
+      },
+      {
+        "z_mm": 153.44,
+        "tool": 2,
+        "max_displacement_lower_mm": 0.41111142615387597,
+        "max_displacement_upper_mm": 0.41203992110155113,
+        "passed": false
+      },
+      {
+        "z_mm": 56.56,
+        "tool": 0,
+        "max_displacement_lower_mm": 0.37973280079550864,
+        "max_displacement_upper_mm": 0.38023280179550867,
+        "passed": false
+      },
+      {
+        "z_mm": 137.44,
+        "tool": 2,
+        "max_displacement_lower_mm": 0.3620215724540877,
+        "max_displacement_upper_mm": 0.36252157345408775,
+        "passed": false
+      }
+    ],
+    "weighted_distribution": {
+      "reference_to_candidate": {
+        "length_mm": 4477762.31064749,
+        "samples": 450487410,
+        "above": {
+          "0.005": 67387.13102962401,
+          "0.01": 20481.003807687634,
+          "0.02": 518.4549435737327,
+          "0.04": 234.67366774936676,
+          "0.06": 143.79977383593453,
+          "0.08": 96.6571904014455,
+          "0.1": 68.95600068343906,
+          "0.2": 16.554864154988277
+        },
+        "max_sample_distance_mm": 1.2280759034873385,
+        "mean_distance_mm": 0.00020818895710082665,
+        "fraction_length_above": {
+          "0.005": 0.015049287200749105,
+          "0.01": 0.004573937245169687,
+          "0.02": 0.00011578438237798368,
+          "0.04": 5.2408692438038904e-05,
+          "0.06": 3.211420434130656e-05,
+          "0.08": 2.1586047604985254e-05,
+          "0.1": 1.5399656323756034e-05,
+          "0.2": 3.697128835003844e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.0134
+        }
+      },
+      "candidate_to_reference": {
+        "length_mm": 4477691.16719614,
+        "samples": 450450957,
+        "above": {
+          "0.005": 67326.65959305571,
+          "0.01": 20430.53446270601,
+          "0.02": 497.35228059698716,
+          "0.04": 216.1152593376005,
+          "0.06": 127.41842614635249,
+          "0.08": 82.85890397526518,
+          "0.1": 56.91879672964262,
+          "0.2": 12.204880582732322
+        },
+        "max_sample_distance_mm": 1.0022928912909783,
+        "mean_distance_mm": 0.0002074077955100984,
+        "fraction_length_above": {
+          "0.005": 0.015036021261648247,
+          "0.01": 0.004562738630207785,
+          "0.02": 0.0001110733773335291,
+          "0.04": 4.826488725280455e-05,
+          "0.06": 2.8456278333760103e-05,
+          "0.08": 1.850482779658744e-05,
+          "0.1": 1.2711639683110232e-05,
+          "0.2": 2.7257084347723847e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.013300000000000001
+        }
+      },
+      "both": {
+        "length_mm": 8955453.477843631,
+        "samples": 900938367,
+        "above": {
+          "0.005": 134713.79062267972,
+          "0.01": 40911.53827039365,
+          "0.02": 1015.8072241707199,
+          "0.04": 450.78892708696725,
+          "0.06": 271.21819998228705,
+          "0.08": 179.51609437671067,
+          "0.1": 125.87479741308168,
+          "0.2": 28.7597447377206
+        },
+        "max_sample_distance_mm": 1.2280759034873385,
+        "mean_distance_mm": 0.0002077983794082943,
+        "fraction_length_above": {
+          "0.005": 0.015042654283891968,
+          "0.01": 0.004568337982170465,
+          "0.02": 0.00011342889856821795,
+          "0.04": 5.0336806304923376e-05,
+          "0.06": 3.0285255867086838e-05,
+          "0.08": 2.004544993962004e-05,
+          "0.1": 1.4055658680434668e-05,
+          "0.2": 3.2114224934420195e-06
+        },
+        "distance_quantile_upper_bin_mm": {
+          "0.5": 0.0001,
+          "0.9": 0.0001,
+          "0.95": 0.0004,
+          "0.99": 0.007,
+          "0.999": 0.013300000000000001
+        }
+      }
+    },
+    "worst_samples": [
+      {
+        "z_mm": 145.76,
+        "total_length_mm": 2504.5134833965603,
+        "length_above_002_mm": 8.730914728154232,
+        "max_sample_distance_mm": 1.2280759034873385,
+        "worst_xy_mm": [
+          65.92603846153847,
+          168.82000000000002
+        ],
+        "tool": 3,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 142.0,
+        "total_length_mm": 3322.3231405993974,
+        "length_above_002_mm": 9.695239109310743,
+        "max_sample_distance_mm": 1.0022928912909783,
+        "worst_xy_mm": [
+          166.04547368421055,
+          117.86873684210526
+        ],
+        "tool": 2,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 118.64,
+        "total_length_mm": 3780.395902519048,
+        "length_above_002_mm": 7.458813997060813,
+        "max_sample_distance_mm": 0.871780520548281,
+        "worst_xy_mm": [
+          176.05656468531467,
+          86.53022727272727
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 57.36,
+        "total_length_mm": 5658.156745294835,
+        "length_above_002_mm": 17.009442396986902,
+        "max_sample_distance_mm": 0.7440686627496294,
+        "worst_xy_mm": [
+          136.6344436813187,
+          103.99506456043957
+        ],
+        "tool": 3,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 20.48,
+        "total_length_mm": 4517.312837180847,
+        "length_above_002_mm": 1.9920517567366882,
+        "max_sample_distance_mm": 0.4408153983757426,
+        "worst_xy_mm": [
+          153.26879729729728,
+          145.17765315315316
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 153.44,
+        "total_length_mm": 1540.4669708650636,
+        "length_above_002_mm": 5.780138725235169,
+        "max_sample_distance_mm": 0.4095036465078255,
+        "worst_xy_mm": [
+          228.80322258064515,
+          113.67007096774194
+        ],
+        "tool": 2,
+        "direction": "candidate_to_reference"
+      },
+      {
+        "z_mm": 56.56,
+        "total_length_mm": 5787.154850647606,
+        "length_above_002_mm": 13.564007632381896,
+        "max_sample_distance_mm": 0.3774029094468712,
+        "worst_xy_mm": [
+          55.788366863905324,
+          24.859420118343195
+        ],
+        "tool": 0,
+        "direction": "reference_to_candidate"
+      },
+      {
+        "z_mm": 137.44,
+        "total_length_mm": 3704.505099195152,
+        "length_above_002_mm": 5.047605753539495,
+        "max_sample_distance_mm": 0.35916005132470274,
+        "worst_xy_mm": [
+          185.91511594202896,
+          153.3828260869565
+        ],
+        "tool": 2,
+        "direction": "reference_to_candidate"
+      }
+    ],
+    "limitations": [
+      "Feature-separated outer/overhang differences can reflect slicer feature relabeling; they are not direct physical displacement measurements.",
+      "Combined-wall comparisons retain filament identity while allowing wall-feature labels to change.",
+      "Length-weighted distribution is sampled at <=0.01mm spacing and does not certify every point or exact extrema.",
+      "Nominal deposited-footprint diagnostics are recorded separately and do not override the strict wall gate."
+    ]
+  },
+  "final_visual_review": {
+    "completed": true,
+    "all_gcode_readers_released": true,
+    "overall_wall_plot": "<local>/pam_walls.local-errors.png",
+    "overall_wall_plot_visually_inspected": true,
+    "examples": [
+      {
+        "z_mm": 145.76,
+        "tool": 3,
+        "image": "<local>/pam_walls.footprint_z_145.760.png",
+        "visual_inspected": true,
+        "observation": "The largest measured sample lies on a reference inner-wall corner omitted from the candidate path. Candidate sparse infill does not recover this local tip; the external silhouette is not displaced by the full inner-wall error.",
+        "sampled_centerline_error_mm": 1.2280759034873385,
+        "nearest_reference_feature": "inner",
+        "nearest_candidate_feature": "inner",
+        "outer_plus_overhang_centerline_upper_mm": 0.2682339598949708,
+        "local_all_model_nominal_footprint_hausdorff_lower_mm": 1.1200849189528497,
+        "local_all_model_nominal_footprint_hausdorff_upper_mm": 1.120710865160639,
+        "local_removed_nominal_material_area_mm2": 1.2211617235881,
+        "local_added_nominal_material_area_mm2": 0.08140350102998918,
+        "point_covered_by_reference_model": true,
+        "point_covered_by_candidate_model": false
+      },
+      {
+        "z_mm": 142.0,
+        "tool": 2,
+        "image": "<local>/pam_walls.footprint_z_142.000.png",
+        "visual_inspected": true,
+        "observation": "The candidate inner-wall corner extends farther, while reference solid infill already covers the sampled point. Including all model deposition substantially reduces the discrepancy; this is partly wall/infill substitution.",
+        "sampled_centerline_error_mm": 1.0022928912909783,
+        "nearest_reference_feature": "inner",
+        "nearest_candidate_feature": "inner",
+        "outer_plus_overhang_centerline_upper_mm": 0.3057399227600059,
+        "local_all_model_nominal_footprint_hausdorff_lower_mm": 0.1848407304131745,
+        "local_all_model_nominal_footprint_hausdorff_upper_mm": 0.18537459698805928,
+        "local_removed_nominal_material_area_mm2": 0.3275642400486382,
+        "local_added_nominal_material_area_mm2": 0.04595838788171549,
+        "point_covered_by_reference_model": true,
+        "point_covered_by_candidate_model": true
+      },
+      {
+        "z_mm": 118.64,
+        "tool": 2,
+        "image": "<local>/pam_walls.footprint_z_118.640.png",
+        "visual_inspected": true,
+        "observation": "The largest local difference is a shortened sharp inner-wall corner. Some nearby infill changes, but the reference samplepoint remains uncovered by candidate nominal model deposition.",
+        "sampled_centerline_error_mm": 0.871780520548281,
+        "nearest_reference_feature": "inner",
+        "nearest_candidate_feature": "inner",
+        "outer_plus_overhang_centerline_upper_mm": 0.23506030309001097,
+        "local_all_model_nominal_footprint_hausdorff_lower_mm": 0.7590896808209423,
+        "local_all_model_nominal_footprint_hausdorff_upper_mm": 0.7598235137803476,
+        "local_removed_nominal_material_area_mm2": 1.001580260316092,
+        "local_added_nominal_material_area_mm2": 0.09617315824001502,
+        "point_covered_by_reference_model": true,
+        "point_covered_by_candidate_model": false
+      }
+    ],
+    "interpretation_limits": [
+      "The top-three centerline extrema are inner-wall corners, not removal of an entire molecular branch or a global external-silhouette shift.",
+      "Nominal WIDTH/2 buffers approximate deposited material; no physical bead-shape, strength or successful-print claim is made.",
+      "The exact internal slicer decision causing each corner change was not isolated.",
+      "Feature-separated outer/overhang maxima can be dominated by relabeling. For example at Z57.84 the outer-class upper bound is5.776mm while the same-tool combined-wall bound is0.086413mm.",
+      "Exact-fallback source slabs show only very localized near-threshold wall differences, sampled maximum0.020558mm; their mechanism was not isolated.",
+      "Spatial width-compatibility failures can arise from displaced paths even when emitted width values are unchanged."
+    ]
+  },
+  "final_ranked_footprint_diagnostics": {
+    "method": "Worst three length-sampled centerline locations. Re-read one source/candidate layer at a time; buffers use each emitted WIDTH/2 with round caps/joins. Continuous Hausdorff enclosure is measured between nominal deposited-area sets, not only their boundaries. Visible-wall diagnostic combines outer and overhang classes to avoid class relabeling false positives.",
+    "limitations": [
+      "Nominal footprints approximate deposited material; they do not certify physical extrusion shape or print strength.",
+      "Whole-layer footprint distance is per selected filament; local colored areas use the shown crop.",
+      "Worst sampled centerline positions need not coincide with worst footprint difference.",
+      "Local all-model coverage includes other filaments and infill; this separates material coverage from wall-class labels but does not validate color placement or overall print strength."
+    ],
+    "examples": [
+      {
+        "z_mm": 118.64,
+        "tool": 2,
+        "sampled_centerline_error_mm": 0.871780520548281,
+        "sample_direction": "reference_to_candidate",
+        "sample_xy_mm": [
+          176.05656468531467,
+          86.53022727272727
+        ],
+        "nearest_reference_segment": {
+          "tool": 2,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 1.0125582682771996e-14,
+          "nearest_xy_mm": [
+            176.05656468531467,
+            86.53022727272727
+          ],
+          "start": [
+            175.237,
+            83.805
+          ],
+          "end": [
+            176.058,
+            86.535
+          ]
+        },
+        "nearest_candidate_segment": {
+          "tool": 2,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 0.871780520548281,
+          "nearest_xy_mm": [
+            176.8348265159751,
+            86.13740441322885
+          ],
+          "start": [
+            176.662,
+            85.795
+          ],
+          "end": [
+            176.928,
+            86.322
+          ]
+        },
+        "whole_layer_tool_swept_footprint_hausdorff_lower_mm": 0.8720225830533068,
+        "whole_layer_tool_swept_footprint_hausdorff_upper_mm": 0.8726551485530991,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_lower_mm": 0.23456030209001097,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_upper_mm": 0.23506030309001097,
+        "local_window_bounds_mm": [
+          173.44122312366983,
+          83.91488571108243,
+          178.6719062469595,
+          89.14556883437211
+        ],
+        "local_reference_wall_area_mm2": 9.706400863638702,
+        "local_candidate_wall_area_mm2": 8.775127422415657,
+        "local_removed_wall_area_mm2": 0.9938593974051616,
+        "local_added_wall_area_mm2": 0.06258595618211975,
+        "point_inside_reference_footprint": true,
+        "point_inside_candidate_footprint": false,
+        "nearest_reference_nonwall_deposition": {
+          "tool": 2,
+          "feature": "sparse infill",
+          "width_mm": 0.45,
+          "distance_mm": 0.3737479242186191,
+          "nearest_xy_mm": [
+            176.35954559401964,
+            86.74906529460199
+          ],
+          "start": [
+            175.919,
+            87.359
+          ],
+          "end": [
+            176.577,
+            86.448
+          ]
+        },
+        "nearest_candidate_nonwall_deposition": {
+          "tool": 2,
+          "feature": "sparse infill",
+          "width_mm": 0.45,
+          "distance_mm": 0.5077182638236628,
+          "nearest_xy_mm": [
+            176.50509463546405,
+            86.29232241939486
+          ],
+          "start": [
+            176.358,
+            86.015
+          ],
+          "end": [
+            176.733,
+            86.722
+          ]
+        },
+        "local_all_model_swept_footprint_hausdorff_lower_mm": 0.7590896808209423,
+        "local_all_model_swept_footprint_hausdorff_upper_mm": 0.7598235137803476,
+        "local_all_model_removed_area_mm2": 1.001580260316092,
+        "local_all_model_added_area_mm2": 0.09617315824001502,
+        "point_inside_reference_all_model_footprint": true,
+        "point_inside_candidate_all_model_footprint": false,
+        "image": "<local>/pam_walls.footprint_z_118.640.png"
+      },
+      {
+        "z_mm": 142.0,
+        "tool": 2,
+        "sampled_centerline_error_mm": 1.0022928912909783,
+        "sample_direction": "candidate_to_reference",
+        "sample_xy_mm": [
+          166.04547368421055,
+          117.86873684210526
+        ],
+        "nearest_reference_segment": {
+          "tool": 2,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 1.0022928912909783,
+          "nearest_xy_mm": [
+            165.27490098633263,
+            117.22779319620682
+          ],
+          "start": [
+            164.418,
+            118.258
+          ],
+          "end": [
+            165.308,
+            117.188
+          ]
+        },
+        "nearest_candidate_segment": {
+          "tool": 2,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 8.485466719532912e-15,
+          "nearest_xy_mm": [
+            166.04547368421055,
+            117.86873684210526
+          ],
+          "start": [
+            166.27,
+            118.089
+          ],
+          "end": [
+            164.374,
+            116.229
+          ]
+        },
+        "whole_layer_tool_swept_footprint_hausdorff_lower_mm": 0.8115869619506687,
+        "whole_layer_tool_swept_footprint_hausdorff_upper_mm": 0.8121123667913497,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_lower_mm": 0.30523992176000586,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_upper_mm": 0.3057399227600059,
+        "local_window_bounds_mm": [
+          163.03859501033762,
+          114.86185816823233,
+          169.05235235808348,
+          120.8756155159782
+        ],
+        "local_reference_wall_area_mm2": 12.561414536410693,
+        "local_candidate_wall_area_mm2": 13.88181652660685,
+        "local_removed_wall_area_mm2": 0.03957732973955602,
+        "local_added_wall_area_mm2": 1.3599793199357149,
+        "point_inside_reference_footprint": false,
+        "point_inside_candidate_footprint": true,
+        "nearest_reference_nonwall_deposition": {
+          "tool": 2,
+          "feature": "internal solid infill",
+          "width_mm": 0.418646,
+          "distance_mm": 0.043412064567652876,
+          "nearest_xy_mm": [
+            166.07754968812964,
+            117.83948385383724
+          ],
+          "start": [
+            166.472,
+            118.272
+          ],
+          "end": [
+            165.757,
+            117.488
+          ]
+        },
+        "nearest_candidate_nonwall_deposition": {
+          "tool": 2,
+          "feature": "internal solid infill",
+          "width_mm": 0.415706,
+          "distance_mm": 0.6608103899560495,
+          "nearest_xy_mm": [
+            166.11728499160213,
+            118.52563371955604
+          ],
+          "start": [
+            166.242,
+            118.512
+          ],
+          "end": [
+            164.568,
+            118.695
+          ]
+        },
+        "local_all_model_swept_footprint_hausdorff_lower_mm": 0.1848407304131745,
+        "local_all_model_swept_footprint_hausdorff_upper_mm": 0.18537459698805928,
+        "local_all_model_removed_area_mm2": 0.3275642400486382,
+        "local_all_model_added_area_mm2": 0.04595838788171549,
+        "point_inside_reference_all_model_footprint": true,
+        "point_inside_candidate_all_model_footprint": true,
+        "image": "<local>/pam_walls.footprint_z_142.000.png"
+      },
+      {
+        "z_mm": 145.76,
+        "tool": 3,
+        "sampled_centerline_error_mm": 1.2280759034873385,
+        "sample_direction": "reference_to_candidate",
+        "sample_xy_mm": [
+          65.92603846153847,
+          168.82000000000002
+        ],
+        "nearest_reference_segment": {
+          "tool": 3,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 2.000792356825205e-15,
+          "nearest_xy_mm": [
+            65.92603846153847,
+            168.82000000000002
+          ],
+          "start": [
+            65.929,
+            168.824
+          ],
+          "end": [
+            64.697,
+            167.16
+          ]
+        },
+        "nearest_candidate_segment": {
+          "tool": 3,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 1.2280759034873385,
+          "nearest_xy_mm": [
+            64.72779158768417,
+            168.55097425025727
+          ],
+          "start": [
+            64.64,
+            168.942
+          ],
+          "end": [
+            64.814,
+            168.167
+          ]
+        },
+        "whole_layer_tool_swept_footprint_hausdorff_lower_mm": 1.2316434390389774,
+        "whole_layer_tool_swept_footprint_hausdorff_upper_mm": 1.2321487293879883,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_lower_mm": 0.26773395889497076,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_upper_mm": 0.2682339598949708,
+        "local_window_bounds_mm": [
+          62.24181075107645,
+          165.135772289538,
+          69.61026617200048,
+          172.50422771046203
+        ],
+        "local_reference_wall_area_mm2": 17.65697568626669,
+        "local_candidate_wall_area_mm2": 16.497096489717514,
+        "local_removed_wall_area_mm2": 1.2236007898352783,
+        "local_added_wall_area_mm2": 0.06372159328610336,
+        "point_inside_reference_footprint": true,
+        "point_inside_candidate_footprint": false,
+        "nearest_reference_nonwall_deposition": {
+          "tool": 3,
+          "feature": "sparse infill",
+          "width_mm": 0.45,
+          "distance_mm": 1.4313945702112396,
+          "nearest_xy_mm": [
+            67.25926824925207,
+            169.3409498524651
+          ],
+          "start": [
+            67.16,
+            169.595
+          ],
+          "end": [
+            67.523,
+            168.666
+          ]
+        },
+        "nearest_candidate_nonwall_deposition": {
+          "tool": 3,
+          "feature": "sparse infill",
+          "width_mm": 0.45,
+          "distance_mm": 1.4313945702112396,
+          "nearest_xy_mm": [
+            67.25926824925207,
+            169.3409498524651
+          ],
+          "start": [
+            67.16,
+            169.595
+          ],
+          "end": [
+            67.523,
+            168.666
+          ]
+        },
+        "local_all_model_swept_footprint_hausdorff_lower_mm": 1.1200849189528497,
+        "local_all_model_swept_footprint_hausdorff_upper_mm": 1.120710865160639,
+        "local_all_model_removed_area_mm2": 1.2211617235881,
+        "local_all_model_added_area_mm2": 0.08140350102998918,
+        "point_inside_reference_all_model_footprint": true,
+        "point_inside_candidate_all_model_footprint": false,
+        "image": "<local>/pam_walls.footprint_z_145.760.png"
+      }
+    ]
+  },
+  "earlier_inspected_example_not_a_final_ranking": {
+    "method": "Worst three length-sampled centerline locations. Re-read one source/candidate layer at a time; buffers use each emitted WIDTH/2 with round caps/joins. Continuous Hausdorff enclosure is measured between nominal deposited-area sets, not only their boundaries. Visible-wall diagnostic combines outer and overhang classes to avoid class relabeling false positives.",
+    "limitations": [
+      "Nominal footprints approximate deposited material; they do not certify physical extrusion shape or print strength.",
+      "Whole-layer footprint distance is per selected filament; local colored areas use the shown crop.",
+      "Worst sampled centerline positions need not coincide with worst footprint difference.",
+      "Local all-model coverage includes other filaments and infill; this separates material coverage from wall-class labels but does not validate color placement or overall print strength."
+    ],
+    "examples": [
+      {
+        "z_mm": 20.48,
+        "tool": 2,
+        "sampled_centerline_error_mm": 0.4408153983757426,
+        "sample_direction": "reference_to_candidate",
+        "sample_xy_mm": [
+          153.26879729729728,
+          145.17765315315316
+        ],
+        "nearest_reference_segment": {
+          "tool": 2,
+          "feature": "outer",
+          "width_mm": 0.42,
+          "distance_mm": 1.1021752093684081e-14,
+          "nearest_xy_mm": [
+            153.26879729729728,
+            145.17765315315316
+          ],
+          "start": [
+            153.324,
+            146.242
+          ],
+          "end": [
+            153.267,
+            145.143
+          ]
+        },
+        "nearest_candidate_segment": {
+          "tool": 2,
+          "feature": "inner",
+          "width_mm": 0.45,
+          "distance_mm": 0.4408153983757426,
+          "nearest_xy_mm": [
+            152.895,
+            144.944
+          ],
+          "start": [
+            152.895,
+            144.944
+          ],
+          "end": [
+            150.799,
+            147.779
+          ]
+        },
+        "whole_layer_tool_swept_footprint_hausdorff_lower_mm": 0.22628307949729357,
+        "whole_layer_tool_swept_footprint_hausdorff_upper_mm": 0.22686991879407414,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_lower_mm": 0.4777278062695391,
+        "whole_layer_tool_visible_outer_plus_overhang_centerline_upper_mm": 0.47825701717355845,
+        "local_window_bounds_mm": [
+          151.76879729729728,
+          143.67765315315316,
+          154.76879729729728,
+          146.67765315315316
+        ],
+        "local_reference_wall_area_mm2": 7.008856713991566,
+        "local_candidate_wall_area_mm2": 6.786720429364105,
+        "local_removed_wall_area_mm2": 0.23751260584035916,
+        "local_added_wall_area_mm2": 0.015376321212898517,
+        "point_inside_reference_footprint": true,
+        "point_inside_candidate_footprint": false,
+        "nearest_reference_nonwall_deposition": {
+          "tool": 2,
+          "feature": "internal solid infill",
+          "width_mm": 0.419999,
+          "distance_mm": 1.2927039522338333,
+          "nearest_xy_mm": [
+            154.55952238389915,
+            145.2491532156539
+          ],
+          "start": [
+            154.647,
+            143.67
+          ],
+          "end": [
+            154.551,
+            145.403
+          ]
+        },
+        "nearest_candidate_nonwall_deposition": {
+          "tool": 2,
+          "feature": "internal solid infill",
+          "width_mm": 0.419999,
+          "distance_mm": 1.3062012725402081,
+          "nearest_xy_mm": [
+            154.5746864231756,
+            145.20620758010384
+          ],
+          "start": [
+            154.583,
+            144.826
+          ],
+          "end": [
+            154.568,
+            145.512
+          ]
+        },
+        "local_all_model_swept_footprint_hausdorff_lower_mm": 0.22628307949729357,
+        "local_all_model_swept_footprint_hausdorff_upper_mm": 0.22686991879407414,
+        "local_all_model_removed_area_mm2": 0.2312311238078433,
+        "local_all_model_added_area_mm2": 0.009547929279610097,
+        "point_inside_reference_all_model_footprint": true,
+        "point_inside_candidate_all_model_footprint": false,
+        "image": "validation/pam_walls.partial.footprint_z_20.480.png"
+      }
+    ]
+  },
+  "recommendation": "Use zero intentional XY simplification for this model/profile. Keep the 0.02 mm candidate experimental; passing contours does not certify generated walls."
+}

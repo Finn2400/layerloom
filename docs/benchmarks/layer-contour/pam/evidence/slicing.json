@@ -1,0 +1,897 @@
+{
+  "normal_lift_packages": {
+    "reference": {
+      "source": "<local>/Pam_TCR_pMHC_zero_reference_U1.3mf",
+      "source_sha256": "19d75f2145cf1659d907c2856ef5af6b34d0574b1e632a918f1320518a9cd0e8",
+      "output": "<local>/Pam_TCR_pMHC_zero_reference_U1_normal_lift.3mf",
+      "overrides": {
+        "z_hop_types": {
+          "before": [
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift"
+          ],
+          "after": [
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift"
+          ]
+        }
+      },
+      "source_profile_sha256": "5cd799016f938cb010e290d5be9286f5d8e527cae631d046d56f6063f88ebd45",
+      "effective_profile_sha256": "7795da5a79a661ac86e0b863aeb57c3fa0d1f2d8492b6e17c625c6ca5d86612d",
+      "unchanged_profile_keys": 576,
+      "z_hop_mm": [
+        "0.4",
+        "0.4",
+        "0.4",
+        "0.4"
+      ],
+      "custom_gcode_changed": false,
+      "support_settings_changed": false,
+      "model_geometry_changed": false,
+      "material_recipes_changed": false,
+      "hypothesis": "Local Orca source copies stale arc interpolation points into subsequent linear move records. Normal Lift avoids generated spiral travel arcs without changing extrusion paths.",
+      "provenance_note": "Other embedded package metadata describes the unchanged baseline package; this member records its one-setting profile overlay.",
+      "full_slice_tested": false,
+      "physical_print_tested": false,
+      "printer_contacted": false,
+      "unchanged_member_sha256": {
+        "[Content_Types].xml": "46e46460e6a1380d8754da4045dfe6ca30c2443127a4d5fa8f74cb113698d49d",
+        "_rels/.rels": "0b8c191ee46047ceadf32b0de1cae2651006c4743716b8001c5a28b558851aeb",
+        "3D/3dmodel.model": "96ec49c3ee1a546aff0a4321f3df8302ece1e99eaf685aafd68552f7f3725e34",
+        "Metadata/layerloom_contour.json": "e839bb12a8c5a27807d6230963246bb67578ce0e33f4562e21747ba3a86c1720",
+        "Metadata/model_settings.config": "ceb9ee8907f6dcb4b2756581dfa66410cd5486cb4e7881e76a706f99bef1f5a3",
+        "Metadata/process_settings_1.config": "3623fc5cf2012fc38a1c567d6bc75a8806ce0731687c7a500b4f1e7dc4d5ef22",
+        "Metadata/pam_native_package.json": "d0a3eb73a642a879a6e3f5850e6d411c26d095981b83efa52c8411b59a374ffc"
+      },
+      "output_size_bytes": 170599009,
+      "output_sha256": "00c712b32e7565e363c3ce935365448f241741d9c31fab107b23b4b716a56a1d",
+      "all_existing_nonprofile_payloads_byte_identical": true,
+      "zip_integrity_passed": true,
+      "elapsed_s": 23.469795874960255
+    },
+    "candidate": {
+      "source": "<local>/Pam_TCR_pMHC_layer_contour_U1.3mf",
+      "source_sha256": "e6da99e9de2a5a927bbae3afe9440e27acb3f393e6abbcf78211153e527f7837",
+      "output": "<local>/Pam_TCR_pMHC_layer_contour_U1_normal_lift.3mf",
+      "overrides": {
+        "z_hop_types": {
+          "before": [
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift"
+          ],
+          "after": [
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift"
+          ]
+        }
+      },
+      "source_profile_sha256": "5cd799016f938cb010e290d5be9286f5d8e527cae631d046d56f6063f88ebd45",
+      "effective_profile_sha256": "7795da5a79a661ac86e0b863aeb57c3fa0d1f2d8492b6e17c625c6ca5d86612d",
+      "unchanged_profile_keys": 576,
+      "z_hop_mm": [
+        "0.4",
+        "0.4",
+        "0.4",
+        "0.4"
+      ],
+      "custom_gcode_changed": false,
+      "support_settings_changed": false,
+      "model_geometry_changed": false,
+      "material_recipes_changed": false,
+      "hypothesis": "Local Orca source copies stale arc interpolation points into subsequent linear move records. Normal Lift avoids generated spiral travel arcs without changing extrusion paths.",
+      "provenance_note": "Other embedded package metadata describes the unchanged baseline package; this member records its one-setting profile overlay.",
+      "full_slice_tested": false,
+      "physical_print_tested": false,
+      "printer_contacted": false,
+      "unchanged_member_sha256": {
+        "[Content_Types].xml": "46e46460e6a1380d8754da4045dfe6ca30c2443127a4d5fa8f74cb113698d49d",
+        "_rels/.rels": "0b8c191ee46047ceadf32b0de1cae2651006c4743716b8001c5a28b558851aeb",
+        "3D/3dmodel.model": "050205abc3ea63d131221dab74b4e857017217afc40d59c27a5bb8832381b01d",
+        "Metadata/layerloom_contour.json": "4183d6b23a89da8ab7f745cabf25a3f86bcdba688b84be68f395ec9ddf3a43a9",
+        "Metadata/model_settings.config": "ceb9ee8907f6dcb4b2756581dfa66410cd5486cb4e7881e76a706f99bef1f5a3",
+        "Metadata/process_settings_1.config": "3623fc5cf2012fc38a1c567d6bc75a8806ce0731687c7a500b4f1e7dc4d5ef22",
+        "Metadata/pam_native_package.json": "4183be0c8d59c201a8732a4567c31666110e21bbd326d6f5d9955adcfd4c5bc1"
+      },
+      "output_size_bytes": 151922943,
+      "output_sha256": "91a75fbde48bb62f2ae9fa94473ca922aa3e980431b4bdec5e972930714e6228",
+      "all_existing_nonprofile_payloads_byte_identical": true,
+      "zip_integrity_passed": true,
+      "elapsed_s": 20.628520917030983
+    }
+  },
+  "full_slices": {
+    "reference": {
+      "exit_code": 0,
+      "elapsed_s": 166.65395887498744,
+      "peak_process_tree_rss_bytes_observed": 8555495424,
+      "largest_individual_process_lifetime_max_phys_footprint_bytes": 10783058304,
+      "system_swap_peak_used_increase_from_baseline_bytes": 0,
+      "rss_poll_interval_s": 0.05,
+      "rss_measurement_complete": true,
+      "phys_footprint_measurement_complete": true,
+      "stop_reason": null,
+      "full_slice_completed": true,
+      "project": {
+        "path": "<local>/Pam_TCR_pMHC_zero_reference_U1_normal_lift.3mf",
+        "size_bytes": 170599009,
+        "sha256": "00c712b32e7565e363c3ce935365448f241741d9c31fab107b23b4b716a56a1d",
+        "vertices": 7202244,
+        "triangles": 14238188,
+        "uncompressed_geometry_bytes": 1244378855,
+        "zip_valid": true
+      },
+      "gcode": {
+        "path": "<local>/plate_1.gcode",
+        "size_bytes": 717448319,
+        "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+        "motion_commands": 24476242,
+        "commands_with_extrusion_parameter": 22579914
+      },
+      "printer_contacted": false,
+      "print_started": false
+    },
+    "candidate": {
+      "exit_code": 0,
+      "elapsed_s": 169.66431720898254,
+      "peak_process_tree_rss_bytes_observed": 7807008768,
+      "largest_individual_process_lifetime_max_phys_footprint_bytes": 10627705280,
+      "system_swap_peak_used_increase_from_baseline_bytes": 0,
+      "rss_poll_interval_s": 0.05,
+      "rss_measurement_complete": true,
+      "phys_footprint_measurement_complete": true,
+      "stop_reason": null,
+      "full_slice_completed": true,
+      "project": {
+        "path": "<local>/Pam_TCR_pMHC_layer_contour_U1_normal_lift.3mf",
+        "size_bytes": 151922943,
+        "sha256": "91a75fbde48bb62f2ae9fa94473ca922aa3e980431b4bdec5e972930714e6228",
+        "vertices": 6426096,
+        "triangles": 12685892,
+        "uncompressed_geometry_bytes": 1107443170,
+        "zip_valid": true
+      },
+      "gcode": {
+        "path": "<local>/plate_1.gcode",
+        "size_bytes": 712612309,
+        "sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+        "motion_commands": 24313546,
+        "commands_with_extrusion_parameter": 22429431
+      },
+      "printer_contacted": false,
+      "print_started": false
+    }
+  },
+  "final_gcode_proofs": {
+    "reference": {
+      "gcode": "<local>/plate_1.gcode",
+      "project": "<local>/Pam_TCR_pMHC_zero_reference_U1_normal_lift.3mf",
+      "gcode_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "gcode_size_bytes": 717448319,
+      "gcode_lines": 26685449,
+      "effective_settings": {
+        "layer_height": "0.08",
+        "initial_layer_print_height": "0.16",
+        "enable_support": "1",
+        "support_type": "tree(auto)",
+        "support_style": "default",
+        "support_filament": "1",
+        "support_interface_filament": "1",
+        "enable_prime_tower": "1",
+        "prime_tower_width": "29",
+        "prime_tower_brim_width": "18",
+        "wipe_tower_extra_rib_length": "16",
+        "wipe_tower_rib_width": "12",
+        "wipe_tower_max_purge_speed": "70",
+        "wipe_tower_x": "100.558",
+        "wipe_tower_y": "204.48",
+        "filament_colour": "#0086D6;#D96F00;#FFF800;#FF00E1",
+        "z_hop_types": "Normal Lift,Normal Lift,Normal Lift,Normal Lift",
+        "z_hop": "0.4,0.4,0.4,0.4",
+        "nozzle_diameter": "0.4,0.4,0.4,0.4",
+        "seam_position": "aligned",
+        "resolution": "0.012",
+        "wall_generator": "classic",
+        "wall_loops": "3",
+        "gcode_label_objects": "1",
+        "enable_arc_fitting": "0"
+      },
+      "settings_match_project": {
+        "layer_height": true,
+        "initial_layer_print_height": true,
+        "enable_support": true,
+        "support_type": true,
+        "support_style": true,
+        "support_filament": true,
+        "support_interface_filament": true,
+        "enable_prime_tower": true,
+        "prime_tower_width": true,
+        "prime_tower_brim_width": true,
+        "wipe_tower_extra_rib_length": true,
+        "wipe_tower_rib_width": true,
+        "wipe_tower_max_purge_speed": true,
+        "wipe_tower_x": true,
+        "wipe_tower_y": true,
+        "filament_colour": true,
+        "z_hop_types": true,
+        "z_hop": true,
+        "nozzle_diameter": true,
+        "seam_position": true,
+        "resolution": true,
+        "wall_generator": true,
+        "wall_loops": true,
+        "gcode_label_objects": true,
+        "enable_arc_fitting": true
+      },
+      "embedded_custom_gcode_match_project": {
+        "before_layer_change_gcode": true,
+        "change_extrusion_role_gcode": true,
+        "change_filament_gcode": true,
+        "emit_machine_limits_to_gcode": true,
+        "layer_change_gcode": true,
+        "machine_end_gcode": true,
+        "machine_pause_gcode": true,
+        "machine_start_gcode": true,
+        "printing_by_object_gcode": true,
+        "template_custom_gcode": true,
+        "time_lapse_gcode": true
+      },
+      "tool_change_counts": {
+        "T2": 996,
+        "T0": 1150,
+        "T3": 1698
+      },
+      "arc_move_counts": {},
+      "layer_count": 2161,
+      "first_print_z_mm": 0.16,
+      "final_print_z_mm": 172.96,
+      "height_comments": {
+        "0.16": 5,
+        "0.08": 11822,
+        "0.0799999": 347,
+        "0.0800002": 8,
+        "0.0800004": 8,
+        "0.0800009": 8,
+        "0.0800018": 1319,
+        "0.4": 107,
+        "0.079998": 192,
+        "0.0799942": 192,
+        "0.0799866": 67
+      },
+      "fixed_first_and_regular_layer_schedule_verified": true,
+      "object_start_markers": 5703,
+      "object_stop_markers": 5703,
+      "feature_headers": {
+        "Custom": 2,
+        "Brim": 1,
+        "Outer wall": 44737,
+        "Gap infill": 3780,
+        "Prime tower": 6003,
+        "Support": 2720,
+        "Inner wall": 42429,
+        "Overhang wall": 2112,
+        "Support interface": 646,
+        "Internal solid infill": 24292,
+        "Sparse infill": 36640,
+        "Bridge": 9,
+        "Internal Bridge": 107,
+        "Top surface": 42
+      },
+      "extrusion_by_feature": {
+        "Brim": {
+          "segments": 78,
+          "min_xyz": [
+            141.407,
+            101.719,
+            0.16
+          ],
+          "max_xyz": [
+            156.705,
+            112.346,
+            0.16
+          ]
+        },
+        "Outer wall": {
+          "segments": 1952802,
+          "min_xyz": [
+            23.511,
+            15.173,
+            0.16
+          ],
+          "max_xyz": [
+            243.557,
+            195.159,
+            172.96
+          ]
+        },
+        "Gap infill": {
+          "segments": 22236,
+          "min_xyz": [
+            26.645,
+            25.612,
+            0.16
+          ],
+          "max_xyz": [
+            240.078,
+            193.181,
+            172.96
+          ]
+        },
+        "Prime tower": {
+          "segments": 921073,
+          "min_xyz": [
+            73.322,
+            177.235,
+            0.16
+          ],
+          "max_xyz": [
+            159.294,
+            263.425,
+            172.96
+          ]
+        },
+        "Support": {
+          "segments": 11923082,
+          "min_xyz": [
+            24.243,
+            19.043,
+            0.16
+          ],
+          "max_xyz": [
+            239.632,
+            204.329,
+            166.56
+          ]
+        },
+        "Inner wall": {
+          "segments": 3446143,
+          "min_xyz": [
+            23.979,
+            15.591,
+            0.24
+          ],
+          "max_xyz": [
+            243.044,
+            194.638,
+            172.88
+          ]
+        },
+        "Overhang wall": {
+          "segments": 7952,
+          "min_xyz": [
+            29.643,
+            24.088,
+            0.24
+          ],
+          "max_xyz": [
+            238.117,
+            193.946,
+            166.16
+          ]
+        },
+        "Support interface": {
+          "segments": 28065,
+          "min_xyz": [
+            37.855,
+            23.541,
+            0.4
+          ],
+          "max_xyz": [
+            234.965,
+            188.785,
+            165.84
+          ]
+        },
+        "Internal solid infill": {
+          "segments": 819428,
+          "min_xyz": [
+            25.103,
+            19.207,
+            0.48
+          ],
+          "max_xyz": [
+            241.83,
+            193.295,
+            172.56
+          ]
+        },
+        "Sparse infill": {
+          "segments": 1637172,
+          "min_xyz": [
+            25.871,
+            16.426,
+            1.52
+          ],
+          "max_xyz": [
+            242.053,
+            193.628,
+            171.6
+          ]
+        },
+        "Bridge": {
+          "segments": 85,
+          "min_xyz": [
+            45.318,
+            37.52,
+            15.52
+          ],
+          "max_xyz": [
+            205.31,
+            176.764,
+            117.28
+          ]
+        },
+        "Internal Bridge": {
+          "segments": 3092,
+          "min_xyz": [
+            27.053,
+            25.741,
+            20.56
+          ],
+          "max_xyz": [
+            241.626,
+            193.164,
+            168.96
+          ]
+        },
+        "Top surface": {
+          "segments": 147,
+          "min_xyz": [
+            46.151,
+            28.78,
+            22.0
+          ],
+          "max_xyz": [
+            220.442,
+            178.459,
+            172.96
+          ]
+        }
+      },
+      "all_noncustom_extrusion_centerline_bounds_mm": [
+        [
+          23.511,
+          15.173,
+          0.16
+        ],
+        [
+          243.557,
+          263.425,
+          172.96
+        ]
+      ],
+      "printable_xy_bounds_mm": [
+        [
+          0.5,
+          1.0
+        ],
+        [
+          270.5,
+          271.0
+        ]
+      ],
+      "extrusion_centerlines_within_bed": true,
+      "note": "Centerline bounds do not include extrusion width or prove absence of collisions between supports/tower/model.",
+      "estimated_times": {
+        "estimated printing time (normal mode)": "4d 1h 24m 45s"
+      },
+      "elapsed_s": 88.07462933298666,
+      "printer_contacted": false,
+      "passed": true
+    },
+    "candidate": {
+      "gcode": "<local>/plate_1.gcode",
+      "project": "<local>/Pam_TCR_pMHC_layer_contour_U1_normal_lift.3mf",
+      "gcode_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+      "gcode_size_bytes": 712612309,
+      "gcode_lines": 26512132,
+      "effective_settings": {
+        "layer_height": "0.08",
+        "initial_layer_print_height": "0.16",
+        "enable_support": "1",
+        "support_type": "tree(auto)",
+        "support_style": "default",
+        "support_filament": "1",
+        "support_interface_filament": "1",
+        "enable_prime_tower": "1",
+        "prime_tower_width": "29",
+        "prime_tower_brim_width": "18",
+        "wipe_tower_extra_rib_length": "16",
+        "wipe_tower_rib_width": "12",
+        "wipe_tower_max_purge_speed": "70",
+        "wipe_tower_x": "100.558",
+        "wipe_tower_y": "204.48",
+        "filament_colour": "#0086D6;#D96F00;#FFF800;#FF00E1",
+        "z_hop_types": "Normal Lift,Normal Lift,Normal Lift,Normal Lift",
+        "z_hop": "0.4,0.4,0.4,0.4",
+        "nozzle_diameter": "0.4,0.4,0.4,0.4",
+        "seam_position": "aligned",
+        "resolution": "0.012",
+        "wall_generator": "classic",
+        "wall_loops": "3",
+        "gcode_label_objects": "1",
+        "enable_arc_fitting": "0"
+      },
+      "settings_match_project": {
+        "layer_height": true,
+        "initial_layer_print_height": true,
+        "enable_support": true,
+        "support_type": true,
+        "support_style": true,
+        "support_filament": true,
+        "support_interface_filament": true,
+        "enable_prime_tower": true,
+        "prime_tower_width": true,
+        "prime_tower_brim_width": true,
+        "wipe_tower_extra_rib_length": true,
+        "wipe_tower_rib_width": true,
+        "wipe_tower_max_purge_speed": true,
+        "wipe_tower_x": true,
+        "wipe_tower_y": true,
+        "filament_colour": true,
+        "z_hop_types": true,
+        "z_hop": true,
+        "nozzle_diameter": true,
+        "seam_position": true,
+        "resolution": true,
+        "wall_generator": true,
+        "wall_loops": true,
+        "gcode_label_objects": true,
+        "enable_arc_fitting": true
+      },
+      "embedded_custom_gcode_match_project": {
+        "before_layer_change_gcode": true,
+        "change_extrusion_role_gcode": true,
+        "change_filament_gcode": true,
+        "emit_machine_limits_to_gcode": true,
+        "layer_change_gcode": true,
+        "machine_end_gcode": true,
+        "machine_pause_gcode": true,
+        "machine_start_gcode": true,
+        "printing_by_object_gcode": true,
+        "template_custom_gcode": true,
+        "time_lapse_gcode": true
+      },
+      "tool_change_counts": {
+        "T2": 996,
+        "T0": 1151,
+        "T3": 1698
+      },
+      "arc_move_counts": {},
+      "layer_count": 2161,
+      "first_print_z_mm": 0.16,
+      "final_print_z_mm": 172.96,
+      "height_comments": {
+        "0.16": 5,
+        "0.08": 11824,
+        "0.0799999": 347,
+        "0.0800002": 8,
+        "0.0800004": 8,
+        "0.0800009": 8,
+        "0.0800018": 1319,
+        "0.4": 107,
+        "0.079998": 192,
+        "0.0799942": 192,
+        "0.0799866": 67
+      },
+      "fixed_first_and_regular_layer_schedule_verified": true,
+      "object_start_markers": 5704,
+      "object_stop_markers": 5704,
+      "feature_headers": {
+        "Custom": 2,
+        "Outer wall": 44742,
+        "Gap infill": 3762,
+        "Prime tower": 6004,
+        "Support": 2697,
+        "Inner wall": 42428,
+        "Overhang wall": 2112,
+        "Support interface": 617,
+        "Internal solid infill": 24272,
+        "Sparse infill": 36606,
+        "Bridge": 9,
+        "Internal Bridge": 107,
+        "Top surface": 42
+      },
+      "extrusion_by_feature": {
+        "Outer wall": {
+          "segments": 1924608,
+          "min_xyz": [
+            23.511,
+            15.173,
+            0.16
+          ],
+          "max_xyz": [
+            243.557,
+            195.159,
+            172.96
+          ]
+        },
+        "Gap infill": {
+          "segments": 22168,
+          "min_xyz": [
+            26.645,
+            25.612,
+            0.16
+          ],
+          "max_xyz": [
+            240.078,
+            193.181,
+            172.96
+          ]
+        },
+        "Prime tower": {
+          "segments": 921116,
+          "min_xyz": [
+            73.322,
+            177.235,
+            0.16
+          ],
+          "max_xyz": [
+            159.294,
+            263.425,
+            172.96
+          ]
+        },
+        "Support": {
+          "segments": 11853194,
+          "min_xyz": [
+            24.258,
+            18.908,
+            0.16
+          ],
+          "max_xyz": [
+            239.869,
+            198.929,
+            166.64
+          ]
+        },
+        "Inner wall": {
+          "segments": 3414554,
+          "min_xyz": [
+            23.979,
+            15.591,
+            0.24
+          ],
+          "max_xyz": [
+            243.044,
+            194.638,
+            172.88
+          ]
+        },
+        "Overhang wall": {
+          "segments": 7931,
+          "min_xyz": [
+            29.643,
+            24.088,
+            0.24
+          ],
+          "max_xyz": [
+            238.117,
+            193.946,
+            166.16
+          ]
+        },
+        "Support interface": {
+          "segments": 28400,
+          "min_xyz": [
+            38.008,
+            23.541,
+            0.4
+          ],
+          "max_xyz": [
+            234.96,
+            188.785,
+            165.84
+          ]
+        },
+        "Internal solid infill": {
+          "segments": 819114,
+          "min_xyz": [
+            25.103,
+            19.207,
+            0.48
+          ],
+          "max_xyz": [
+            241.737,
+            193.295,
+            172.56
+          ]
+        },
+        "Sparse infill": {
+          "segments": 1634955,
+          "min_xyz": [
+            25.871,
+            16.426,
+            1.52
+          ],
+          "max_xyz": [
+            242.053,
+            193.628,
+            171.6
+          ]
+        },
+        "Bridge": {
+          "segments": 85,
+          "min_xyz": [
+            45.318,
+            37.52,
+            15.52
+          ],
+          "max_xyz": [
+            205.31,
+            176.764,
+            117.28
+          ]
+        },
+        "Internal Bridge": {
+          "segments": 3074,
+          "min_xyz": [
+            27.053,
+            25.741,
+            20.56
+          ],
+          "max_xyz": [
+            241.416,
+            193.164,
+            168.96
+          ]
+        },
+        "Top surface": {
+          "segments": 147,
+          "min_xyz": [
+            46.151,
+            28.78,
+            22.0
+          ],
+          "max_xyz": [
+            220.442,
+            178.459,
+            172.96
+          ]
+        }
+      },
+      "all_noncustom_extrusion_centerline_bounds_mm": [
+        [
+          23.511,
+          15.173,
+          0.16
+        ],
+        [
+          243.557,
+          263.425,
+          172.96
+        ]
+      ],
+      "printable_xy_bounds_mm": [
+        [
+          0.5,
+          1.0
+        ],
+        [
+          270.5,
+          271.0
+        ]
+      ],
+      "extrusion_centerlines_within_bed": true,
+      "note": "Centerline bounds do not include extrusion width or prove absence of collisions between supports/tower/model.",
+      "estimated_times": {
+        "estimated printing time (normal mode)": "4d 1h 16m 28s"
+      },
+      "elapsed_s": 98.51997395901708,
+      "printer_contacted": false,
+      "passed": true
+    }
+  },
+  "profile_and_schedule_comparison": {
+    "candidate_reference_matching_fields": {
+      "effective_settings": true,
+      "layer_count": true,
+      "first_print_z_mm": true,
+      "final_print_z_mm": true,
+      "fixed_first_and_regular_layer_schedule_verified": true,
+      "all_noncustom_extrusion_centerline_bounds_mm": true,
+      "printable_xy_bounds_mm": true
+    },
+    "verified_layer_z_formula_mm": ".16 + layer_index * .08, layer_index=0..2160",
+    "reported_footer_planned_layer_count": 2162,
+    "reported_header_actual_layer_count": 2161,
+    "actual_first_last_z_mm": [
+      0.16,
+      172.96
+    ],
+    "planned_final_z_mm": 173.04,
+    "source_geometry_max_z_before_native_translation_mm": 173.021368153,
+    "native_translation_z_mm": -1.235e-06,
+    "profile_equal": true,
+    "candidate": {
+      "gcode_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+      "gcode_size_bytes": 712612309,
+      "stats": {
+        "filament used [mm]": "111178.61, 0.00, 35169.11, 63542.29",
+        "filament used [cm3]": "267.42, 0.00, 84.59, 152.84",
+        "filament used [g]": "331.60, 0.00, 104.89, 189.52",
+        "filament cost": "6.63, 0.00, 2.10, 3.79",
+        "total filament used [g]": "626.01",
+        "total filament cost": "12.52",
+        "total filament change": "3842",
+        "total layers count": "2162",
+        "estimated printing time (normal mode)": "4d 1h 16m 28s"
+      },
+      "object_markers": 5704,
+      "extrusion_feature_segment_counts": {
+        "Outer wall": 1924608,
+        "Gap infill": 22168,
+        "Prime tower": 921116,
+        "Support": 11853194,
+        "Inner wall": 3414554,
+        "Overhang wall": 7931,
+        "Support interface": 28400,
+        "Internal solid infill": 819114,
+        "Sparse infill": 1634955,
+        "Bridge": 85,
+        "Internal Bridge": 3074,
+        "Top surface": 147
+      }
+    },
+    "reference": {
+      "gcode_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "gcode_size_bytes": 717448319,
+      "stats": {
+        "filament used [mm]": "111103.78, 0.00, 35175.34, 63542.26",
+        "filament used [cm3]": "267.24, 0.00, 84.61, 152.84",
+        "filament used [g]": "331.37, 0.00, 104.91, 189.52",
+        "filament cost": "6.63, 0.00, 2.10, 3.79",
+        "total filament used [g]": "625.80",
+        "total filament cost": "12.52",
+        "total filament change": "3841",
+        "total layers count": "2162",
+        "estimated printing time (normal mode)": "4d 1h 24m 45s"
+      },
+      "object_markers": 5703,
+      "extrusion_feature_segment_counts": {
+        "Brim": 78,
+        "Outer wall": 1952802,
+        "Gap infill": 22236,
+        "Prime tower": 921073,
+        "Support": 11923082,
+        "Inner wall": 3446143,
+        "Overhang wall": 7952,
+        "Support interface": 28065,
+        "Internal solid infill": 819428,
+        "Sparse infill": 1637172,
+        "Bridge": 85,
+        "Internal Bridge": 3092,
+        "Top surface": 147
+      }
+    },
+    "notes": [
+      "Both GCode files emit the same complete fixed-height schedule, with no skipped intermediate Z.",
+      "The final planned Z173.04 is not emitted in either file. The slicer generator counts planned object/support layers, while the processor header counts emitted layer changes; GCode::process_layer returns before emitting a layer when its extruder list is empty. This supports an empty/unextrudable final planned layer explanation; the exact empty-extruder condition was not instrumented.",
+      "Reference contains one explicit model Brim feature,78 segments; candidate has none. Support generation also differs despite identical settings.",
+      "Centerline bounds do not include extrusion width or prove absence of support/tower/model collisions."
+    ],
+    "printer_contacted": false,
+    "layer_count_explanation_source": {
+      "local_source_path": "<local>/GCode.cpp",
+      "local_source_version": "2.4.1; related source, not an exact source match for installed2.3.5",
+      "planned_count_code_lines": [
+        2574,
+        2608
+      ],
+      "empty_extruder_skip_code_lines": [
+        5197,
+        5199
+      ],
+      "planned_footer_code_line": 3508,
+      "actual_header_source": "GCodeProcessor.cpp:4470 uses processor m_layer_id",
+      "confidence": "Count and fixed schedule are directly verified in both actual2.3.5 GCode files. Empty final extruder explanation is an inference from related local source; it was not instrumented."
+    }
+  }
+}

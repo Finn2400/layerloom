@@ -1,0 +1,601 @@
+{
+  "auto_vs_normal_lift_shared_range": {
+    "reference_prefix": {
+      "path": "<local>/plate_1.gcode.tmp",
+      "size_bytes_snapshot": 452317184,
+      "byte_limit": 451912252,
+      "prefix_sha256": "0c455221d664d819330db61a0b044900faedf684f6d36e9e9aba27c2692ed728",
+      "complete_layer_count": 1090,
+      "first_included_z_mm": 0.16,
+      "last_included_z_mm": 87.28,
+      "first_excluded_layer_index_zero_based": 1090,
+      "first_excluded_declared_z_mm": 87.36,
+      "file_scanned_to_eof": true,
+      "exclusion": "All bytes from the first excluded LAYER_CHANGE marker onward are outside the comparison. The aborted input always excludes its final declared layer."
+    },
+    "candidate_prefix": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes_snapshot": 712612309,
+      "byte_limit": 451101705,
+      "prefix_sha256": "86675d0b0c079f2ca316148b8703fc9ae2487eeb8510e9f0a365e80c78d494cb",
+      "complete_layer_count": 1090,
+      "first_included_z_mm": 0.16,
+      "last_included_z_mm": 87.28,
+      "first_excluded_layer_index_zero_based": 1090,
+      "first_excluded_declared_z_mm": null,
+      "file_scanned_to_eof": false,
+      "exclusion": "All bytes from the first excluded LAYER_CHANGE marker onward are outside the comparison. The aborted input always excludes its final declared layer."
+    },
+    "model_wall_layers_compared": 1090,
+    "reference_wall_segments": 3042892,
+    "candidate_wall_segments": 3042892,
+    "ordered_exact_layers": 1090,
+    "geometry_width_filament_feature_multiset_exact_layers": 1090,
+    "extrusion_segment_multiset_exact_layers": 1090,
+    "changed_layers": 0,
+    "changed_layer_examples": [],
+    "object_scope": {
+      "reference": {
+        "path": "<local>/plate_1.gcode.tmp",
+        "object_starts": 3050,
+        "object_stops": 3050,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 3050
+        },
+        "feature_annotations_inside": {
+          "Outer wall": 25029,
+          "Gap infill": 2344,
+          "Support": 1500,
+          "Inner wall": 23574,
+          "Overhang wall": 1391,
+          "Support interface": 411,
+          "Internal solid infill": 13932,
+          "Sparse infill": 19820,
+          "Bridge": 7,
+          "Internal Bridge": 72,
+          "Top surface": 26
+        },
+        "feature_annotations_outside": {
+          "Custom": 1,
+          "Prime tower": 3133
+        },
+        "byte_limit": 451912252,
+        "input_bytes_used": 451912252,
+        "input_prefix_sha256": "0c455221d664d819330db61a0b044900faedf684f6d36e9e9aba27c2692ed728"
+      },
+      "candidate": {
+        "path": "<local>/plate_1.gcode",
+        "object_starts": 3050,
+        "object_stops": 3050,
+        "object_names": {
+          "Pam TCR-pMHC - layer contour weave id:7881700022819975781 copy 0": 3050
+        },
+        "feature_annotations_inside": {
+          "Outer wall": 25029,
+          "Gap infill": 2344,
+          "Support": 1500,
+          "Inner wall": 23574,
+          "Overhang wall": 1391,
+          "Support interface": 411,
+          "Internal solid infill": 13932,
+          "Sparse infill": 19820,
+          "Bridge": 7,
+          "Internal Bridge": 72,
+          "Top surface": 26
+        },
+        "feature_annotations_outside": {
+          "Custom": 1,
+          "Prime tower": 3133
+        },
+        "byte_limit": 451101705,
+        "input_bytes_used": 451101705,
+        "input_prefix_sha256": "86675d0b0c079f2ca316148b8703fc9ae2487eeb8510e9f0a365e80c78d494cb"
+      }
+    },
+    "shared_range_wall_placement_exact": true,
+    "shared_range_wall_deposition_exact": true,
+    "whole_print_wall_comparison_completed": false,
+    "wall_paths_validated": false,
+    "method": "Exact positive-extrusion model-wall segment multiset comparison of endpoints, filament, feature class and annotated width; extrusion amounts and ordered paths separately checked. Any changed layer also receives continuous-polyline/width diagnostics.",
+    "limitations": [
+      "Reference is an aborted AutoLift export: its final declared layer and all ungenerated upper layers are excluded.",
+      "Supports, prime tower, infill, custom purge and travel are excluded from the model-wall comparison.",
+      "This bounded hop-setting control does not replace the full zero-simplification versus 0.02mm contour wall comparison."
+    ],
+    "elapsed_seconds": 133.3097974580014,
+    "layer_report": "<local>/auto_vs_normal_lift_control.layers.jsonl",
+    "native_project_control": {
+      "changed_profile_keys": {
+        "z_hop_types": {
+          "reference": [
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift",
+            "Auto Lift"
+          ],
+          "candidate": [
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift",
+            "Normal Lift"
+          ]
+        }
+      },
+      "only_z_hop_types_changed": true,
+      "model_xml_zip_crc_and_sizes_equal": true,
+      "reference_model_signatures": {
+        "3D/3dmodel.model": {
+          "crc32": 1872997692,
+          "uncompressed_size_bytes": 1107443170
+        }
+      },
+      "candidate_model_signatures": {
+        "3D/3dmodel.model": {
+          "crc32": 1872997692,
+          "uncompressed_size_bytes": 1107443170
+        }
+      },
+      "z_hop_height_unchanged": true,
+      "z_hop_mm": [
+        "0.4",
+        "0.4",
+        "0.4",
+        "0.4"
+      ],
+      "note": "ZIP CRC/size equality checks accidental geometry edits; actual model-wall comparisons below independently inspect emitted deposition."
+    },
+    "reference_slice_report": "<local>/candidate_slice.json",
+    "candidate_slice_report": "<local>/candidate_normal_lift_slice.json",
+    "reference_full_slice_completed": false,
+    "candidate_full_slice_completed": true,
+    "completed_candidate_gcode": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 712612309,
+      "sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+      "motion_commands": 24313546,
+      "commands_with_extrusion_parameter": 22429431
+    }
+  },
+  "identical_reference_repeat": {
+    "baseline": {
+      "excluded_lines": [
+        {
+          "line": 2,
+          "text": "; generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 23:29:32"
+        }
+      ],
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "normalized_sha256": "ff1d8aa0b09bef6a1ef564a71be1a69ddcb9497f4d3270c7770d7ee4edd1c51d",
+      "command_feature_sha256": "c364c5d455cea5bdcd8348c7d768afd9b3aa981787609c9a1e8e3eb6b0fcdb2f",
+      "commands_only_sha256": "2a51c11872c8dcb28d79fa26ac749f7d6bc092583291f7aba6aabfcb5bbf43e9",
+      "command_feature_runtime_id_canonical_sha256": "d48482f427f1152c936f6b126b429efa5932a88a1c354be4078b82fde884a436",
+      "counts": {
+        "raw_lines": 26685449,
+        "normalized_lines": 26685448,
+        "excluded_generated_header_lines": 1,
+        "command_lines": 25334909,
+        "command_feature_lines": 25528232
+      }
+    },
+    "repeat": {
+      "excluded_lines": [
+        {
+          "line": 2,
+          "text": "; generated by Snapmaker Orca 2.3.5 on 2026-11-24 at 23:58:09"
+        }
+      ],
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "b8873f7e0310b4d6dc37bb8026846d887516a25bb0d536fb6180553c3cf7862b",
+      "normalized_sha256": "0b67b702699e025a563635f20ec56bc484da98fea73d01bf72f7070910467f3a",
+      "command_feature_sha256": "ee1240133923384d43cab51143f0c21120062a85eb9e28fc04140d0a41bf8c00",
+      "commands_only_sha256": "2a51c11872c8dcb28d79fa26ac749f7d6bc092583291f7aba6aabfcb5bbf43e9",
+      "command_feature_runtime_id_canonical_sha256": "d48482f427f1152c936f6b126b429efa5932a88a1c354be4078b82fde884a436",
+      "counts": {
+        "raw_lines": 26685449,
+        "normalized_lines": 26685448,
+        "excluded_generated_header_lines": 1,
+        "command_lines": 25334909,
+        "command_feature_lines": 25528232
+      }
+    },
+    "compared_same_native_project": true,
+    "exclusions": "Only a ; generated by ... line among the first 10 header lines. No path comments occurred or were excluded.",
+    "all_other_bytes_identical": false,
+    "normalized_aligned_line_differences": 11406,
+    "command_and_feature_sequence_exactly_equal": false,
+    "actual_command_sequence_exactly_equal": true,
+    "command_features_object_labels_equal_after_canonicalizing_only_runtime_object_id": true,
+    "object_label_id_only_differences": 11406,
+    "all_normalized_differences_are_nonprinting_object_comment_ids": true,
+    "secondary_normalization": "The original strict result is retained. A secondary hash replaces only decimal id:<digits> in semicolon object-start/stop comments with id:<runtime-id>; names, copy numbers, marker sequence and all commands are preserved. No command is normalized or excluded.",
+    "command_feature_definition": "All nonblank command lines plus exact TYPE/Z/HEIGHT/LAYER_CHANGE/object-start/object-stop marker lines, in original order; whitespace preserved.",
+    "elapsed_s": 52.61044362501707,
+    "printer_contacted": false,
+    "temporary_repeat_gcode_removed_after_hash_verification": true,
+    "temporary_repeat_gcode_bytes_reclaimed": 717448319,
+    "retained_original_reference": "<local>/plate_1.gcode",
+    "same_input_native_project_sha256": "00c712b32e7565e363c3ce935365448f241741d9c31fab107b23b4b716a56a1d",
+    "interpretation": "One repeated native slice reproduced every executable command and every deposition feature in order. Apart from generated-at time, all differing bytes were nonprinting runtime object IDs in start/stop comments. This supports determinism for this exact project/profile/binary run pair, not a universal determinism claim."
+  },
+  "parallel_equivalence": {
+    "passed": true,
+    "source_layer_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      200
+    ],
+    "z_mm": [
+      0.16,
+      0.24,
+      0.32,
+      0.4,
+      0.48,
+      0.56,
+      0.64,
+      0.72,
+      0.8,
+      0.88,
+      16.16
+    ],
+    "strict_layer_rows_exactly_equal": true,
+    "distribution_layer_rows_exactly_equal": true,
+    "strict_aggregate_metrics_exactly_equal": true,
+    "weighted_distribution_aggregates_exactly_equal": true,
+    "sampled_worst_locations_exactly_equal": true,
+    "existing_independently_running_serial_records_exactly_equal": true,
+    "dense_plane": {
+      "z_mm": 16.16,
+      "reference_wall_segments": 2327,
+      "candidate_wall_segments": 2226,
+      "tools": [
+        2,
+        3
+      ],
+      "features": [
+        "inner",
+        "outer",
+        "overhang"
+      ],
+      "annotated_width_classes": 2
+    },
+    "execution": {
+      "workers": 6,
+      "max_inflight_configured": 8,
+      "peak_inflight_observed": 8,
+      "layer_pairs_submitted": 11,
+      "parser_passes": 1,
+      "results_reduced_in_input_order": true,
+      "sample_chunk_size": 200000,
+      "histogram_contributions_reduced_in_serial_chunk_order": true,
+      "all_layers_compared": false,
+      "selected_layer_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        200
+      ],
+      "max_layers": null,
+      "memory_scope": "At most eight submitted layer pairs; six worker-local GEOS geometries and sample chunks. No entire G-code or mesh is loaded."
+    },
+    "elapsed_seconds": 23.4732367079705,
+    "proof_method": "Parallel worker rows compared exactly with unchanged serial compare/distribution functions over the same 11 bounded layer pairs, then independently with existing serial workers published rows. Chunk contribution order is preserved, so weighted sums and histogram-derived quantiles match exactly, not just within tolerance.",
+    "current_serial_workers_stopped": false,
+    "current_pam_walls_outputs_modified": false
+  },
+  "zero_reference_first_layer": {
+    "gcode": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "motion_commands": 24476242,
+      "commands_with_extrusion_parameter": 22579914
+    },
+    "slice_report": "<local>/reference_normal_lift_slice.json",
+    "first_layer": {
+      "lines_read": 15688,
+      "custom_macros_excluded": {
+        "SM_PRINT_PREEXTRUDE_FILAMENT": 1
+      },
+      "excluded_positive_xy_moves": 1,
+      "first_layer_z_mm": 0.16,
+      "object_starts": 2,
+      "object_stops": 2,
+      "complete_first_layer_found": true,
+      "prefix_utf8_bytes_read": 462418,
+      "prefix_utf8_sha256": "9b9641f916ea7f392b29911d537bfb5f4d1bd13b44b223714061df42e2ce6c3c",
+      "hash_scope": "Exact UTF-8 prefix through the second LAYER_CHANGE marker; not a whole-file hash"
+    },
+    "groups": {
+      "model": {
+        "segments": 17,
+        "tools": [
+          2
+        ],
+        "nominal_bead_bounds_mm": [
+          146.7240123236862,
+          103.51306555696054,
+          149.7159999999391,
+          105.03091539792086
+        ],
+        "nominal_bead_area_mm2": 3.4350506723768333,
+        "centerline_length_mm": 7.4009738937567215
+      },
+      "model brim": {
+        "segments": 78,
+        "tools": [
+          2
+        ],
+        "nominal_bead_bounds_mm": [
+          141.15728641465344,
+          101.4690166676723,
+          156.9549958235535,
+          112.59598095020381
+        ],
+        "nominal_bead_area_mm2": 21.065665101834753,
+        "centerline_length_mm": 45.54358579870123
+      },
+      "supports": {
+        "segments": 5728,
+        "tools": [
+          0
+        ],
+        "nominal_bead_bounds_mm": [
+          25.095132424331013,
+          22.416,
+          237.52691065886347,
+          204.57893381659605
+        ],
+        "nominal_bead_area_mm2": 13403.336925274378,
+        "centerline_length_mm": 27259.557218413574
+      },
+      "prime tower": {
+        "segments": 453,
+        "tools": [
+          0,
+          2
+        ],
+        "nominal_bead_bounds_mm": [
+          91.24712668363351,
+          195.1601266836335,
+          141.3688733163665,
+          245.4998733163665
+        ],
+        "nominal_bead_area_mm2": 988.023669203624,
+        "centerline_length_mm": 1974.5709671811737
+      },
+      "prime tower brim": {
+        "segments": 8536,
+        "tools": [
+          0
+        ],
+        "nominal_bead_bounds_mm": [
+          73.072161911,
+          176.985161911,
+          159.543838089,
+          263.674838089
+        ],
+        "nominal_bead_area_mm2": 4853.16349080548,
+        "centerline_length_mm": 10402.524981977363
+      }
+    },
+    "tools": {
+      "0": 14716,
+      "2": 96
+    },
+    "full_slice_completed": true,
+    "diagnostic_from_incomplete_gcode": false,
+    "source_slice_stop_reason": null,
+    "tower_including_brim": {
+      "nominal_bead_bounds_mm": [
+        73.072161911,
+        176.985161911,
+        159.543838089,
+        263.674838089
+      ],
+      "nominal_bead_area_mm2": 5834.0306051531115
+    },
+    "all_nominal_bead_bounds_mm": [
+      25.095132424,
+      22.416,
+      237.526910659,
+      263.674838089
+    ],
+    "bed_edge_clearances_mm": {
+      "left": 25.095132424,
+      "front": 22.416,
+      "right": 32.47308934099999,
+      "rear": 6.325161911000009
+    },
+    "all_nominal_deposition_inside_plate": true,
+    "tower_to_support_clearance_mm": 2.2247506082943884,
+    "tower_to_model_clearance_mm": 65.59744724332025,
+    "tower_support_overlap_area_mm2": 0.0,
+    "model_including_brim_to_support_clearance_mm": 0.0,
+    "model_brim_support_overlap_area_mm2": 0.7601740660238585,
+    "model_body_support_overlap_area_mm2": 0.0,
+    "saved_profile_settings": {
+      "prime_tower_width": "29",
+      "prime_tower_brim_width": "18",
+      "wipe_tower_extra_rib_length": "16",
+      "wipe_tower_rib_width": "12",
+      "wipe_tower_max_purge_speed": "70",
+      "wipe_tower_wall_type": "rib",
+      "wipe_tower_cone_angle": "15",
+      "wipe_tower_x": [
+        "100.558"
+      ],
+      "wipe_tower_y": [
+        "204.48"
+      ],
+      "enable_support": "1",
+      "enable_prime_tower": "1",
+      "initial_layer_print_height": "0.16",
+      "layer_height": "0.08",
+      "filament_colour": [
+        "#0086D6",
+        "#D96F00",
+        "#FFF800",
+        "#FF00E1"
+      ]
+    },
+    "method": "Read only through the second layer marker. Positive planar G0/G1 extrusion at first-layer Z is classified by native feature/object/brim markers. Nominal bead footprints are round buffers of annotated line width/2, unioned per class.",
+    "limitations": [
+      "This is nominal first-layer geometry, not a guarantee of bed adhesion or tower stability.",
+      "Printer custom purge macros are opaque and intentionally excluded, as are startup movements before the first layer marker.",
+      "Reported clearance does not include nozzle-body, carriage or later-layer collision envelopes."
+    ],
+    "print_started": false,
+    "printer_contacted": false,
+    "image": "<local>/pam_first_layer_zero_reference.png"
+  },
+  "zero_reference_first_layer_review": {
+    "reviewed_at": "2026-11-25T05:59:29.909493+00:00",
+    "image": "<local>/pam_first_layer_zero_reference.png",
+    "image_sha256": "6a7d2a91ce7a8d273f1d99b5f97ab340c310f07b2258eb36a2be26460ddb3289",
+    "gcode": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 717448319,
+      "sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "motion_commands": 24476242,
+      "commands_with_extrusion_parameter": 22579914
+    },
+    "full_slice_completed": true,
+    "diagnostic_from_incomplete_gcode": false,
+    "observations": [
+      "The recommended zero-simplification reference has its own independently parsed/rendered first-layer evidence; the candidate plot was not substituted.",
+      "All model/brim/support/tower nominal first-layer footprints fit the 270 by 270 mm bed. Bed margins are left 25.095 mm, front 22.416 mm, right 32.473 mm and rear 6.325 mm.",
+      "The tower and its 18 mm brim remain separate from the reference supports, with a 2.225 mm nominal bead gap and zero overlap area.",
+      "The 78 yellow Brim segments are included in the detail inset. Their 0.5 mm nominal bead sweeps have a small 0.760 mm\u00b2 edge overlap with cyan support beads; centerlines do not intersect and their closest separation is 0.4498 mm. The actual model-body bead footprint does not overlap supports.",
+      "The reference support footprint differs from the experimental candidate. Its tower/support gap is therefore 2.225 mm rather than the candidate\u2019s 4.779 mm. No geometry, print profile or G-code was changed."
+    ],
+    "model_brim_support_diagnostic": {
+      "nominal_bead_overlap_area_mm2": 0.7601740660238585,
+      "centerline_min_distance_mm": 0.44979995535161943,
+      "centerlines_intersect": false,
+      "annotated_brim_width_mm": 0.5,
+      "annotated_support_width_mm": 0.5
+    },
+    "limitations": [
+      "Nominal bead sweeps are width/2 buffers, not physical measurements of extruded plastic.",
+      "This review checks the complete first layer. Upper-layer nozzle/carriage clearances, physical adhesion and tower strength remain separate from these planar clearance checks."
+    ]
+  },
+  "candidate_first_layer_hop_control": {
+    "reviewed_at": "2026-11-25T05:26:13.872168+00:00",
+    "image": "<local>/pam_first_layer_normal_lift.png",
+    "image_sha256": "11f5d3089cf5057fe66ba12c520d549f6125bcd9990260e436438dae084fb3b4",
+    "gcode": {
+      "path": "<local>/plate_1.gcode",
+      "size_bytes": 712612309,
+      "sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+      "motion_commands": 24313546,
+      "commands_with_extrusion_parameter": 22429431
+    },
+    "full_slice_completed": true,
+    "diagnostic_from_incomplete_gcode": false,
+    "first_layer_deposition_sequence_exactly_matches_auto_lift_prefix": true,
+    "first_layer_deposition_segments": 14683,
+    "observations": [
+      "Completed NormalLift G-code produces the same fitting first-layer footprint: minimum rear plate margin 6.325 mm and minimum tower-to-support clearance 4.779 mm, with zero nominal overlap.",
+      "The entire first-layer deposition sequence, including model, supports, tower and tower brim, matches the AutoLift prefix exactly.",
+      "Visible rib/brim geometry and saved stability settings are preserved. The small yellow model contact sits among cyan support bases."
+    ],
+    "limitations": [
+      "This plot inspects the first layer. Upper-layer nozzle/carriage clearances, physical adhesion, tower strength, and whole-print simplification wall agreement are separate checks."
+    ]
+  },
+  "geometry_visual_review": {
+    "reviewed_at": "2026-11-25T04:46:33.840898+00:00",
+    "source_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+    "candidate_sha256": "2e6441fc837c6dcd349894bb99407489637f2f380358e5f87b72441bb367f456",
+    "no_visible_gross_geometry_loss": true,
+    "observations": [
+      "Four projections preserve the visible outer shape, exposed bridges, ribbon loops, and major openings. Difference maps show sparse boundary pixels; no conspicuous removed branch or new through-gap is visible.",
+      "Ten actual-plane source/candidate overlays coincide visually, including several worst-distance planes, small isolated cross-sections, the small first-layer contact, and the narrow top tip.",
+      "The first model-only contact is approximately 3 by 1.5 mm. This is inherited source geometry; the native support profile remains necessary."
+    ],
+    "limitations": [
+      "Raster silhouettes are approximately 0.50\u20130.85 mm per pixel and cannot certify a 0.02 mm contour bound. Raster differences depend on tessellation and pixel coverage, not only physical geometry displacement.",
+      "Projection occlusion can hide an interior defect; selected contour views do not inspect all 2162 planes.",
+      "No statement about connector mechanical strength, support removal, or physical print success is implied. Full contour and native-wall audits remain separate."
+    ],
+    "sample_z_mm": [
+      0.080001235,
+      25.960001235,
+      38.520001235,
+      57.080001235,
+      58.520001235,
+      86.520001235,
+      115.960001235,
+      147.080001235,
+      147.960001235,
+      173.000001235
+    ],
+    "silhouette_raster_diagnostic": [
+      {
+        "view": "front",
+        "reference_foreground_pixels": 63448,
+        "candidate_foreground_pixels": 63684,
+        "reference_only_pixels": 312,
+        "candidate_only_pixels": 548,
+        "intersection_over_union": 0.9865616601037565,
+        "projected_mm_per_pixel": 0.612629187625
+      },
+      {
+        "view": "side",
+        "reference_foreground_pixels": 78847,
+        "candidate_foreground_pixels": 79036,
+        "reference_only_pixels": 216,
+        "candidate_only_pixels": 405,
+        "intersection_over_union": 0.992164235602887,
+        "projected_mm_per_pixel": 0.5012755095027777
+      },
+      {
+        "view": "top",
+        "reference_foreground_pixels": 57718,
+        "candidate_foreground_pixels": 58424,
+        "reference_only_pixels": 65,
+        "candidate_only_pixels": 771,
+        "intersection_over_union": 0.9857067140829899,
+        "projected_mm_per_pixel": 0.612629187625
+      },
+      {
+        "view": "iso",
+        "reference_foreground_pixels": 31551,
+        "candidate_foreground_pixels": 31945,
+        "reference_only_pixels": 42,
+        "candidate_only_pixels": 436,
+        "intersection_over_union": 0.9850564291743521,
+        "projected_mm_per_pixel": 0.847117969835745
+      }
+    ],
+    "image_artifacts": [
+      {
+        "path": "<local>/pam_geometry-layers.png",
+        "sha256": "1769a5edd2a8c22a7bcc623a64db23f3cda61c2cc8a6a011a9c97b245775e9ff"
+      },
+      {
+        "path": "<local>/pam_geometry-silhouettes.png",
+        "sha256": "b7f2be0fcfcf3d1f4cd7f18786435aeee5dcb72824f3bc95bbb0284ac1264abc"
+      }
+    ]
+  }
+}

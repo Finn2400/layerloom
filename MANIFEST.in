@@ -5,7 +5,7 @@ include pyproject.toml
 include Launch*LayerLoom.command
 include Launch*LayerLoom.bat
 include docs/*.md
-recursive-include docs/benchmarks/layer-contour *.md *.json *.png
+recursive-include docs/benchmarks/layer-contour *.md *.json *.png *.py
 include scripts/benchmark_contour_stress.py
 include scripts/prepare_contour_benchy.py
 recursive-include tests/fixtures *.wkb

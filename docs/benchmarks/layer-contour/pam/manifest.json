@@ -1,0 +1,214 @@
+{
+  "source_reports": [
+    {
+      "report": "job.json",
+      "size_bytes": 9042,
+      "sha256": "cf7143046f288ff2353e480cfbeccb9d72f7f877fab80e9ebd4ff4ef77513ea7"
+    },
+    {
+      "report": "validation/reference_run.json",
+      "size_bytes": 4692,
+      "sha256": "852757a1169c0b4b05731fd6a9d330fe05aab78cc32f50294c5edb50f32491d8"
+    },
+    {
+      "report": "validation/candidate_run.json",
+      "size_bytes": 4669,
+      "sha256": "673c4d7321ffc1325f6b84c566bdbd8b0a6a6c46e74db2b3a732076a5779b297"
+    },
+    {
+      "report": "geometry/Pam_TCR_pMHC_contour_zero_reference.report.json",
+      "size_bytes": 2778,
+      "sha256": "3bf6ae5398cd5264a14225d5c3fa5b3649429fbe31f2f197c9b1e2a6749d0e81"
+    },
+    {
+      "report": "geometry/Pam_TCR_pMHC_contour_020mm.report.json",
+      "size_bytes": 2787,
+      "sha256": "772642e18528f2105a1b2bf4a9c32e7144a3571ea55a9da09aabc06bba518ef6"
+    },
+    {
+      "report": "validation/reference_contour_audit_corrected.json",
+      "size_bytes": 3679,
+      "sha256": "0926bab32c48621d6b99adc3ec505d3332b74ce0524d8870aee2da5d7e17dfe5"
+    },
+    {
+      "report": "validation/candidate_contour_audit_v3.json",
+      "size_bytes": 3477,
+      "sha256": "075f36ff14dc78017e067f5cac4e193178ed6ca9fe470cd37371960d6701ad1a"
+    },
+    {
+      "report": "validation/package_reference_normal_lift.json",
+      "size_bytes": 2545,
+      "sha256": "606661d17e2c52d5caee64a70e9c4f41bb9a3b4366bb48907d23da40128973e7"
+    },
+    {
+      "report": "validation/package_candidate_normal_lift.json",
+      "size_bytes": 2525,
+      "sha256": "197716f5a2a0be7f7d58cebc8c845a60c97b5f6f3be1e9433b8a42ec4f6eab24"
+    },
+    {
+      "report": "validation/reference_normal_lift_slice.json",
+      "size_bytes": 4205,
+      "sha256": "c73be981c21a65cea23ec9d487443d69690293357e79bfcbb2a4cfe0325e41cf"
+    },
+    {
+      "report": "validation/candidate_normal_lift_slice.json",
+      "size_bytes": 4183,
+      "sha256": "db4fc28cfe036aa87b6469b9c5f8ac9b27e122fd3e92112f67d67e6d69d7d781"
+    },
+    {
+      "report": "validation/reference_normal_lift_gcode_proof.json",
+      "size_bytes": 6796,
+      "sha256": "b292e2534cb05c966fafdc6bec54805a59f64f763e7355a2cd60e0250af9fc3b"
+    },
+    {
+      "report": "validation/candidate_normal_lift_gcode_proof.json",
+      "size_bytes": 6579,
+      "sha256": "fc48aa1728bddb03f0bccecb55f514db80d42c7e7716a336745e0c5f6af27287"
+    },
+    {
+      "report": "validation/fallback_forensics_summary.json",
+      "size_bytes": 7371,
+      "sha256": "b26d0ba908cfb6f7ea237a63abdcee8069419f796cc0b4d165370a28330816de"
+    },
+    {
+      "report": "validation/source_reference_equivalence_after_audit_fix.json",
+      "size_bytes": 475,
+      "sha256": "371d6808fc39b9ff3c3964084d220a24b5563e2c6e0a54827e35dce2aae2e1c2"
+    },
+    {
+      "report": "validation/native_candidate_reference_profile_schedule_comparison.json",
+      "size_bytes": 4346,
+      "sha256": "758497f881e16e8f8bb418ab9a52a80df648ff0eef82781c5f72a5bb247c3a57"
+    },
+    {
+      "report": "validation/official_235_arc_cache_provenance.json",
+      "size_bytes": 1456,
+      "sha256": "ebcd3f12a5ee73415d1a3182463e87e3fe28cc57823b98c777743168e7280be9"
+    },
+    {
+      "report": "validation/stale_arc_payload_estimate.json",
+      "size_bytes": 2974,
+      "sha256": "e4df7462daaa6366dd4bbb6091f594163eeb0850e4a15b45c45449bdd9d52159"
+    },
+    {
+      "report": "validation/candidate_slice.json",
+      "size_bytes": 3826,
+      "sha256": "2001240f70ab5c6f388176aaed1510d6d7b96aa58a8a82f570b898d28a8109f1"
+    },
+    {
+      "report": "validation/auto_vs_normal_lift_control.summary.json",
+      "size_bytes": 34335,
+      "sha256": "b8fec6c6078b6891010d192d464af387d27f644e2fa4edfdd48c82f5c21934dd"
+    },
+    {
+      "report": "validation/reference_normal_lift_repeat_determinism.json",
+      "size_bytes": 7811,
+      "sha256": "4e47acd1c3c15143fc332d49ca43875178704cbc8ea66789ca015db5353259ac"
+    },
+    {
+      "report": "validation/pam_first_layer_zero_reference.json",
+      "size_bytes": 5109,
+      "sha256": "14668634f29a1967333e96bd62695214fda46bfc1d4ee92d52383387c0a273c5"
+    },
+    {
+      "report": "validation/parallel_wall_audit_equivalence_proof.json",
+      "size_bytes": 1963,
+      "sha256": "0bf3b3afa48ade534995a7a17b700557c9acc2ada26a1a23196e3d3c3f9d1286"
+    },
+    {
+      "report": "validation/pam_first_layer_zero_reference_review.json",
+      "size_bytes": 2321,
+      "sha256": "55dff472a37904720703490e0d7bfd87bc76118f9c69038e6ff5ddb28a680f66"
+    },
+    {
+      "report": "validation/pam_first_layer_normal_lift_review.json",
+      "size_bytes": 1561,
+      "sha256": "77f45236f13b64e43407c8d34826eff8e472323ff806c7d316b4452f411c7063"
+    },
+    {
+      "report": "validation/pam_geometry_visual_review.json",
+      "size_bytes": 3325,
+      "sha256": "ab7d3308dc030ddf5decc9d01e40c562b65b70454198b0c4f21fa096cc2eb247"
+    },
+    {
+      "report": "validation/pam_walls.summary.json",
+      "size_bytes": 4335,
+      "sha256": "e98231b4dc15a551f7dea7019bff6cf10a23ecc90b4a94ce74d0390acb140308"
+    },
+    {
+      "report": "validation/pam_walls.distribution.json",
+      "size_bytes": 9521,
+      "sha256": "f58af13898be878702bdf0664c6bc71e0f57945f7707f536373fbf68ed669fdf"
+    },
+    {
+      "report": "validation/pam_walls.footprints.json",
+      "size_bytes": 10627,
+      "sha256": "653ae6f1b4ac2f786d5c06c18c0c3d2cfc95ad0d85b89792922c07e0e0478d71"
+    },
+    {
+      "report": "validation/pam_walls.interpretation.json",
+      "size_bytes": 17123,
+      "sha256": "50adde7b56df68ab431af3a7f6b89fa00d119d2d553040cee1e28c58970fbce6"
+    },
+    {
+      "report": "validation/pam_walls.visual_review.json",
+      "size_bytes": 4416,
+      "sha256": "09713dd7c21c49d8fb27698a5e930065ed061fd57e79d8d0b6b79d8d04db9d95"
+    },
+    {
+      "report": "validation/pam_walls.partial.footprints.json",
+      "size_bytes": 4086,
+      "sha256": "36517551bc871b2863cbd2f4d73cedb9fbe626e29ca32745aebef650c982bbfe"
+    },
+    {
+      "report": "validation/cleanup_completed.json",
+      "size_bytes": 3629,
+      "sha256": "b2fffaf3d6bae1fa7ff4c50570496a97bacb8d95257d1d190bc703e20bf9d310"
+    }
+  ],
+  "figures": [
+    {
+      "file": "figures/contours.png",
+      "source_image": "validation/pam_geometry-layers.png",
+      "size_bytes": 282346,
+      "sha256": "1769a5edd2a8c22a7bcc623a64db23f3cda61c2cc8a6a011a9c97b245775e9ff"
+    },
+    {
+      "file": "figures/silhouettes.png",
+      "source_image": "validation/pam_geometry-silhouettes.png",
+      "size_bytes": 67877,
+      "sha256": "b7f2be0fcfcf3d1f4cd7f18786435aeee5dcb72824f3bc95bbb0284ac1264abc"
+    },
+    {
+      "file": "figures/zero-first-layer.png",
+      "source_image": "validation/pam_first_layer_zero_reference.png",
+      "size_bytes": 985606,
+      "sha256": "6a7d2a91ce7a8d273f1d99b5f97ab340c310f07b2258eb36a2be26460ddb3289"
+    },
+    {
+      "file": "figures/worst-wall.png",
+      "source_image": "<local>/pam_walls.footprint_z_145.760.png",
+      "size_bytes": 310488,
+      "sha256": "b4e0697409e0da8ae6193d640f294db4c9423c32b20bc7d32bf46d221b7ec45e"
+    }
+  ],
+  "method_snapshots": [
+    {
+      "file": "methods/compare_model_walls.py",
+      "sha256": "2b32633101d564a12ede19d7d279f0cf1afe874bcda9e1d93af08792daee5f4a",
+      "size_bytes": 17702
+    },
+    {
+      "file": "methods/parallel_wall_audit.py",
+      "sha256": "a98c0a88046996fed543b50c52b0bdef0d1fc735cb174ed21ef5d38ba087cab3",
+      "size_bytes": 13400
+    },
+    {
+      "file": "methods/first_layer_bed.py",
+      "sha256": "4d4c3443af3d5c43ead06d7b187a0fbb3899c0af681fb70f19cf0f9ab2a87a5c",
+      "size_bytes": 15032
+    }
+  ],
+  "omitted": "Large model/G-code files, logs, full layer JSONL and local absolute paths.",
+  "artifact_provenance": "Hashes inside reports identify retained local artifacts. Source-report hashes identify the original unsanitized JSON, while public JSON uses artifact basenames instead of absolute local paths."
+}

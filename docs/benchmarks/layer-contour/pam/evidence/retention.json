@@ -1,0 +1,87 @@
+{
+  "timestamp": "2026-11-25T05:56:58.629107+00:00",
+  "scope": "<local>/woven_layer_contour_26cm",
+  "removed": [
+    {
+      "path": "Pam_TCR_pMHC_layer_contour_U1.3mf",
+      "bytes": 151921647,
+      "sha256": "e6da99e9de2a5a927bbae3afe9440e27acb3f393e6abbcf78211153e527f7837",
+      "reason": "Superseded Auto Lift project; same geometry retained in fully sliced Normal Lift project and generic master"
+    },
+    {
+      "path": "geometry/Pam_TCR_pMHC_zero_reference_U1.3mf",
+      "bytes": 170597698,
+      "sha256": "19d75f2145cf1659d907c2856ef5af6b34d0574b1e632a918f1320518a9cd0e8",
+      "reason": "Superseded Auto Lift project; same geometry retained in fully sliced Normal Lift project and generic master"
+    },
+    {
+      "path": "diagnostics/zero_reference.gcode.gz",
+      "bytes": 233966079,
+      "decoded_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "reason": "Verified lossless duplicate; keep recommended G-code ready to open"
+    }
+  ],
+  "freed_bytes": 1167919873,
+  "production_projects_and_gcode_retained": true,
+  "compressed_logs": [
+    {
+      "original": "logs/reference_normal_lift_slice_attempt1.log",
+      "archive": "logs/reference_normal_lift_slice_attempt1.log.gz",
+      "original_bytes": 18725178,
+      "archive_bytes": 1424847,
+      "uncompressed_sha256": "088fa5ad4c1607da52097685236aadba9f29e41f95960ec0fd751726dc705549",
+      "roundtrip_verified": true
+    },
+    {
+      "original": "logs/candidate_slice_attempt1.log",
+      "archive": "logs/candidate_slice_attempt1.log.gz",
+      "original_bytes": 18513790,
+      "archive_bytes": 1399788,
+      "uncompressed_sha256": "aa03511d222746d0b9ce2ccf2b79b833bf73c4c900c2badcb5cca7b719b91931",
+      "roundtrip_verified": true
+    },
+    {
+      "original": "logs/candidate_normal_lift_slice.log",
+      "archive": "logs/candidate_normal_lift_slice.log.gz",
+      "original_bytes": 18516424,
+      "archive_bytes": 1392384,
+      "uncompressed_sha256": "1cec4ac1a2d5aa428f5fa0cd58cc7facd1982407d9ef563b8927d300b2d4e87a",
+      "roundtrip_verified": true
+    },
+    {
+      "original": "logs/reference_normal_lift_slice.log",
+      "archive": "logs/reference_normal_lift_slice.log.gz",
+      "original_bytes": 18727363,
+      "archive_bytes": 1411227,
+      "uncompressed_sha256": "4f6c42937e47da2457d965606b8aa81fb6bc1d4266951fe53ec92ea598893612",
+      "roundtrip_verified": true
+    },
+    {
+      "original": "logs/candidate_slice.log",
+      "archive": "logs/candidate_slice.log.gz",
+      "original_bytes": 18335570,
+      "archive_bytes": 1384058,
+      "uncompressed_sha256": "05afdea22d71b9e328a4a2487ec9bec92490a300bebda2f895ad394e532225c3",
+      "roundtrip_verified": true
+    },
+    {
+      "original": "logs/reference_normal_lift_repeat_slice.log",
+      "archive": "logs/reference_normal_lift_repeat_slice.log.gz",
+      "original_bytes": 18727405,
+      "archive_bytes": 1420189,
+      "uncompressed_sha256": "2b539c6f82f283a466090f8d504c74f718691111f0c218673234e0cd9712e635",
+      "roundtrip_verified": true
+    }
+  ],
+  "compressed_experimental_gcode": {
+    "original": "sliced/candidate_normal_lift/plate_1.gcode",
+    "archive": "diagnostics/candidate_020mm.gcode.gz",
+    "original_bytes": 712612309,
+    "archive_bytes": 204291097,
+    "uncompressed_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+    "roundtrip_verified": true,
+    "original_retained_until_readers_finish": false,
+    "elapsed_s": 31.728365749993827,
+    "original_removed_after_all_readers_finished": true
+  }
+}

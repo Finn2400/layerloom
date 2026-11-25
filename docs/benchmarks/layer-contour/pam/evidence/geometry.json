@@ -1,0 +1,518 @@
+{
+  "source": {
+    "path": "<local>/Pam_26cm_reoriented_labeled_source.3mf",
+    "size_bytes": 5298890,
+    "sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+    "vertices": 160568,
+    "triangles": 321328,
+    "uncompressed_geometry_bytes": 23864317,
+    "zip_valid": true
+  },
+  "weave_commit": "88a73e4ec1a32a3ff512124e7fca346d5cbd9dff",
+  "audit_commit": "3af5fb10cbdd30b5b5615df6956fa6a63048bcec",
+  "runs": {
+    "reference": {
+      "artifact": {
+        "path": "<local>/Pam_TCR_pMHC_contour_zero_reference.3mf",
+        "size_bytes": 170584927,
+        "sha256": "e46777ea8224728610e9719f6f1ec0aac931304f75a61b4b5be239e8507954ef",
+        "vertices": 7202244,
+        "triangles": 14238188,
+        "uncompressed_geometry_bytes": 1244378661,
+        "zip_valid": true
+      },
+      "weave": {
+        "elapsed_s": 377.4819945000345,
+        "peak_process_tree_rss_bytes_observed": 222167040,
+        "rss_poll_interval_s": 0.05,
+        "rss_measurement_complete": true,
+        "exit_code": 0
+      },
+      "builder": {
+        "mode": "layer-contour",
+        "experimental": true,
+        "input_path": "<local>/Pam_26cm_reoriented_labeled_source.3mf",
+        "input_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+        "algorithm_revision": "contour-prisms-2",
+        "coordinate_encoding": "float64-roundtrip-17g",
+        "input_triangles": 321328,
+        "direct_copy_parts": 0,
+        "output_triangles": 14238188,
+        "output_vertices": 7202244,
+        "xy_tolerance_mm": 0.0,
+        "first_layer_height": 0.16,
+        "layer_height": 0.08,
+        "first_layer_color": "y",
+        "first_layer_token": "y",
+        "layers": 2162,
+        "source_bounds": [
+          [
+            -110.273247943,
+            -90.22959612,
+            1.235e-06
+          ],
+          [
+            110.273259602,
+            90.229587301,
+            173.021368153
+          ]
+        ],
+        "contour_validated": true,
+        "toolpaths_validated": false,
+        "full_slice_tested": false,
+        "serialized_contour_validated": false,
+        "reserve_disk_bytes": 4294967296,
+        "passthrough_appearance": [],
+        "max_contour_distance_mm": 0.0,
+        "exact_fallback_layers": 1242,
+        "stage_seconds": {
+          "ingest_and_index": 4.771428916952573,
+          "layers_and_spools": 324.9357517079916,
+          "export_and_zip_validation": 47.01753008295782
+        },
+        "time_to_first_layer_seconds": 4.776669834041968,
+        "memory_budget_mib": 1024,
+        "peak_scratch_bytes": 563281142,
+        "band_guard_mm": 0.0001,
+        "numerical_export_grid_mm": 1.52587890625e-05,
+        "numerical_intersection_grid_mm": 1e-07,
+        "numerical_debris_area_sum_mm2": 1.3969838619232178e-09,
+        "numerical_debris_count": 2,
+        "representation": "Closed layer prisms with between-plane numerical guard; no whole-model Boolean or STL roundtrip",
+        "limitations": [
+          "Between-plane geometry is specialized to this layer schedule; do not rotate, scale, or change layer heights.",
+          "Wall displacement and seam behavior require separate slicing comparison.",
+          "Source contours are regularized on the reported numerical binary grid before the simplification reference; sub-grid cracks can close.",
+          "NOWEAVE display colors are preserved when uniform and known; source extruder numbers are provenance only and require printer mapping.",
+          "Copied source meshes are not repaired or independently certified as float32-safe closed solids.",
+          "Single-layer complexity is budget-limited; oversized sections fail instead of using legacy memory-heavy fallback."
+        ],
+        "output_path": "<local>/Pam_TCR_pMHC_contour_zero_reference.3mf",
+        "output_bytes": 170584927,
+        "elapsed_seconds": 376.7251058749971,
+        "peak_rss_bytes": 222265344,
+        "output_sha256": "e46777ea8224728610e9719f6f1ec0aac931304f75a61b4b5be239e8507954ef"
+      },
+      "final_serialized_audit": {
+        "audit_revision": "serialized-contours-3",
+        "source_path": "<local>/Pam_26cm_reoriented_labeled_source.3mf",
+        "candidate_path": "<local>/Pam_TCR_pMHC_contour_zero_reference.3mf",
+        "source_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+        "candidate_sha256": "e46777ea8224728610e9719f6f1ec0aac931304f75a61b4b5be239e8507954ef",
+        "source_hash_matches_candidate_reference": true,
+        "candidate_hash_matches_report": true,
+        "candidate_single_token_parts_valid": true,
+        "candidate_coordinate_encoding": "float64-roundtrip-17g",
+        "layer_height_mm": 0.08,
+        "first_layer_height_mm": 0.16,
+        "first_layer_token": "y",
+        "declared_layer_count": 2162,
+        "layer_count_matches_report": true,
+        "requested_tolerance_mm": 0.0,
+        "effective_certified_boundary_limit_mm": 3.0517578125e-05,
+        "numerical_policy": {
+          "intersection_grid_mm": 1e-07,
+          "common_binary_grid_mm": 1.52587890625e-05,
+          "minimum_numerical_allowance_mm": 3.0517578125e-05,
+          "boundary_certificate_precision": "Float64 boundary copies with fixed-precision metadata cleared before conservative buffering; coordinates unchanged.",
+          "regularization": "Both independently decoded artifacts use the common binary-grid contour policy before comparison.",
+          "complete_vertical_quad_policy": "Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization. A single already-certified section per material bypasses redundant fixed-precision union; generic and multiple-input sections retain regularization and union.",
+          "sub_grid_debris_cleanup": {
+            "source_area_mm2": 1.3969838619232178e-09,
+            "source_count": 2,
+            "candidate_area_mm2": 0.0,
+            "candidate_count": 0
+          }
+        },
+        "layers": 2162,
+        "failed_layers": 0,
+        "per_filament_failures": 0,
+        "union_failures": 0,
+        "overlap_failures": 0,
+        "passed": true,
+        "all_layers_compared": true,
+        "serialized_contours_validated": true,
+        "observed_max_boundary_hausdorff_mm": 0.0,
+        "max_symmetric_difference_area_mm2": 0.0,
+        "first_failed_layers": [],
+        "passthrough": {
+          "passed": true,
+          "parts": [],
+          "legacy_nine_decimal_rounding": false,
+          "method": "Indexed float64 geometry plus source color/extruder provenance; transforms and reflected winding included. Legacy nine-decimal rounding is used only when the candidate predates explicit coordinate encoding."
+        },
+        "toolpaths_validated": false,
+        "method": "Independent serialized-artifact re-slicing; certified two-way boundary-buffer containment plus component/hole and overlap topology checks on every fixed-height slicing plane.",
+        "limitations": [
+          "Shares the slicing kernel with the exporter; not a separate kernel proof.",
+          "Comparison is to numerically regularized source contours; grids and cleanup are disclosed above.",
+          "Wall centerlines, extrusion widths, seams, and supports require downstream slicer/G-code validation.",
+          "Does not certify full-mesh manifold topology away from slicing planes."
+        ],
+        "layers_report": "<local>/reference_contour_audit_corrected.layers.jsonl",
+        "elapsed_seconds": 409.63367187499534,
+        "candidate_index_reuse_provenance": "<local>/reference_contour_audit_corrected_cache_provenance.json"
+      }
+    },
+    "candidate": {
+      "artifact": {
+        "path": "<local>/Pam_TCR_pMHC_contour_020mm.3mf",
+        "size_bytes": 151909132,
+        "sha256": "2e6441fc837c6dcd349894bb99407489637f2f380358e5f87b72441bb367f456",
+        "vertices": 6426096,
+        "triangles": 12685892,
+        "uncompressed_geometry_bytes": 1107442976,
+        "zip_valid": true
+      },
+      "weave": {
+        "elapsed_s": 433.56938029202865,
+        "peak_process_tree_rss_bytes_observed": 224296960,
+        "rss_poll_interval_s": 0.05,
+        "rss_measurement_complete": true,
+        "exit_code": 0
+      },
+      "builder": {
+        "mode": "layer-contour",
+        "experimental": true,
+        "input_path": "<local>/Pam_26cm_reoriented_labeled_source.3mf",
+        "input_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+        "algorithm_revision": "contour-prisms-2",
+        "coordinate_encoding": "float64-roundtrip-17g",
+        "input_triangles": 321328,
+        "direct_copy_parts": 0,
+        "output_triangles": 12685892,
+        "output_vertices": 6426096,
+        "xy_tolerance_mm": 0.02,
+        "first_layer_height": 0.16,
+        "layer_height": 0.08,
+        "first_layer_color": "y",
+        "first_layer_token": "y",
+        "layers": 2162,
+        "source_bounds": [
+          [
+            -110.273247943,
+            -90.22959612,
+            1.235e-06
+          ],
+          [
+            110.273259602,
+            90.229587301,
+            173.021368153
+          ]
+        ],
+        "contour_validated": true,
+        "toolpaths_validated": false,
+        "full_slice_tested": false,
+        "serialized_contour_validated": false,
+        "reserve_disk_bytes": 4294967296,
+        "passthrough_appearance": [],
+        "max_contour_distance_mm": 0.014999959351603207,
+        "exact_fallback_layers": 1335,
+        "stage_seconds": {
+          "ingest_and_index": 4.330522957956418,
+          "layers_and_spools": 386.34628941700794,
+          "export_and_zip_validation": 41.8363019170356
+        },
+        "time_to_first_layer_seconds": 4.366961541993078,
+        "memory_budget_mib": 1024,
+        "peak_scratch_bytes": 507414088,
+        "band_guard_mm": 0.0001,
+        "numerical_export_grid_mm": 1.52587890625e-05,
+        "numerical_intersection_grid_mm": 1e-07,
+        "numerical_debris_area_sum_mm2": 1.3969838619232178e-09,
+        "numerical_debris_count": 2,
+        "representation": "Closed layer prisms with between-plane numerical guard; no whole-model Boolean or STL roundtrip",
+        "limitations": [
+          "Between-plane geometry is specialized to this layer schedule; do not rotate, scale, or change layer heights.",
+          "Wall displacement and seam behavior require separate slicing comparison.",
+          "Source contours are regularized on the reported numerical binary grid before the simplification reference; sub-grid cracks can close.",
+          "NOWEAVE display colors are preserved when uniform and known; source extruder numbers are provenance only and require printer mapping.",
+          "Copied source meshes are not repaired or independently certified as float32-safe closed solids.",
+          "Single-layer complexity is budget-limited; oversized sections fail instead of using legacy memory-heavy fallback."
+        ],
+        "output_path": "<local>/Pam_TCR_pMHC_contour_020mm.3mf",
+        "output_bytes": 151909132,
+        "elapsed_seconds": 432.5134642079938,
+        "peak_rss_bytes": 224477184,
+        "output_sha256": "2e6441fc837c6dcd349894bb99407489637f2f380358e5f87b72441bb367f456"
+      },
+      "final_serialized_audit": {
+        "audit_revision": "serialized-contours-3",
+        "source_path": "<local>/Pam_26cm_reoriented_labeled_source.3mf",
+        "candidate_path": "<local>/Pam_TCR_pMHC_contour_020mm.3mf",
+        "source_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+        "candidate_sha256": "2e6441fc837c6dcd349894bb99407489637f2f380358e5f87b72441bb367f456",
+        "source_hash_matches_candidate_reference": true,
+        "candidate_hash_matches_report": true,
+        "candidate_single_token_parts_valid": true,
+        "candidate_coordinate_encoding": "float64-roundtrip-17g",
+        "layer_height_mm": 0.08,
+        "first_layer_height_mm": 0.16,
+        "first_layer_token": "y",
+        "declared_layer_count": 2162,
+        "layer_count_matches_report": true,
+        "requested_tolerance_mm": 0.02,
+        "effective_certified_boundary_limit_mm": 0.02,
+        "numerical_policy": {
+          "intersection_grid_mm": 1e-07,
+          "common_binary_grid_mm": 1.52587890625e-05,
+          "minimum_numerical_allowance_mm": 3.0517578125e-05,
+          "boundary_certificate_precision": "Float64 boundary copies with fixed-precision metadata cleared before conservative buffering; coordinates unchanged.",
+          "regularization": "Both independently decoded artifacts use the common binary-grid contour policy before comparison.",
+          "complete_vertical_quad_policy": "Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization. A single already-certified section per material bypasses redundant fixed-precision union; generic and multiple-input sections retain regularization and union.",
+          "sub_grid_debris_cleanup": {
+            "source_area_mm2": 1.3969838619232178e-09,
+            "source_count": 2,
+            "candidate_area_mm2": 0.0,
+            "candidate_count": 0
+          }
+        },
+        "layers": 2162,
+        "failed_layers": 0,
+        "per_filament_failures": 0,
+        "union_failures": 0,
+        "overlap_failures": 0,
+        "passed": true,
+        "all_layers_compared": true,
+        "serialized_contours_validated": true,
+        "observed_max_boundary_hausdorff_mm": 0.014999959351603207,
+        "max_symmetric_difference_area_mm2": 2.664541625767015,
+        "first_failed_layers": [],
+        "passthrough": {
+          "passed": true,
+          "parts": [],
+          "legacy_nine_decimal_rounding": false,
+          "method": "Indexed float64 geometry plus source color/extruder provenance; transforms and reflected winding included. Legacy nine-decimal rounding is used only when the candidate predates explicit coordinate encoding."
+        },
+        "toolpaths_validated": false,
+        "method": "Independent serialized-artifact re-slicing; certified two-way boundary-buffer containment plus component/hole and overlap topology checks on every fixed-height slicing plane.",
+        "limitations": [
+          "Shares the slicing kernel with the exporter; not a separate kernel proof.",
+          "Comparison is to numerically regularized source contours; grids and cleanup are disclosed above.",
+          "Wall centerlines, extrusion widths, seams, and supports require downstream slicer/G-code validation.",
+          "Does not certify full-mesh manifold topology away from slicing planes."
+        ],
+        "layers_report": "<local>/candidate_contour_audit_v3.layers.jsonl",
+        "elapsed_seconds": 559.284123584046
+      }
+    }
+  },
+  "fallback_forensics": {
+    "scope": "Read-only geometry investigation: no backend or 3MF changes, no full-model mesh materialized. Disk-backed source sections reconstructed independently.",
+    "source_sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+    "all_layer_statistics": {
+      "layers": 2162,
+      "fallback_layers": 1335,
+      "fallback_fraction": 0.6174838112858464,
+      "initial_simplification_fallbacks": 1172,
+      "final_export_grid_fallbacks": 163,
+      "candidate_triangles": 12685892,
+      "zero_reference_triangles": 14238188
+    },
+    "sample": {
+      "method": "80 evenly spaced fallback layers ordered by height, plus 12 evenly spaced accepted controls",
+      "replication_mismatches": 0,
+      "initial_first_guard": {
+        "none": 12,
+        "union": 49,
+        "material": 9,
+        "overlap": 10
+      },
+      "final_export_grid_first_guard": {
+        "material": 12
+      },
+      "same_failure_classification_at_015_and_0075": true,
+      "initial_topology_feature_count": 167,
+      "feature_width_proxy_2area_perimeter_mm": {
+        "min": 2.1960866616994703e-06,
+        "median": 8.174564150052857e-06,
+        "max": 0.009112786550476818,
+        "below_001mm": 146
+      }
+    },
+    "interpretation": [
+      "Most sampled rejections begin at combined-union or color-overlap guards, after every individual material has stayed within the 0.02mm bound and retained its own signature. This identifies contacts/seams between materials as the main sampled cause.",
+      "Many disappearing or appearing features are long slits or overlap slivers with extremely small area and width. Boundary Hausdorff distance can then be millimeters because a boundary appears/disappears far from the surviving boundary, even while each material contour moves under 0.015mm.",
+      "A smaller group changes single-material connectivity, hole count, or narrow bays. These include a roughly 0.00587mm-width hole and a roughly 0.00236mm-width filled bay; rejection is not exclusively machine-roundoff-sized features.",
+      "The final binary-grid guard correctly catches additional failures that passed the initial candidate guard. All 12 sampled export-grid cases first failed a material guard.",
+      "The reported candidates were rejected: the delivered weave retained the original reference geometry for these layers. This forensic analysis does not establish whether a slicer would print the tiny seams; actual wall-toolpath comparison is needed.",
+      "Width values use 2*area/perimeter as a scale proxy, not a certified minimum feature width. Counts of changed features may include the same local feature in more than one material/union/overlap guard."
+    ],
+    "height_distribution": [
+      {
+        "z_mm": [
+          0,
+          40
+        ],
+        "layers": 499,
+        "fallbacks": 253
+      },
+      {
+        "z_mm": [
+          40,
+          80
+        ],
+        "layers": 500,
+        "fallbacks": 434
+      },
+      {
+        "z_mm": [
+          80,
+          120
+        ],
+        "layers": 500,
+        "fallbacks": 465
+      },
+      {
+        "z_mm": [
+          120,
+          160
+        ],
+        "layers": 500,
+        "fallbacks": 170
+      },
+      {
+        "z_mm": [
+          160,
+          174
+        ],
+        "layers": 163,
+        "fallbacks": 13
+      }
+    ],
+    "triangle_distribution": [
+      {
+        "fallback": true,
+        "layers": 1335,
+        "reference_triangles": 11022640,
+        "candidate_triangles": 11022848
+      },
+      {
+        "fallback": false,
+        "layers": 827,
+        "reference_triangles": 3215548,
+        "candidate_triangles": 1663044
+      }
+    ],
+    "examples": [
+      {
+        "layer_zero_based": 116,
+        "z_mm": 9.400001235,
+        "stage": "final_export_grid",
+        "first_guard": "material",
+        "material": "m",
+        "old_components_holes": [
+          8,
+          0
+        ],
+        "new_components_holes": [
+          8,
+          0
+        ],
+        "boundary_distance_mm": 1.1154758118319246,
+        "max_material_boundary_distance_mm": 1.1154758118319246,
+        "finding": "Export-grid snap fills a narrow bay: area 0.005283mm2, bbox diagonal 2.2395mm, width proxy 0.002359mm; component/hole counts unchanged but boundary displacement becomes 1.1155mm."
+      },
+      {
+        "layer_zero_based": 213,
+        "z_mm": 17.160001235,
+        "stage": "initial_simplification",
+        "first_guard": "union",
+        "material": "all",
+        "old_components_holes": [
+          12,
+          0
+        ],
+        "new_components_holes": [
+          12,
+          0
+        ],
+        "boundary_distance_mm": 0.19204856929724995,
+        "max_material_boundary_distance_mm": 0.014949760699154688,
+        "finding": "All material boundaries stay within 0.01495mm, but a thin fissure appears on the magenta/yellow join. New union-boundary point is 0.19205mm from old union boundary while lying on both old material boundaries. Local removed area 4.0563e-7mm2; width proxy 1.9807e-6mm."
+      },
+      {
+        "layer_zero_based": 252,
+        "z_mm": 20.280001235,
+        "stage": "initial_simplification",
+        "first_guard": "union",
+        "material": "all",
+        "old_components_holes": [
+          13,
+          1
+        ],
+        "new_components_holes": [
+          13,
+          0
+        ],
+        "boundary_distance_mm": 0.23665314511844737,
+        "max_material_boundary_distance_mm": 0.014967604447811372,
+        "finding": "Union hole count changes 1 to 0; filled long slit area 1.5477e-5mm2, bbox diagonal 1.6227mm, width proxy 9.538e-6mm. Another join fissure contributes the 0.23665mm union-boundary discrepancy. All material boundaries stay within 0.01497mm."
+      },
+      {
+        "layer_zero_based": 398,
+        "z_mm": 31.960001235,
+        "stage": "initial_simplification",
+        "first_guard": "material",
+        "material": "y",
+        "old_components_holes": [
+          15,
+          1
+        ],
+        "new_components_holes": [
+          14,
+          2
+        ],
+        "boundary_distance_mm": 0.014977985156849545,
+        "max_material_boundary_distance_mm": 0.014977985156849545,
+        "finding": "Yellow changes from 15 components/1 hole to 14 components/2 holes even though all material boundary displacements remain below 0.01498mm: a topology-only per-material rejection."
+      },
+      {
+        "layer_zero_based": 417,
+        "z_mm": 33.480001235,
+        "stage": "initial_simplification",
+        "first_guard": "overlap",
+        "material": "ym",
+        "old_components_holes": [
+          2,
+          0
+        ],
+        "new_components_holes": [
+          1,
+          0
+        ],
+        "boundary_distance_mm": 2.013581792218961,
+        "max_material_boundary_distance_mm": 0.014945654272595112,
+        "finding": "One of two magenta/yellow overlap components disappears: area 5.6591e-6mm2, bbox diagonal 0.765945mm, width proxy 7.3883e-6mm. Overlap Hausdorff becomes 2.0136mm while material boundaries remain under 0.01495mm."
+      },
+      {
+        "layer_zero_based": 611,
+        "z_mm": 49.000001235000006,
+        "stage": "initial_simplification",
+        "first_guard": "material",
+        "material": "m",
+        "old_components_holes": [
+          18,
+          3
+        ],
+        "new_components_holes": [
+          18,
+          2
+        ],
+        "boundary_distance_mm": 1.9334388769625646,
+        "max_material_boundary_distance_mm": 1.9334388769625646,
+        "finding": "Magenta loses a long narrow hole: area 0.0173571mm2, bbox diagonal 2.9554mm, width proxy 0.0058726mm. This is a larger narrow feature than the numerical seam examples, with 1.9334mm boundary discrepancy if accepted."
+      }
+    ]
+  },
+  "unchanged_source_after_auditor_fix": {
+    "planes": 2162,
+    "part_sections": 9934,
+    "already_certified_part_sections": 0,
+    "changed_branch_eligible_material_sections": 0,
+    "mismatching_planes": [],
+    "method": "One layer at a time; cache original slice_part outputs and compare prior unconditional union with current layer_regions, only for sections entering the newly added branch. All other code paths are identical.",
+    "all_source_reference_planes_unchanged": true,
+    "elapsed_seconds": 80.88524891698034
+  }
+}

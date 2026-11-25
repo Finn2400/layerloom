@@ -1,0 +1,182 @@
+{
+  "case": "Pam TCR-pMHC reinforced ribbon/stick model",
+  "status": "complete",
+  "weave_commit": "88a73e4ec1a32a3ff512124e7fca346d5cbd9dff",
+  "audit_commit": "3af5fb10cbdd30b5b5615df6956fa6a63048bcec",
+  "source": {
+    "sha256": "dbcb7e3d5129afd0634329a3ed093d2511c888b1808254275435fcc892193cb0",
+    "size_bytes": 5298890,
+    "vertices": 160568,
+    "triangles": 321328
+  },
+  "oriented_source_dimensions_mm": [
+    220.546508789,
+    180.459182739,
+    173.02136107
+  ],
+  "source_preparation": "Previously approved/pre-simplified labeled source; no new rotation or scaling in this run.",
+  "layer_schedule": {
+    "first_layer_height_mm": 0.16,
+    "layer_height_mm": 0.08,
+    "first_layer_color": "y",
+    "layers": 2162
+  },
+  "physical_filament_slots": {
+    "c": 1,
+    "m": 4,
+    "y": 3
+  },
+  "peptide_patterns": {
+    "carbon_and_sulfur": "ccy",
+    "nitrogen": "cccm",
+    "oxygen": "mmymy"
+  },
+  "ribbon_patterns": {
+    "#7B68EE": "mcm",
+    "#C88C64": "ymyy",
+    "#D2A06E": "ymyy",
+    "#DEB887": "my",
+    "#E5989B": "mmym",
+    "#E6BE96": "cmycy",
+    "#FF7F50": "mymym",
+    "#FF9178": "mmym",
+    "#FFDCB4": "cmycy"
+  },
+  "previous_woven_baseline": {
+    "sha256": "8ed1d6f6b83935023d61523a1f9ae0c1be98005f2762c78aec3a2fb17393005e",
+    "size_bytes": 204456707,
+    "triangles": 14190142
+  },
+  "runtime": {
+    "python": "3.12.0rc3 (v3.12.0rc3:b973ab3c3b, Sep 18 2023, 18:46:18) [Clang 13.0.0 (clang-1300.0.29.30)]",
+    "platform": "macOS-14.6.1-arm64-arm-64bit",
+    "machine": "arm64",
+    "numpy": "1.26.4",
+    "shapely": "2.1.2",
+    "trimesh": "4.11.5",
+    "psutil": "6.0.0",
+    "lxml": "6.1.1",
+    "geos": "3.13.1",
+    "installed_snapmaker_orca_version": "2.3.5",
+    "implementation_sha256": {
+      "contour_benchmark.py": "f6b2a7d5fd7ca075c524de721cffa98f6fddf161df54891dc46114efc591fe59",
+      "contour_gcode.py": "187fbedb8af0b3d40a28a056aff5ac5e86a3fe507b64500e89530be461b5680c",
+      "contour_gui.py": "95c8e233fe43e7698bd2d5c95547d44e01e6d6b0d33ceb1c38bd5844fdeeeac2",
+      "contour_options.py": "e5e8655ad5fb35e5676c73747be3aefb26069c5a16c089a59c02633babcaf7b2",
+      "contour_store.py": "fe9f5684492103d6b8e17ba84d51859f8746ccc9d1d93713e247408511876126",
+      "contour_surface.py": "f47f45729b80ecd79486f5c922390a0aa19fbeae0f9dac19d2fb0dfe963ab975",
+      "contour_validation.py": "a135c2756c1b09e223596c7ad5065f522b345178deb2d77c0da39ff1463b1df7",
+      "contour_weave.py": "d6f06e2dc8c5700781260c9d27dcc303f4088f7ebe8c89c0b8ce054ffd67b326",
+      "weave.py": "3ca0661035696370b64867a47008f4523cf80fca43813610008f65879e89e0db"
+    }
+  },
+  "rows": {
+    "reference": {
+      "xy_tolerance_mm": 0.0,
+      "triangles": 14238188,
+      "generic_3mf_bytes": 170584927,
+      "generic_3mf_sha256": "e46777ea8224728610e9719f6f1ec0aac931304f75a61b4b5be239e8507954ef",
+      "native_normal_lift_3mf_bytes": 170599009,
+      "native_normal_lift_3mf_sha256": "00c712b32e7565e363c3ce935365448f241741d9c31fab107b23b4b716a56a1d",
+      "weave_elapsed_s": 377.4819945000345,
+      "weave_peak_process_tree_rss_bytes": 222167040,
+      "audit_revision": "serialized-contours-3",
+      "audited_contour_planes": 2162,
+      "serialized_contours_passed": true,
+      "max_contour_distance_mm": 0.0,
+      "full_slice_completed": true,
+      "slice_elapsed_s": 166.65395887498744,
+      "slice_peak_process_tree_rss_bytes": 8555495424,
+      "largest_process_lifetime_physical_footprint_bytes": 10783058304,
+      "observed_system_swap_growth_bytes": 0,
+      "gcode_bytes": 717448319,
+      "gcode_sha256": "4549fa792c7384060d8f4cd3ce283b299dd294619456277d5cee26200dde3ef8",
+      "emitted_print_layers": 2161,
+      "first_print_z_mm": 0.16,
+      "final_print_z_mm": 172.96,
+      "estimated_times": {
+        "estimated printing time (normal mode)": "4d 1h 24m 45s"
+      }
+    },
+    "candidate": {
+      "xy_tolerance_mm": 0.02,
+      "triangles": 12685892,
+      "generic_3mf_bytes": 151909132,
+      "generic_3mf_sha256": "2e6441fc837c6dcd349894bb99407489637f2f380358e5f87b72441bb367f456",
+      "native_normal_lift_3mf_bytes": 151922943,
+      "native_normal_lift_3mf_sha256": "91a75fbde48bb62f2ae9fa94473ca922aa3e980431b4bdec5e972930714e6228",
+      "weave_elapsed_s": 433.56938029202865,
+      "weave_peak_process_tree_rss_bytes": 224296960,
+      "audit_revision": "serialized-contours-3",
+      "audited_contour_planes": 2162,
+      "serialized_contours_passed": true,
+      "max_contour_distance_mm": 0.014999959351603207,
+      "full_slice_completed": true,
+      "slice_elapsed_s": 169.66431720898254,
+      "slice_peak_process_tree_rss_bytes": 7807008768,
+      "largest_process_lifetime_physical_footprint_bytes": 10627705280,
+      "observed_system_swap_growth_bytes": 0,
+      "gcode_bytes": 712612309,
+      "gcode_sha256": "ade0bcdff491208c296bddc94a406215d482415fc94054b05bdb2790164f4655",
+      "emitted_print_layers": 2161,
+      "first_print_z_mm": 0.16,
+      "final_print_z_mm": 172.96,
+      "estimated_times": {
+        "estimated printing time (normal mode)": "4d 1h 16m 28s"
+      }
+    }
+  },
+  "candidate_exact_fallback_planes": 1335,
+  "wall_gate": "failed",
+  "recommendation": "zero intentional XY simplification / Normal Lift",
+  "wall_summary": {
+    "layers": 2161,
+    "failed_layers": 2159,
+    "combined_feature_geometry_failed_layers": 2159,
+    "certified_over_tolerance_layers": 1862,
+    "max_displacement_upper_mm": 20.420691821842436,
+    "max_combined_feature_displacement_upper_mm": 1.2323417606442462
+  },
+  "weighted_wall_distance": {
+    "length_mm": 8955453.477843631,
+    "samples": 900938367,
+    "above": {
+      "0.005": 134713.79062267972,
+      "0.01": 40911.53827039365,
+      "0.02": 1015.8072241707199,
+      "0.04": 450.78892708696725,
+      "0.06": 271.21819998228705,
+      "0.08": 179.51609437671067,
+      "0.1": 125.87479741308168,
+      "0.2": 28.7597447377206
+    },
+    "max_sample_distance_mm": 1.2280759034873385,
+    "mean_distance_mm": 0.0002077983794082943,
+    "fraction_length_above": {
+      "0.005": 0.015042654283891968,
+      "0.01": 0.004568337982170465,
+      "0.02": 0.00011342889856821795,
+      "0.04": 5.0336806304923376e-05,
+      "0.06": 3.0285255867086838e-05,
+      "0.08": 2.004544993962004e-05,
+      "0.1": 1.4055658680434668e-05,
+      "0.2": 3.2114224934420195e-06
+    },
+    "distance_quantile_upper_bin_mm": {
+      "0.5": 0.0001,
+      "0.9": 0.0001,
+      "0.95": 0.0004,
+      "0.99": 0.007,
+      "0.999": 0.013300000000000001
+    }
+  },
+  "physical_print_tested": false,
+  "printer_contacted": false,
+  "gui_transfer_tested": false,
+  "notes": [
+    "MB/GB in README use decimal units; raw bytes are authoritative.",
+    "Weaves ran concurrently; elapsed times are contextual, not isolated throughput measurements.",
+    "Zero disables discretionary XY simplification but retains documented numerical regularization.",
+    "No large prepared-model, 3MF or G-code binaries are distributed in this evidence bundle."
+  ]
+}
