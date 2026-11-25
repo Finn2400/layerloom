@@ -29,6 +29,7 @@ def test_independent_audit_uses_all_actual_layers(tmp_path):
     a,b=generate(tmp_path,noweave=True)
     result=audit_contours(a,b)
     assert result['passed'] and result['layers']==5
+    assert result['audit_revision']=='serialized-contours-3'
     assert not result['toolpaths_validated']
     assert result['passthrough']['passed']
     rows=[json.loads(x) for x in Path(result['layers_report']).read_text().splitlines()]

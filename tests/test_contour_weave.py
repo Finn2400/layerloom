@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import zipfile
 import xml.etree.ElementTree as ET
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -144,6 +145,49 @@ def test_complete_vertical_quads_preserve_a_sub_grid_width_hole():
     assert section.boundary.equals(poly.boundary)
     assert shapely.get_precision(section)==EXPORT_GRID
     assert shapely.set_precision(section,EXPORT_GRID).boundary.equals(poly.boundary)
+
+
+def test_layer_regions_preserves_single_prism_part_with_thin_hole():
+    from layerloom.contour_weave import EXPORT_GRID, extrude_polygon, polygons, _signature
+    # The three hole vertices are from Pam's layer 226. Two simple surrounding
+    # rectangles retain the MultiPolygon condition that makes a redundant
+    # fixed-precision union discard the valid, long, sub-grid-width hole.
+    fixture=Path(__file__).parent/'fixtures/contour_single_part_thin_hole.wkb'
+    expected=shapely.from_wkb(fixture.read_bytes())
+    triangles=[]
+    for poly in polygons(expected):
+        vertices,faces=extrude_polygon(poly,0.,.4)
+        triangles.append(vertices[faces])
+    store=_TriangleChunks(np.concatenate(triangles))
+    store.parts=[SimpleNamespace(id=1,run='y',noweave=False,bounds=None,label='yellow')]
+    section=slice_part(store,1,.173926)
+    assert _signature(section)==(2,1)
+    assert shapely.get_precision(section)==EXPORT_GRID
+    assert section.boundary.equals(expected.boundary)
+    actual=layer_regions(store,.173926,0)['y']
+    assert _signature(actual)==(2,1)
+    assert actual.boundary.equals(expected.boundary)
+    # Fixed-precision symmetric_difference alone can erase the lost sliver
+    # from the comparison, falsely reporting zero error.
+    assert shapely.set_precision(actual,0).symmetric_difference(expected).area==0
+
+
+def test_layer_regions_still_unions_multiple_regularized_parts():
+    from layerloom.contour_weave import extrude_polygon, _signature
+    triangles={}
+    for part_id,poly in enumerate([box(0,0,2,2),box(1,0,3,2)],1):
+        vertices,faces=extrude_polygon(poly,0.,.4)
+        triangles[part_id]=vertices[faces]
+    class Parts:
+        memory_budget_mib=1024
+        parts=[SimpleNamespace(id=i,run='y',noweave=False,bounds=None,label='yellow') for i in triangles]
+        def iter_triangles(self,part_id,z=None):
+            yield triangles[part_id]
+    actual=layer_regions(Parts(),.173926,0)['y']
+    expected=box(0,0,3,2)
+    assert _signature(actual)==(1,0)
+    assert actual.boundary.equals(expected.boundary)
+    assert actual.area==expected.area
 
 
 def test_boundary_certificate_does_not_round_buffers_outward():

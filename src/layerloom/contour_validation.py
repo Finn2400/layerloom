@@ -164,7 +164,7 @@ def audit_contours(source,candidate,report_path=None,tolerance=None):
             count_matches=counts['layers']==int(settings['layers'])
             passed=(counts['layers']>0 and counts['failed_layers']==0 and hash_match and output_hash_match
                     and candidate_tokens_valid and passthrough['passed'] and count_matches)
-            result=dict(audit_revision='serialized-contours-2',source_path=str(source),candidate_path=str(candidate),source_sha256=a.source_sha256,
+            result=dict(audit_revision='serialized-contours-3',source_path=str(source),candidate_path=str(candidate),source_sha256=a.source_sha256,
                 candidate_sha256=b.source_sha256,source_hash_matches_candidate_reference=hash_match,
                 candidate_hash_matches_report=output_hash_match,candidate_single_token_parts_valid=candidate_tokens_valid,
                 candidate_coordinate_encoding=encoding,
@@ -175,7 +175,7 @@ def audit_contours(source,candidate,report_path=None,tolerance=None):
                     'minimum_numerical_allowance_mm':2*EXPORT_GRID,
                     'boundary_certificate_precision':'Float64 boundary copies with fixed-precision metadata cleared before conservative buffering; coordinates unchanged.',
                     'regularization':'Both independently decoded artifacts use the common binary-grid contour policy before comparison.',
-                    'complete_vertical_quad_policy':'Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization.',
+                    'complete_vertical_quad_policy':'Recovered rectangle-edge vertices bypass intermediate intersection rounding; exactly-on-lattice sections receive pointwise precision metadata without topology normalization. A single already-certified section per material bypasses redundant fixed-precision union; generic and multiple-input sections retain regularization and union.',
                     'sub_grid_debris_cleanup':cleanup},
                 **counts,passed=passed,all_layers_compared=True,serialized_contours_validated=passed,
                 observed_max_boundary_hausdorff_mm=max_distance,max_symmetric_difference_area_mm2=max_area,

@@ -156,7 +156,17 @@ def layer_regions(store,z,phase,first_layer_token=None):
     # A common binary lattice avoids sub-ULP cracks where independent
     # source regions meet. This numerical regularization precedes both the
     # zero-simplification reference and all tolerance candidates.
-    return {c:unary_union([shapely.set_precision(g,EXPORT_GRID) for g in xs]) for c,xs in regions.items()}
+    result={}
+    for c,xs in regions.items():
+        if len(xs)==1 and shapely.get_precision(xs[0])==EXPORT_GRID:
+            # slice_part already certified this complete-quad section on the
+            # export lattice. A redundant fixed-precision union of its
+            # MultiPolygon can erase a valid long, sub-grid-width hole even
+            # though no vertex needs rounding. There is nothing to merge.
+            result[c]=xs[0]
+        else:
+            result[c]=unary_union([shapely.set_precision(g,EXPORT_GRID) for g in xs])
+    return result
 
 
 def fixed_regions(store, z):
