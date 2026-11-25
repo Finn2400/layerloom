@@ -43,6 +43,7 @@ class HeadlessConfig:
     keep_intermediates: bool = False
     stl_out: Optional[str] = None
     layer_height: float = DEFAULT_LAYER_HEIGHT
+    first_layer_color: str = "auto"
     missing_color_mode: str = "group"
     verbose: bool = False
 
@@ -321,6 +322,7 @@ def run_headless(config: HeadlessConfig) -> HeadlessResult:
             verbose=config.verbose,
             output_path=output_path,
             export_stls=bool(config.stl_out),
+            first_layer_color=config.first_layer_color,
         )
 
         if not os.path.exists(output_path):
@@ -358,6 +360,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--keep-intermediates", action="store_true", help="Keep intermediate 3MF files next to the output")
     parser.add_argument("--stl-out", help="Optional folder for per-color STL exports")
     parser.add_argument("--layer-height", type=float, default=DEFAULT_LAYER_HEIGHT, help="Layer weave height in mm")
+    parser.add_argument(
+        "--first-layer-color",
+        default="auto",
+        choices=["auto", "off", "c", "m", "y", "k", "w", "n", "o", "v", "g"],
+        help="Make the first weave layer one color: auto, off, or a filament token",
+    )
     parser.add_argument("--missing-color-mode", choices=["error", "skip", "group"], default="group")
     parser.add_argument("-v", "--verbose", action="store_true")
     return parser
@@ -385,6 +393,7 @@ def config_from_args(args: argparse.Namespace) -> HeadlessConfig:
         keep_intermediates=bool(args.keep_intermediates),
         stl_out=args.stl_out,
         layer_height=float(args.layer_height),
+        first_layer_color=args.first_layer_color,
         missing_color_mode=args.missing_color_mode,
         verbose=bool(args.verbose),
     )

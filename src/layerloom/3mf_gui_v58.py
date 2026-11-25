@@ -53,6 +53,7 @@ try:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -61,6 +62,7 @@ except Exception:
         COLOR_OBJECT_LABELS,
         PAT_TAG_RE,
         TOKEN_ALPHABET,
+        TOKEN_DISPLAY_NAMES,
         TOKEN_HEX,
         token_is_valid,
     )
@@ -939,16 +941,17 @@ class PVWindow:
             self._clear_surface_highlight()
             if self.point_label_actor is not None:
                 try:
-                    self.plotter.remove_actor(self.point_label_actor, reset_camera=False)
+                    self.plotter.remove_actor(self.point_label_actor, reset_camera=False, render=False)
                 except Exception:
                     pass
             for actor in list(self.actors_by_name.values()):
                 try:
-                    self.plotter.remove_actor(actor, reset_camera=False)
+                    self.plotter.remove_actor(actor, reset_camera=False, render=False)
                 except Exception:
                     pass
             try:
-                self.plotter.render()
+                if not hasattr(self.plotter, "isVisible") or self.plotter.isVisible():
+                    self.plotter.render()
             except Exception:
                 pass
         self.actors_by_name.clear()
@@ -1041,7 +1044,7 @@ class PVWindow:
                     _log("WARN", f"[build_scene] In-memory cache miss: '{record.instance_key}'")
                     continue
                 try:
-                    act = p.add_mesh(poly, name=record.actor_name, color="#d3d3d3", pickable=True, reset_camera=False)
+                    act = p.add_mesh(poly, name=record.actor_name, color="#d3d3d3", pickable=True, reset_camera=False, render=False)
                 except Exception as e:
                     _log("ERROR", f"[build_scene] Failed to add in-memory mesh '{record.actor_name}': {e}")
                     continue
@@ -1052,7 +1055,8 @@ class PVWindow:
                     act.prop.specular = 0.0
                     act.prop.interpolation = "gouraud"
                 added += 1
-                name_labels.append((poly.center, record.display_name))
+                if getattr(self, "show_part_labels", True):
+                    name_labels.append((poly.center, record.display_name))
             self.actor_name_to_instance = dict(manifest.actor_name_to_instance)
             self.actors_by_name = {record.actor_name: p.actors[record.actor_name] for record in manifest.records if record.actor_name in p.actors}
         else:
@@ -1071,7 +1075,7 @@ class PVWindow:
                     _log("ERROR", f"[build_scene] Failed to read PLY '{ply_path}': {e}")
                     continue
 
-                act = p.add_mesh(poly, name=nm, color="#d3d3d3", pickable=True, reset_camera=False)
+                act = p.add_mesh(poly, name=nm, color="#d3d3d3", pickable=True, reset_camera=False, render=False)
                 if act.mapper:
                     act.mapper.scalar_visibility = False
                 if act.prop:
@@ -1079,7 +1083,8 @@ class PVWindow:
                     act.prop.specular = 0.0
                     act.prop.interpolation = "gouraud"
                 added += 1
-                name_labels.append((poly.center, _clean_part_display_name(nm)))
+                if getattr(self, "show_part_labels", True):
+                    name_labels.append((poly.center, _clean_part_display_name(nm)))
 
             self.actors_by_name = {nm: p.actors[nm] for nm in names_in_order if nm in p.actors}
 
@@ -1092,9 +1097,10 @@ class PVWindow:
         if not self.actors_by_name:
             _log("DEBUG", "!! WARNING: 'self.actors_by_name' map is EMPTY.")
             
-        for nm in self.actors_by_name:
-            oid = _oid_from_labeled_name(nm)
-            _log("DEBUG", f"   MAP KEY: '{nm:40s}'  →  OID={oid or '?'}  (Actor: {self.actors_by_name[nm]})")
+        if LOG_LEVEL <= LOG_LEVELS["DEBUG"]:
+            for nm in self.actors_by_name:
+                oid = _oid_from_labeled_name(nm)
+                _log("DEBUG", f"   MAP KEY: '{nm:40s}'  →  OID={oid or '?'}  (Actor: {self.actors_by_name[nm]})")
 
         # Check for discrepancies
         xml_names_set = set(names_in_order)
@@ -1121,14 +1127,15 @@ class PVWindow:
                 text_color="black",
                 point_color=None,
                 render_points_as_spheres=False,
+                render=False,
             )
             _log("INFO", f"[viewer] added {len(texts)} point label(s)")
 
-        p.reset_camera()
+        p.reset_camera(render=False)
         p.render()
         _log("INFO", "[viewer] initial render complete")
 
-    def set_color_by_name(self, name: str, hexv: str, force_flash: bool = False):
+    def set_color_by_name(self, name: str, hexv: str, force_flash: bool = False, *, render: bool = True):
         act = self.actors_by_name.get(name)
         if not act:
             _log("WARN", f"set_color_by_name: No actor found for key '{name}'")
@@ -1144,13 +1151,16 @@ class PVWindow:
             act.prop.diffuse = 1.0
             act.prop.specular = 0.0
             act.prop.interpolation = 'gouraud'
-            self.plotter.render()
+            if render:
+                self.plotter.render()
         else:
             _log("WARN", f"set_color_by_name: Actor '{name}' has no 'prop' attribute.")
 
     def bulk_tint(self, n2h: Dict[str, str]):
         for nm, hx in n2h.items():
-            self.set_color_by_name(nm, hx)
+            self.set_color_by_name(nm, hx, render=False)
+        if n2h and self.plotter:
+            self.plotter.render()
 
     def set_callbacks(self, on_pick=None, on_rotation_commit=None, on_surface_commit=None):
         if on_pick is not None:
@@ -1298,7 +1308,7 @@ class PVWindow:
             return
         for actor in list(self.gizmo_actors.values()):
             try:
-                self.plotter.remove_actor(actor, reset_camera=False)
+                self.plotter.remove_actor(actor, reset_camera=False, render=False)
             except Exception:
                 pass
         self.gizmo_actors.clear()
@@ -3560,6 +3570,10 @@ class OverlayHostWidget(QtWidgets.QWidget):
 
 
 class EmbeddedPVViewer(PVWindow):
+    # Embedded viewers never display per-part labels; avoid creating their
+    # geometry and visibility filters only to remove them after every load.
+    show_part_labels = False
+
     class _MouseEventFilter(QtCore.QObject):
         def __init__(self, owner, parent=None):
             super().__init__(parent)
@@ -3636,12 +3650,13 @@ class EmbeddedPVViewer(PVWindow):
         return p
 
     def _clear_layer_preview(self):
+        self._static_plate_overlay_built = False
         if not self.plotter:
             self._layer_preview_actors = []
             return
         for actor in list(self._layer_preview_actors):
             try:
-                self.plotter.remove_actor(actor, reset_camera=False)
+                self.plotter.remove_actor(actor, reset_camera=False, render=False)
             except Exception:
                 pass
         self._layer_preview_actors = []
@@ -3866,7 +3881,8 @@ class EmbeddedPVViewer(PVWindow):
             _log("WARN", f"[viewer] static plate overlay unavailable: {e}")
 
     def _rebuild_layer_preview(self):
-        self._rebuild_static_plate_overlay()
+        if not getattr(self, "_static_plate_overlay_built", False):
+            self._rebuild_static_plate_overlay()
 
     def set_layer_preview(self, layer_height: float, scale: float):
         self._layer_height = max(float(layer_height), 0.001)
@@ -3956,7 +3972,8 @@ class EmbeddedPVViewer(PVWindow):
             except Exception:
                 pass
             self.plotter.reset_camera_clipping_range()
-            self.plotter.render()
+            if self.plotter.isVisible():
+                self.plotter.render()
         except Exception as e:
             _log("WARN", f"[viewer] default camera setup failed: {e}")
 
@@ -4020,6 +4037,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
 
         self.base_file = None
         self.current_file = None
+        self.source_file_path = None
         self.transformed_preview_file = None
         self.model_objects: List[Tuple[str, str]] = []
         self.assignments: Dict[str, Dict[str, str]] = {}
@@ -4264,11 +4282,31 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self.layer_height_spin.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.layer_height_spin.setFixedWidth(72)
 
+        self.first_layer_color_combo = QtWidgets.QComboBox()
+        self.first_layer_color_combo.setFixedWidth(142)
+        self.first_layer_color_combo.setToolTip(
+            "Use one filament for the first weave layer. Auto chooses the color "
+            "with the largest footprint on the model base."
+        )
+        self.first_layer_color_combo.addItem("Auto", "auto")
+        self.first_layer_color_combo.addItem("Off", "off")
+        for token in TOKEN_ALPHABET:
+            swatch = QtGui.QPixmap(12, 12)
+            swatch.fill(QtGui.QColor(TOKEN_HEX[token]))
+            self.first_layer_color_combo.addItem(
+                QtGui.QIcon(swatch),
+                TOKEN_DISPLAY_NAMES[token].title(),
+                token,
+            )
+
         toolbar.addWidget(self._toolbar_label("GLB colors"))
         toolbar.addWidget(self.glb_colors_spin)
         toolbar.addSeparator()
         toolbar.addWidget(self._toolbar_label("Layer height"))
         toolbar.addWidget(self.layer_height_spin)
+        toolbar.addSeparator()
+        toolbar.addWidget(self._toolbar_label("First layer"))
+        toolbar.addWidget(self.first_layer_color_combo)
         toolbar.addSeparator()
         toolbar.addAction(weave_action)
         toolbar.addSeparator()
@@ -4981,6 +5019,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = {}
         stamped = _stamp_ids_only(path)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened: {path}")
         if stamped != path:
             _log("INFO", f"Previewing ID-stamped temp copy: {stamped}")
@@ -5060,6 +5099,7 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         self._pending_source_hex_by_name = manifest_map
         stamped = _stamp_ids_only(import_3mf)
         self._load_canonical_model(stamped)
+        self.source_file_path = path
         _log("INFO", f"Opened GLB: {path}")
         _log("INFO", f"GLB import produced 3MF: {import_3mf} (target_colors={self.glb_colors_spin.value()}, color_levels={color_levels})")
         if repair_warning:
@@ -5288,11 +5328,28 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         except Exception as e:
             self._error("Save", f"Failed to write 3MF:\n{e}")
 
-    def _run_weave_subprocess(self, input_3mf: str, *, step: float, output_path: str) -> Optional[str]:
+    def _run_weave_subprocess(
+        self,
+        input_3mf: str,
+        *,
+        step: float,
+        output_path: str,
+        first_layer_color: str = "auto",
+    ) -> Optional[str]:
         try:
-            cmd = [sys.executable, "-m", "layerloom.weave", "-i", input_3mf, "-o", output_path]
+            cmd = [
+                sys.executable,
+                "-m",
+                "layerloom.weave",
+                "-i",
+                input_3mf,
+                "-o",
+                output_path,
+                "--no-export-stls",
+            ]
             if step is not None:
                 cmd += ["--step", str(step)]
+            cmd += ["--first-layer-color", first_layer_color]
             _log("INFO", "[weave] running:", " ".join(cmd))
             t0 = time.perf_counter()
             proc = subprocess.run(cmd, capture_output=True, text=True)
@@ -5350,24 +5407,31 @@ class QtAssignColorsApp(QtWidgets.QMainWindow):
         out_dir = QtWidgets.QFileDialog.getExistingDirectory(self, "Choose output folder for woven 3MF")
         if not out_dir:
             return
-        base = os.path.splitext(os.path.basename(self.base_file))[0]
+        output_source = self.source_file_path or self.base_file
+        base = os.path.splitext(os.path.basename(output_source))[0]
         base = re.sub(r"^(preview_id_|tmp_weave_)+", "", base)
         final_woven_path = os.path.join(out_dir, f"{base}_woven.3mf")
         if os.path.exists(final_woven_path):
             if not self._confirm("Overwrite?", f"File already exists:\n{final_woven_path}\n\nOverwrite it?"):
                 return
-        try:
-            tmp_out = os.path.join(tempfile.gettempdir(), f"tmp_weave_{base}.3mf")
-            plan = self._materialize_current_model(tmp_out, include_assignments=True)
-            self._last_transform_plan = plan
-            self.transform_dirty = False
-            self._refresh_transform_readout(plan)
-            _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
-        except Exception as e:
-            self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
-            return
-        self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
-        woven = self._run_weave_subprocess(tmp_out, step=self.layer_height_spin.value(), output_path=final_woven_path)
+        with tempfile.TemporaryDirectory(prefix="layerloom_gui_weave_") as weave_work_dir:
+            try:
+                tmp_out = os.path.join(weave_work_dir, "labeled_input.3mf")
+                plan = self._materialize_current_model(tmp_out, include_assignments=True)
+                self._last_transform_plan = plan
+                self.transform_dirty = False
+                self._refresh_transform_readout(plan)
+                _log("INFO", f"[weave] temp labeled 3MF → {tmp_out}")
+            except Exception as e:
+                self._error("Weave", f"Failed to write temp labeled 3MF:\n{e}")
+                return
+            self._preweave_pat_audit(tmp_out, "[pre-weave PAT check]")
+            woven = self._run_weave_subprocess(
+                tmp_out,
+                step=self.layer_height_spin.value(),
+                output_path=final_woven_path,
+                first_layer_color=str(self.first_layer_color_combo.currentData()),
+            )
         if not (woven and os.path.exists(woven)):
             return
         is_large_woven, woven_reason, _woven_info = _large_3mf_reason(woven)

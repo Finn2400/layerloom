@@ -72,6 +72,7 @@ class PaintWorkspaceHostMixin:
         editor = self.paint_panel.editor
         editor.windowTitleChanged.connect(self._paint_title_changed)
         editor.statusBar().messageChanged.connect(self._paint_status_changed)
+        editor.loadingChanged.connect(self._paint_loading_changed)
         # Both controls belong to the host footer so an export remains
         # cancellable while the user switches between Paint and Arrange.
         for widget in (editor.progress, editor.export_cancel_button):
@@ -96,11 +97,27 @@ class PaintWorkspaceHostMixin:
 
     def _paint_title_changed(self, title):
         if self._paint_active() or self._shared_paint_active():
+            if not self._paint_active() and title.startswith("LayerLoom Paint — "):
+                title = "LayerLoom Arrange — " + title[len("LayerLoom Paint — "):]
             self.setWindowTitle(title + " — main UI prototype")
 
     def _paint_status_changed(self, message):
-        if self._paint_active() or self._shared_paint_active():
+        if self._paint_active() or self._shared_paint_active() or self.paint_panel.editor._loading:
             self.status_bar.showMessage(message)
+
+    def _paint_loading_changed(self, loading):
+        # Lock both views while replacing their shared document. Keep the host
+        # footer enabled so the indeterminate progress bar continues animating.
+        if loading:
+            widgets = [self.centralWidget(), self.menuBar(), *self._arrange_toolbars]
+            self._load_host_enabled = [(widget, widget.isEnabled()) for widget in widgets]
+            for widget, _enabled in self._load_host_enabled:
+                widget.setEnabled(False)
+        else:
+            for widget, enabled in getattr(self, "_load_host_enabled", []):
+                widget.setEnabled(enabled)
+            self._load_host_enabled = []
+            self._sync_paint_host_actions()
 
     def _sync_paint_host_actions(self):
         paint = self._paint_active() or self._shared_paint_active()
@@ -137,7 +154,7 @@ class PaintWorkspaceHostMixin:
                 if not self.paint_panel.can_close():
                     self.workspace_tabs.setCurrentIndex(1)
                     return
-                if self.paint_panel.open_path(pending):
+                if self.paint_panel.editor.start_open_path(pending):
                     self._paint_pending_source = None
             self.paint_panel.editor.plotter.setFocus(QtCore.Qt.OtherFocusReason)
         else:
@@ -177,7 +194,7 @@ class PaintWorkspaceHostMixin:
                 self._error("Load Example", "The packaged example model could not be found.")
                 return
             if self.paint_panel.can_close():
-                return self.paint_panel.open_path(str(path))
+                return self.paint_panel.editor.start_open_path(str(path))
             return
         return super()._on_load_example()
 

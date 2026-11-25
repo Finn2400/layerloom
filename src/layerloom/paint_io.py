@@ -11,10 +11,12 @@ from __future__ import annotations
 import io
 import json
 import os
+from functools import lru_cache
 from pathlib import Path
 import posixpath
 import re
 import tempfile
+from typing import Callable
 import zipfile
 import xml.etree.ElementTree as ET
 
@@ -30,6 +32,11 @@ DEFAULT_RGBA = np.array([180, 180, 180, 255], dtype=np.uint8)
 NS = {"c": CORE}
 _FORMAT = "layerloom-paint"
 _VERSION = 1
+
+
+def _load_stage(stage: Callable[[str], None] | None, message: str) -> None:
+    if stage is not None:
+        stage(message)
 
 
 def _tag(elem: ET.Element) -> str:
@@ -103,7 +110,8 @@ def save_paint_document(document: PaintDocument, path: str | os.PathLike) -> Non
     _atomic_write(path, write)
 
 
-def _load_project(path: Path) -> PaintDocument:
+def _load_project(path: Path, *, stage: Callable[[str], None] | None = None) -> PaintDocument:
+    _load_stage(stage, "Reading paint project…")
     with zipfile.ZipFile(path) as archive:
         manifest = json.loads(archive.read("manifest.json"))
         if (not isinstance(manifest, dict) or manifest.get("format") != _FORMAT or
@@ -115,6 +123,7 @@ def _load_project(path: Path) -> PaintDocument:
             raise ValueError("Paint project meshes must be a list")
         meshes = []
         for i, info in enumerate(manifest["meshes"]):
+            _load_stage(stage, f"Reading project part {i + 1} of {len(manifest['meshes'])}…")
             member = f"meshes/{i:06d}.npz"
             if not isinstance(info, dict) or info.get("array_file") != member:
                 raise ValueError("Invalid paint project array member")
@@ -124,6 +133,7 @@ def _load_project(path: Path) -> PaintDocument:
                 meshes.append(PaintMesh(info["key"], info["name"], data["vertices"],
                                         data["faces"], data["face_rgba"], data["source_rgba"]))
         doc = PaintDocument(meshes, manifest.get("source_path"), manifest.get("metadata", {}))
+    _load_stage(stage, "Checking model geometry and colors…")
     doc.validate()
     return doc
 
@@ -280,7 +290,8 @@ def _conform_faces(faces, colors, midpoint_indices):
     return out_faces, out_colors
 
 
-def _load_3mf(path: Path) -> PaintDocument:
+def _load_3mf(path: Path, *, stage: Callable[[str], None] | None = None) -> PaintDocument:
+    _load_stage(stage, "Reading 3MF package and material settings…")
     warnings: list[str] = []
     meshes = []
     statistics = {"paint_annotations": 0, "paint_split_annotations": 0}
@@ -296,9 +307,11 @@ def _load_3mf(path: Path) -> PaintDocument:
                     break
         models = {}
         image_cache = {}
+        property_entries = {}
 
         def model(member):
             if member not in models:
+                _load_stage(stage, "Reading 3MF geometry…")
                 root = ET.fromstring(z.read(member))
                 resources = root.find("c:resources", NS)
                 if resources is None:
@@ -317,11 +330,22 @@ def _load_3mf(path: Path) -> PaintDocument:
         def property_color(member, resources, pid, indices, fallback):
             if pid is None:
                 return fallback
+            return resolved_property_color(member, str(pid), tuple(indices))
+
+        # A material or flat-color index commonly repeats across millions of
+        # faces. Decode and sample each property only once while bounding the
+        # cache for files with unique texture coordinates on every triangle.
+        @lru_cache(maxsize=4096)
+        def resolved_property_color(member, pid, indices):
+            resources = model(member)[1]
             resource = resources.get(str(pid))
             if resource is None:
                 raise ValueError(f"Missing 3MF color property resource {pid}")
             kind = _tag(resource)
-            entries = list(resource)
+            key = (member, pid)
+            if key not in property_entries:
+                property_entries[key] = list(resource)
+            entries = property_entries[key]
             if any(index < 0 or index >= len(entries) for index in indices):
                 raise ValueError("3MF color property index is invalid")
             if kind in ("colorgroup", "basematerials"):
@@ -389,6 +413,7 @@ def _load_3mf(path: Path) -> PaintDocument:
             vs, ts = geo.find("c:vertices", NS), geo.find("c:triangles", NS)
             if vs is None or ts is None or not len(vs) or not len(ts):
                 return
+            _load_stage(stage, f"Reading part {len(meshes) + 1}: {len(ts):,} triangles…")
             vertices = [np.array([float(v.get(a)) * unit for a in ("x", "y", "z")]) for v in vs]
             midpoints = {}
 
@@ -430,6 +455,7 @@ def _load_3mf(path: Path) -> PaintDocument:
                     faces.append(leaf)
                     colors.append(slot_color(state, default))
             if midpoints:
+                _load_stage(stage, f"Preparing painted triangle boundaries for part {len(meshes) + 1}…")
                 faces, colors = _conform_faces(faces, colors, midpoints)
             v = np.asarray(vertices)
             v = v @ world[:3, :3].T + world[:3, 3]
@@ -450,24 +476,28 @@ def _load_3mf(path: Path) -> PaintDocument:
             member = _package_member(root_member, target) if target else root_member
             visit(member, item.get("objectid"), _transform(item.get("transform"), unit), {}, ())
     doc = PaintDocument(meshes, str(path.resolve()), {"format": "3mf", "units": "millimeter", "warnings": warnings, **statistics})
+    _load_stage(stage, "Checking model geometry and colors…")
     doc.validate()
     return doc
 
 
-def _load_mesh(path: Path) -> PaintDocument:
+def _load_mesh(path: Path, *, stage: Callable[[str], None] | None = None) -> PaintDocument:
     """Read generic meshes without remeshing; sample appearance per triangle."""
     import trimesh
     warnings = []
+    _load_stage(stage, "Reading model geometry and materials…")
     scene = trimesh.load(str(path), force="scene", process=False)
     if not isinstance(scene, trimesh.Scene):
         scene = trimesh.Scene(scene)
     meshes = []
     is_gltf = path.suffix.lower() in (".glb", ".gltf")
-    for node in scene.graph.nodes_geometry:
+    nodes = list(scene.graph.nodes_geometry)
+    for index, node in enumerate(nodes):
         transform, geometry_name = scene.graph[node]
         mesh = scene.geometry[geometry_name]
         if not isinstance(mesh, trimesh.Trimesh) or not len(mesh.faces):
             continue
+        _load_stage(stage, f"Preparing part {index + 1} of {len(nodes)}: {len(mesh.faces):,} triangles…")
         v = np.asarray(mesh.vertices, dtype=np.float64).copy()
         v = v @ transform[:3, :3].T + transform[:3, 3]
         if is_gltf:
@@ -535,17 +565,19 @@ def _load_mesh(path: Path) -> PaintDocument:
         _warn(warnings, "GLB/GLTF coordinates were converted from meters to millimeters. Check physical size before export.")
         _warn(warnings, "glTF appearance is sampled through trimesh; advanced material extensions and texture transforms are not supported.")
     doc = PaintDocument(meshes, str(path.resolve()), {"format": path.suffix.lower().lstrip("."), "units": "millimeter", "warnings": warnings})
+    _load_stage(stage, "Checking model geometry and colors…")
     doc.validate()
     return doc
 
 
-def load_paint_document(path: str | os.PathLike) -> PaintDocument:
-    """Load .llpaint, painted .3mf, or a GLB/GLTF/STL/OBJ/PLY mesh."""
+def load_paint_document(path: str | os.PathLike, *,
+                        stage: Callable[[str], None] | None = None) -> PaintDocument:
+    """Load a model, optionally reporting coarse stages on the caller's thread."""
     path = Path(path).expanduser()
     if path.suffix.lower() == ".llpaint":
-        return _load_project(path)
+        return _load_project(path, stage=stage)
     if path.suffix.lower() == ".3mf":
-        return _load_3mf(path)
+        return _load_3mf(path, stage=stage)
     if path.suffix.lower() in (".glb", ".gltf", ".stl", ".obj", ".ply"):
-        return _load_mesh(path)
+        return _load_mesh(path, stage=stage)
     raise ValueError(f"Unsupported paint input format: {path.suffix}")

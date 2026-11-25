@@ -37,7 +37,9 @@ _BASE_VIEWER = _V58.EmbeddedPVViewer
 
 class V65InteractiveQtInteractor(_V58.QtInteractor):
     def __init__(self, owner, parent=None):
-        super().__init__(parent)
+        # All scene changes and native camera interaction request rendering.
+        # Avoid QtInteractor's default 5 Hz redraw of an unchanged/hidden model.
+        super().__init__(parent, auto_update=False)
         self._owner = owner
 
     def mousePressEvent(self, event):
@@ -207,6 +209,7 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
                     lighting=False,
                     pickable=False,
                     reset_camera=False,
+                    render=False,
                 )
             if margin_mesh is not None:
                 self.plate_margin_actor = self.plotter.add_mesh(
@@ -218,6 +221,7 @@ class EmbeddedPVViewerV65(_BASE_VIEWER):
                     lighting=False,
                     pickable=False,
                     reset_camera=False,
+                    render=False,
                 )
         except Exception:
             self.plate_boundary_actor = None

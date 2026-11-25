@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 import sys
 import threading
+import time
 import traceback
 
 import numpy as np
@@ -55,7 +56,9 @@ class PaintInteractor(QtInteractor):
     """Consume painting gestures while retaining right/middle camera gestures."""
 
     def __init__(self, owner, parent=None):
-        super().__init__(parent)
+        # Camera gestures and edits already request renders. An idle timer also
+        # redraws hidden tabs and keeps large models/GPU drivers busy needlessly.
+        super().__init__(parent, auto_update=False)
         self.owner = owner
         self._painting = False
         self._selecting = False
@@ -166,6 +169,30 @@ class PaintInteractor(QtInteractor):
         super().mouseReleaseEvent(event)
 
 
+class LoadWorker(QtCore.QObject):
+    """Read CPU/file data only; the receiving GUI thread owns all VTK actors."""
+
+    stage = QtCore.Signal(str)
+    succeeded = QtCore.Signal(object)
+    failed = QtCore.Signal(str)
+    finished = QtCore.Signal()
+
+    def __init__(self, path):
+        super().__init__()
+        self.path = str(path)
+
+    @QtCore.Slot()
+    def run(self):
+        try:
+            self.succeeded.emit(load_paint_document(self.path, stage=self.stage.emit))
+        except Exception as exc:
+            traceback.print_exc()
+            self.failed.emit(str(exc) or ("There was not enough memory to open this model."
+                                         if isinstance(exc, MemoryError) else "The model could not be opened."))
+        finally:
+            self.finished.emit()
+
+
 class ExportWorker(QtCore.QObject):
     progress = QtCore.Signal(int, int)
     stage = QtCore.Signal(str)
@@ -208,6 +235,7 @@ class PaintWindow(QtWidgets.QMainWindow):
     paintChanged = QtCore.Signal()
     geometryChanged = QtCore.Signal()
     appearanceChanged = QtCore.Signal()
+    loadingChanged = QtCore.Signal(bool)
 
     def __init__(self, path=None, *, document: PaintDocument | None = None, parent=None):
         super().__init__(parent)
@@ -228,6 +256,16 @@ class PaintWindow(QtWidgets.QMainWindow):
         self._redo = []
         self._mapping = {}
         self._mapping_mode = "woven"
+        self._loading = False
+        self._load_thread = None
+        self._load_worker = None
+        self._load_result = None
+        self._load_error = None
+        self._load_stage_text = ""
+        self._load_started = 0.0
+        self._load_timer = QtCore.QTimer(self)
+        self._load_timer.setInterval(250)
+        self._load_timer.timeout.connect(self._refresh_load_status)
         self._export_thread = None
         self._export_worker = None
         self._export_cancel_event = None
@@ -240,7 +278,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         if document is not None:
             self.set_document(document)
         elif path:
-            QtCore.QTimer.singleShot(0, lambda: self.open_path(path))
+            QtCore.QTimer.singleShot(0, lambda: self.start_open_path(path))
 
     def _build_ui(self):
         toolbar = self.addToolBar("Paint project")
@@ -572,29 +610,123 @@ class PaintWindow(QtWidgets.QMainWindow):
         return self.save_dialog() if answer == QtWidgets.QMessageBox.Save else True
 
     def open_dialog(self):
+        if self._loading or self._export_thread is not None:
+            return
         if not self._confirm_discard():
             return
         path, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Open model or paint project", "", MODEL_FILTER)
         if path:
-            self.open_path(path)
+            self.start_open_path(path)
+
+    def start_open_path(self, path):
+        """Start a user-facing load without blocking the Qt event loop.
+
+        True means accepted, not completed. Keep open_path for callers that
+        need a synchronous result (scripts and fixtures).
+        """
+        if self._loading or self._export_thread is not None:
+            return False
+        self.end_stroke()
+        self._loading = True
+        self._load_path = str(path)
+        self._load_result = self._load_error = None
+        self._load_started = time.monotonic()
+        self._load_stage_text = f"Reading {Path(path).name}…"
+        self._load_enabled_state = self.centralWidget().isEnabled()
+        self.centralWidget().setEnabled(False)
+        self._update_actions()
+        self.progress.setRange(0, 0)
+        self.progress.show()
+        self._refresh_load_status()
+        self._load_timer.start()
+        self.loadingChanged.emit(True)
+        thread = QtCore.QThread(self)
+        worker = LoadWorker(path)
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        worker.stage.connect(self._load_stage)
+        worker.succeeded.connect(self._load_succeeded)
+        worker.failed.connect(self._load_failed)
+        worker.finished.connect(thread.quit)
+        worker.finished.connect(worker.deleteLater)
+        thread.finished.connect(self._load_finished)
+        thread.finished.connect(thread.deleteLater)
+        self._load_thread, self._load_worker = thread, worker
+        thread.start()
+        return True
+
+    @QtCore.Slot(str)
+    def _load_stage(self, message):
+        if self._loading:
+            self._load_stage_text = message
+            self._refresh_load_status()
+
+    def _refresh_load_status(self):
+        if self._loading:
+            elapsed = time.monotonic() - self._load_started
+            self.statusBar().showMessage(f"{self._load_stage_text}  ·  {elapsed:.0f}s elapsed")
+
+    @QtCore.Slot(object)
+    def _load_succeeded(self, document):
+        self._load_result = document
+
+    @QtCore.Slot(str)
+    def _load_failed(self, message):
+        self._load_error = message
+
+    @QtCore.Slot()
+    def _load_finished(self):
+        self._load_thread = self._load_worker = None
+        self._load_stage("Preparing 3D view…")
+        # Let the stage label paint before uploading the scene on the GUI thread.
+        QtCore.QTimer.singleShot(0, self._install_loaded_document)
+
+    def _install_loaded_document(self):
+        try:
+            if self._load_error is not None:
+                raise RuntimeError(self._load_error)
+            self.set_document(self._load_result)
+            self._report_opened(self._load_result, self._load_path,
+                                elapsed=time.monotonic() - self._load_started)
+        except Exception as exc:
+            traceback.print_exc()
+            self._load_timer.stop()
+            self.statusBar().showMessage(f"Could not open {Path(self._load_path).name}.")
+            QtWidgets.QMessageBox.critical(self, "Open failed", str(exc))
+        finally:
+            self._load_result = self._load_error = None
+            self._load_timer.stop()
+            self._loading = False
+            self.progress.hide()
+            self.centralWidget().setEnabled(self._load_enabled_state)
+            self._update_actions()
+            self.loadingChanged.emit(False)
+
+    def _report_opened(self, document, path, *, elapsed=None):
+        self.project_path = str(path) if Path(path).suffix.lower() == ".llpaint" else None
+        self._update_title()
+        message = f"Opened {Path(path).name}"
+        if elapsed is not None:
+            faces = sum(len(mesh.faces) for mesh in document.meshes)
+            message += f" · {len(document.meshes):,} parts · {faces:,} faces · {elapsed:.1f}s"
+        warnings = document.metadata.get("warnings", [])
+        if isinstance(warnings, str):
+            warnings = [warnings]
+        if isinstance(warnings, (list, tuple)) and warnings:
+            message += " · " + " · ".join(str(w) for w in warnings[:3])
+        self.statusBar().showMessage(message)
 
     def open_path(self, path):
+        """Blocking programmatic load; interactive actions use start_open_path."""
+        if self._loading or self._export_thread is not None:
+            return False
         self.statusBar().showMessage(f"Reading {Path(path).name}…")
         QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         QtWidgets.QApplication.processEvents()
         try:
             document = load_paint_document(str(path))
             self.set_document(document)
-            self.project_path = str(path) if Path(path).suffix.lower() == ".llpaint" else None
-            self._update_title()
-            self.statusBar().showMessage(f"Opened {Path(path).name}")
-            warnings = document.metadata.get("warnings", [])
-            if isinstance(warnings, str):
-                warnings = [warnings]
-            elif not isinstance(warnings, (list, tuple)):
-                warnings = []
-            if warnings:
-                self.statusBar().showMessage(" · ".join(str(w) for w in warnings[:3]))
+            self._report_opened(document, path)
             return True
         except Exception as exc:
             traceback.print_exc()
@@ -642,7 +774,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             actor = self.plotter.add_mesh(
                 poly, scalars="paint_rgba", rgba=True, preference="cell", name=f"paint_{index}",
                 show_scalar_bar=False, smooth_shading=False, ambient=0.4, diffuse=0.6,
-                specular=0.0, pickable=True, reset_camera=False,
+                specular=0.0, pickable=True, reset_camera=False, render=False,
             )
             self._polys[index] = poly
             self._actors[index] = actor
@@ -1069,7 +1201,7 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.appearanceChanged.emit()
 
     def save_dialog(self):
-        if self.document is None:
+        if self.document is None or self._loading:
             return False
         self.end_stroke()
         default = self.project_path or str(Path(self.document.source_path or "painted_model").with_suffix(".llpaint"))
@@ -1090,7 +1222,7 @@ class PaintWindow(QtWidgets.QMainWindow):
             return False
 
     def export_dialog(self):
-        if self.document is None or self._export_thread is not None:
+        if self.document is None or self._export_thread is not None or self._loading:
             return
         dialog = QtWidgets.QDialog(self)
         dialog.setWindowTitle("Export geometry 3MF")
@@ -1179,7 +1311,7 @@ class PaintWindow(QtWidgets.QMainWindow):
 
     def start_export(self, output, **settings):
         """Export a snapshot; editing may continue while conversion runs."""
-        if self.document is None or self._export_thread is not None:
+        if self.document is None or self._export_thread is not None or self._loading:
             return False
         self.end_stroke()
         self.last_export_report = None
@@ -1280,11 +1412,12 @@ class PaintWindow(QtWidgets.QMainWindow):
         self._update_actions()
 
     def _update_actions(self):
-        loaded = self.document is not None
+        loaded = self.document is not None and not self._loading
+        self.open_action.setEnabled(not self._loading and self._export_thread is None)
         self.save_action.setEnabled(loaded)
         self.export_action.setEnabled(loaded and self._export_thread is None)
-        self.undo_action.setEnabled(bool(self._undo))
-        self.redo_action.setEnabled(bool(self._redo))
+        self.undo_action.setEnabled(bool(self._undo) and not self._loading)
+        self.redo_action.setEnabled(bool(self._redo) and not self._loading)
         self.map_button.setEnabled(loaded)
         self._update_selection_controls()
 
@@ -1294,6 +1427,10 @@ class PaintWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(f"LayerLoom Paint — {name}{' *' if self.dirty else ''}")
 
     def can_close(self):
+        if self._loading:
+            QtWidgets.QMessageBox.information(
+                self, "Model is loading", "The model is still loading. Please wait for it to finish before closing.")
+            return False
         if self._export_thread is not None:
             QtWidgets.QMessageBox.information(
                 self, "Export in progress",

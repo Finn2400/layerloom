@@ -189,6 +189,16 @@ def test_glb_import_reads_vertex_color_and_material_fallback(tmp_path):
     assert data["objects"][0]["source_hex"] == "#336699"
 
 
+def test_glb_vertex_colors_are_converted_from_linear_to_srgb():
+    from layerloom.glb_import import linear_rgb_to_srgb
+
+    # ChimeraX exports #48A840 as this glTF linear-light value.
+    linear = np.asarray([[0.06479, 0.391562, 0.051255]], dtype=np.float32)
+    display = linear_rgb_to_srgb(linear)
+
+    np.testing.assert_allclose(display, [[0x48 / 255, 0xA8 / 255, 0x40 / 255]], atol=2e-4)
+
+
 def test_palette_assignment_writes_pat_and_stack_metadata(tmp_path):
     trimesh = pytest.importorskip("trimesh")
     from layerloom.export import write_basic_3mf
@@ -304,6 +314,7 @@ def test_headless_cli_defaults_and_validation(tmp_path, monkeypatch):
     assert cfg.fit_box is None
     assert cfg.max_dim == 200.0
     assert cfg.palette == "CMY"
+    assert cfg.first_layer_color == "auto"
 
 
 @pytest.mark.skipif(

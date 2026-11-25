@@ -59,6 +59,7 @@ def click_surface(window, xyz=(1.0, 0.0, 5.0)):
 
 
 def test_real_pointer_object_fill_undo_redo(window):
+    assert not window.plotter.render_timer.isActive()
     assert window.plotter.renderer.lights, "loading a document must restore scene lighting"
     original = window.document.meshes[0].face_rgba.copy()
     window.tool_combo.setCurrentText("Object fill")
@@ -810,3 +811,90 @@ def test_export_dialog_recomputes_estimate_and_blocks_excess_work(window, monkey
     monkeypatch.setattr(QtWidgets.QDialog, "exec_", inspect_dialog)
     window.export_dialog()
     assert observed and window._export_thread is None
+
+
+def test_background_open_keeps_event_loop_alive_and_installs_on_gui_thread(window, monkeypatch, tmp_path):
+    import threading
+    from layerloom import paint_gui
+    from layerloom.paint_examples import example_document
+    started, release = threading.Event(), threading.Event()
+    document = example_document("sphere", 8)
+    previous = window.document
+    threads, ticks, errors = [], [], []
+
+    def read(path, *, stage):
+        threads.append(QtCore.QThread.currentThread())
+        stage("Reading model parts…")
+        started.set()
+        assert release.wait(5), "test must release the importer"
+        return document
+
+    original_install = window.set_document
+    def install(doc):
+        assert QtCore.QThread.currentThread() == window.thread()
+        original_install(doc)
+
+    monkeypatch.setattr(paint_gui, "load_paint_document", read)
+    monkeypatch.setattr(window, "set_document", install)
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    timer = QtCore.QTimer(window)
+    timer.setInterval(10)
+    timer.timeout.connect(lambda: ticks.append(True))
+    timer.start()
+    try:
+        assert window.start_open_path(tmp_path / "large.3mf")
+        assert window._loading and not window.centralWidget().isEnabled()
+        assert window.progress.isVisible() and window.progress.maximum() == 0
+        assert not window.open_action.isEnabled() and not window.save_action.isEnabled()
+        assert not window.start_open_path("other.3mf")
+        assert not window.open_path("other.3mf")
+        assert not window.start_export("other.3mf")
+        notices = []
+        monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args: notices.append(args[-1]))
+        assert not window.can_close() and notices
+        for _ in range(100):
+            QtTest.QTest.qWait(10)
+            if started.is_set() and len(ticks) >= 5:
+                break
+        assert started.is_set() and len(ticks) >= 5
+        assert threads[0] != window.thread()
+        assert window.document is previous
+        assert "Reading model parts" in window.statusBar().currentMessage()
+        assert "elapsed" in window.statusBar().currentMessage()
+    finally:
+        release.set()
+        for _ in range(500):
+            QtTest.QTest.qWait(10)
+            if not window._loading:
+                break
+        timer.stop()
+    assert not errors and not window._loading and window._load_thread is None
+    assert window.document is document and window.centralWidget().isEnabled()
+    assert window.open_action.isEnabled() and window.save_action.isEnabled()
+    assert window.progress.isHidden() and not window._load_timer.isActive()
+    assert "Opened large.3mf" in window.statusBar().currentMessage()
+    assert "faces" in window.statusBar().currentMessage()
+
+
+def test_background_open_failure_retains_project_and_restores_controls(window, monkeypatch):
+    from layerloom import paint_gui
+    window.fill_mesh(0, [12, 34, 56, 255])
+    window.project_path = "previous.llpaint"
+    previous, history, poly = window.document, list(window._undo), window._polys[0]
+    errors = []
+    def fail(path, *, stage):
+        raise ValueError("Unreadable model")
+    monkeypatch.setattr(paint_gui, "load_paint_document", fail)
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    assert window.start_open_path("broken.3mf")
+    for _ in range(500):
+        QtTest.QTest.qWait(10)
+        if not window._loading:
+            break
+    assert errors == ["Unreadable model"]
+    assert window.document is previous and window._polys[0] is poly
+    assert window._undo == history and window.dirty and window.project_path == "previous.llpaint"
+    assert not window._loading and window._load_thread is None
+    assert window.centralWidget().isEnabled() and window.undo_action.isEnabled()
+    assert window.progress.isHidden() and not window._load_timer.isActive()
+    assert "Could not open" in window.statusBar().currentMessage()

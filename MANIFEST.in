@@ -10,6 +10,7 @@ include examples/*.md
 include examples/*.3mf
 recursive-include src/layerloom/examples *.3mf
 recursive-include src/layerloom/palettes *.json
+recursive-include src/supporting_scripts *.py
 prune src/layerloom/gamut_photo_analysis
 prune src/layerloom/legacy
 prune src/layerloom/LayerLoomPhotos100NCZ_5

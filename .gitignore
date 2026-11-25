@@ -49,6 +49,7 @@ src/layerloom/triangle_inputs/
 src/layerloom/LayerLoomPhotos*/
 src/layerloom/layerLoom*_shoot*/
 src/layerloom/color_calibrated_TIF/
+src/layerloom/color_calibrated_TIF_lossless_archives/
 src/layerloom/manuscript_figures*/
 src/layerloom/oneoff_tools/
 src/layerloom/build_manuscript_figures_v*.py
@@ -78,3 +79,15 @@ preview_id_*.3mf
 # Keep intentional tiny tutorial fixtures/examples in git.
 !examples/
 !examples/*.3mf
+!src/layerloom/examples/
+!src/layerloom/examples/*.3mf
+
+# Intentional small tensile-test fixtures and prepared experiment inputs.
+!experiments/
+!experiments/strength_tests/
+!experiments/strength_tests/**
+
+# Local submission packages and preservation archives (not software source)
+/src/layerloom/submission_computers_and_graphics/**/*.zip
+/src/layerloom/submission_computers_and_graphics/**/PRIVATE_HISTORY_*/
+/src/layerloom/submission_computers_and_graphics/**/POST_SUBMISSION_CLEANUP_*/

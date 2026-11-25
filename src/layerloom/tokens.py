@@ -41,6 +41,8 @@ COLOR_OBJECT_LABELS = {
 }
 
 PAT_TAG_RE = re.compile(rf"__PAT_([{TOKEN_ALPHABET}]+)__", re.IGNORECASE)
+NO_WEAVE_TAG = "__NOWEAVE__"
+NO_WEAVE_TAG_RE = re.compile(r"__NOWEAVE__", re.IGNORECASE)
 
 _ALLOWED = set(ALL_TOKENS)
 _SEP_PATTERN = re.compile(r"[ ,._-]+")

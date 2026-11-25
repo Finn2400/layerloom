@@ -121,14 +121,21 @@ class SharedPaintWorkspace:
         self.polys = {}
         for oid, index in self.mesh_index_by_oid.items():
             mesh = self.model.document.meshes[index]
-            cells = np.column_stack([np.full(len(mesh.faces), 3), mesh.faces]).ravel()
-            poly = pv.PolyData(mesh.vertices.copy(), cells)
+            # The Paint view already owns this geometry. A shallow VTK copy
+            # keeps independent attributes for Arrange's unselected colors
+            # without duplicating all vertices and triangle connectivity.
+            source_poly = self.editor._polys.get(index)
+            if source_poly is not None:
+                poly = source_poly.copy(deep=False)
+            else:
+                cells = np.column_stack([np.full(len(mesh.faces), 3), mesh.faces]).ravel()
+                poly = pv.PolyData(mesh.vertices.copy(), cells)
             poly.cell_data["paint_rgba"] = self.editor.display_mesh_colors(index, include_selection=False)
             name = host.oid_to_name[oid]
             actor = plotter.add_mesh(
                 poly, name=name, scalars="paint_rgba", rgba=True, preference="cell",
                 show_scalar_bar=False, smooth_shading=False, ambient=0.4, diffuse=0.6,
-                specular=0.0, pickable=True, reset_camera=False,
+                specular=0.0, pickable=True, reset_camera=False, render=False,
             )
             actor.SetUserMatrix(None)
             viewer.actors_by_name[name] = actor
@@ -137,7 +144,15 @@ class SharedPaintWorkspace:
             viewer._set_default_loaded_camera()
         viewer._clear_hover_model_pick_cache()
         plotter.reset_camera_clipping_range()
-        plotter.render()
+        self._render_if_visible()
+
+    def _render_if_visible(self):
+        # Paint changes also update this hidden scene. Qt repaints it when the
+        # user switches back to Arrange; rendering every brush stroke here
+        # needlessly draws the full model a second time.
+        plotter = self.host.viewer.plotter
+        if plotter.isVisible():
+            plotter.render()
 
     def refresh_colors(self):
         if not self.active:
@@ -162,7 +177,7 @@ class SharedPaintWorkspace:
                 item.setText(2, host.assignments.get(oid, {}).get("token", ""))
         selected = host._current_selected_oid() or host._last_picked_oid
         host._update_selected_part_summary(selected)
-        host.viewer.plotter.render()
+        self._render_if_visible()
 
     def refresh_geometry(self):
         if not self.active:
@@ -183,7 +198,7 @@ class SharedPaintWorkspace:
         viewer._clear_hover_model_pick_cache()
         viewer._rebuild_selection_outline()
         viewer.plotter.reset_camera_clipping_range()
-        viewer.plotter.render()
+        self._render_if_visible()
 
     def apply_plan(self, plan):
         changed = self.model.apply(plan)

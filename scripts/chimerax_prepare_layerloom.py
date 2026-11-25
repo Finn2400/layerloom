@@ -49,9 +49,16 @@ def inferred_label(input_spec: str) -> str:
     return _slug(input_spec)
 
 
-def default_output_path(input_spec: str, output_dir: Path, color_mode: str) -> Path:
+def default_output_path(
+    input_spec: str,
+    output_dir: Path,
+    color_mode: str,
+    representation: str = "ribbon",
+) -> Path:
     label = inferred_label(input_spec)
     mode = color_mode.replace("-", "_")
+    if representation == "surface":
+        return output_dir.expanduser() / f"{label}_layerloom_{mode}_surface.glb"
     return output_dir.expanduser() / f"{label}_layerloom_{mode}_ribbon_struts.glb"
 
 
@@ -78,6 +85,15 @@ def build_parser() -> argparse.ArgumentParser:
         choices=("rainbow-residue", "rainbow-chain", "by-chain"),
         default="rainbow-residue",
         help="Protein coloring mode. Defaults to rainbow-residue.",
+    )
+    parser.add_argument(
+        "--representation",
+        choices=("ribbon", "surface"),
+        default="ribbon",
+        help=(
+            "Printable protein representation. Surface mode exports molecular "
+            "surfaces without ribbon struts. Defaults to ribbon."
+        ),
     )
     parser.add_argument(
         "--ribbon-width",
@@ -131,9 +147,33 @@ def build_parser() -> argparse.ArgumentParser:
         help="Do not split strut colors by endpoint atom colors.",
     )
     parser.add_argument(
+        "--protein-only",
+        action="store_true",
+        help="Delete DNA, RNA, ions, solvent, ligands, and other non-protein atoms after opening.",
+    )
+    parser.add_argument(
+        "--hide-cartoons",
+        help="Comma-separated chain IDs whose cartoons are hidden before preview or export.",
+    )
+    parser.add_argument(
+        "--chain-color",
+        action="append",
+        default=[],
+        metavar="CHAIN:COLOR",
+        help=(
+            "Override one chain color; repeat as needed, for example "
+            "--chain-color A:#ffd700. Applied before struts are generated."
+        ),
+    )
+    parser.add_argument(
         "--inspect",
         action="store_true",
         help="Reopen the exported GLB in the same ChimeraX session after saving.",
+    )
+    parser.add_argument(
+        "--no-save",
+        action="store_true",
+        help="Prepare the live ChimeraX scene without writing a GLB.",
     )
     parser.add_argument(
         "--overwrite",
@@ -165,15 +205,32 @@ def _run(session, command: str):
     return run(session, command)
 
 
-def _apply_color(session, color_mode: str) -> None:
+def _apply_color(session, color_mode: str, target: str = "ac") -> None:
     if color_mode == "rainbow-residue":
-        _run(session, "rainbow residues target ac")
+        _run(session, f"rainbow residues target {target}")
     elif color_mode == "rainbow-chain":
-        _run(session, "rainbow chains target ac")
+        _run(session, f"rainbow chains target {target}")
     elif color_mode == "by-chain":
-        _run(session, "color bychain target ac")
+        _run(session, f"color bychain target {target}")
     else:
         raise ValueError(f"Unsupported color mode: {color_mode}")
+
+
+def _apply_chain_color_overrides(
+    session,
+    overrides: list[str],
+    target: str = "ac",
+) -> None:
+    for override in overrides:
+        chain, separator, color = override.partition(":")
+        chain = chain.strip()
+        color = color.strip()
+        if not separator or not chain or not color or "," in chain:
+            raise SystemExit(
+                f"Invalid --chain-color {override!r}; use a single CHAIN:COLOR value, "
+                "for example A:#ffd700."
+            )
+        _run(session, f"color /{chain} {color} target {target}")
 
 
 def _style_ribbon(session, args: argparse.Namespace) -> None:
@@ -202,18 +259,46 @@ def _solidify_struts(strut_group, radius: float, halfbond: bool) -> int:
 
 
 def run_layerloom_prep(session, args: argparse.Namespace) -> Path:
-    output = args.output.expanduser() if args.output else default_output_path(args.input, args.output_dir, args.color_mode)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    if output.exists() and not args.overwrite:
+    output = (
+        args.output.expanduser()
+        if args.output
+        else default_output_path(
+            args.input,
+            args.output_dir,
+            args.color_mode,
+            args.representation,
+        )
+    )
+    if not args.no_save:
+        output.parent.mkdir(parents=True, exist_ok=True)
+    if not args.no_save and output.exists() and not args.overwrite:
         raise SystemExit(f"Output already exists, use --overwrite: {output}")
 
     _run(session, f"open {_command_path(args.input)}")
-    _run(session, "cartoon")
-    _apply_color(session, args.color_mode)
-    _style_ribbon(session, args)
+    if args.protein_only:
+        _run(session, "delete ~protein")
+    # Structures can include dashed pseudobonds for unresolved residue spans.
+    # They are useful on-screen annotations, but not printable geometry. Hide
+    # them before creating the solid LayerLoom strut pseudobond group below.
+    _run(session, "hide pseudobonds")
+    if args.representation == "surface":
+        _run(session, "hide cartoons")
+        _run(session, "surface protein")
+        _apply_color(session, args.color_mode, target="as")
+        _apply_chain_color_overrides(session, args.chain_color, target="as")
+    else:
+        _run(session, "cartoon")
+        _apply_color(session, args.color_mode)
+        _apply_chain_color_overrides(session, args.chain_color)
+        _style_ribbon(session, args)
 
     strut_count = 0
-    if not args.no_struts:
+    if args.representation == "surface" and not args.no_struts:
+        session.logger.info(
+            "LayerLoom prep: surface representation omits ribbon struts to avoid "
+            "thin or detached printable features"
+        )
+    elif not args.no_struts:
         strut_group = _run(
             session,
             "struts "
@@ -233,6 +318,15 @@ def run_layerloom_prep(session, args: argparse.Namespace) -> Path:
     # struts, not extra CA spheres.
     _run(session, "hide atoms")
     _run(session, "hide bonds")
+    if args.hide_cartoons:
+        chains = ",".join(part.strip() for part in args.hide_cartoons.split(",") if part.strip())
+        if not chains:
+            raise SystemExit("--hide-cartoons needs at least one chain ID")
+        _run(session, f"hide /{chains} cartoons")
+
+    if args.no_save:
+        session.logger.info(f"LayerLoom preview prepared with {strut_count} struts; no GLB was saved")
+        return output
 
     _run(
         session,
@@ -262,5 +356,7 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__" or "session" in globals():
+if __name__ == "__main__":
     raise SystemExit(main(sys.argv[1:]))
+elif "session" in globals():
+    main(sys.argv[1:])

@@ -28,6 +28,7 @@ def main_window(main_module, app):
     window.show()
     app.processEvents()
     yield window
+    wait_for_load(window)
     window.paint_panel.editor.dirty = False
     window.close()
     window.deleteLater()
@@ -35,11 +36,20 @@ def main_window(main_module, app):
     app.processEvents()
 
 
+def wait_for_load(window):
+    for _ in range(500):
+        if not window.paint_panel.editor._loading:
+            return
+        QtTest.QTest.qWait(10)
+    pytest.fail("Background model load did not finish")
+
+
 def click_main_action(window, action):
     button = window._main_toolbar.widgetForAction(action)
     assert button is not None and button.isVisible()
     QtTest.QTest.mouseClick(button, QtCore.Qt.LeftButton)
     QtWidgets.QApplication.processEvents()
+    wait_for_load(window)
 
 
 def set_paint_mode(window, enabled):
@@ -191,6 +201,7 @@ def test_arrange_paint_button_opens_original_in_same_window(main_window, tmp_pat
     QtTest.QTest.mouseClick(button, QtCore.Qt.LeftButton)
     QtWidgets.QApplication.processEvents()
     assert main_window._paint_active()
+    wait_for_load(main_window)
     assert main_window.paint_panel.editor.document.source_path == str(source)
     assert not main_window.paint_panel.editor.isWindow()
 
@@ -204,6 +215,7 @@ def test_arrange_import_then_paint_uses_original_source_colors(main_window, monk
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
+    wait_for_load(main_window)
     assert main_window.source_file_path == str(source)
     assert main_window._shared_paint_active()
     assert main_window._shared_paint_workspace.model.document is main_window.paint_panel.document
@@ -227,6 +239,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
+    wait_for_load(main_window)
     set_paint_mode(main_window, True)
     editor = main_window.paint_panel.editor
     previous = editor.document
@@ -245,6 +258,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
     with monkeypatch.context() as patch:
         patch.setattr(editor, "_confirm_discard", lambda: False)
         main_window._on_open()
+        wait_for_load(main_window)
         assert not main_window._paint_active()
         assert not main_window._paint_action.isChecked()
         assert editor.document is previous
@@ -253,6 +267,7 @@ def test_same_path_arrange_reload_replaces_shared_model_and_respects_discard_can
         assert main_window._paint_pending_source is None
     monkeypatch.setattr(editor, "_confirm_discard", lambda: True)
     main_window._on_open()
+    wait_for_load(main_window)
     assert main_window.source_file_path == str(source)
     set_paint_mode(main_window, True)
     assert editor.document is not previous
@@ -270,6 +285,7 @@ def test_unsuccessful_arrange_open_does_not_replace_existing_paint(main_window, 
     monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: (str(source), ""))
     set_paint_mode(main_window, False)
     main_window._on_open()
+    wait_for_load(main_window)
     set_paint_mode(main_window, True)
     editor = main_window.paint_panel.editor
     previous = editor.document
@@ -287,6 +303,7 @@ def test_unsuccessful_arrange_open_does_not_replace_existing_paint(main_window, 
     else:
         monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *a, **k: ("", ""))
     main_window._on_open()
+    wait_for_load(main_window)
     assert bool(errors) == failed
     assert main_window._paint_pending_source is None
     set_paint_mode(main_window, True)
@@ -305,6 +322,7 @@ def test_arrange_open_and_placement_never_serialize_or_reparse_geometry(main_win
     monkeypatch.setattr(main_module._V58, "write_transformed_3mf", lambda *a, **k: pytest.fail("Placement must not serialize"))
     set_paint_mode(main_window, False)
     main_window._on_open()
+    wait_for_load(main_window)
     set_paint_mode(main_window, True)
     previous = main_window.paint_panel.document
     set_paint_mode(main_window, False)
@@ -398,6 +416,7 @@ def test_return_to_arrange_focuses_viewport_so_escape_cancels_tool(main_window, 
     main_window.activateWindow()
     set_paint_mode(main_window, False)
     main_window._on_open()
+    wait_for_load(main_window)
     assert main_window.move_tool_btn.isEnabled()
     QtTest.QTest.mouseClick(main_window.move_tool_btn, QtCore.Qt.LeftButton)
     assert main_window.viewer.tool_mode == "move"
@@ -485,6 +504,7 @@ def test_arrange_open_uses_same_paint_aware_parser_for_glb_and_project(main_wind
     monkeypatch.setattr(main_window, "_run_glb_import_pipeline", lambda *a: pytest.fail("Shared GLB import must retain its paint"))
     set_paint_mode(main_window, False)
     main_window._on_open_glb()
+    wait_for_load(main_window)
     assert main_window._shared_paint_active()
     assert_shared_geometry(main_window)
     current = main_window.paint_panel.document
@@ -629,3 +649,37 @@ def test_visible_arrange_recipe_survives_undo_redo_and_geometry_export(main_wind
     assert main_window.palette_combo.currentText() == "Simple"
     main_window.palette_combo.setCurrentText("Normal")
     assert editor.palette_combo.currentText() == "Normal"
+
+
+def test_main_open_shows_background_progress_and_locks_both_views(main_window, monkeypatch):
+    import threading
+    from layerloom import paint_gui
+    editor = main_window.paint_panel.editor
+    release = threading.Event()
+    errors = []
+    def read(path, *, stage):
+        stage("Reading mesh data…")
+        assert release.wait(5)
+        return example_document("cube", 8)
+    monkeypatch.setattr(paint_gui, "load_paint_document", read)
+    monkeypatch.setattr(QtWidgets.QFileDialog, "getOpenFileName", lambda *args: ("model.3mf", ""))
+    monkeypatch.setattr(QtWidgets.QMessageBox, "critical", lambda *args: errors.append(args[-1]))
+    try:
+        main_window._on_open()
+        assert editor._loading
+        assert not main_window.workspace_tabs.isEnabled()
+        assert not main_window._main_toolbar.isEnabled()
+        assert editor.progress.isVisible() and editor.progress.window() is main_window
+        QtTest.QTest.qWait(50)
+        assert "Reading mesh data" in main_window.status_bar.currentMessage()
+    finally:
+        release.set()
+        for _ in range(500):
+            QtTest.QTest.qWait(10)
+            if not editor._loading:
+                break
+    assert not errors and not editor._loading
+    assert main_window.workspace_tabs.isEnabled() and main_window._main_toolbar.isEnabled()
+    assert main_window._shared_paint_active()
+    assert "Opened model.3mf" in main_window.status_bar.currentMessage()
+    assert editor.progress.isHidden()

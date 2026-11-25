@@ -104,7 +104,7 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
         self._promote_weave_button()
 
     def _install_load_example_button(self) -> None:
-        """Add a one-click CMY Benchy example beside the regular file opener."""
+        """Add the packaged CMY Benchy example and keep Weave visible."""
         if getattr(self, "_load_example_action", None) is not None:
             return
         toolbars = self.findChildren(_V58.QtWidgets.QToolBar)
@@ -119,12 +119,21 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
 
         actions = toolbar.actions()
         open_action = next((act for act in actions if act.text().strip() == "Open 3MF"), None)
+        weave_action = next((act for act in actions if act.text().strip() == "Weave"), None)
         if open_action is None:
             toolbar.addAction(action)
-            return
-        open_idx = actions.index(open_action)
-        before = actions[open_idx + 1] if open_idx + 1 < len(actions) else None
-        toolbar.insertAction(before, action)
+            before = None
+        else:
+            open_idx = actions.index(open_action)
+            before = actions[open_idx + 1] if open_idx + 1 < len(actions) else None
+            toolbar.insertAction(before, action)
+
+        if weave_action is not None:
+            toolbar.removeAction(weave_action)
+            if before is None:
+                toolbar.addAction(weave_action)
+            else:
+                toolbar.insertAction(before, weave_action)
 
     def _on_load_example(self) -> None:
         path = find_example_file(DEFAULT_GUI_EXAMPLE)
@@ -139,6 +148,7 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
             self._pending_source_hex_by_name = {}
             stamped = _V58._stamp_ids_only(str(path))
             self._load_canonical_model(stamped)
+            self.source_file_path = str(path)
             _V58._log("INFO", f"Loaded example: {path}")
             self.status_bar.showMessage(f"Loaded example: {path.name}", 5000)
         except Exception as exc:
@@ -146,17 +156,23 @@ class QtAssignColorsApp(_V61.QtAssignColorsApp):
 
     def _promote_weave_button(self) -> None:
         """Make the final weaving action visually distinct from setup tools."""
-        for btn in self.findChildren(_V58.QtWidgets.QToolButton):
-            action = btn.defaultAction()
-            if action is None or action.text().strip().lower() != "weave":
-                continue
+        btn = None
+        for toolbar in self.findChildren(_V58.QtWidgets.QToolBar):
+            weave_action = next(
+                (act for act in toolbar.actions() if act.text().strip().lower() == "weave"),
+                None,
+            )
+            if weave_action is not None:
+                btn = toolbar.widgetForAction(weave_action)
+                if btn is not None:
+                    break
+        if btn is not None:
             btn.setObjectName("primaryWeaveButton")
             btn.setToolTip(
                 "Generate the woven 3MF using the current placement, layer height, and assignments."
             )
             btn.setMinimumHeight(max(btn.minimumHeight(), 30))
             btn.setStyleSheet(WEAVE_BUTTON_STYLE)
-            return
 
     def _install_v62_palette_controls(self) -> None:
         """Replace mixed legacy filters with consistent v62 add/require rows."""
